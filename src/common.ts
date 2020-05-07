@@ -10,7 +10,3 @@ export enum Terrain {
 export interface Tile {
   type: Terrain
 }
-export interface Position {
-  x: number
-  y: number
-}

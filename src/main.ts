@@ -5,6 +5,7 @@ import {
 } from './common'
 import { Playfield } from './playfield'
 import { Player } from './player'
+import { EntityManager } from './entity'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
@@ -16,8 +17,10 @@ canvas.width = width
 canvas.height = height
 
 const ctx = canvas.getContext('2d')
+const manager = new EntityManager()
 const playfield = new Playfield()
 const player = new Player()
+manager.register(player)
 
 function gameLoop() {
   requestAnimationFrame(gameLoop)
@@ -29,8 +32,9 @@ function gameLoop() {
   // Render playfield
   playfield.render(ctx)
 
-  // Render player
-  player.render(ctx)
+  // Update all entites
+  manager.update()
+  manager.render(ctx)
 }
 
 gameLoop()
