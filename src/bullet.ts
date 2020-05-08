@@ -1,14 +1,15 @@
+import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from './common'
 import { Entity, EntityManager } from './entity'
-import { vec2 } from 'gl-matrix'
+import { path2 } from './path2'
 
-const BULLET_SHAPE = [
+const BULLET_SHAPE = path2.fromValues([
   [0, -TILE_SIZE * 0.5],
   [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
   [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
-]
+])
 
-const BULLET_SPEED = [0, -10]
+const BULLET_SPEED = vec2.fromValues(0, -10)
 const TIME_TO_LIVE = 500
 
 export class Bullet implements Entity {
@@ -32,34 +33,19 @@ export class Bullet implements Entity {
     this.position = vec2.add(
       this.position,
       this.position,
-      vec2.rotate(
-        vec2.create(),
-        [BULLET_SPEED[0], BULLET_SPEED[1]],
-        [0, 0],
-        this.orientation,
-      ),
+      vec2.rotate(vec2.create(), BULLET_SPEED, [0, 0], this.orientation),
     )
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const mappedPoints = BULLET_SHAPE.map((point) => {
-      return vec2.add(
-        vec2.create(),
-        vec2.rotate(
-          vec2.create(),
-          [point[0], point[1]],
-          [0, 0],
-          this.orientation,
-        ),
-        this.position,
-      )
-    })
+    const p = path2.translate(
+      path2.rotate(BULLET_SHAPE, this.orientation),
+      this.position,
+    )
 
     ctx.fillStyle = '#FF00FF'
     ctx.beginPath()
-    ctx.moveTo(mappedPoints[0][0], mappedPoints[0][1])
-    ctx.lineTo(mappedPoints[1][0], mappedPoints[1][1])
-    ctx.lineTo(mappedPoints[2][0], mappedPoints[2][1])
+    path2.toRenderContext(ctx, p)
     ctx.fill()
   }
 }

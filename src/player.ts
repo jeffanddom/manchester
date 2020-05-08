@@ -1,13 +1,14 @@
+import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from './common'
 import { Entity, EntityManager } from './entity'
 import { Bullet } from './bullet'
-import { vec2 } from 'gl-matrix'
+import { path2 } from './path2'
 
-const PLAYER_SHAPE = [
+const PLAYER_SHAPE = path2.fromValues([
   [0, -TILE_SIZE * 0.5],
   [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
   [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-]
+])
 
 const keyMap = {
   up: 38, // UP
@@ -17,7 +18,7 @@ const keyMap = {
   space: 32, // SPACE
 }
 
-const PLAYER_SPEED = [0, -2]
+const PLAYER_SPEED = vec2.fromValues(0, -2)
 
 export class Player implements Entity {
   id?: number
@@ -57,12 +58,7 @@ export class Player implements Entity {
       this.position = vec2.add(
         this.position,
         this.position,
-        vec2.rotate(
-          vec2.create(),
-          [PLAYER_SPEED[0], PLAYER_SPEED[1]],
-          [0, 0],
-          this.orientation,
-        ),
+        vec2.rotate(vec2.create(), PLAYER_SPEED, [0, 0], this.orientation),
       )
     }
     if (this.keyDown.has(keyMap.right)) {
@@ -74,24 +70,14 @@ export class Player implements Entity {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const mappedPoints = PLAYER_SHAPE.map((point) => {
-      return vec2.add(
-        vec2.create(),
-        vec2.rotate(
-          vec2.create(),
-          [point[0], point[1]],
-          [0, 0],
-          this.orientation,
-        ),
-        this.position,
-      )
-    })
+    const p = path2.translate(
+      path2.rotate(PLAYER_SHAPE, this.orientation),
+      this.position,
+    )
 
     ctx.fillStyle = '#000000'
     ctx.beginPath()
-    ctx.moveTo(mappedPoints[0][0], mappedPoints[0][1])
-    ctx.lineTo(mappedPoints[1][0], mappedPoints[1][1])
-    ctx.lineTo(mappedPoints[2][0], mappedPoints[2][1])
+    path2.toRenderContext(ctx, p)
     ctx.fill()
   }
 }
