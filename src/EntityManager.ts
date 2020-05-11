@@ -1,18 +1,13 @@
 import { v4 } from 'uuid'
+import { IEntityManager, IGame, IEntity } from './common'
 
-export interface Entity {
-  id?: number
-  manager?: EntityManager
-
-  update: () => void
-  render: (ctx: CanvasRenderingContext2D) => void
-}
-
-export class EntityManager {
-  entities: { [key: string]: Entity }
+export class EntityManager implements IEntityManager {
+  game: IGame
+  entities: { [key: string]: IEntity }
   toDelete: string[]
 
-  constructor() {
+  constructor(game: IGame) {
+    this.game = game
     this.entities = {}
     this.toDelete = []
   }
@@ -27,7 +22,7 @@ export class EntityManager {
       const entity = this.entities[id]
       delete this.entities[id]
       entity.id = null
-      entity.manager = null
+      entity.game = null
     })
     this.toDelete = []
   }
@@ -38,14 +33,23 @@ export class EntityManager {
     })
   }
 
-  register(e: Entity) {
+  register(e: IEntity) {
     const id = v4()
     e.id = id
-    e.manager = this
+    e.game = this.game
     this.entities[id] = e
   }
 
-  markForDeletion(entity) {
+  markForDeletion(entity: IEntity) {
     this.toDelete.push(entity.id)
   }
+
+  // getEntitiesAtTilePos(pos: [number, number]): IEntity[] {
+
+  //   const res = []
+  //   this.entities.forEach(e => {
+  //     if ()
+  //   })
+  //   return res
+  // }
 }

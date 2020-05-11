@@ -1,6 +1,5 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE } from './common'
-import { Entity, EntityManager } from './entity'
+import { TILE_SIZE, IGame, IEntity } from './common'
 import { path2 } from './path2'
 
 const BULLET_SHAPE = path2.fromValues([
@@ -12,11 +11,12 @@ const BULLET_SHAPE = path2.fromValues([
 const BULLET_SPEED = vec2.fromValues(0, -10)
 const TIME_TO_LIVE = 500
 
-export class Bullet implements Entity {
-  id?: number
-  manager?: EntityManager
+export class Bullet implements IEntity {
+  id?: string
+  game?: IGame
   position: vec2
   orientation: number
+
   spawnedAt: number
 
   constructor(position, orientation) {
@@ -27,7 +27,7 @@ export class Bullet implements Entity {
 
   update() {
     if (Date.now() - this.spawnedAt > TIME_TO_LIVE) {
-      this.manager.markForDeletion(this)
+      this.game.entities.markForDeletion(this)
     }
 
     this.position = vec2.add(

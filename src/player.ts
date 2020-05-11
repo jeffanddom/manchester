@@ -1,6 +1,5 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE } from './common'
-import { Entity, EntityManager } from './entity'
+import { IEntity, IGame, TILE_SIZE } from './common'
 import { Bullet } from './bullet'
 import { path2 } from './path2'
 
@@ -20,12 +19,12 @@ const keyMap = {
 
 const PLAYER_SPEED = vec2.fromValues(0, -2)
 
-export class Player implements Entity {
-  id?: number
-  manager?: EntityManager
-
+export class Player implements IEntity {
+  id?: string
+  game?: IGame
   position: vec2
   orientation: number
+
   keyDown: Set<number>
   lastFiredAt: number
 
@@ -50,7 +49,7 @@ export class Player implements Entity {
   update() {
     if (this.keyDown.has(keyMap.space)) {
       if (Date.now() - this.lastFiredAt > 150) {
-        this.manager.register(new Bullet(this.position, this.orientation))
+        this.game.entities.register(new Bullet(this.position, this.orientation))
         this.lastFiredAt = Date.now()
       }
     }
@@ -67,6 +66,13 @@ export class Player implements Entity {
     if (this.keyDown.has(keyMap.left)) {
       this.orientation -= 0.1
     }
+
+    // const tilePos = [
+    //   Math.floor(this.position[0] / TILE_SIZE),
+    //   Math.floor(this.position[1] / TILE_SIZE),
+    // ]
+
+    // walls = this.game.entities.getEntitiesAtTilePos()
   }
 
   render(ctx: CanvasRenderingContext2D) {

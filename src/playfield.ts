@@ -1,30 +1,51 @@
 import {
   Terrain,
   Tile,
+  deserializeTerrain,
   PLAYFIELD_TILE_HEIGHT,
   PLAYFIELD_TILE_WIDTH,
   TILE_SIZE,
+  IPlayfield,
 } from './common'
 
-export class Playfield {
+export class Playfield implements IPlayfield {
   tiles: Tile[][]
 
-  constructor() {
+  constructor(map: string) {
+    const rows = map.trim().split('\n')
+    const width = rows[0].length
+
     this.tiles = []
-    for (let i = 0; i < PLAYFIELD_TILE_HEIGHT; i++) {
+    for (let i = 0; i < rows.length; i++) {
       const row: Tile[] = []
       this.tiles[i] = row
-      for (let j = 0; j < PLAYFIELD_TILE_WIDTH; j++) {
-        row[j] = { type: Terrain.Grass }
+      for (let j = 0; j < width; j++) {
+        row[j] = { type: deserializeTerrain(rows[i][j]) }
       }
     }
   }
 
+  height() {
+    return this.tiles.length
+  }
+
+  pixelHeight() {
+    return this.height() * TILE_SIZE
+  }
+
+  width() {
+    return this.tiles[0].length
+  }
+
+  pixelWidth() {
+    return this.width() * TILE_SIZE
+  }
+
   render(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
-    for (let i = 0; i < PLAYFIELD_TILE_HEIGHT; i++) {
+    for (let i = 0; i < this.height(); i++) {
       const y = i * TILE_SIZE
-      for (let j = 0; j < PLAYFIELD_TILE_WIDTH; j++) {
+      for (let j = 0; j < this.width(); j++) {
         const x = j * TILE_SIZE
         switch (this.tiles[i][j].type) {
           case Terrain.Grass:
@@ -36,9 +57,12 @@ export class Playfield {
           case Terrain.River:
             ctx.fillStyle = '#2B5770'
             break
+          case Terrain.Unknown:
+            ctx.fillStyle = '#FF00FF'
+            break
         }
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE)
-        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE)
+        // ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE)
       }
     }
   }
