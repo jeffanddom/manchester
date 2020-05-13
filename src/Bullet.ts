@@ -8,7 +8,7 @@ const BULLET_SHAPE = path2.fromValues([
   [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
 ])
 
-const BULLET_SPEED = vec2.fromValues(0, -10)
+const BULLET_SPEED = vec2.fromValues(0, -TILE_SIZE/3)
 const TIME_TO_LIVE = 500
 
 export class Bullet implements IEntity {

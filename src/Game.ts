@@ -1,8 +1,8 @@
 import { EntityManager } from './EntityManager'
-import { Playfield } from './playfield'
+import { Playfield } from './Playfield'
 import { GameMap, TILE_SIZE, IGame, IEntity } from './common'
-import { Player } from './player'
-import { Wall } from './wall'
+import { Player } from './Player'
+import { Wall } from './Wall'
 import { vec2 } from 'gl-matrix'
 
 export class Game implements IGame {

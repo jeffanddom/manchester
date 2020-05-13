@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
-export const TILE_SIZE = 16
-export const PLAYFIELD_TILE_WIDTH = 40
-export const PLAYFIELD_TILE_HEIGHT = 30
+export const TILE_SIZE = 32
+export const PLAYFIELD_TILE_WIDTH = 20
+export const PLAYFIELD_TILE_HEIGHT = 15
 
 export enum Terrain {
   Mountain,
@@ -10,8 +10,16 @@ export enum Terrain {
   Grass,
   Unknown,
 }
+
 export interface Tile {
   type: Terrain
+}
+
+export enum Direction {
+  North = 'N',
+  South = 'S',
+  East = 'E',
+  West = 'W'
 }
 
 export interface GameMap {
@@ -44,13 +52,14 @@ export interface IEntity {
 }
 
 export interface IEntityManager {
+  entities: { [key: string]: IEntity }
+
   register: (e: IEntity) => void
   markForDeletion: (e: IEntity) => void
 
   update: () => void
   render: (ctx: CanvasRenderingContext2D) => void
 
-  // getEntitiesAtTilePos: (pos: [number, number]) => IEntity[]
 }
 
 export interface IPlayfield {
