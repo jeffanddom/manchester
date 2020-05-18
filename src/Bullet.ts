@@ -1,6 +1,9 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE, IGame, IEntity } from './common'
+import { TILE_SIZE, IGame, IEntity, IGenericComponent } from './common'
 import { path2 } from './path2'
+import { Entity } from './Entity'
+import { Transform } from './Transform'
+import { WallCollider } from './WallCollider'
 
 const BULLET_SHAPE = path2.fromValues([
   [0, -TILE_SIZE * 0.5],
@@ -8,39 +11,56 @@ const BULLET_SHAPE = path2.fromValues([
   [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
 ])
 
-const BULLET_SPEED = vec2.fromValues(0, -TILE_SIZE/3)
-const TIME_TO_LIVE = 500
+const BULLET_SPEED = vec2.fromValues(0, -TILE_SIZE / 8)
+const TIME_TO_LIVE = 1000
 
-export class Bullet implements IEntity {
-  id?: string
-  game?: IGame
-  position: vec2
-  orientation: number
-
+class BulletScript implements IGenericComponent {
   spawnedAt: number
 
-  constructor(position, orientation) {
-    this.position = vec2.copy(vec2.create(), position)
-    this.orientation = orientation
+  constructor() {
     this.spawnedAt = Date.now()
   }
 
-  update() {
-    if (Date.now() - this.spawnedAt > TIME_TO_LIVE) {
-      this.game.entities.markForDeletion(this)
+  update(entity: IEntity): void {
+    if (entity.wallCollider.hitLastFrame) {
+      entity.game.entities.markForDeletion(entity)
+      return
     }
 
-    this.position = vec2.add(
-      this.position,
-      this.position,
-      vec2.rotate(vec2.create(), BULLET_SPEED, [0, 0], this.orientation),
+    if (Date.now() - this.spawnedAt > TIME_TO_LIVE) {
+      entity.game.entities.markForDeletion(entity)
+      return
+    }
+
+    entity.transform.position = vec2.add(
+      entity.transform.position,
+      entity.transform.position,
+      vec2.rotate(
+        vec2.create(),
+        BULLET_SPEED,
+        [0, 0],
+        entity.transform.orientation,
+      ),
     )
+  }
+}
+
+export class Bullet extends Entity {
+  constructor(position, orientation) {
+    super()
+
+    this.transform = new Transform()
+    this.transform.position = vec2.copy(vec2.create(), position)
+    this.transform.orientation = orientation
+
+    this.wallCollider = new WallCollider()
+    this.script = new BulletScript()
   }
 
   render(ctx: CanvasRenderingContext2D) {
     const p = path2.translate(
-      path2.rotate(BULLET_SHAPE, this.orientation),
-      this.position,
+      path2.rotate(BULLET_SHAPE, this.transform.orientation),
+      this.transform.position,
     )
 
     ctx.fillStyle = '#FF00FF'

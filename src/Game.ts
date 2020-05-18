@@ -1,17 +1,20 @@
 import { EntityManager } from './EntityManager'
 import { Playfield } from './Playfield'
-import { GameMap, TILE_SIZE, IGame, IEntity } from './common'
+import { GameMap, TILE_SIZE, IGame, IKeyboard, IWallCollider } from './common'
 import { Player } from './Player'
 import { Wall } from './Wall'
 import { vec2 } from 'gl-matrix'
+import { Keyboard } from './Keyboard'
 
 export class Game implements IGame {
   playfield: Playfield
   entities: EntityManager
+  keyboard: IKeyboard
 
   constructor(map: GameMap) {
     this.playfield = new Playfield(map.playfield)
     this.entities = new EntityManager(this)
+    this.keyboard = new Keyboard()
 
     // Populate entities
     const rows = map.entities.trim().split('\n')
@@ -32,10 +35,12 @@ export class Game implements IGame {
         }
 
         if (entity !== null) {
-          entity.position = vec2.fromValues(
-            j * TILE_SIZE + TILE_SIZE * 0.5,
-            i * TILE_SIZE + TILE_SIZE * 0.5,
-          )
+          if (entity.transform !== undefined) {
+            entity.transform.position = vec2.fromValues(
+              j * TILE_SIZE + TILE_SIZE * 0.5,
+              i * TILE_SIZE + TILE_SIZE * 0.5,
+            )
+          }
           this.entities.register(entity)
         }
       }

@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-export const TILE_SIZE = 32
+export const TILE_SIZE = 24
 export const PLAYFIELD_TILE_WIDTH = 20
 export const PLAYFIELD_TILE_HEIGHT = 15
 
@@ -19,7 +19,7 @@ export enum Direction {
   North = 'N',
   South = 'S',
   East = 'E',
-  West = 'W'
+  West = 'W',
 }
 
 export interface GameMap {
@@ -41,11 +41,32 @@ export const deserializeTerrain = (s: string): Terrain => {
   return t
 }
 
+export interface ITransform {
+  previousPosition: vec2
+  position: vec2
+  orientation: number
+
+  update(e: IEntity): void
+}
+
+export interface IWallCollider {
+  hitLastFrame: boolean
+  update(e: IEntity): void
+}
+
+export interface IGenericComponent {
+  update(e: IEntity): void
+}
+
 export interface IEntity {
   id?: string
   game?: IGame
-  position: vec2
-  orientation: number
+  transform?: ITransform
+  playerControl?: IGenericComponent
+  shooter?: IGenericComponent
+  wallCollider?: IWallCollider
+  wall?: IGenericComponent
+  script?: IGenericComponent
 
   update: () => void
   render: (ctx: CanvasRenderingContext2D) => void
@@ -59,7 +80,6 @@ export interface IEntityManager {
 
   update: () => void
   render: (ctx: CanvasRenderingContext2D) => void
-
 }
 
 export interface IPlayfield {
@@ -71,7 +91,12 @@ export interface IPlayfield {
   render: (ctx: CanvasRenderingContext2D) => void
 }
 
+export interface IKeyboard {
+  downKeys: Set<number>
+}
+
 export interface IGame {
   playfield: IPlayfield
   entities: IEntityManager
+  keyboard: IKeyboard
 }
