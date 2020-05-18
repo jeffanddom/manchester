@@ -2,8 +2,6 @@ import {
   Terrain,
   Tile,
   deserializeTerrain,
-  PLAYFIELD_TILE_HEIGHT,
-  PLAYFIELD_TILE_WIDTH,
   TILE_SIZE,
   IPlayfield,
 } from './common'

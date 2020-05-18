@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE, IGame, IEntity, IGenericComponent } from './common'
+import { TILE_SIZE, IEntity, IGenericComponent } from './common'
 import { path2 } from './path2'
 import { Entity } from './Entity'
 import { Transform } from './Transform'

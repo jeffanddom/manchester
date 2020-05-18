@@ -1,6 +1,6 @@
 import { EntityManager } from './EntityManager'
 import { Playfield } from './Playfield'
-import { GameMap, TILE_SIZE, IGame, IKeyboard, IWallCollider } from './common'
+import { GameMap, TILE_SIZE, IGame, IKeyboard } from './common'
 import { Player } from './Player'
 import { Wall } from './Wall'
 import { vec2 } from 'gl-matrix'
