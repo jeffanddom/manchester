@@ -4,12 +4,7 @@ import { path2 } from './path2'
 import { Entity } from './Entity'
 import { Transform } from './Transform'
 import { WallCollider } from './WallCollider'
-
-const BULLET_SHAPE = path2.fromValues([
-  [0, -TILE_SIZE * 0.5],
-  [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
-  [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
-])
+import { PathRenderable } from './PathRenderable'
 
 const BULLET_SPEED = vec2.fromValues(0, -TILE_SIZE / 8)
 const TIME_TO_LIVE = 1000
@@ -45,27 +40,23 @@ class BulletScript implements IGenericComponent {
   }
 }
 
-export class Bullet extends Entity {
-  constructor(position, orientation) {
-    super()
+export const makeBullet = (position: vec2, orientation: number): IEntity => {
+  const e = new Entity()
 
-    this.transform = new Transform()
-    this.transform.position = vec2.copy(vec2.create(), position)
-    this.transform.orientation = orientation
+  e.transform = new Transform()
+  e.transform.position = vec2.copy(vec2.create(), position)
+  e.transform.orientation = orientation
 
-    this.wallCollider = new WallCollider()
-    this.script = new BulletScript()
-  }
+  e.wallCollider = new WallCollider()
+  e.script = new BulletScript()
+  e.pathRenderable = new PathRenderable(
+    path2.fromValues([
+      [0, -TILE_SIZE * 0.5],
+      [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
+      [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
+    ]),
+    '#FF00FF',
+  )
 
-  render(ctx: CanvasRenderingContext2D) {
-    const p = path2.translate(
-      path2.rotate(BULLET_SHAPE, this.transform.orientation),
-      this.transform.position,
-    )
-
-    ctx.fillStyle = '#FF00FF'
-    ctx.beginPath()
-    path2.applyPath(p, ctx)
-    ctx.fill()
-  }
+  return e
 }

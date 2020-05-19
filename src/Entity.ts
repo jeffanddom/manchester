@@ -4,6 +4,7 @@ import {
   IEntity,
   IGame,
   IWallCollider,
+  IPathRenderable,
 } from './common'
 
 export class Entity implements IEntity {
@@ -15,6 +16,7 @@ export class Entity implements IEntity {
   wallCollider?: IWallCollider
   wall?: IGenericComponent
   script?: IGenericComponent
+  pathRenderable?: IPathRenderable
 
   constructor() {}
 
@@ -27,5 +29,7 @@ export class Entity implements IEntity {
     this.shooter?.update(this)
   }
 
-  render(ctx: CanvasRenderingContext2D): void {}
+  render(ctx: CanvasRenderingContext2D): void {
+    this.pathRenderable?.render(this, ctx)
+  }
 }

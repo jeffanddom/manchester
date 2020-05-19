@@ -1,8 +1,8 @@
 import { EntityManager } from './EntityManager'
 import { Playfield } from './Playfield'
 import { GameMap, TILE_SIZE, IGame, IKeyboard } from './common'
-import { Player } from './Player'
-import { Wall } from './Wall'
+import { makePlayer } from './Player'
+import { makeWall } from './Wall'
 import { vec2 } from 'gl-matrix'
 import { Keyboard } from './Keyboard'
 
@@ -24,10 +24,10 @@ export class Game implements IGame {
         let entity = null
         switch (rows[i][j]) {
           case 'p':
-            entity = new Player()
+            entity = makePlayer()
             break
           case 'w':
-            entity = new Wall()
+            entity = makeWall()
             break
           default:
             // do nothing
@@ -45,8 +45,6 @@ export class Game implements IGame {
         }
       }
     }
-
-    const player = new Player()
   }
 
   update() {
