@@ -58,6 +58,10 @@ export interface IGenericComponent {
   update(e: IEntity): void
 }
 
+export interface IPathRenderable {
+  render(e: IEntity, ctx: CanvasRenderingContext2D): void
+}
+
 export interface IEntity {
   id?: string
   game?: IGame
@@ -67,6 +71,7 @@ export interface IEntity {
   wallCollider?: IWallCollider
   wall?: IGenericComponent
   script?: IGenericComponent
+  pathRenderable?: IPathRenderable
 
   update: () => void
   render: (ctx: CanvasRenderingContext2D) => void
