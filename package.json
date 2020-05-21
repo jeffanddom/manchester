@@ -13,6 +13,7 @@
   "dependencies": {
     "@types/gl-matrix": "^2.4.5",
     "gl-matrix": "^3.3.0",
+    "lodash": "^4.17.15",
     "parcel": "^1.12.4",
     "prettier": "^2.0.5",
     "uuid": "^8.0.0"

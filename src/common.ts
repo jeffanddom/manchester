@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+import { ParticleEmitter } from './ParticleEmitter'
 
 export const TILE_SIZE = 24
 export const PLAYFIELD_TILE_WIDTH = 20
@@ -51,6 +52,8 @@ export interface ITransform {
 
 export interface IWallCollider {
   hitLastFrame: boolean
+  collidedWalls: IEntity[]
+
   update(e: IEntity): void
 }
 
@@ -59,18 +62,30 @@ export interface IGenericComponent {
 }
 
 export interface IPathRenderable {
+  fillStyle: string
+
   render(e: IEntity, ctx: CanvasRenderingContext2D): void
+}
+
+export interface IDamageable extends IGenericComponent {
+  health: number
+}
+
+export interface IDamager extends IGenericComponent {
+  damageValue: number
 }
 
 export interface IEntity {
   id?: string
   game?: IGame
   transform?: ITransform
-  playerControl?: IGenericComponent
+  mover?: IGenericComponent
   shooter?: IGenericComponent
   wallCollider?: IWallCollider
   wall?: IGenericComponent
-  script?: IGenericComponent
+  damageable?: IDamageable
+  damager?: IDamager
+  prerender?: IGenericComponent
   pathRenderable?: IPathRenderable
 
   update: () => void
@@ -104,4 +119,5 @@ export interface IGame {
   playfield: IPlayfield
   entities: IEntityManager
   keyboard: IKeyboard
+  emitters: ParticleEmitter[]
 }

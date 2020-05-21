@@ -4,12 +4,15 @@ import { vec2 } from 'gl-matrix'
 
 export class WallCollider implements IWallCollider {
   hitLastFrame: boolean
+  collidedWalls: IEntity[]
 
   constructor() {
     this.hitLastFrame = false
   }
 
   update(entity: IEntity) {
+    this.collidedWalls = []
+
     // Get all walls colliding with this entity
     const myBox = tileBox(entity.transform.position)
     const previousBox = tileBox(entity.transform.previousPosition)
@@ -91,6 +94,9 @@ export class WallCollider implements IWallCollider {
           )
       }
     })
+
+    // Track walls that were collided with
+    this.collidedWalls = collided.map(c => c[0])
 
     // Halt motion for collided edges
     collided.forEach((collision) => {

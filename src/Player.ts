@@ -2,7 +2,7 @@ import { TILE_SIZE, IEntity } from './common'
 import { Entity } from './Entity'
 import { path2 } from './path2'
 import { Transform } from './Transform'
-import { PlayerControl } from './PlayerControl'
+import { PlayerMover } from './PlayerMover'
 import { Shooter } from './Shooter'
 import { WallCollider } from './WallCollider'
 import { PathRenderable } from './PathRenderable'
@@ -10,7 +10,7 @@ import { PathRenderable } from './PathRenderable'
 export const makePlayer = (): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.playerControl = new PlayerControl()
+  e.mover = new PlayerMover()
   e.shooter = new Shooter()
   e.wallCollider = new WallCollider()
   e.pathRenderable = new PathRenderable(

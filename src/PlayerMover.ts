@@ -1,7 +1,7 @@
 import { IEntity, TILE_SIZE } from './common'
 import { vec2 } from 'gl-matrix'
 
-const PLAYER_SPEED = vec2.fromValues(0, -TILE_SIZE / 8)
+const PLAYER_SPEED = vec2.fromValues(0, -TILE_SIZE / 16)
 
 const keyMap = {
   up: 38, // UP
@@ -11,7 +11,7 @@ const keyMap = {
   space: 32, // SPACE
 }
 
-export class PlayerControl {
+export class PlayerMover {
   update(entity: IEntity) {
     if (entity.game.keyboard.downKeys.has(keyMap.up)) {
       entity.transform.position = vec2.add(
