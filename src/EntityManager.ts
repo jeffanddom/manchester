@@ -43,13 +43,4 @@ export class EntityManager implements IEntityManager {
   markForDeletion(entity: IEntity) {
     this.toDelete.push(entity.id)
   }
-
-  // getEntitiesAtTilePos(pos: [number, number]): IEntity[] {
-
-  //   const res = []
-  //   this.entities.forEach(e => {
-  //     if ()
-  //   })
-  //   return res
-  // }
 }

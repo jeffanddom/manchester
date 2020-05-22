@@ -1,7 +1,8 @@
 import { IEntity, TILE_SIZE } from './common'
 import { vec2 } from 'gl-matrix'
+import { radialTranslate2 } from './mathutil'
 
-const PLAYER_SPEED = vec2.fromValues(0, -TILE_SIZE / 16)
+const PLAYER_SPEED = TILE_SIZE / 16
 
 const keyMap = {
   up: 38, // UP
@@ -14,15 +15,11 @@ const keyMap = {
 export class PlayerMover {
   update(entity: IEntity) {
     if (entity.game.keyboard.downKeys.has(keyMap.up)) {
-      entity.transform.position = vec2.add(
+      radialTranslate2(
         entity.transform.position,
         entity.transform.position,
-        vec2.rotate(
-          vec2.create(),
-          PLAYER_SPEED,
-          [0, 0],
-          entity.transform.orientation,
-        ),
+        entity.transform.orientation,
+        PLAYER_SPEED,
       )
     }
     if (entity.game.keyboard.downKeys.has(keyMap.right)) {

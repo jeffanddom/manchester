@@ -60,7 +60,6 @@ export class Playfield implements IPlayfield {
             break
         }
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE)
-        // ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE)
       }
     }
   }

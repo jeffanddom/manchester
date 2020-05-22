@@ -4,15 +4,13 @@ import { Entity } from './Entity'
 import { Transform } from './Transform'
 import { Damageable } from './Damageable'
 import { PathRenderable } from './PathRenderable'
+import { lerp } from './mathutil'
 
 const WALL_HEALTH = 4.0
 
 class DisplayWallDamage implements IGenericComponent {
   update(entity: IEntity): void {
-    const damage = entity.damageable.health
-    const scale = damage / WALL_HEALTH
-    const color = 90 + (40 * scale)
-
+    const color = lerp(90, 130, entity.damageable.health / WALL_HEALTH)
     entity.pathRenderable.fillStyle = `rgba(${color},${color},${color},1)`
   }
 }

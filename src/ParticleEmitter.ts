@@ -1,5 +1,6 @@
-import { vec2 } from "gl-matrix"
+import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
+import { radialTranslate2, lerp } from './mathutil'
 
 interface Particle {
   position: vec2
@@ -19,7 +20,7 @@ export class ParticleEmitter {
   particleRate: number
   particleRadius: number
   particleLifespan: number
-  particleSpeedRange:  [number, number]
+  particleSpeedRange: [number, number]
   emitterLifespan: number
   orientation: number
   arc: number
@@ -55,20 +56,20 @@ export class ParticleEmitter {
     const timestamp = Date.now()
 
     // Kill old particles
-    this.particles = this.particles.filter(p => {
+    this.particles = this.particles.filter((p) => {
       return p.spawnTime + this.particleLifespan > timestamp
     })
-    
+
     // Move existing particles
-    this.particles.forEach(p => {
-      p.position = vec2.add(
+    this.particles.forEach((p) => {
+      radialTranslate2(
         p.position,
         p.position,
-        vec2.rotate(
-          vec2.create(),
-          [0, -(this.particleSpeedRange[0] + Math.random() * (this.particleSpeedRange[1] - this.particleSpeedRange[0]))],
-          [0, 0],
-          p.orientation,
+        p.orientation,
+        lerp(
+          this.particleSpeedRange[0],
+          this.particleSpeedRange[1],
+          Math.random(),
         ),
       )
     })
@@ -80,14 +81,17 @@ export class ParticleEmitter {
     } else {
       // Spawn new particles
       this.potentialParticles += this.particleRate
-      while(this.potentialParticles >= 1) {
-        
+      while (this.potentialParticles >= 1) {
         this.particles.push({
           position: vec2.copy(vec2.create(), this.position),
           color: sample(this.colors),
-          radius: Math.random() * this.particleRadius,
-          orientation: this.orientation + (Math.random() * this.arc) - (this.arc/2),
-          spawnTime: timestamp
+          radius: lerp(0, this.particleRadius, Math.random()), // TODO: add min radius
+          orientation: lerp(
+            this.orientation - this.arc / 2,
+            this.orientation + this.arc / 2,
+            Math.random(),
+          ),
+          spawnTime: timestamp,
         })
         this.potentialParticles -= 1
       }
@@ -95,10 +99,10 @@ export class ParticleEmitter {
   }
 
   render(ctx: CanvasRenderingContext2D): void {
-    this.particles.forEach(p => {
+    this.particles.forEach((p) => {
       ctx.fillStyle = p.color
       ctx.beginPath()
-      ctx.arc(p.position[0], p.position[1], p.radius, 0, Math.PI*2)
+      ctx.arc(p.position[0], p.position[1], p.radius, 0, Math.PI * 2)
       ctx.fill()
     })
   }
