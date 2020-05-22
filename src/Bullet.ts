@@ -6,8 +6,9 @@ import { Transform } from './Transform'
 import { WallCollider } from './WallCollider'
 import { PathRenderable } from './PathRenderable'
 import { ParticleEmitter } from './ParticleEmitter'
+import { radialTranslate2 } from './mathutil'
 
-const BULLET_SPEED = vec2.fromValues(0, -TILE_SIZE / 8)
+const BULLET_SPEED = TILE_SIZE / 8
 const TIME_TO_LIVE = 1000
 
 class BulletMover implements IGenericComponent {
@@ -21,31 +22,23 @@ class BulletMover implements IGenericComponent {
     if (entity.wallCollider.hitLastFrame) {
       entity.game.entities.markForDeletion(entity)
 
-      const emitterPos = vec2.add(
+      const emitterPos = radialTranslate2(
         vec2.create(),
         entity.transform.position,
-        vec2.rotate(
-          vec2.create(),
-          [0, -TILE_SIZE/2], // PARTICLE SPEED - change me
-          [0, 0],
-          entity.transform.orientation,
-        ),
+        entity.transform.orientation,
+        TILE_SIZE / 2,
       )
+
       const explosion = new ParticleEmitter({
         position: emitterPos,
         particleLifespan: 100,
         particleRadius: 10,
-        particleSpeedRange: [1.5,2.5],
+        particleSpeedRange: [1.5, 2.5],
         particleRate: 4.5,
         emitterLifespan: 200,
         orientation: 0,
         arc: Math.PI * 2,
-        colors: [
-          '#FF4500',
-          '#FFA500',
-          '#FFD700',
-          '#000'
-        ]
+        colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
       })
       entity.game.emitters.push(explosion)
 
@@ -57,15 +50,11 @@ class BulletMover implements IGenericComponent {
       return
     }
 
-    entity.transform.position = vec2.add(
+    radialTranslate2(
       entity.transform.position,
       entity.transform.position,
-      vec2.rotate(
-        vec2.create(),
-        BULLET_SPEED,
-        [0, 0],
-        entity.transform.orientation,
-      ),
+      entity.transform.orientation,
+      BULLET_SPEED,
     )
   }
 }
@@ -79,7 +68,7 @@ class BulletDamager implements IDamager {
 
   update(entity: IEntity) {
     const collided = entity.wallCollider.collidedWalls
-    collided.forEach(c => {
+    collided.forEach((c) => {
       if (c.damageable === undefined) {
         return
       }
@@ -106,7 +95,7 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
     ]),
     '#FF00FF',
   )
-  
+
   e.damager = new BulletDamager(1)
 
   return e
