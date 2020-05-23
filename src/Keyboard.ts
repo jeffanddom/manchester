@@ -1,4 +1,4 @@
-import { IKeyboard } from './common'
+import { IKeyboard } from './interfaces'
 
 export class Keyboard implements IKeyboard {
   downKeys: Set<number>

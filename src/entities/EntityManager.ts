@@ -1,29 +1,23 @@
 import { v4 } from 'uuid'
-import { IEntityManager, IGame, IEntity } from './common'
+import { IGame } from '../interfaces'
+import { IEntity, IEntityManager } from './interfaces'
 
 export class EntityManager implements IEntityManager {
-  game: IGame
   entities: { [key: string]: IEntity }
   toDelete: string[]
 
-  constructor(game: IGame) {
-    this.game = game
+  constructor() {
     this.entities = {}
     this.toDelete = []
   }
 
   // TODO: order by object type
-  update() {
+  update(g: IGame) {
     Object.keys(this.entities).forEach((id) => {
-      this.entities[id].update()
+      this.entities[id].update(g)
     })
 
-    this.toDelete.forEach((id) => {
-      const entity = this.entities[id]
-      delete this.entities[id]
-      entity.id = null
-      entity.game = null
-    })
+    this.toDelete.forEach((id) => delete this.entities[id])
     this.toDelete = []
   }
 
@@ -36,7 +30,6 @@ export class EntityManager implements IEntityManager {
   register(e: IEntity) {
     const id = v4()
     e.id = id
-    e.game = this.game
     this.entities[id] = e
   }
 

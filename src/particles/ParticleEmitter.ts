@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
-import { radialTranslate2, lerp } from './mathutil'
+import { radialTranslate2, lerp } from '../mathutil'
 
 interface Particle {
   position: vec2

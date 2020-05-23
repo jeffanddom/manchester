@@ -1,6 +1,9 @@
-import { Direction, IEntity, TILE_SIZE, IWallCollider } from './common'
-import { tileBox, equals, tileCoords } from './tileMath'
+import { Direction, IGame } from '../../interfaces'
+import { TILE_SIZE } from '../../constants'
+import { tileBox, equals, tileCoords } from '../../tileMath'
 import { vec2 } from 'gl-matrix'
+import { IEntity } from '../interfaces'
+import { IWallCollider } from './interfaces'
 
 export class WallCollider implements IWallCollider {
   hitLastFrame: boolean
@@ -10,15 +13,15 @@ export class WallCollider implements IWallCollider {
     this.hitLastFrame = false
   }
 
-  update(entity: IEntity) {
+  update(entity: IEntity, game: IGame) {
     this.collidedWalls = []
 
     // Get all walls colliding with this entity
     const myBox = tileBox(entity.transform.position)
     const previousBox = tileBox(entity.transform.previousPosition)
     let collided: [IEntity, Direction, number][] = []
-    for (let id in entity.game.entities.entities) {
-      const other = entity.game.entities.entities[id]
+    for (let id in game.entities.entities) {
+      const other = game.entities.entities[id]
       if (other.wall === undefined) {
         continue
       }
@@ -96,7 +99,7 @@ export class WallCollider implements IWallCollider {
     })
 
     // Track walls that were collided with
-    this.collidedWalls = collided.map(c => c[0])
+    this.collidedWalls = collided.map((c) => c[0])
 
     // Halt motion for collided edges
     collided.forEach((collision) => {

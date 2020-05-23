@@ -1,10 +1,19 @@
-import {
-  Terrain,
-  Tile,
-  deserializeTerrain,
-  TILE_SIZE,
-  IPlayfield,
-} from './common'
+import { Terrain, Tile, IPlayfield } from './interfaces'
+import { TILE_SIZE } from './constants'
+
+const terrainByEncoding = {
+  '.': Terrain.Grass,
+  '~': Terrain.River,
+  '^': Terrain.Mountain,
+}
+
+const deserializeTerrain = (s: string): Terrain => {
+  const t = terrainByEncoding[s]
+  if (t === undefined) {
+    return Terrain.Unknown
+  }
+  return t
+}
 
 export class Playfield implements IPlayfield {
   tiles: Tile[][]

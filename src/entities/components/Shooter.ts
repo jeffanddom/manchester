@@ -1,22 +1,25 @@
-import { IEntity, TILE_SIZE } from './common'
-import { makeBullet } from './Bullet'
-import { ParticleEmitter } from './ParticleEmitter'
+import { IEntity } from '../interfaces'
+import { TILE_SIZE } from '../../constants'
+import { makeBullet } from '../Bullet'
+import { ParticleEmitter } from '../../particles/ParticleEmitter'
 import { vec2 } from 'gl-matrix'
-import { radialTranslate2 } from './mathutil'
+import { radialTranslate2 } from '../../mathutil'
+import { IGame } from '../../interfaces'
+import { IGenericComponent } from './interfaces'
 
 const keyMap = {
   fire: 32, // fire
 }
 
-export class Shooter {
+export class Shooter implements IGenericComponent {
   lastFiredAt: number
 
   constructor() {
     this.lastFiredAt = -1
   }
 
-  update(entity: IEntity) {
-    if (entity.game.keyboard.downKeys.has(keyMap.fire)) {
+  update(entity: IEntity, game: IGame) {
+    if (game.keyboard.downKeys.has(keyMap.fire)) {
       if (Date.now() - this.lastFiredAt > 250) {
         const bulletPos = radialTranslate2(
           vec2.create(),
@@ -25,7 +28,7 @@ export class Shooter {
           TILE_SIZE * 0.75,
         )
 
-        entity.game.entities.register(
+        game.entities.register(
           makeBullet(bulletPos, entity.transform.orientation),
         )
 
@@ -40,7 +43,7 @@ export class Shooter {
           arc: Math.PI / 4,
           colors: ['#FF9933', '#CCC', '#FFF'],
         })
-        entity.game.emitters.push(muzzleFlash)
+        game.emitters.push(muzzleFlash)
 
         this.lastFiredAt = Date.now()
       }
