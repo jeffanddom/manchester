@@ -1,4 +1,3 @@
-import { IEntity } from './common'
 import { vec2 } from 'gl-matrix'
 
 export class Transform {
@@ -12,7 +11,7 @@ export class Transform {
     this.orientation = 0
   }
 
-  update(entity: IEntity) {
+  update() {
     this.previousPosition = vec2.copy(vec2.create(), this.position)
   }
 }

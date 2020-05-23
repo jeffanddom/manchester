@@ -1,12 +1,15 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE, IEntity, IGenericComponent, IDamager } from './common'
-import { path2 } from './path2'
+import { IGame } from '../interfaces'
+import { TILE_SIZE } from '../constants'
+import { path2 } from '../path2'
 import { Entity } from './Entity'
-import { Transform } from './Transform'
-import { WallCollider } from './WallCollider'
-import { PathRenderable } from './PathRenderable'
-import { ParticleEmitter } from './ParticleEmitter'
-import { radialTranslate2 } from './mathutil'
+import { Transform } from './components/Transform'
+import { WallCollider } from './components/WallCollider'
+import { PathRenderable } from './components/PathRenderable'
+import { ParticleEmitter } from '../particles/ParticleEmitter'
+import { radialTranslate2 } from '../mathutil'
+import { IEntity } from './interfaces'
+import { IGenericComponent, IDamager } from './components/interfaces'
 
 const BULLET_SPEED = TILE_SIZE / 8
 const TIME_TO_LIVE = 1000
@@ -18,9 +21,9 @@ class BulletMover implements IGenericComponent {
     this.spawnedAt = Date.now()
   }
 
-  update(entity: IEntity): void {
+  update(entity: IEntity, game: IGame): void {
     if (entity.wallCollider.hitLastFrame) {
-      entity.game.entities.markForDeletion(entity)
+      game.entities.markForDeletion(entity)
 
       const emitterPos = radialTranslate2(
         vec2.create(),
@@ -40,13 +43,13 @@ class BulletMover implements IGenericComponent {
         arc: Math.PI * 2,
         colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
       })
-      entity.game.emitters.push(explosion)
+      game.emitters.push(explosion)
 
       return
     }
 
     if (Date.now() - this.spawnedAt > TIME_TO_LIVE) {
-      entity.game.entities.markForDeletion(entity)
+      game.entities.markForDeletion(entity)
       return
     }
 

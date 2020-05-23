@@ -1,17 +1,16 @@
+import { IGame } from '../interfaces'
+import { IEntity } from './interfaces'
 import {
   ITransform,
   IGenericComponent,
-  IEntity,
-  IGame,
   IWallCollider,
   IPathRenderable,
   IDamageable,
   IDamager,
-} from './common'
+} from './components/interfaces'
 
 export class Entity implements IEntity {
   id?: string
-  game?: IGame
   transform?: ITransform
   mover?: IGenericComponent
   shooter?: IGenericComponent
@@ -24,18 +23,20 @@ export class Entity implements IEntity {
 
   constructor() {}
 
-  update() {
-    this.transform?.update(this)
-    this.mover?.update(this)
-    this.wall?.update(this)
-    this.wallCollider?.update(this)
-    this.shooter?.update(this)
-    this.damager?.update(this)
-    this.damageable?.update(this)
+  update(game: IGame) {
+    this.transform?.update()
+    this.mover?.update(this, game)
+    this.wall?.update(this, game)
+    this.wallCollider?.update(this, game)
+    this.shooter?.update(this, game)
+    this.damager?.update(this, game)
+    this.damageable?.update(this, game)
+
+    // This should be the last component to update
+    this.prerender?.update(this, game)
   }
 
   render(ctx: CanvasRenderingContext2D): void {
-    this.prerender?.update(this)
     this.pathRenderable?.render(this, ctx)
   }
 }

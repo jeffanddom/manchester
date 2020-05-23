@@ -1,9 +1,10 @@
-import { EntityManager } from './EntityManager'
+import { EntityManager } from './entities/EntityManager'
 import { Playfield } from './Playfield'
-import { GameMap, TILE_SIZE, IGame, IKeyboard } from './common'
-import { makePlayer } from './Player'
-import { ParticleEmitter } from './ParticleEmitter'
-import { makeWall } from './Wall'
+import { GameMap, IGame, IKeyboard } from './interfaces'
+import { TILE_SIZE } from './constants'
+import { makePlayer } from './entities/Player'
+import { ParticleEmitter } from './particles/ParticleEmitter'
+import { makeWall } from './entities/Wall'
 import { vec2 } from 'gl-matrix'
 import { Keyboard } from './Keyboard'
 
@@ -15,7 +16,7 @@ export class Game implements IGame {
 
   constructor(map: GameMap) {
     this.playfield = new Playfield(map.playfield)
-    this.entities = new EntityManager(this)
+    this.entities = new EntityManager()
     this.keyboard = new Keyboard()
     this.emitters = []
 
@@ -51,10 +52,10 @@ export class Game implements IGame {
   }
 
   update() {
-    this.entities.update()
+    this.entities.update(this)
 
-    this.emitters = this.emitters.filter(e => !e.dead)
-    this.emitters.forEach(e => e.update())
+    this.emitters = this.emitters.filter((e) => !e.dead)
+    this.emitters.forEach((e) => e.update())
   }
 
   render(ctx: CanvasRenderingContext2D) {
@@ -69,6 +70,6 @@ export class Game implements IGame {
 
     this.playfield.render(ctx)
     this.entities.render(ctx)
-    this.emitters.forEach(e => e.render(ctx))
+    this.emitters.forEach((e) => e.render(ctx))
   }
 }

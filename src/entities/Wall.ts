@@ -1,10 +1,12 @@
-import { TILE_SIZE, IEntity, IGenericComponent } from './common'
-import { path2 } from './path2'
+import { TILE_SIZE } from '../constants'
+import { path2 } from '../path2'
 import { Entity } from './Entity'
-import { Transform } from './Transform'
-import { Damageable } from './Damageable'
-import { PathRenderable } from './PathRenderable'
-import { lerp } from './mathutil'
+import { Transform } from './components/Transform'
+import { Damageable } from './components/Damageable'
+import { PathRenderable } from './components/PathRenderable'
+import { lerp } from '../mathutil'
+import { IEntity } from './interfaces'
+import { IGenericComponent } from './components/interfaces'
 
 const WALL_HEALTH = 4.0
 

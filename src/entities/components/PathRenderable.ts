@@ -1,5 +1,6 @@
-import { IPathRenderable, IEntity } from './common'
-import { path2 } from './path2'
+import { IEntity } from '../interfaces'
+import { path2 } from '../../path2'
+import { IPathRenderable } from './interfaces'
 
 export class PathRenderable implements IPathRenderable {
   path: path2
