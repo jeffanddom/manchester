@@ -1,10 +1,9 @@
 {
   "name": "yolorts",
   "description": "It's another game!",
-  "main": "index.js",
   "scripts": {
-    "start": "parcel index.html",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "parcel ./src/index.html",
+    "typecheck": "tsc -p . --noEmit"
   },
   "repository": {
     "type": "git",
@@ -12,6 +11,8 @@
   },
   "dependencies": {
     "@types/gl-matrix": "^2.4.5",
+    "@types/lodash": "^4.14.152",
+    "@types/uuid": "^8.0.0",
     "gl-matrix": "^3.3.0",
     "lodash": "^4.17.15",
     "parcel": "^1.12.4",

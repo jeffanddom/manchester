@@ -1,12 +1,12 @@
-import { TILE_SIZE } from '../constants'
-import { path2 } from '../path2'
-import { Entity } from './Entity'
-import { Transform } from './components/Transform'
-import { Damageable } from './components/Damageable'
-import { PathRenderable } from './components/PathRenderable'
-import { lerp } from '../mathutil'
-import { IEntity } from './interfaces'
-import { IGenericComponent } from './components/interfaces'
+import { TILE_SIZE } from '~/constants'
+import { path2 } from '~/path2'
+import { Entity } from '~/entities/Entity'
+import { Transform } from '~/entities/components/Transform'
+import { Damageable } from '~/entities/components/Damageable'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { lerp } from '~/mathutil'
+import { IEntity } from '~/entities/interfaces'
+import { IGenericComponent } from '~/entities/components/interfaces'
 
 const WALL_HEALTH = 4.0
 

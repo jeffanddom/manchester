@@ -1,5 +1,5 @@
-import { IGame } from '../interfaces'
-import { IEntity } from './interfaces'
+import { IGame } from '~/interfaces'
+import { IEntity } from '~/entities/interfaces'
 import {
   ITransform,
   IGenericComponent,
@@ -7,7 +7,7 @@ import {
   IPathRenderable,
   IDamageable,
   IDamager,
-} from './components/interfaces'
+} from '~/entities/components/interfaces'
 
 export class Entity implements IEntity {
   id?: string

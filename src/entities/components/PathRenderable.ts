@@ -1,6 +1,6 @@
-import { IEntity } from '../interfaces'
-import { path2 } from '../../path2'
-import { IPathRenderable } from './interfaces'
+import { path2 } from '~/path2'
+import { IEntity } from '~/entities/interfaces'
+import { IPathRenderable } from '~/entities/components/interfaces'
 
 export class PathRenderable implements IPathRenderable {
   path: path2

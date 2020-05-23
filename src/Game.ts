@@ -1,12 +1,12 @@
-import { EntityManager } from './entities/EntityManager'
-import { Playfield } from './Playfield'
-import { GameMap, IGame, IKeyboard } from './interfaces'
-import { TILE_SIZE } from './constants'
-import { makePlayer } from './entities/Player'
-import { ParticleEmitter } from './particles/ParticleEmitter'
-import { makeWall } from './entities/Wall'
+import { EntityManager } from '~/entities/EntityManager'
+import { Playfield } from '~/Playfield'
+import { GameMap, IGame, IKeyboard } from '~/interfaces'
+import { TILE_SIZE } from '~/constants'
+import { makePlayer } from '~/entities/Player'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { makeWall } from '~/entities/Wall'
 import { vec2 } from 'gl-matrix'
-import { Keyboard } from './Keyboard'
+import { Keyboard } from '~/Keyboard'
 
 export class Game implements IGame {
   playfield: Playfield

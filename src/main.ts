@@ -2,8 +2,8 @@ import {
   PLAYFIELD_TILE_HEIGHT,
   PLAYFIELD_TILE_WIDTH,
   TILE_SIZE,
-} from './constants'
-import { Game } from './game'
+} from '~/constants'
+import { Game } from '~/Game'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
