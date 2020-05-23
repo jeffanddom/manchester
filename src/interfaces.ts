@@ -1,5 +1,5 @@
-import { ParticleEmitter } from './particles/ParticleEmitter'
-import { IEntityManager } from './entities/interfaces'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { IEntityManager } from '~/entities/interfaces'
 
 export enum Terrain {
   Mountain,

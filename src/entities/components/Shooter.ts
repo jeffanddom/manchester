@@ -1,11 +1,11 @@
-import { IEntity } from '../interfaces'
-import { TILE_SIZE } from '../../constants'
-import { makeBullet } from '../Bullet'
-import { ParticleEmitter } from '../../particles/ParticleEmitter'
+import { IEntity } from '~/entities/interfaces'
+import { TILE_SIZE } from '~/constants'
+import { makeBullet } from '~/entities/Bullet'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { vec2 } from 'gl-matrix'
-import { radialTranslate2 } from '../../mathutil'
-import { IGame } from '../../interfaces'
-import { IGenericComponent } from './interfaces'
+import { radialTranslate2 } from '~/mathutil'
+import { IGame } from '~/interfaces'
+import { IGenericComponent } from '~/entities/components/interfaces'
 
 const keyMap = {
   fire: 32, // fire

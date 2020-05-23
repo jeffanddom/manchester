@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["es2017", "dom"],
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "baseUrl": ".",
+    "paths": {
+      "~*": ["./src/*"]
+    },
+    "skipLibCheck": true
+  },
+
+}

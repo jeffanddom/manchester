@@ -1,4 +1,4 @@
-import { IGame } from '../interfaces'
+import { IGame } from '~/interfaces'
 import {
   ITransform,
   IGenericComponent,
@@ -6,7 +6,7 @@ import {
   IDamageable,
   IDamager,
   IPathRenderable,
-} from './components/interfaces'
+} from '~/entities/components/interfaces'
 
 export interface IEntityManager {
   entities: { [key: string]: IEntity }

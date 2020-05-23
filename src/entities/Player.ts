@@ -1,13 +1,13 @@
-import { TILE_SIZE } from '../constants'
-import { Entity } from './Entity'
-import { path2 } from '../path2'
-import { Transform } from './components/Transform'
-import { Shooter } from './components/Shooter'
-import { WallCollider } from './components/WallCollider'
-import { PathRenderable } from './components/PathRenderable'
-import { IGame } from '../interfaces'
-import { radialTranslate2 } from '../mathutil'
-import { IEntity } from './interfaces'
+import { TILE_SIZE } from '~/constants'
+import { Entity } from '~/entities/Entity'
+import { path2 } from '~/path2'
+import { Transform } from '~/entities/components/Transform'
+import { Shooter } from '~/entities/components/Shooter'
+import { WallCollider } from '~/entities/components/WallCollider'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { IGame } from '~/interfaces'
+import { radialTranslate2 } from '~/mathutil'
+import { IEntity } from '~/entities/interfaces'
 
 const PLAYER_SPEED = TILE_SIZE / 16
 

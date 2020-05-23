@@ -1,7 +1,7 @@
-import { Terrain, Tile, IPlayfield } from './interfaces'
-import { TILE_SIZE } from './constants'
+import { Terrain, Tile, IPlayfield } from '~/interfaces'
+import { TILE_SIZE } from '~/constants'
 
-const terrainByEncoding = {
+const terrainByEncoding : {[key :string]: Terrain}= {
   '.': Terrain.Grass,
   '~': Terrain.River,
   '^': Terrain.Mountain,

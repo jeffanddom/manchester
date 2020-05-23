@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix'
-import { TILE_SIZE } from './constants'
+import { TILE_SIZE } from '~/constants'
 
 export const tileBox = (pos: vec2) => {
   return [

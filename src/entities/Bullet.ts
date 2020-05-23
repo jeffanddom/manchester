@@ -1,15 +1,15 @@
 import { vec2 } from 'gl-matrix'
-import { IGame } from '../interfaces'
-import { TILE_SIZE } from '../constants'
-import { path2 } from '../path2'
-import { Entity } from './Entity'
-import { Transform } from './components/Transform'
-import { WallCollider } from './components/WallCollider'
-import { PathRenderable } from './components/PathRenderable'
-import { ParticleEmitter } from '../particles/ParticleEmitter'
-import { radialTranslate2 } from '../mathutil'
-import { IEntity } from './interfaces'
-import { IGenericComponent, IDamager } from './components/interfaces'
+import { IGame } from '~/interfaces'
+import { TILE_SIZE } from '~/constants'
+import { path2 } from '~/path2'
+import { Entity } from '~/entities/Entity'
+import { Transform } from '~/entities/components/Transform'
+import { WallCollider } from '~/entities/components/WallCollider'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { radialTranslate2 } from '~/mathutil'
+import { IEntity } from '~/entities/interfaces'
+import { IGenericComponent, IDamager } from '~/entities/components/interfaces'
 
 const BULLET_SPEED = TILE_SIZE / 8
 const TIME_TO_LIVE = 1000
@@ -65,7 +65,7 @@ class BulletMover implements IGenericComponent {
 class BulletDamager implements IDamager {
   damageValue: number
 
-  constructor(damageValue) {
+  constructor(damageValue : number) {
     this.damageValue = damageValue
   }
 

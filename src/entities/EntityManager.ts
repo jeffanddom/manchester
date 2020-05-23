@@ -1,6 +1,7 @@
 import { v4 } from 'uuid'
-import { IGame } from '../interfaces'
-import { IEntity, IEntityManager } from './interfaces'
+
+import { IGame } from '~/interfaces'
+import { IEntity, IEntityManager } from '~/entities/interfaces'
 
 export class EntityManager implements IEntityManager {
   entities: { [key: string]: IEntity }
