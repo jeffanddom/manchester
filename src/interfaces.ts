@@ -27,11 +27,9 @@ export interface GameMap {
 }
 
 export interface IPlayfield {
-  tileHeight: () => number
-  tileWidth: () => number
   minWorldPos: () => vec2
   maxWorldPos: () => vec2
-  dimensions: () => [number, number]
+  dimensions: () => vec2
 
   render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }

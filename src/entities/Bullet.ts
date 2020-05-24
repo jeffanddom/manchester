@@ -87,7 +87,7 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
   const e = new Entity()
 
   e.transform = new Transform()
-  e.transform.position = vec2.copy(vec2.create(), position)
+  e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
   e.wallCollider = new WallCollider()

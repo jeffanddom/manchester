@@ -19,7 +19,7 @@ export class Game implements IGame {
   player: IEntity
   camera: Camera
 
-  constructor(map: GameMap, viewportSize: [number, number]) {
+  constructor(map: GameMap, viewportSize: vec2) {
     this.playfield = new Playfield(map.playfield)
     this.entities = new EntityManager()
     this.keyboard = new Keyboard()

@@ -1,6 +1,6 @@
 import { Direction, IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
-import { tileBox, equals, tileCoords } from '~/tileMath'
+import { tileBox, tileCoords } from '~/tileMath'
 import { vec2 } from 'gl-matrix'
 import { IEntity } from '~/entities/interfaces'
 import { IWallCollider } from '~/entities/components/interfaces'
@@ -62,37 +62,37 @@ export class WallCollider implements IWallCollider {
         case Direction.North:
           return (
             collided.find((c) =>
-              equals(tileCoords(c[0].transform.position), [
-                coords[0],
-                coords[1] - 1,
-              ]),
+              vec2.equals(
+                tileCoords(c[0].transform.position),
+                vec2.fromValues(coords[0], coords[1] - 1),
+              ),
             ) === undefined
           )
         case Direction.South:
           return (
             collided.find((c) =>
-              equals(tileCoords(c[0].transform.position), [
-                coords[0],
-                coords[1] + 1,
-              ]),
+              vec2.equals(
+                tileCoords(c[0].transform.position),
+                vec2.fromValues(coords[0], coords[1] + 1),
+              ),
             ) === undefined
           )
         case Direction.East:
           return (
             collided.find((c) =>
-              equals(tileCoords(c[0].transform.position), [
-                coords[0] + 1,
-                coords[1],
-              ]),
+              vec2.equals(
+                tileCoords(c[0].transform.position),
+                vec2.fromValues(coords[0] + 1, coords[1]),
+              ),
             ) === undefined
           )
         case Direction.West:
           return (
             collided.find((c) =>
-              equals(tileCoords(c[0].transform.position), [
-                coords[0] - 1,
-                coords[1],
-              ]),
+              vec2.equals(
+                tileCoords(c[0].transform.position),
+                vec2.fromValues(coords[0] - 1, coords[1]),
+              ),
             ) === undefined
           )
       }

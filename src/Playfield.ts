@@ -34,12 +34,8 @@ export class Playfield implements IPlayfield {
     }
   }
 
-  tileHeight() {
-    return this.tiles.length
-  }
-
-  tileWidth() {
-    return this.tiles[0].length
+  tileDimensions(): vec2 {
+    return vec2.fromValues(this.tiles[0].length, this.tiles.length)
   }
 
   minWorldPos(): vec2 {
@@ -55,15 +51,17 @@ export class Playfield implements IPlayfield {
     )
   }
 
-  dimensions(): [number, number] {
-    return [this.tileWidth() * TILE_SIZE, this.tileHeight() * TILE_SIZE]
+  dimensions(): vec2 {
+    return vec2.scale(vec2.create(), this.tileDimensions(), TILE_SIZE)
   }
 
   render(ctx: CanvasRenderingContext2D, camera: Camera) {
+    const [tileWidth, tileHeight] = this.tileDimensions()
+
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
-    for (let i = 0; i < this.tileHeight(); i++) {
+    for (let i = 0; i < tileHeight; i++) {
       const y = i * TILE_SIZE
-      for (let j = 0; j < this.tileWidth(); j++) {
+      for (let j = 0; j < tileWidth; j++) {
         const x = j * TILE_SIZE
         switch (this.tiles[i][j].type) {
           case Terrain.Grass:
