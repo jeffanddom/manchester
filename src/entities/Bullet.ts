@@ -12,7 +12,7 @@ import { IEntity } from '~/entities/interfaces'
 import { IGenericComponent, IDamager } from '~/entities/components/interfaces'
 
 const BULLET_SPEED = TILE_SIZE / 8
-const TIME_TO_LIVE = 1000
+const TIME_TO_LIVE = 2000
 
 class BulletMover implements IGenericComponent {
   spawnedAt: number
@@ -45,6 +45,8 @@ class BulletMover implements IGenericComponent {
       })
       game.emitters.push(explosion)
 
+      game.camera.shake()
+
       return
     }
 
@@ -65,7 +67,7 @@ class BulletMover implements IGenericComponent {
 class BulletDamager implements IDamager {
   damageValue: number
 
-  constructor(damageValue : number) {
+  constructor(damageValue: number) {
     this.damageValue = damageValue
   }
 
@@ -85,7 +87,7 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
   const e = new Entity()
 
   e.transform = new Transform()
-  e.transform.position = vec2.copy(vec2.create(), position)
+  e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
   e.wallCollider = new WallCollider()

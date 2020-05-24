@@ -45,6 +45,8 @@ export class Shooter implements IGenericComponent {
         })
         game.emitters.push(muzzleFlash)
 
+        game.camera.shake()
+
         this.lastFiredAt = Date.now()
       }
     }

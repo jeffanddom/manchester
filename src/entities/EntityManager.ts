@@ -2,6 +2,7 @@ import { v4 } from 'uuid'
 
 import { IGame } from '~/interfaces'
 import { IEntity, IEntityManager } from '~/entities/interfaces'
+import { Camera } from '~/Camera'
 
 export class EntityManager implements IEntityManager {
   entities: { [key: string]: IEntity }
@@ -22,9 +23,9 @@ export class EntityManager implements IEntityManager {
     this.toDelete = []
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  render(ctx: CanvasRenderingContext2D, camera: Camera) {
     Object.keys(this.entities).forEach((id) => {
-      this.entities[id].render(ctx)
+      this.entities[id].render(ctx, camera)
     })
   }
 

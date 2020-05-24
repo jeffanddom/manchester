@@ -1,7 +1,9 @@
 import { Terrain, Tile, IPlayfield } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
+import { vec2 } from 'gl-matrix'
+import { Camera } from '~/Camera'
 
-const terrainByEncoding : {[key :string]: Terrain}= {
+const terrainByEncoding: { [key: string]: Terrain } = {
   '.': Terrain.Grass,
   '~': Terrain.River,
   '^': Terrain.Mountain,
@@ -32,27 +34,36 @@ export class Playfield implements IPlayfield {
     }
   }
 
-  height() {
+  tileHeight() {
     return this.tiles.length
   }
 
-  pixelHeight() {
-    return this.height() * TILE_SIZE
-  }
-
-  width() {
+  tileWidth() {
     return this.tiles[0].length
   }
 
-  pixelWidth() {
-    return this.width() * TILE_SIZE
+  minWorldPos(): vec2 {
+    return vec2.fromValues(0, 0)
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  maxWorldPos(): vec2 {
+    const d = this.dimensions()
+    return vec2.add(
+      vec2.create(),
+      this.minWorldPos(),
+      vec2.fromValues(d[0], d[1]),
+    )
+  }
+
+  dimensions(): [number, number] {
+    return [this.tileWidth() * TILE_SIZE, this.tileHeight() * TILE_SIZE]
+  }
+
+  render(ctx: CanvasRenderingContext2D, camera: Camera) {
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
-    for (let i = 0; i < this.height(); i++) {
+    for (let i = 0; i < this.tileHeight(); i++) {
       const y = i * TILE_SIZE
-      for (let j = 0; j < this.width(); j++) {
+      for (let j = 0; j < this.tileWidth(); j++) {
         const x = j * TILE_SIZE
         switch (this.tiles[i][j].type) {
           case Terrain.Grass:
@@ -68,7 +79,9 @@ export class Playfield implements IPlayfield {
             ctx.fillStyle = '#FF00FF'
             break
         }
-        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE)
+
+        const renderPos = camera.toRenderPos(vec2.fromValues(x, y))
+        ctx.fillRect(renderPos[0], renderPos[1], TILE_SIZE, TILE_SIZE)
       }
     }
   }

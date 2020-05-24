@@ -12,6 +12,6 @@ export class Transform {
   }
 
   update() {
-    this.previousPosition = vec2.copy(vec2.create(), this.position)
+    this.previousPosition = vec2.clone(this.position)
   }
 }

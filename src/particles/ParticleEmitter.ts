@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
 import { radialTranslate2, lerp } from '~/mathutil'
+import { Camera } from '~/Camera'
 
 interface Particle {
   position: vec2
@@ -42,7 +43,7 @@ export class ParticleEmitter {
     this.dead = false
     this.startTime = Date.now()
 
-    this.position = vec2.copy(vec2.create(), params.position)
+    this.position = vec2.clone(params.position)
     this.particleRadius = params.particleRadius
     this.particleRate = params.particleRate
     this.particleLifespan = params.particleLifespan
@@ -84,7 +85,7 @@ export class ParticleEmitter {
       this.potentialParticles += this.particleRate
       while (this.potentialParticles >= 1) {
         this.particles.push({
-          position: vec2.copy(vec2.create(), this.position),
+          position: vec2.clone(this.position),
           color: sample(this.colors),
           radius: lerp(0, this.particleRadius, Math.random()), // TODO: add min radius
           orientation: lerp(
@@ -99,11 +100,13 @@ export class ParticleEmitter {
     }
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
+  render(ctx: CanvasRenderingContext2D, camera: Camera): void {
     this.particles.forEach((p) => {
+      const renderPos = camera.toRenderPos(p.position)
+
       ctx.fillStyle = p.color
       ctx.beginPath()
-      ctx.arc(p.position[0], p.position[1], p.radius, 0, Math.PI * 2)
+      ctx.arc(renderPos[0], renderPos[1], p.radius, 0, Math.PI * 2)
       ctx.fill()
     })
   }
