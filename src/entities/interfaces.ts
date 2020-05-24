@@ -7,6 +7,7 @@ import {
   IDamager,
   IPathRenderable,
 } from '~/entities/components/interfaces'
+import { Camera } from '~/Camera'
 
 export interface IEntityManager {
   entities: { [key: string]: IEntity }
@@ -15,7 +16,7 @@ export interface IEntityManager {
   markForDeletion: (e: IEntity) => void
 
   update: (game: IGame) => void
-  render: (ctx: CanvasRenderingContext2D) => void
+  render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }
 
 export interface IEntity {
@@ -31,5 +32,5 @@ export interface IEntity {
   pathRenderable?: IPathRenderable
 
   update: (g: IGame) => void
-  render: (ctx: CanvasRenderingContext2D) => void
+  render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }

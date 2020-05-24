@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
 import { radialTranslate2, lerp } from '~/mathutil'
+import { Camera } from '~/Camera'
 
 interface Particle {
   position: vec2
@@ -99,11 +100,13 @@ export class ParticleEmitter {
     }
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
+  render(ctx: CanvasRenderingContext2D, camera: Camera): void {
     this.particles.forEach((p) => {
+      const renderPos = camera.toRenderPos(p.position)
+
       ctx.fillStyle = p.color
       ctx.beginPath()
-      ctx.arc(p.position[0], p.position[1], p.radius, 0, Math.PI * 2)
+      ctx.arc(renderPos[0], renderPos[1], p.radius, 0, Math.PI * 2)
       ctx.fill()
     })
   }

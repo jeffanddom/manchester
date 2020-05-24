@@ -1,5 +1,7 @@
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { IEntityManager } from '~/entities/interfaces'
+import { Camera } from '~/Camera'
+import { vec2 } from 'gl-matrix'
 
 export enum Terrain {
   Mountain,
@@ -25,12 +27,13 @@ export interface GameMap {
 }
 
 export interface IPlayfield {
-  height: () => number
-  width: () => number
-  pixelHeight: () => number
-  pixelWidth: () => number
+  tileHeight: () => number
+  tileWidth: () => number
+  minWorldPos: () => vec2
+  maxWorldPos: () => vec2
+  dimensions: () => [number, number]
 
-  render: (ctx: CanvasRenderingContext2D) => void
+  render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }
 
 export interface IKeyboard {
@@ -42,4 +45,5 @@ export interface IGame {
   entities: IEntityManager
   keyboard: IKeyboard
   emitters: ParticleEmitter[]
+  camera: Camera
 }

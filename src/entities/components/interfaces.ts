@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { IEntity } from '~/entities/interfaces'
 import { IGame } from '~/interfaces'
+import { Camera } from '~/Camera'
 
 export interface ITransform {
   previousPosition: vec2
@@ -24,7 +25,7 @@ export interface IGenericComponent {
 export interface IPathRenderable {
   fillStyle: string
 
-  render(e: IEntity, ctx: CanvasRenderingContext2D): void
+  render(e: IEntity, ctx: CanvasRenderingContext2D, camera: Camera): void
 }
 
 export interface IDamageable extends IGenericComponent {

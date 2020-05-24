@@ -8,8 +8,9 @@ import { PathRenderable } from '~/entities/components/PathRenderable'
 import { IGame } from '~/interfaces'
 import { radialTranslate2 } from '~/mathutil'
 import { IEntity } from '~/entities/interfaces'
+import { PlayfieldClamper } from './components/PlayfieldClamper'
 
-const PLAYER_SPEED = TILE_SIZE / 16
+const PLAYER_SPEED = TILE_SIZE / 4
 
 const keyMap = {
   up: 38, // UP
@@ -45,6 +46,7 @@ export const makePlayer = (): IEntity => {
   e.mover = new PlayerMover()
   e.shooter = new Shooter()
   e.wallCollider = new WallCollider()
+  e.playfieldClamper = new PlayfieldClamper()
   e.pathRenderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],

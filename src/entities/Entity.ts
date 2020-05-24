@@ -8,6 +8,7 @@ import {
   IDamageable,
   IDamager,
 } from '~/entities/components/interfaces'
+import { Camera } from '~/Camera'
 
 export class Entity implements IEntity {
   id?: string
@@ -19,6 +20,7 @@ export class Entity implements IEntity {
   pathRenderable?: IPathRenderable
   damageable?: IDamageable
   damager?: IDamager
+  playfieldClamper?: IGenericComponent
   prerender?: IGenericComponent
 
   constructor() {}
@@ -32,11 +34,15 @@ export class Entity implements IEntity {
     this.damager?.update(this, game)
     this.damageable?.update(this, game)
 
-    // This should be the last component to update
+    // Should go after any business logic that modifies the
+    // transform.
+    this.playfieldClamper?.update(this, game)
+
+    // Should be the very last thing to update.
     this.prerender?.update(this, game)
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
-    this.pathRenderable?.render(this, ctx)
+  render(ctx: CanvasRenderingContext2D, camera: Camera): void {
+    this.pathRenderable?.render(this, ctx, camera)
   }
 }
