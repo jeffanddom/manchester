@@ -15,7 +15,7 @@ export interface IEntityManager {
   register: (e: IEntity) => void
   markForDeletion: (e: IEntity) => void
 
-  update: (game: IGame) => void
+  update: (game: IGame, dt: number) => void
   render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }
 
@@ -31,6 +31,6 @@ export interface IEntity {
   prerender?: IGenericComponent
   pathRenderable?: IPathRenderable
 
-  update: (g: IGame) => void
+  update: (g: IGame, dt: number) => void
   render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }

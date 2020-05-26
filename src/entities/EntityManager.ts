@@ -14,9 +14,9 @@ export class EntityManager implements IEntityManager {
   }
 
   // TODO: order by object type
-  update(g: IGame) {
+  update(g: IGame, dt: number) {
     Object.keys(this.entities).forEach((id) => {
-      this.entities[id].update(g)
+      this.entities[id].update(g, dt)
     })
 
     this.toDelete.forEach((id) => delete this.entities[id])

@@ -8,8 +8,8 @@ export class Camera {
   worldDimensions: vec2
 
   // shake stuff
-  shakeStartTime: number
-  shakeLastMoveTime: number
+  ttl: number
+  cooldownTtl: number
   shakeOffset: vec2
 
   constructor(viewportSize: vec2, minWorldPos: vec2, worldDimensions: vec2) {
@@ -18,37 +18,33 @@ export class Camera {
     this.minWorldPos = minWorldPos
     this.worldDimensions = worldDimensions
 
-    this.shakeStartTime = 0
-    this.shakeLastMoveTime = 0
+    this.ttl = 0
+    this.cooldownTtl = 0
     this.shakeOffset = vec2.fromValues(0, 0)
   }
 
   shake(): void {
-    this.shakeStartTime = Date.now()
-    this.shakeLastMoveTime = 0
+    this.ttl = 0.25
+    this.cooldownTtl = 0
   }
 
-  update(): void {
-    if (this.shakeStartTime === 0) {
-      return
-    }
-
-    const now = Date.now()
-
-    if (this.shakeStartTime < now - 250) {
+  update(dt: number): void {
+    this.ttl -= dt
+    if (this.ttl <= 0) {
+      this.ttl = 0
       vec2.zero(this.shakeOffset)
-      this.shakeStartTime = 0
       return
     }
 
-    if (this.shakeLastMoveTime < now - 1000 / 60) {
+    this.cooldownTtl -= dt
+    if (this.cooldownTtl <= 0) {
+      this.cooldownTtl += 1 / 60
       this.shakeOffset = sample([
         vec2.fromValues(-3, 0),
         vec2.fromValues(3, 0),
         vec2.fromValues(0, -3),
         vec2.fromValues(0, 3),
       ])
-      this.shakeLastMoveTime = now
     }
   }
 

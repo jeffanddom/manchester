@@ -9,7 +9,7 @@ export class Damageable implements IDamageable {
     this.health = health
   }
 
-  update(entity: IEntity, game: IGame) {
+  update(entity: IEntity, game: IGame, _dt: number) {
     if (this.health <= 0) {
       game.entities.markForDeletion(entity)
     }

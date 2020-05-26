@@ -54,12 +54,24 @@ const map = {
 `,
 }
 
+/**
+ * Return the current timestamp in seconds, with sub-millisecond precision.
+ */
+const curTimeSeconds = (): number => {
+  return window.performance.now() / 1000
+}
+
 const ctx = canvas.getContext('2d')
 const game = new Game(map, viewportDimensions)
+let prevFrameTime = curTimeSeconds()
 
 function gameLoop() {
   requestAnimationFrame(gameLoop)
-  game.update()
+  const now = curTimeSeconds()
+  const dt = now - prevFrameTime
+  prevFrameTime = now
+
+  game.update(dt)
   game.render(ctx)
 }
 

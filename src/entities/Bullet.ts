@@ -11,17 +11,17 @@ import { radialTranslate2 } from '~/mathutil'
 import { IEntity } from '~/entities/interfaces'
 import { IGenericComponent, IDamager } from '~/entities/components/interfaces'
 
-const BULLET_SPEED = TILE_SIZE / 8
-const TIME_TO_LIVE = 2000
+const BULLET_SPEED = 60 * (TILE_SIZE / 8)
+const TIME_TO_LIVE = 2
 
 class BulletMover implements IGenericComponent {
-  spawnedAt: number
+  ttl: number
 
   constructor() {
-    this.spawnedAt = Date.now()
+    this.ttl = TIME_TO_LIVE
   }
 
-  update(entity: IEntity, game: IGame): void {
+  update(entity: IEntity, game: IGame, dt: number): void {
     if (entity.wallCollider.hitLastFrame) {
       game.entities.markForDeletion(entity)
 
@@ -33,12 +33,12 @@ class BulletMover implements IGenericComponent {
       )
 
       const explosion = new ParticleEmitter({
+        spawnTtl: 0.2,
         position: emitterPos,
-        particleLifespan: 100,
+        particleTtl: 0.1,
         particleRadius: 10,
-        particleSpeedRange: [1.5, 2.5],
-        particleRate: 4.5,
-        emitterLifespan: 200,
+        particleSpeedRange: [90, 125],
+        particleRate: 270,
         orientation: 0,
         arc: Math.PI * 2,
         colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
@@ -50,7 +50,8 @@ class BulletMover implements IGenericComponent {
       return
     }
 
-    if (Date.now() - this.spawnedAt > TIME_TO_LIVE) {
+    this.ttl -= dt
+    if (this.ttl <= 0) {
       game.entities.markForDeletion(entity)
       return
     }
@@ -59,7 +60,7 @@ class BulletMover implements IGenericComponent {
       entity.transform.position,
       entity.transform.position,
       entity.transform.orientation,
-      BULLET_SPEED,
+      BULLET_SPEED * dt,
     )
   }
 }
@@ -71,7 +72,7 @@ class BulletDamager implements IDamager {
     this.damageValue = damageValue
   }
 
-  update(entity: IEntity) {
+  update(entity: IEntity, _game: IGame, _dt: number): void {
     const collided = entity.wallCollider.collidedWalls
     collided.forEach((c) => {
       if (c.damageable === undefined) {
