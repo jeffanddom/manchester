@@ -1,18 +1,18 @@
-import {
-  VIEWPORT_TILE_HEIGHT,
-  VIEWPORT_TILE_WIDTH,
-  TILE_SIZE,
-} from '~/constants'
+import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
+import { vec2 } from 'gl-matrix'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
 
-const viewportWidth = TILE_SIZE * VIEWPORT_TILE_WIDTH
-const viewportHeight = TILE_SIZE * VIEWPORT_TILE_HEIGHT
+const viewportDimensions = vec2.scale(
+  vec2.create(),
+  VIEWPORT_TILE_DIMENSIONS,
+  TILE_SIZE,
+)
 
-canvas.width = viewportWidth
-canvas.height = viewportHeight
+canvas.width = viewportDimensions[0]
+canvas.height = viewportDimensions[1]
 
 const map = {
   playfield: `
@@ -55,7 +55,7 @@ const map = {
 }
 
 const ctx = canvas.getContext('2d')
-const game = new Game(map, [viewportWidth, viewportHeight])
+const game = new Game(map, viewportDimensions)
 
 function gameLoop() {
   requestAnimationFrame(gameLoop)

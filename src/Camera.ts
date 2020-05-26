@@ -3,20 +3,16 @@ import { sample } from 'lodash'
 
 export class Camera {
   position: vec2
-  viewportSize: [number, number]
+  viewportSize: vec2
   minWorldPos: vec2
-  worldDimensions: [number, number]
+  worldDimensions: vec2
 
   // shake stuff
   shakeStartTime: number
   shakeLastMoveTime: number
   shakeOffset: vec2
 
-  constructor(
-    viewportSize: [number, number],
-    minWorldPos: vec2,
-    worldDimensions: [number, number],
-  ) {
+  constructor(viewportSize: vec2, minWorldPos: vec2, worldDimensions: vec2) {
     this.position = vec2.create()
     this.viewportSize = viewportSize
     this.minWorldPos = minWorldPos
@@ -57,17 +53,14 @@ export class Camera {
   }
 
   maxWorldPos(): vec2 {
-    return vec2.fromValues(
-      this.minWorldPos[0] + this.worldDimensions[0],
-      this.minWorldPos[1] + this.worldDimensions[1],
-    )
+    return vec2.add(vec2.create(), this.minWorldPos, this.worldDimensions)
   }
 
   centerAt(worldPos: vec2): void {
     vec2.sub(
       this.position,
       worldPos,
-      vec2.fromValues(this.viewportSize[0] / 2, this.viewportSize[1] / 2),
+      vec2.scale(vec2.create(), this.viewportSize, 0.5),
     )
 
     vec2.max(this.position, this.position, this.minWorldPos)
@@ -75,11 +68,7 @@ export class Camera {
     vec2.min(
       this.position,
       this.position,
-      vec2.sub(
-        vec2.create(),
-        this.maxWorldPos(),
-        vec2.fromValues(this.viewportSize[0], this.viewportSize[1]),
-      ),
+      vec2.sub(vec2.create(), this.maxWorldPos(), this.viewportSize),
     )
   }
 
@@ -89,6 +78,6 @@ export class Camera {
       vec2.sub(vec2.create(), worldPos, this.position),
       this.shakeOffset,
     )
-    return vec2.fromValues(Math.floor(renderPos[0]), Math.floor(renderPos[1]))
+    return vec2.floor(renderPos, renderPos)
   }
 }

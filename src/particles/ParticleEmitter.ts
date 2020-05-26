@@ -43,7 +43,7 @@ export class ParticleEmitter {
     this.dead = false
     this.startTime = Date.now()
 
-    this.position = vec2.copy(vec2.create(), params.position)
+    this.position = vec2.clone(params.position)
     this.particleRadius = params.particleRadius
     this.particleRate = params.particleRate
     this.particleLifespan = params.particleLifespan
@@ -85,7 +85,7 @@ export class ParticleEmitter {
       this.potentialParticles += this.particleRate
       while (this.potentialParticles >= 1) {
         this.particles.push({
-          position: vec2.copy(vec2.create(), this.position),
+          position: vec2.clone(this.position),
           color: sample(this.colors),
           radius: lerp(0, this.particleRadius, Math.random()), // TODO: add min radius
           orientation: lerp(
