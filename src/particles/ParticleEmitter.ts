@@ -9,7 +9,8 @@ interface Particle {
   color: string
   radius: number
   orientation: number
-  spawnTime: number
+  speed: number
+  ttl: number
 }
 
 export class ParticleEmitter {
@@ -18,71 +19,63 @@ export class ParticleEmitter {
   particles: Particle[] = []
   potentialParticles: number
 
+  spawnTtl: number
   position: vec2
   particleRate: number
   particleRadius: number
-  particleLifespan: number
+  particleTtl: number
   particleSpeedRange: [number, number]
-  emitterLifespan: number
   orientation: number
   arc: number
   colors: string[]
 
   constructor(params: {
+    spawnTtl: number
     position: vec2
-    particleRate: number
+    particleRate: number // particles per second
     particleRadius: number
-    particleLifespan: number
+    particleTtl: number
     particleSpeedRange: [number, number]
-    emitterLifespan: number
     arc: number
     orientation: number
     colors: string[]
   }) {
     this.potentialParticles = 0
     this.dead = false
-    this.startTime = Date.now()
 
+    this.spawnTtl = params.spawnTtl
     this.position = vec2.clone(params.position)
     this.particleRadius = params.particleRadius
     this.particleRate = params.particleRate
-    this.particleLifespan = params.particleLifespan
+    this.particleTtl = params.particleTtl
     this.particleSpeedRange = params.particleSpeedRange
-    this.emitterLifespan = params.emitterLifespan
     this.arc = params.arc
     this.orientation = params.orientation
     this.colors = params.colors
   }
 
-  update() {
-    const timestamp = Date.now()
+  update(dt: number) {
+    this.spawnTtl -= dt
+
+    if (this.spawnTtl <= 0 && this.particles.length === 0) {
+      this.dead = true
+      return
+    }
+
+    // Age particles
+    this.particles.forEach((p) => (p.ttl -= dt))
 
     // Kill old particles
-    this.particles = this.particles.filter((p) => {
-      return p.spawnTime + this.particleLifespan > timestamp
-    })
+    this.particles = this.particles.filter((p) => p.ttl > 0)
 
-    // Move existing particles
+    // Move particles
     this.particles.forEach((p) => {
-      radialTranslate2(
-        p.position,
-        p.position,
-        p.orientation,
-        lerp(
-          this.particleSpeedRange[0],
-          this.particleSpeedRange[1],
-          Math.random(),
-        ),
-      )
+      radialTranslate2(p.position, p.position, p.orientation, p.speed * dt)
     })
 
-    if (this.startTime + this.emitterLifespan < timestamp) {
-      if (this.particles.length === 0) {
-        this.dead = true
-      }
-    } else {
-      // Spawn new particles
-      this.potentialParticles += this.particleRate
+    // Spawn new particles
+    if (this.spawnTtl > 0) {
+      this.potentialParticles += this.particleRate * dt
       while (this.potentialParticles >= 1) {
         this.particles.push({
           position: vec2.clone(this.position),
@@ -93,7 +86,12 @@ export class ParticleEmitter {
             this.orientation + this.arc / 2,
             Math.random(),
           ),
-          spawnTime: timestamp,
+          speed: lerp(
+            this.particleSpeedRange[0],
+            this.particleSpeedRange[1],
+            Math.random(),
+          ),
+          ttl: this.particleTtl,
         })
         this.potentialParticles -= 1
       }

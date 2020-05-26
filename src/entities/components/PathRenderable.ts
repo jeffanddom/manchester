@@ -2,7 +2,6 @@ import { path2 } from '~/path2'
 import { IEntity } from '~/entities/interfaces'
 import { IPathRenderable } from '~/entities/components/interfaces'
 import { Camera } from '~/Camera'
-import { vec2 } from 'gl-matrix'
 
 export class PathRenderable implements IPathRenderable {
   path: path2

@@ -63,14 +63,14 @@ export class Game implements IGame {
     }
   }
 
-  update() {
-    this.entities.update(this)
+  update(dt: number) {
+    this.entities.update(this, dt)
 
     this.emitters = this.emitters.filter((e) => !e.dead)
-    this.emitters.forEach((e) => e.update())
+    this.emitters.forEach((e) => e.update(dt))
 
     this.camera.centerAt(this.player.transform.position)
-    this.camera.update()
+    this.camera.update(dt)
   }
 
   render(ctx: CanvasRenderingContext2D) {

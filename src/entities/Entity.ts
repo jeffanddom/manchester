@@ -25,21 +25,21 @@ export class Entity implements IEntity {
 
   constructor() {}
 
-  update(game: IGame) {
+  update(game: IGame, dt: number) {
     this.transform?.update()
-    this.mover?.update(this, game)
-    this.wall?.update(this, game)
+    this.mover?.update(this, game, dt)
+    this.wall?.update(this, game, dt)
     this.wallCollider?.update(this, game)
-    this.shooter?.update(this, game)
-    this.damager?.update(this, game)
-    this.damageable?.update(this, game)
+    this.shooter?.update(this, game, dt)
+    this.damager?.update(this, game, dt)
+    this.damageable?.update(this, game, dt)
 
     // Should go after any business logic that modifies the
     // transform.
-    this.playfieldClamper?.update(this, game)
+    this.playfieldClamper?.update(this, game, dt)
 
     // Should be the very last thing to update.
-    this.prerender?.update(this, game)
+    this.prerender?.update(this, game, dt)
   }
 
   render(ctx: CanvasRenderingContext2D, camera: Camera): void {

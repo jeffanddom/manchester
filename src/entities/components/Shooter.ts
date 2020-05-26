@@ -11,44 +11,49 @@ const keyMap = {
   fire: 32, // fire
 }
 
+const COOLDOWN_PERIOD = 0.25
+
 export class Shooter implements IGenericComponent {
-  lastFiredAt: number
+  cooldownTtl: number
 
   constructor() {
-    this.lastFiredAt = -1
+    this.cooldownTtl = 0
   }
 
-  update(entity: IEntity, game: IGame) {
+  update(entity: IEntity, game: IGame, dt: number) {
+    if (this.cooldownTtl > 0) {
+      this.cooldownTtl -= dt
+      return
+    }
+
     if (game.keyboard.downKeys.has(keyMap.fire)) {
-      if (Date.now() - this.lastFiredAt > 250) {
-        const bulletPos = radialTranslate2(
-          vec2.create(),
-          entity.transform.position,
-          entity.transform.orientation,
-          TILE_SIZE * 0.75,
-        )
+      this.cooldownTtl = COOLDOWN_PERIOD
 
-        game.entities.register(
-          makeBullet(bulletPos, entity.transform.orientation),
-        )
+      const bulletPos = radialTranslate2(
+        vec2.create(),
+        entity.transform.position,
+        entity.transform.orientation,
+        TILE_SIZE * 0.75,
+      )
 
-        const muzzleFlash = new ParticleEmitter({
-          position: bulletPos,
-          particleLifespan: 50,
-          particleRadius: 3,
-          particleRate: 4,
-          particleSpeedRange: [2, 8],
-          emitterLifespan: 100,
-          orientation: entity.transform.orientation,
-          arc: Math.PI / 4,
-          colors: ['#FF9933', '#CCC', '#FFF'],
-        })
-        game.emitters.push(muzzleFlash)
+      game.entities.register(
+        makeBullet(bulletPos, entity.transform.orientation),
+      )
 
-        game.camera.shake()
+      const muzzleFlash = new ParticleEmitter({
+        spawnTtl: 0.1,
+        position: bulletPos,
+        particleTtl: 0.065,
+        particleRadius: 3,
+        particleRate: 240,
+        particleSpeedRange: [120, 280],
+        orientation: entity.transform.orientation,
+        arc: Math.PI / 4,
+        colors: ['#FF9933', '#CCC', '#FFF'],
+      })
+      game.emitters.push(muzzleFlash)
 
-        this.lastFiredAt = Date.now()
-      }
+      game.camera.shake()
     }
   }
 }

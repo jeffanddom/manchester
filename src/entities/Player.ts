@@ -10,7 +10,8 @@ import { radialTranslate2 } from '~/mathutil'
 import { IEntity } from '~/entities/interfaces'
 import { PlayfieldClamper } from './components/PlayfieldClamper'
 
-const PLAYER_SPEED = TILE_SIZE / 4
+const PLAYER_SPEED = 60 * (TILE_SIZE / 4)
+const PLAYER_ROT_SPEED = 1.25 * 2 * Math.PI // 1.5 rotations per second
 
 const keyMap = {
   up: 38, // UP
@@ -21,21 +22,21 @@ const keyMap = {
 }
 
 export class PlayerMover {
-  update(entity: IEntity, game: IGame) {
+  update(entity: IEntity, game: IGame, dt: number) {
     if (game.keyboard.downKeys.has(keyMap.up)) {
       radialTranslate2(
         entity.transform.position,
         entity.transform.position,
         entity.transform.orientation,
-        PLAYER_SPEED,
+        PLAYER_SPEED * dt,
       )
     }
 
     if (game.keyboard.downKeys.has(keyMap.right)) {
-      entity.transform.orientation += 0.1
+      entity.transform.orientation += PLAYER_ROT_SPEED * dt
     }
     if (game.keyboard.downKeys.has(keyMap.left)) {
-      entity.transform.orientation -= 0.1
+      entity.transform.orientation -= PLAYER_ROT_SPEED * dt
     }
   }
 }

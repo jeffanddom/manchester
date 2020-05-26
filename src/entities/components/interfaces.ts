@@ -19,7 +19,7 @@ export interface IWallCollider {
 }
 
 export interface IGenericComponent {
-  update(e: IEntity, g: IGame): void
+  update(e: IEntity, g: IGame, dt: number): void
 }
 
 export interface IPathRenderable {
