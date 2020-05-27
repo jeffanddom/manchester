@@ -5,9 +5,9 @@ export interface Config {
   particleLifespan: number
   orientation: number
   arc: number
-
-  // particleRate: number
-  // particleRadius: number
-  // particleSpeedRange: [number, number]
-  // colors: string[]
+  particleRate: number
+  particleRadius: number
+  particleSpeedMin: number
+  particleSpeedMax: number
+  colors: string
 }

@@ -2,26 +2,16 @@ import * as React from 'react'
 
 import { Config } from '~/tools/particles/interfaces'
 
-interface ConfigWithBit extends Config {
-  dirty: boolean
-}
-
 export const Controls = (props: {
   initialConfig: Config
   updateGlobalConfig: (c: Config) => void
 }) => {
-  const [config, setConfig] = React.useState<ConfigWithBit>({
-    ...props.initialConfig,
-    dirty: false,
-  })
+  const [config, setConfig] = React.useState(props.initialConfig)
 
   const updateConfig = (key: string, value: any) => {
-    setConfig({ ...config, [key]: value, dirty: true })
-  }
-
-  const publishConfig = () => {
-    props.updateGlobalConfig(config)
-    setConfig({ ...config, dirty: false })
+    const newConfig = { ...config, [key]: value }
+    setConfig(newConfig)
+    props.updateGlobalConfig(newConfig)
   }
 
   const parse = (val: string) => {
@@ -56,7 +46,7 @@ export const Controls = (props: {
       </div>
 
       <div>
-        <label htmlFor="orientation">Particle lifespan</label>
+        <label htmlFor="particleLifespan">Particle lifespan</label>
         <input
           type="number"
           name="particleLifespan"
@@ -97,28 +87,65 @@ export const Controls = (props: {
         ></input>
       </div>
 
-      <button
-        type="submit"
-        disabled={!config.dirty}
-        style={{
-          fontSize: 16,
-          border: 'none',
-          borderRadius: 5,
-          padding: '8px 20px',
-          ...(config.dirty
-            ? {
-                backgroundColor: '#28a745',
-                color: 'white',
-              }
-            : {
-                backgroundColor: '#ccc',
-                color: '#888',
-              }),
-        }}
-        onClick={publishConfig}
-      >
-        Apply
-      </button>
+      <div>
+        <label htmlFor="particleRate">Particle rate/frame</label>
+        <input
+          type="number"
+          name="particleRate"
+          value={config.particleRate}
+          onChange={(e) => {
+            updateConfig('particleRate', parse(e.target.value))
+          }}
+        ></input>
+      </div>
+
+      <div>
+        <label htmlFor="particleRadius">Max particle radius</label>
+        <input
+          type="number"
+          name="particleRadius"
+          value={config.particleRadius}
+          onChange={(e) => {
+            updateConfig('particleRadius', parse(e.target.value))
+          }}
+        ></input>
+      </div>
+
+      <div>
+        <label htmlFor="particleSpeedMin">Particle speed min</label>
+        <input
+          type="number"
+          name="particleSpeedMin"
+          value={config.particleSpeedMin}
+          onChange={(e) => {
+            updateConfig('particleSpeedMin', parse(e.target.value))
+          }}
+        ></input>
+      </div>
+
+      <div>
+        <label htmlFor="particleSpeedMax">Particle speed max</label>
+        <input
+          type="number"
+          name="particleSpeedMax"
+          value={config.particleSpeedMax}
+          onChange={(e) => {
+            updateConfig('particleSpeedMax', parse(e.target.value))
+          }}
+        ></input>
+      </div>
+
+      <div>
+        <label htmlFor="colors">Colors (comma-separated hex)</label>
+        <input
+          type="text"
+          name="colors"
+          value={config.colors}
+          onChange={(e) => {
+            updateConfig('colors', e.target.value.split(','))
+          }}
+        ></input>
+      </div>
     </div>
   )
 }
