@@ -1,6 +1,7 @@
 import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { vec2 } from 'gl-matrix'
+import * as time from '~/time'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
@@ -54,20 +55,14 @@ const map = {
 `,
 }
 
-/**
- * Return the current timestamp in seconds, with sub-millisecond precision.
- */
-const curTimeSeconds = (): number => {
-  return window.performance.now() / 1000
-}
-
 const ctx = canvas.getContext('2d')
 const game = new Game(map, viewportDimensions)
-let prevFrameTime = curTimeSeconds()
+let prevFrameTime = time.current()
 
 function gameLoop() {
   requestAnimationFrame(gameLoop)
-  const now = curTimeSeconds()
+
+  const now = time.current()
   const dt = now - prevFrameTime
   prevFrameTime = now
 

@@ -1,13 +1,13 @@
 export interface Config {
   backgroundColor: string
 
-  emitterLifespan: number
-  particleLifespan: number
+  spawnTtl: number
+  particleTtl: number
   orientation: number
   arc: number
   particleRate: number
   particleRadius: number
   particleSpeedMin: number
   particleSpeedMax: number
-  colors: string
+  colors: string[]
 }

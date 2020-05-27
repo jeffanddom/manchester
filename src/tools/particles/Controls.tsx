@@ -34,25 +34,25 @@ export const Controls = (props: {
       </div>
 
       <div>
-        <label htmlFor="emitterLifespan">Emitter lifespan</label>
+        <label htmlFor="spawnTtl">Particle spawn TTL</label>
         <input
           type="number"
-          name="emitterLifespan"
-          value={config.emitterLifespan}
+          name="spawnTtl"
+          value={config.spawnTtl}
           onChange={(e) => {
-            updateConfig('emitterLifespan', parse(e.target.value))
+            updateConfig('spawnTtl', parse(e.target.value))
           }}
         ></input>
       </div>
 
       <div>
-        <label htmlFor="particleLifespan">Particle lifespan</label>
+        <label htmlFor="particleTtl">Per-particle TTL</label>
         <input
           type="number"
-          name="particleLifespan"
-          value={config.particleLifespan}
+          name="particleTtl"
+          value={config.particleTtl}
           onChange={(e) => {
-            updateConfig('particleLifespan', parse(e.target.value))
+            updateConfig('particleTtl', parse(e.target.value))
           }}
         ></input>
       </div>

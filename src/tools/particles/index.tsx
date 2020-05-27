@@ -6,6 +6,7 @@ import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { Camera } from '~/Camera'
+import * as time from '~/time'
 
 const storage = window.localStorage
 const storedConfig = storage.getItem('config')
@@ -14,14 +15,14 @@ let globalConfig: Config = storedConfig
   ? JSON.parse(storedConfig)
   : {
       backgroundColor: '#888',
-      emitterLifespan: 1000,
-      particleLifespan: 1000,
+      spawnTtl: 1,
+      particleTtl: 1,
       orientation: 0,
       arc: Math.PI,
-      particleRate: 2,
+      particleRate: 120,
       particleRadius: 2,
-      particleSpeedMin: 1,
-      particleSpeedMax: 4,
+      particleSpeedMin: 60,
+      particleSpeedMax: 240,
       colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
     }
 
@@ -54,8 +55,8 @@ const makeEmitter = () => {
   return new ParticleEmitter({
     position: vec2.fromValues(200, 200),
 
-    emitterLifespan: globalConfig.emitterLifespan,
-    particleLifespan: globalConfig.particleLifespan,
+    spawnTtl: globalConfig.spawnTtl,
+    particleTtl: globalConfig.particleTtl,
     orientation: globalConfig.orientation,
     arc: globalConfig.arc,
     particleRadius: globalConfig.particleRadius,
@@ -69,13 +70,19 @@ const makeEmitter = () => {
 }
 
 let emitter = makeEmitter()
+let prevFrameTime = time.current()
+
 function gameLoop() {
   requestAnimationFrame(gameLoop)
+
+  const now = time.current()
+  const dt = now - prevFrameTime
+  prevFrameTime = now
 
   ctx.fillStyle = globalConfig.backgroundColor
   ctx.fillRect(0, 0, 400, 400)
 
-  emitter.update()
+  emitter.update(dt)
   emitter.render(ctx, camera)
 
   if (emitter.dead) {
