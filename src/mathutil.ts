@@ -20,3 +20,12 @@ export const radialTranslate2 = (
     vec2.rotate(vec2.create(), [0, -amount], [0, 0], orientation),
   )
 }
+
+export const aabbOverlap = (a: [vec2, vec2], b: [vec2, vec2]) => {
+  return (
+    a[0][0] <= b[1][0] &&
+    a[1][0] >= b[0][0] &&
+    a[0][1] <= b[1][1] &&
+    a[1][1] >= b[0][1]
+  )
+}

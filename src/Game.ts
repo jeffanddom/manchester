@@ -2,13 +2,16 @@ import { EntityManager } from '~/entities/EntityManager'
 import { Playfield } from '~/Playfield'
 import { GameMap, IGame, IKeyboard } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
-import { makePlayer } from '~/entities/Player'
+import { makePlayer } from '~/entities/player'
+import { makeTurret } from '~/entities/turret'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { makeWall } from '~/entities/Wall'
 import { vec2 } from 'gl-matrix'
 import { Keyboard } from '~/Keyboard'
 import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
+
+let DEBUG_MODE = false
 
 export class Game implements IGame {
   playfield: Playfield
@@ -31,6 +34,12 @@ export class Game implements IGame {
       this.playfield.dimensions(),
     )
 
+    document.addEventListener('keyup', (event) => {
+      if (event.which === 192) {
+        DEBUG_MODE = !DEBUG_MODE
+      }
+    }
+
     // Populate entities
     const rows = map.entities.trim().split('\n')
     const width = rows[0].length
@@ -44,6 +53,9 @@ export class Game implements IGame {
             break
           case 'w':
             entity = makeWall()
+            break
+          case 't':
+            entity = makeTurret()
             break
           default:
             // do nothing
@@ -82,5 +94,35 @@ export class Game implements IGame {
     this.playfield.render(ctx, this.camera)
     this.entities.render(ctx, this.camera)
     this.emitters.forEach((e) => e.render(ctx, this.camera))
+
+    if (DEBUG_MODE) {
+      for (const id in this.entities.entities) {
+        const e = this.entities.entities[id]
+
+        ctx.strokeStyle = 'cyan'
+        if (e.damageable) {
+          const aabb = e.damageable.aabb(e)
+          const renderPos = this.camera.toRenderPos(aabb[0])
+          ctx.strokeRect(
+            renderPos[0],
+            renderPos[1],
+            aabb[1][0] - aabb[0][0] + 1,
+            aabb[1][1] - aabb[0][1] + 1,
+          )
+        }
+
+        ctx.strokeStyle = 'magenta'
+        if (e.damager) {
+          const aabb = e.damager.aabb(e)
+          const renderPos = this.camera.toRenderPos(aabb[0])
+          ctx.strokeRect(
+            renderPos[0],
+            renderPos[1],
+            aabb[1][0] - aabb[0][0] + 1,
+            aabb[1][1] - aabb[0][1] + 1,
+          )
+        }
+      }
+    }
   }
 }

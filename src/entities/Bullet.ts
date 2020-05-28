@@ -7,9 +7,10 @@ import { Transform } from '~/entities/components/Transform'
 import { WallCollider } from '~/entities/components/WallCollider'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { radialTranslate2 } from '~/mathutil'
+import { radialTranslate2, aabbOverlap } from '~/mathutil'
 import { IEntity } from '~/entities/interfaces'
 import { IGenericComponent, IDamager } from '~/entities/components/interfaces'
+import { Hitbox } from '~/Hitbox'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 const TIME_TO_LIVE = 2
@@ -22,9 +23,51 @@ class BulletMover implements IGenericComponent {
   }
 
   update(entity: IEntity, game: IGame, dt: number): void {
-    if (entity.wallCollider.hitLastFrame) {
+    this.ttl -= dt
+    if (this.ttl <= 0) {
       game.entities.markForDeletion(entity)
+      return
+    }
 
+    radialTranslate2(
+      entity.transform.position,
+      entity.transform.position,
+      entity.transform.orientation,
+      BULLET_SPEED * dt,
+    )
+  }
+}
+
+class BulletDamager implements IDamager {
+  damageValue: number
+  hitbox: Hitbox
+
+  constructor(damageValue: number, hitbox: Hitbox) {
+    this.damageValue = damageValue
+    this.hitbox = hitbox
+  }
+
+  aabb(entity: IEntity) {
+    return this.hitbox.aabb(
+      entity.transform.position,
+      entity.transform.orientation,
+    )
+  }
+
+  update(entity: IEntity, game: IGame, _dt: number): void {
+    const aabb = this.aabb(entity)
+
+    for (let id in game.entities.entities) {
+      const c = game.entities.entities[id]
+
+      if (c.damageable === undefined) {
+        continue
+      }
+      if (!aabbOverlap(c.damageable.aabb(c), aabb)) {
+        continue
+      }
+
+      // Show explosion
       const emitterPos = radialTranslate2(
         vec2.create(),
         entity.transform.position,
@@ -45,42 +88,14 @@ class BulletMover implements IGenericComponent {
       })
       game.emitters.push(explosion)
 
+      // Camera shake
       game.camera.shake()
 
-      return
-    }
-
-    this.ttl -= dt
-    if (this.ttl <= 0) {
+      // Perform damage, kill bullet
+      c.damageable.health = c.damageable.health - this.damageValue
       game.entities.markForDeletion(entity)
       return
     }
-
-    radialTranslate2(
-      entity.transform.position,
-      entity.transform.position,
-      entity.transform.orientation,
-      BULLET_SPEED * dt,
-    )
-  }
-}
-
-class BulletDamager implements IDamager {
-  damageValue: number
-
-  constructor(damageValue: number) {
-    this.damageValue = damageValue
-  }
-
-  update(entity: IEntity, _game: IGame, _dt: number): void {
-    const collided = entity.wallCollider.collidedWalls
-    collided.forEach((c) => {
-      if (c.damageable === undefined) {
-        return
-      }
-
-      c.damageable.health = c.damageable.health - this.damageValue
-    })
   }
 }
 
@@ -91,7 +106,6 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.wallCollider = new WallCollider()
   e.mover = new BulletMover()
   e.pathRenderable = new PathRenderable(
     path2.fromValues([
@@ -99,10 +113,16 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
       [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
       [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
     ]),
-    '#FF00FF',
+    '#FF0000',
   )
 
-  e.damager = new BulletDamager(1)
+  e.damager = new BulletDamager(
+    1,
+    new Hitbox(
+      vec2.fromValues(-TILE_SIZE * 0.1, -TILE_SIZE * 0.5),
+      vec2.fromValues(TILE_SIZE * 0.2, TILE_SIZE * 0.2),
+    ),
+  )
 
   return e
 }

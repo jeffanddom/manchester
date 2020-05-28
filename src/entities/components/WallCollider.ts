@@ -100,6 +100,7 @@ export class WallCollider implements IWallCollider {
 
     // Track walls that were collided with
     this.collidedWalls = collided.map((c) => c[0])
+    console.log(this.collidedWalls)
 
     // Halt motion for collided edges
     collided.forEach((collision) => {

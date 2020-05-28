@@ -7,6 +7,8 @@ import { PathRenderable } from '~/entities/components/PathRenderable'
 import { lerp } from '~/mathutil'
 import { IEntity } from '~/entities/interfaces'
 import { IGenericComponent } from '~/entities/components/interfaces'
+import { vec2 } from 'gl-matrix'
+import { Hitbox } from '~/Hitbox'
 
 const WALL_HEALTH = 4.0
 
@@ -17,14 +19,10 @@ class DisplayWallDamage implements IGenericComponent {
   }
 }
 
-class WallComponent implements IGenericComponent {
-  update(entity: IEntity): void {}
-}
-
 export const makeWall = (): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.wall = new WallComponent()
+  e.wall = { update: () => {} }
   e.pathRenderable = new PathRenderable(
     path2.fromValues([
       [-TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
@@ -34,7 +32,13 @@ export const makeWall = (): IEntity => {
     ]),
     '#000',
   )
-  e.damageable = new Damageable(WALL_HEALTH)
+  e.damageable = new Damageable(
+    WALL_HEALTH,
+    new Hitbox(
+      vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+      vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    ),
+  )
   e.prerender = new DisplayWallDamage()
   return e
 }
