@@ -100,7 +100,7 @@ export class ParticleEmitter {
 
   render(ctx: CanvasRenderingContext2D, camera: Camera): void {
     this.particles.forEach((p) => {
-      const renderPos = camera.toRenderPos(p.position)
+      const renderPos = camera.w2v(p.position)
 
       ctx.fillStyle = p.color
       ctx.beginPath()

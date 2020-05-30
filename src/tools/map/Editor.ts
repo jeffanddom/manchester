@@ -1,0 +1,310 @@
+import { vec2 } from 'gl-matrix'
+import * as _ from 'lodash'
+
+import { Keyboard } from '~Keyboard'
+import { Mouse } from '~Mouse'
+import { Camera } from '~Camera'
+import { TILE_SIZE } from '~/constants'
+import * as mathutil from '~/mathutil'
+import { path2 } from '~/path2'
+import { Map, Terrain } from '~map/interfaces'
+import * as entities from '~/entities'
+
+const CAMERA_SPEED = 500
+const ZOOM_SPEED = 2
+const TILE_PATH = path2.fromValues([
+  [0, 0],
+  [TILE_SIZE, 0],
+  [TILE_SIZE, TILE_SIZE],
+  [0, TILE_SIZE],
+])
+
+const keyMap = {
+  cameraNorth: 87, // w
+  cameraWest: 65, // a
+  cameraSouth: 83, // s
+  cameraEast: 68, // d
+  zoomIn: 69, // e
+  zoomOut: 81, // q
+  paint: 32, // <space>
+  toggleTerrain: 82, // r
+  toggleEntity: 70, // f
+}
+
+enum BrushMode {
+  TERRAIN = 0,
+  ENTITY = 1,
+}
+
+// TODO: factor these into generic functions
+const TERRAIN_TYPES = [Terrain.Grass, Terrain.Mountain, Terrain.River]
+const ENTITY_TYPES = [
+  entities.types.Type.PLAYER,
+  entities.types.Type.TURRET,
+  entities.types.Type.WALL,
+]
+
+export class Editor {
+  canvas: HTMLCanvasElement
+  renderContext: CanvasRenderingContext2D
+
+  viewportDimensions: vec2
+  map: Map
+  mapTileOrigin: vec2
+  mapTileDimensions: vec2
+
+  camera: Camera
+  keyboard: Keyboard
+  mouse: Mouse
+
+  brushMode: BrushMode
+  terrainBrush: Terrain
+  entityBrush: entities.types.Type
+
+  constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
+    this.canvas = params.canvas
+    this.renderContext = this.canvas.getContext('2d')
+
+    this.viewportDimensions = vec2.fromValues(
+      this.canvas.width,
+      this.canvas.height,
+    )
+    this.map = params.map
+
+    this.camera = new Camera(
+      this.viewportDimensions,
+      vec2.scale(vec2.create(), this.map.origin, TILE_SIZE),
+      vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
+    )
+    this.keyboard = new Keyboard()
+    this.mouse = new Mouse()
+
+    this.brushMode = BrushMode.TERRAIN
+    this.terrainBrush = _.first(TERRAIN_TYPES)
+    this.entityBrush = _.first(ENTITY_TYPES)
+  }
+
+  update(dt: number): void {
+    this.updateCamera(dt)
+    this.updateBrush()
+    this.keyboard.update()
+  }
+
+  updateCamera(dt: number): void {
+    const cameraPos = this.camera.v2w(
+      vec2.scale(vec2.create(), this.viewportDimensions, 0.5),
+    )
+
+    if (this.keyboard.downKeys.has(keyMap.cameraNorth)) {
+      vec2.add(cameraPos, cameraPos, [0, -CAMERA_SPEED * dt])
+    } else if (this.keyboard.downKeys.has(keyMap.cameraSouth)) {
+      vec2.add(cameraPos, cameraPos, [0, CAMERA_SPEED * dt])
+    }
+
+    if (this.keyboard.downKeys.has(keyMap.cameraWest)) {
+      vec2.add(cameraPos, cameraPos, [-CAMERA_SPEED * dt, 0])
+    } else if (this.keyboard.downKeys.has(keyMap.cameraEast)) {
+      vec2.add(cameraPos, cameraPos, [CAMERA_SPEED * dt, 0])
+    }
+
+    let zoom = this.camera.zoom
+    if (this.keyboard.downKeys.has(keyMap.zoomIn)) {
+      zoom += ZOOM_SPEED * dt
+    } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
+      zoom -= ZOOM_SPEED * dt
+    }
+
+    this.camera.zoom = mathutil.clamp(zoom, [0.5, 3])
+    this.camera.setPosition(cameraPos)
+  }
+
+  updateBrush(): void {
+    if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
+      if (this.brushMode === BrushMode.ENTITY) {
+        this.brushMode = BrushMode.TERRAIN
+      } else {
+        this.terrainBrush =
+          TERRAIN_TYPES[
+            (TERRAIN_TYPES.indexOf(this.terrainBrush) + 1) %
+              TERRAIN_TYPES.length
+          ]
+      }
+
+      // TODO: show visual feedback for this
+      console.log(this.brushMode)
+      console.log(this.terrainBrush)
+    } else if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
+      if (this.brushMode === BrushMode.TERRAIN) {
+        this.brushMode = BrushMode.ENTITY
+      } else {
+        this.entityBrush =
+          ENTITY_TYPES[
+            (ENTITY_TYPES.indexOf(this.entityBrush) + 1) % ENTITY_TYPES.length
+          ]
+      }
+
+      // TODO: show visual feedback for this
+      console.log(this.brushMode)
+      console.log(this.entityBrush)
+    } else if (this.keyboard.downKeys.has(keyMap.paint)) {
+      // TODO: send these to an event stream a la Redux.
+      const brushTile = this.getCursorTPos()
+      if (brushTile !== undefined) {
+        const n = this.t2a(brushTile)
+        switch (this.brushMode) {
+          case BrushMode.TERRAIN:
+            this.map.terrain[n] = this.terrainBrush
+            break
+          case BrushMode.ENTITY:
+            this.map.entities[n] = this.entityBrush
+            break
+          default:
+            throw new Error(`invalid brush mode ${this.brushMode}`)
+        }
+      }
+    }
+  }
+
+  render(): void {
+    this.renderBg()
+    this.renderTerrain()
+    this.renderGrid()
+
+    const cursorPos = this.getCursorTPos()
+    if (cursorPos !== undefined) {
+      this.renderTile(cursorPos, 'rgba(0, 255, 255, 0.5)')
+    }
+  }
+
+  renderBg(): void {
+    this.renderContext.fillStyle = '#FCFCFC'
+    this.renderContext.fillRect(
+      0,
+      0,
+      this.viewportDimensions[0],
+      this.viewportDimensions[1],
+    )
+  }
+
+  renderTerrain(): void {
+    const nwTile = this.v2t(vec2.fromValues(0, 0))
+    const seTile = this.v2t(this.viewportDimensions)
+
+    for (let i = nwTile[1]; i <= seTile[1]; i++) {
+      for (let j = nwTile[0]; j <= seTile[0]; j++) {
+        const n = this.t2a(vec2.fromValues(j, i))
+
+        // TODO: need to DRY this up with playfield rendering
+        switch (this.map.terrain[n]) {
+          case Terrain.Grass:
+            this.renderTile(vec2.fromValues(j, i), '#7EC850')
+            break
+          case Terrain.Mountain:
+            this.renderTile(vec2.fromValues(j, i), '#5B5036')
+            break
+          case Terrain.River:
+            this.renderTile(vec2.fromValues(j, i), '#2B5770')
+            break
+          default:
+            // do nothing
+            break
+        }
+      }
+    }
+  }
+
+  getCanvasDocPos(): vec2 {
+    const r = this.canvas.getBoundingClientRect()
+    return vec2.fromValues(r.x, r.y)
+  }
+
+  /**
+   * Return the tile position of the mouse cursor. Returns undefined if the
+   * mouse cursor is not over the viewport.
+   */
+  getCursorTPos(): vec2 | undefined {
+    const vpos = vec2.sub(
+      vec2.create(),
+      this.mouse.getPos(),
+      this.getCanvasDocPos(),
+    )
+
+    if (vpos[0] < 0 || this.viewportDimensions[0] <= vpos[0]) {
+      return undefined
+    }
+    if (vpos[1] < 0 || this.viewportDimensions[1] <= vpos[1]) {
+      return undefined
+    }
+
+    return this.v2t(vpos)
+  }
+
+  /**
+   * Convert the given viewspace position into a worldspace position, expressed
+   * in tile units.
+   */
+  v2t(vpos: vec2): vec2 {
+    const wpos = this.camera.v2w(vpos)
+    return vec2.floor(
+      vec2.create(),
+      vec2.scale(vec2.create(), wpos, 1 / TILE_SIZE),
+    )
+  }
+
+  /**
+   * Conver the given worldspace position in tile units to a flat array offset.
+   */
+  t2a(tpos: vec2): number {
+    const p = vec2.sub(vec2.create(), tpos, this.map.origin)
+    return p[1] * this.map.dimensions[0] + p[0]
+  }
+
+  renderTile(tpos: vec2, fillStyle: string): void {
+    const worldOffset = vec2.scale(vec2.create(), tpos, TILE_SIZE)
+    const transformedPath = TILE_PATH.map((v) =>
+      this.camera.w2v(vec2.add(vec2.create(), v, worldOffset)),
+    )
+
+    this.renderContext.fillStyle = fillStyle
+    this.renderContext.beginPath()
+    path2.applyPath(transformedPath, this.renderContext)
+    this.renderContext.fill()
+  }
+
+  renderGrid(): void {
+    const axisWeight = 2
+    const nonaxisWeight = 1
+
+    this.renderContext.strokeStyle = '#DDDDDD'
+
+    for (let i = 0; i < this.map.dimensions[1]; i++) {
+      const worldp = (i + this.map.origin[1]) * TILE_SIZE
+      const renderp = vec2.add(
+        vec2.create(),
+        this.camera.w2v(vec2.fromValues(0, worldp)),
+        [0.5, 0.5], // half-pixel offset to remove antialiasing fuzz
+      )
+
+      this.renderContext.lineWidth = worldp === 0 ? axisWeight : nonaxisWeight
+      this.renderContext.beginPath()
+      this.renderContext.moveTo(0, renderp[1])
+      this.renderContext.lineTo(this.viewportDimensions[0], renderp[1])
+      this.renderContext.stroke()
+    }
+
+    for (let j = 0; j < this.map.dimensions[0]; j++) {
+      const worldp = (j + this.map.origin[0]) * TILE_SIZE
+      const renderp = vec2.add(
+        vec2.create(),
+        this.camera.w2v(vec2.fromValues(worldp, 0)),
+        [0.5, 0.5], // half-pixel offset to remove antialiasing fuzz
+      )
+
+      this.renderContext.lineWidth = worldp === 0 ? axisWeight : nonaxisWeight
+      this.renderContext.beginPath()
+      this.renderContext.moveTo(renderp[0], 0)
+      this.renderContext.lineTo(renderp[0], this.viewportDimensions[1])
+      this.renderContext.stroke()
+    }
+  }
+}

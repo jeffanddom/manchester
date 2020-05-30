@@ -1,5 +1,13 @@
 import { vec2 } from 'gl-matrix'
 
+export const clamp = (v: number, range: [number, number]): number => {
+  return Math.min(Math.max(range[0], v), range[1])
+}
+
+export const clamp2 = (out: vec2, v: vec2, range: [vec2, vec2]): vec2 => {
+  return vec2.min(out, vec2.max(out, v, range[0]), range[1])
+}
+
 export const lerp = (min: number, max: number, alpha: number): number => {
   return min + alpha * (max - min)
 }

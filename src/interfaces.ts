@@ -2,16 +2,11 @@ import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { IEntityManager } from '~/entities/interfaces'
 import { Camera } from '~/Camera'
 import { vec2 } from 'gl-matrix'
-
-export enum Terrain {
-  Mountain,
-  River,
-  Grass,
-  Unknown,
-}
+import * as map from '~/map/interfaces'
+import { Keyboard } from '~Keyboard'
 
 export interface Tile {
-  type: Terrain
+  type: map.Terrain
 }
 
 export enum Direction {
@@ -34,14 +29,10 @@ export interface IPlayfield {
   render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }
 
-export interface IKeyboard {
-  downKeys: Set<number>
-}
-
 export interface IGame {
   playfield: IPlayfield
   entities: IEntityManager
-  keyboard: IKeyboard
+  keyboard: Keyboard
   emitters: ParticleEmitter[]
   camera: Camera
 }

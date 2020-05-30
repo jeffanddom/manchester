@@ -18,7 +18,7 @@ export class PathRenderable implements IPathRenderable {
         path2.rotate(this.path, e.transform.orientation),
         e.transform.position,
       )
-      .map((p) => camera.toRenderPos(p))
+      .map((p) => camera.w2v(p))
 
     ctx.fillStyle = this.fillStyle
     ctx.beginPath()

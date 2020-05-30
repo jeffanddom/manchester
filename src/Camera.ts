@@ -1,11 +1,13 @@
 import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
+import * as mathutil from '~/mathutil'
 
 export class Camera {
   position: vec2
-  viewportSize: vec2
+  viewportDimensions: vec2
   minWorldPos: vec2
   worldDimensions: vec2
+  zoom: number // ratio of view distance to world distance
 
   // shake stuff
   ttl: number
@@ -14,9 +16,10 @@ export class Camera {
 
   constructor(viewportSize: vec2, minWorldPos: vec2, worldDimensions: vec2) {
     this.position = vec2.create()
-    this.viewportSize = viewportSize
+    this.viewportDimensions = viewportSize
     this.minWorldPos = minWorldPos
     this.worldDimensions = worldDimensions
+    this.zoom = 1
 
     this.ttl = 0
     this.cooldownTtl = 0
@@ -52,28 +55,51 @@ export class Camera {
     return vec2.add(vec2.create(), this.minWorldPos, this.worldDimensions)
   }
 
-  centerAt(worldPos: vec2): void {
-    vec2.sub(
-      this.position,
-      worldPos,
-      vec2.scale(vec2.create(), this.viewportSize, 0.5),
-    )
-
-    vec2.max(this.position, this.position, this.minWorldPos)
-
-    vec2.min(
-      this.position,
-      this.position,
-      vec2.sub(vec2.create(), this.maxWorldPos(), this.viewportSize),
-    )
+  setPosition(worldPos: vec2): void {
+    mathutil.clamp2(this.position, worldPos, [
+      vec2.add(
+        vec2.create(),
+        this.minWorldPos,
+        vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
+      ),
+      vec2.sub(
+        vec2.create(),
+        this.maxWorldPos(),
+        vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
+      ),
+    ])
   }
 
-  toRenderPos(worldPos: vec2): vec2 {
-    const renderPos = vec2.add(
+  /**
+   * Convert the given worldspace position to a viewport position (pixel offset
+   * from NW corner of viewport).
+   */
+  w2v(wpos: vec2): vec2 {
+    const viewOriginWPos = vec2.sub(
       vec2.create(),
-      vec2.sub(vec2.create(), worldPos, this.position),
-      this.shakeOffset,
+      this.position,
+      vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
     )
-    return vec2.floor(renderPos, renderPos)
+    const p = vec2.sub(vec2.create(), wpos, viewOriginWPos)
+    vec2.scale(p, p, this.zoom)
+    vec2.add(p, p, this.shakeOffset)
+    return vec2.floor(p, p)
+  }
+
+  /**
+   * Convert the given viewport position (pixel offset from NW corner of
+   * viewport) to a worldspace position.
+   */
+  v2w(vpos: vec2): vec2 {
+    const viewOriginWPos = vec2.sub(
+      vec2.create(),
+      this.position,
+      vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
+    )
+    return vec2.add(
+      vec2.create(),
+      vec2.scale(vec2.create(), vpos, 1 / this.zoom),
+      viewOriginWPos,
+    )
   }
 }
