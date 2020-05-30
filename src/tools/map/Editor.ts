@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
 import { Keyboard } from '~Keyboard'
-import { Mouse } from '~Mouse'
+import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
 import { TILE_SIZE } from '~/constants'
 import * as mathutil from '~/mathutil'
@@ -62,12 +62,11 @@ export class Editor {
   entityBrush: entities.types.Type
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
-    this.canvas = params.canvas
-    this.renderContext = this.canvas.getContext('2d')
+    this.renderContext = params.canvas.getContext('2d')
 
     this.viewportDimensions = vec2.fromValues(
-      this.canvas.width,
-      this.canvas.height,
+      params.canvas.width,
+      params.canvas.height,
     )
     this.map = params.map
 
@@ -77,7 +76,7 @@ export class Editor {
       vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
     )
     this.keyboard = new Keyboard()
-    this.mouse = new Mouse()
+    this.mouse = new Mouse(params.canvas)
 
     this.brushMode = BrushMode.TERRAIN
     this.terrainBrush = _.first(TERRAIN_TYPES)
@@ -146,9 +145,12 @@ export class Editor {
       // TODO: show visual feedback for this
       console.log(this.brushMode)
       console.log(this.entityBrush)
-    } else if (this.keyboard.downKeys.has(keyMap.paint)) {
+    } else if (
+      this.keyboard.downKeys.has(keyMap.paint) ||
+      this.mouse.isDown(MouseButton.LEFT)
+    ) {
       // TODO: send these to an event stream a la Redux.
-      const brushTile = this.getCursorTPos()
+      const brushTile = this.getCursorTilePos()
       if (brushTile !== undefined) {
         const n = this.t2a(brushTile)
         switch (this.brushMode) {
@@ -170,7 +172,7 @@ export class Editor {
     this.renderTerrain()
     this.renderGrid()
 
-    const cursorPos = this.getCursorTPos()
+    const cursorPos = this.getCursorTilePos()
     if (cursorPos !== undefined) {
       this.renderTile(cursorPos, 'rgba(0, 255, 255, 0.5)')
     }
@@ -213,29 +215,15 @@ export class Editor {
     }
   }
 
-  getCanvasDocPos(): vec2 {
-    const r = this.canvas.getBoundingClientRect()
-    return vec2.fromValues(r.x, r.y)
-  }
-
   /**
    * Return the tile position of the mouse cursor. Returns undefined if the
    * mouse cursor is not over the viewport.
    */
-  getCursorTPos(): vec2 | undefined {
-    const vpos = vec2.sub(
-      vec2.create(),
-      this.mouse.getPos(),
-      this.getCanvasDocPos(),
-    )
-
-    if (vpos[0] < 0 || this.viewportDimensions[0] <= vpos[0]) {
+  getCursorTilePos(): vec2 | undefined {
+    const vpos = this.mouse.getPos()
+    if (vpos === undefined) {
       return undefined
     }
-    if (vpos[1] < 0 || this.viewportDimensions[1] <= vpos[1]) {
-      return undefined
-    }
-
     return this.v2t(vpos)
   }
 
