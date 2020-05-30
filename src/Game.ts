@@ -1,22 +1,20 @@
 import { EntityManager } from '~/entities/EntityManager'
 import { Playfield } from '~/Playfield'
-import { GameMap, IGame, IKeyboard } from '~/interfaces'
+import { GameMap, IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
-import { makePlayer } from '~/entities/player'
-import { makeTurret } from '~/entities/turret'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { makeWall } from '~/entities/Wall'
 import { vec2 } from 'gl-matrix'
 import { Keyboard } from '~/Keyboard'
 import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
+import * as entities from '~/entities'
 
 let DEBUG_MODE = false
 
 export class Game implements IGame {
   playfield: Playfield
   entities: EntityManager
-  keyboard: IKeyboard
+  keyboard: Keyboard
   emitters: ParticleEmitter[]
 
   player: IEntity
@@ -38,38 +36,29 @@ export class Game implements IGame {
       if (event.which === 192) {
         DEBUG_MODE = !DEBUG_MODE
       }
-    }
+    })
 
     // Populate entities
     const rows = map.entities.trim().split('\n')
     const width = rows[0].length
     for (let i = 0; i < rows.length; i++) {
       for (let j = 0; j < width; j++) {
-        let entity = null
-        switch (rows[i][j]) {
-          case 'p':
-            entity = makePlayer()
-            this.player = entity
-            break
-          case 'w':
-            entity = makeWall()
-            break
-          case 't':
-            entity = makeTurret()
-            break
-          default:
-            // do nothing
-            break
-        }
+        const et = entities.types.deserialize(rows[i][j])
+        if (et !== undefined) {
+          const entity = entities.types.make(et)
 
-        if (entity !== null) {
           if (entity.transform !== undefined) {
             entity.transform.position = vec2.fromValues(
               j * TILE_SIZE + TILE_SIZE * 0.5,
               i * TILE_SIZE + TILE_SIZE * 0.5,
             )
           }
+
           this.entities.register(entity)
+
+          if (et === entities.types.Type.PLAYER) {
+            this.player = entity
+          }
         }
       }
     }
@@ -81,8 +70,10 @@ export class Game implements IGame {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    this.camera.centerAt(this.player.transform.position)
+    this.camera.setPosition(this.player.transform.position)
     this.camera.update(dt)
+
+    this.keyboard.update()
   }
 
   render(ctx: CanvasRenderingContext2D) {
@@ -102,7 +93,7 @@ export class Game implements IGame {
         ctx.strokeStyle = 'cyan'
         if (e.damageable) {
           const aabb = e.damageable.aabb(e)
-          const renderPos = this.camera.toRenderPos(aabb[0])
+          const renderPos = this.camera.w2v(aabb[0])
           ctx.strokeRect(
             renderPos[0],
             renderPos[1],
@@ -114,7 +105,7 @@ export class Game implements IGame {
         ctx.strokeStyle = 'magenta'
         if (e.damager) {
           const aabb = e.damager.aabb(e)
-          const renderPos = this.camera.toRenderPos(aabb[0])
+          const renderPos = this.camera.w2v(aabb[0])
           ctx.strokeRect(
             renderPos[0],
             renderPos[1],

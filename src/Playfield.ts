@@ -1,18 +1,19 @@
-import { Terrain, Tile, IPlayfield } from '~/interfaces'
+import { Tile, IPlayfield } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { vec2 } from 'gl-matrix'
 import { Camera } from '~/Camera'
+import * as map from '~/map/interfaces'
 
-const terrainByEncoding: { [key: string]: Terrain } = {
-  '.': Terrain.Grass,
-  '~': Terrain.River,
-  '^': Terrain.Mountain,
+const terrainByEncoding: { [key: string]: map.Terrain } = {
+  '.': map.Terrain.Grass,
+  '~': map.Terrain.River,
+  '^': map.Terrain.Mountain,
 }
 
-const deserializeTerrain = (s: string): Terrain => {
+const deserializeTerrain = (s: string): map.Terrain => {
   const t = terrainByEncoding[s]
   if (t === undefined) {
-    return Terrain.Unknown
+    return map.Terrain.Unknown
   }
   return t
 }
@@ -64,21 +65,21 @@ export class Playfield implements IPlayfield {
       for (let j = 0; j < tileWidth; j++) {
         const x = j * TILE_SIZE
         switch (this.tiles[i][j].type) {
-          case Terrain.Grass:
+          case map.Terrain.Grass:
             ctx.fillStyle = '#7EC850'
             break
-          case Terrain.Mountain:
+          case map.Terrain.Mountain:
             ctx.fillStyle = '#5B5036'
             break
-          case Terrain.River:
+          case map.Terrain.River:
             ctx.fillStyle = '#2B5770'
             break
-          case Terrain.Unknown:
+          case map.Terrain.Unknown:
             ctx.fillStyle = '#FF00FF'
             break
         }
 
-        const renderPos = camera.toRenderPos(vec2.fromValues(x, y))
+        const renderPos = camera.w2v(vec2.fromValues(x, y))
         ctx.fillRect(renderPos[0], renderPos[1], TILE_SIZE, TILE_SIZE)
       }
     }
