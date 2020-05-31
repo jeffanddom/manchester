@@ -49,6 +49,7 @@ canvas.width = 400
 canvas.height = 400
 
 const camera = new Camera([400, 400], vec2.create(), [400, 400])
+camera.setPosition([200, 200])
 const ctx = canvas.getContext('2d')
 
 // The emitter
