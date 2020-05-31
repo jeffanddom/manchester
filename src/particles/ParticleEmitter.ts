@@ -3,6 +3,7 @@ import { sample } from 'lodash'
 
 import { radialTranslate2, lerp } from '~/mathutil'
 import { Camera } from '~/Camera'
+import * as renderable from '~/renderable'
 
 interface Particle {
   position: vec2
@@ -101,15 +102,16 @@ export class ParticleEmitter {
   render(ctx: CanvasRenderingContext2D, camera: Camera): void {
     const wvTransform = camera.wvTransform()
     this.particles.forEach((p) => {
-      const renderPos = vec2.transformMat2d(
-        vec2.create(),
-        p.position,
+      renderable.render(
+        ctx,
+        {
+          type: renderable.Type.CIRCLE,
+          fillStyle: p.color,
+          pos: p.position,
+          radius: p.radius,
+        },
         wvTransform,
       )
-      ctx.fillStyle = p.color
-      ctx.beginPath()
-      ctx.arc(renderPos[0], renderPos[1], p.radius, 0, Math.PI * 2)
-      ctx.fill()
     })
   }
 }

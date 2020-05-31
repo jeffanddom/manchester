@@ -4,7 +4,7 @@ import { vec2, mat2d } from 'gl-matrix'
 export enum Type {
   PATH = 0,
   RECT = 1,
-  // CIRCLE = 2,
+  CIRCLE = 2,
 }
 
 export interface Path {
@@ -24,15 +24,15 @@ export interface Rect {
   dimensions: vec2
 }
 
-// export interface Circle {
-//   type: Type.CIRCLE
-//   fillStyle: string
+export interface Circle {
+  type: Type.CIRCLE
+  fillStyle: string
 
-//   pos: vec2 // worldspace coordinates
-//   radius: number
-// }
+  pos: vec2 // worldspace coordinates
+  radius: number
+}
 
-export type Renderable = Path | Rect //| Circle
+export type Renderable = Path | Rect | Circle
 
 export const render = (
   ctx: CanvasRenderingContext2D,
@@ -77,7 +77,17 @@ export const render = (
       break
     }
 
-    // case Type.CIRCLE:
-    //   break
+    case Type.CIRCLE:
+      const vp = vec2.transformMat2d(vec2.create(), r.pos, wvTransform)
+      const edgep = vec2.transformMat2d(
+        vec2.create(),
+        vec2.add(vec2.create(), r.pos, vec2.fromValues(r.radius, 0)),
+        wvTransform,
+      )
+
+      ctx.beginPath()
+      ctx.arc(vp[0], vp[1], edgep[0] - vp[0], 0, Math.PI * 2)
+      ctx.fill()
+      break
   }
 }

@@ -9,6 +9,8 @@ import * as mathutil from '~/mathutil'
 import { path2 } from '~/path2'
 import { Map, Terrain } from '~map/interfaces'
 import * as entities from '~/entities'
+import { PathRenderable } from '~entities/components/PathRenderable'
+import * as renderable from '~/renderable'
 
 const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2
@@ -251,19 +253,17 @@ export class Editor {
   }
 
   renderTile(tpos: vec2, fillStyle: string): void {
-    const transform = mat2d.fromTranslation(
-      mat2d.create(),
-      vec2.scale(vec2.create(), tpos, TILE_SIZE),
+    renderable.render(
+      this.renderContext,
+      {
+        type: renderable.Type.RECT,
+        fillStyle: fillStyle,
+        floor: true,
+        pos: vec2.scale(vec2.create(), tpos, TILE_SIZE),
+        dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+      },
+      this.camera.wvTransform(),
     )
-    mat2d.multiply(transform, this.camera.wvTransform(), transform)
-    const transformedPath = TILE_PATH.map((v) =>
-      vec2.transformMat2d(vec2.create(), v, transform),
-    )
-
-    this.renderContext.fillStyle = fillStyle
-    this.renderContext.beginPath()
-    path2.applyPath(transformedPath, this.renderContext)
-    this.renderContext.fill()
   }
 
   renderGrid(): void {
