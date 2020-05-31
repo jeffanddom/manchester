@@ -135,4 +135,17 @@ export class Camera {
     this.wvTransformCache = transform
     return mat2d.clone(this.wvTransformCache)
   }
+
+  /**
+   * Returns the minimum and maximum visible world positions given the current
+   * zoom and position.
+   */
+  getVisibleMinMax(): [vec2, vec2] {
+    const transform = this.wvTransform()
+    mat2d.invert(transform, transform)
+    return [
+      vec2.transformMat2d(vec2.create(), vec2.fromValues(0, 0), transform),
+      vec2.transformMat2d(vec2.create(), this.viewportDimensions, transform),
+    ]
+  }
 }

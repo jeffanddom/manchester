@@ -273,39 +273,37 @@ export class Editor {
   renderGrid(): void {
     const axisWeight = 2
     const nonaxisWeight = 1
-
-    this.renderContext.strokeStyle = '#DDDDDD'
-
+    const [visibleMin, visibleMax] = this.camera.getVisibleMinMax()
     const wvTransform = this.camera.wvTransform()
 
     for (let i = 0; i < this.map.dimensions[1]; i++) {
-      const wy = (i + this.map.origin[1]) * TILE_SIZE
-      const vp = vec2.transformMat2d(vec2.create(), [0, wy], wvTransform)
-
-      // remove antialiasing fuzz by drawing on the half-pixel mark
-      vec2.floor(vp, vp)
-      vec2.add(vp, vp, [0.5, 0.5])
-
-      this.renderContext.lineWidth = wy === 0 ? axisWeight : nonaxisWeight
-      this.renderContext.beginPath()
-      this.renderContext.moveTo(0, vp[1])
-      this.renderContext.lineTo(this.viewportDimensions[0], vp[1])
-      this.renderContext.stroke()
+      const y = (i + this.map.origin[1]) * TILE_SIZE
+      renderable.render(
+        this.renderContext,
+        {
+          type: renderable.Type.LINE,
+          style: '#DDDDDD',
+          width: y === 0 ? axisWeight : nonaxisWeight,
+          from: vec2.fromValues(visibleMin[0], y),
+          to: vec2.fromValues(visibleMax[0], y),
+        },
+        wvTransform,
+      )
     }
 
     for (let j = 0; j < this.map.dimensions[0]; j++) {
-      const wx = (j + this.map.origin[0]) * TILE_SIZE
-      const vp = vec2.transformMat2d(vec2.create(), [wx, 0], wvTransform)
-
-      // remove antialiasing fuzz by drawing on the half-pixel mark
-      vec2.floor(vp, vp)
-      vec2.add(vp, vp, [0.5, 0.5])
-
-      this.renderContext.lineWidth = wx === 0 ? axisWeight : nonaxisWeight
-      this.renderContext.beginPath()
-      this.renderContext.moveTo(vp[0], 0)
-      this.renderContext.lineTo(vp[0], this.viewportDimensions[1])
-      this.renderContext.stroke()
+      const x = (j + this.map.origin[0]) * TILE_SIZE
+      renderable.render(
+        this.renderContext,
+        {
+          type: renderable.Type.LINE,
+          style: '#DDDDDD',
+          width: x === 0 ? axisWeight : nonaxisWeight,
+          from: vec2.fromValues(x, visibleMin[1]),
+          to: vec2.fromValues(x, visibleMax[1]),
+        },
+        wvTransform,
+      )
     }
   }
 }

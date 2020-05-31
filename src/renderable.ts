@@ -5,6 +5,7 @@ export enum Type {
   PATH = 0,
   RECT = 1,
   CIRCLE = 2,
+  LINE = 3,
 }
 
 export interface Path {
@@ -33,15 +34,21 @@ export interface Circle {
   radius: number
 }
 
-export type Renderable = Path | Rect | Circle
+export interface Line {
+  type: Type.LINE
+  style: string
+  from: vec2
+  to: vec2
+  width: number
+}
+
+export type Renderable = Path | Rect | Circle | Line
 
 export const render = (
   ctx: CanvasRenderingContext2D,
   r: Renderable,
   wvTransform: mat2d,
 ): void => {
-  ctx.fillStyle = r.fillStyle
-
   switch (r.type) {
     case Type.PATH: {
       ctx.fillStyle = r.fillStyle
@@ -94,7 +101,7 @@ export const render = (
       break
     }
 
-    case Type.CIRCLE:
+    case Type.CIRCLE: {
       ctx.fillStyle = r.fillStyle
 
       const vp = vec2.transformMat2d(vec2.create(), r.pos, wvTransform)
@@ -108,5 +115,25 @@ export const render = (
       ctx.arc(vp[0], vp[1], edgep[0] - vp[0], 0, Math.PI * 2)
       ctx.fill()
       break
+    }
+
+    case Type.LINE: {
+      const vfrom = vec2.transformMat2d(vec2.create(), r.from, wvTransform)
+      const vto = vec2.transformMat2d(vec2.create(), r.to, wvTransform)
+
+      // remove aliasing artifacts (may not look good for non horizontal/vertical lines?)
+      vec2.floor(vfrom, vfrom)
+      vec2.floor(vto, vto)
+      vec2.add(vfrom, vfrom, [0.5, 0.5])
+      vec2.add(vto, vto, [0.5, 0.5])
+
+      ctx.strokeStyle = r.style
+      ctx.lineWidth = r.width
+
+      ctx.beginPath()
+      ctx.moveTo(vfrom[0], vfrom[1])
+      ctx.lineTo(vto[0], vto[1])
+      ctx.stroke()
+    }
   }
 }
