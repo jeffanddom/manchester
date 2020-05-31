@@ -1,4 +1,4 @@
-import { vec2, mat2d, mat2 } from 'gl-matrix'
+import { vec2, mat2d } from 'gl-matrix'
 import { sample } from 'lodash'
 import * as mathutil from '~/mathutil'
 
