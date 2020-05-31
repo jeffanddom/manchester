@@ -107,7 +107,7 @@ export const makeBullet = (position: vec2, orientation: number): IEntity => {
   e.transform.orientation = orientation
 
   e.mover = new BulletMover()
-  e.pathRenderable = new PathRenderable(
+  e.renderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.1, TILE_SIZE * 0.5],

@@ -1,13 +1,13 @@
 import { IGame } from '~/interfaces'
 import {
-  ITransform,
   IGenericComponent,
   IWallCollider,
   IDamageable,
   IDamager,
-  IPathRenderable,
+  IRenderable,
 } from '~/entities/components/interfaces'
 import { Camera } from '~/Camera'
+import { Transform } from './components/Transform'
 
 export interface IEntityManager {
   entities: { [key: string]: IEntity }
@@ -21,7 +21,7 @@ export interface IEntityManager {
 
 export interface IEntity {
   id?: string
-  transform?: ITransform
+  transform?: Transform
   mover?: IGenericComponent
   shooter?: IGenericComponent
   wallCollider?: IWallCollider
@@ -29,8 +29,7 @@ export interface IEntity {
   damageable?: IDamageable
   damager?: IDamager
   prerender?: IGenericComponent
-  pathRenderable?: IPathRenderable
+  renderable?: IRenderable
 
   update: (g: IGame, dt: number) => void
-  render: (ctx: CanvasRenderingContext2D, camera: Camera) => void
 }

@@ -3,12 +3,13 @@ import { IEntity } from '~/entities/interfaces'
 import {
   IGenericComponent,
   IWallCollider,
-  IPathRenderable,
+  IRenderable,
   IDamageable,
   IDamager,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
 import { Camera } from '~/Camera'
+import * as renderable from '~/renderable'
 
 export class Entity implements IEntity {
   id?: string
@@ -17,7 +18,7 @@ export class Entity implements IEntity {
   shooter?: IGenericComponent
   wallCollider?: IWallCollider
   wall?: IGenericComponent
-  pathRenderable?: IPathRenderable
+  renderable?: IRenderable
   damageable?: IDamageable
   damager?: IDamager
   playfieldClamper?: IGenericComponent
@@ -40,9 +41,5 @@ export class Entity implements IEntity {
 
     // Should be the very last thing to update.
     this.prerender?.update(this, game, dt)
-  }
-
-  render(ctx: CanvasRenderingContext2D, camera: Camera): void {
-    this.pathRenderable?.render(this, ctx, camera)
   }
 }

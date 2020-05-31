@@ -3,6 +3,7 @@ import { v4 } from 'uuid'
 import { IGame } from '~/interfaces'
 import { IEntity, IEntityManager } from '~/entities/interfaces'
 import { Camera } from '~/Camera'
+import { render } from '~/renderable'
 
 export class EntityManager implements IEntityManager {
   entities: { [key: string]: IEntity }
@@ -24,9 +25,14 @@ export class EntityManager implements IEntityManager {
   }
 
   render(ctx: CanvasRenderingContext2D, camera: Camera) {
-    Object.keys(this.entities).forEach((id) => {
-      this.entities[id].render(ctx, camera)
-    })
+    const wvTransform = camera.wvTransform()
+    for (let id in this.entities) {
+      const e = this.entities[id]
+      if (e.renderable === undefined) {
+        continue
+      }
+      render(ctx, e.renderable.getRenderable(e), wvTransform)
+    }
   }
 
   register(e: IEntity) {

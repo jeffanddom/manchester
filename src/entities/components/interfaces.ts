@@ -3,6 +3,7 @@ import { IEntity } from '~/entities/interfaces'
 import { IGame } from '~/interfaces'
 import { Camera } from '~/Camera'
 import { Hitbox } from '~/Hitbox'
+import { Renderable } from '~renderable'
 
 export interface IWallCollider {
   hitLastFrame: boolean
@@ -15,10 +16,9 @@ export interface IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void
 }
 
-export interface IPathRenderable {
-  fillStyle: string
-
-  render(e: IEntity, ctx: CanvasRenderingContext2D, camera: Camera): void
+export interface IRenderable {
+  setFillStyle(s: string): void
+  getRenderable(e: IEntity): Renderable
 }
 
 export interface IDamageable extends IGenericComponent {

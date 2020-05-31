@@ -24,7 +24,7 @@ export const makeTurret = (): IEntity => {
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
     ),
   )
-  e.pathRenderable = new PathRenderable(
+  e.renderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.3, TILE_SIZE * 0.5],

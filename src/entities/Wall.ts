@@ -15,7 +15,7 @@ const WALL_HEALTH = 4.0
 class DisplayWallDamage implements IGenericComponent {
   update(entity: IEntity): void {
     const color = lerp(90, 130, entity.damageable.health / WALL_HEALTH)
-    entity.pathRenderable.fillStyle = `rgba(${color},${color},${color},1)`
+    entity.renderable.setFillStyle(`rgba(${color},${color},${color},1)`)
   }
 }
 
@@ -23,7 +23,7 @@ export const makeWall = (): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
   e.wall = { update: () => {} }
-  e.pathRenderable = new PathRenderable(
+  e.renderable = new PathRenderable(
     path2.fromValues([
       [-TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
