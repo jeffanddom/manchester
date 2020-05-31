@@ -3,7 +3,7 @@ import { vec2, mat2d } from 'gl-matrix'
 
 export enum Type {
   PATH = 0,
-  // RECT = 1,
+  RECT = 1,
   // CIRCLE = 2,
 }
 
@@ -15,14 +15,14 @@ export interface Path {
   path: path2 // modelspace coordinates
 }
 
-// export interface Rect {
-//   type: Type.RECT
-//   fillStyle: string
+export interface Rect {
+  type: Type.RECT
+  fillStyle: string
 
-//   floor: boolean // whether to align to whole pixels
-//   pos: vec2 // worldspace coordinates
-//   dimensions: vec2
-// }
+  floor: boolean // whether to align to whole pixels
+  pos: vec2 // worldspace coordinates
+  dimensions: vec2
+}
 
 // export interface Circle {
 //   type: Type.CIRCLE
@@ -32,7 +32,7 @@ export interface Path {
 //   radius: number
 // }
 
-export type Renderable = Path // | Rect | Circle
+export type Renderable = Path | Rect //| Circle
 
 export const render = (
   ctx: CanvasRenderingContext2D,
@@ -42,7 +42,7 @@ export const render = (
   ctx.fillStyle = r.fillStyle
 
   switch (r.type) {
-    case Type.PATH:
+    case Type.PATH: {
       const transform = mat2d.multiply(
         mat2d.create(),
         wvTransform,
@@ -55,9 +55,24 @@ export const render = (
       path2.applyPath(p, ctx)
       ctx.fill()
       break
+    }
 
-    // case Type.RECT:
-    //   break
+    case Type.RECT: {
+      const vmin = vec2.transformMat2d(vec2.create(), r.pos, wvTransform)
+      const vmax = vec2.transformMat2d(
+        vec2.create(),
+        vec2.add(vec2.create(), r.pos, r.dimensions),
+        wvTransform,
+      )
+
+      if (r.floor) {
+        vec2.floor(vmin, vmin)
+        vec2.floor(vmax, vmax)
+      }
+
+      ctx.fillRect(vmin[0], vmin[1], vmax[0] - vmin[0], vmax[1] - vmin[1])
+      break
+    }
 
     // case Type.CIRCLE:
     //   break

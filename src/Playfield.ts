@@ -3,6 +3,7 @@ import { TILE_SIZE } from '~/constants'
 import { vec2 } from 'gl-matrix'
 import { Camera } from '~/Camera'
 import * as map from '~/map/interfaces'
+import * as renderable from '~/renderable'
 
 const terrainByEncoding: { [key: string]: map.Terrain } = {
   '.': map.Terrain.Grass,
@@ -65,28 +66,34 @@ export class Playfield implements IPlayfield {
       const y = i * TILE_SIZE
       for (let j = 0; j < tileWidth; j++) {
         const x = j * TILE_SIZE
+
+        let fillStyle = undefined
         switch (this.tiles[i][j].type) {
           case map.Terrain.Grass:
-            ctx.fillStyle = '#7EC850'
+            fillStyle = '#7EC850'
             break
           case map.Terrain.Mountain:
-            ctx.fillStyle = '#5B5036'
+            fillStyle = '#5B5036'
             break
           case map.Terrain.River:
-            ctx.fillStyle = '#2B5770'
+            fillStyle = '#2B5770'
             break
           case map.Terrain.Unknown:
-            ctx.fillStyle = '#FF00FF'
+            fillStyle = '#FF00FF'
             break
         }
 
-        const renderPos = vec2.transformMat2d(
-          vec2.create(),
-          vec2.fromValues(x, y),
+        renderable.render(
+          ctx,
+          {
+            type: renderable.Type.RECT,
+            fillStyle: fillStyle,
+            floor: true,
+            pos: vec2.fromValues(x, y),
+            dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+          },
           wvTransform,
         )
-        vec2.floor(renderPos, renderPos) // necessary to avoid render gaps between adjacent tiles
-        ctx.fillRect(renderPos[0], renderPos[1], TILE_SIZE, TILE_SIZE)
       }
     }
   }
