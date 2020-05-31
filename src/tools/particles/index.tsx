@@ -1,12 +1,13 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { vec2 } from 'gl-matrix'
+import { vec2, mat2d } from 'gl-matrix'
 
 import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { Camera } from '~/Camera'
 import * as time from '~/time'
+import * as renderable from '~/renderable'
 
 const storage = window.localStorage
 const storedConfig = storage.getItem('config')
@@ -79,8 +80,17 @@ function gameLoop() {
   const dt = now - prevFrameTime
   prevFrameTime = now
 
-  ctx.fillStyle = globalConfig.backgroundColor
-  ctx.fillRect(0, 0, 400, 400)
+  renderable.render(
+    ctx,
+    {
+      type: renderable.Type.RECT,
+      fillStyle: globalConfig.backgroundColor,
+      floor: false,
+      pos: vec2.fromValues(0, 0),
+      dimensions: vec2.fromValues(canvas.width, canvas.height),
+    },
+    mat2d.identity(mat2d.create()),
+  )
 
   emitter.update(dt)
   emitter.render(ctx, camera)

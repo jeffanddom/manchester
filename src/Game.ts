@@ -1,13 +1,15 @@
+import { vec2, mat2d } from 'gl-matrix'
+
 import { EntityManager } from '~/entities/EntityManager'
 import { Playfield } from '~/Playfield'
 import { GameMap, IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { vec2 } from 'gl-matrix'
 import { Keyboard } from '~/Keyboard'
 import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
 import * as entities from '~/entities'
+import * as renderable from '~/renderable'
 
 let DEBUG_MODE = false
 
@@ -78,9 +80,17 @@ export class Game implements IGame {
 
   render(ctx: CanvasRenderingContext2D) {
     // Clear canvas
-    ctx.fillStyle = 'magenta'
-    const dimensions = this.playfield.dimensions()
-    ctx.fillRect(0, 0, dimensions[0], dimensions[1])
+    renderable.render(
+      ctx,
+      {
+        type: renderable.Type.RECT,
+        fillStyle: 'magenta',
+        floor: false,
+        pos: vec2.fromValues(0, 0),
+        dimensions: this.playfield.dimensions(),
+      },
+      mat2d.identity(mat2d.create()),
+    )
 
     this.playfield.render(ctx, this.camera)
     this.entities.render(ctx, this.camera)

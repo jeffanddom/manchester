@@ -179,12 +179,16 @@ export class Editor {
   }
 
   renderBg(): void {
-    this.renderContext.fillStyle = '#FCFCFC'
-    this.renderContext.fillRect(
-      0,
-      0,
-      this.viewportDimensions[0],
-      this.viewportDimensions[1],
+    renderable.render(
+      this.renderContext,
+      {
+        type: renderable.Type.RECT,
+        fillStyle: '#FCFCFC',
+        floor: false,
+        pos: vec2.fromValues(0, 0),
+        dimensions: this.viewportDimensions,
+      },
+      mat2d.identity(mat2d.create()),
     )
   }
 
