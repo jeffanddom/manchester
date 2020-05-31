@@ -17,7 +17,8 @@ export interface Path {
 
 export interface Rect {
   type: Type.RECT
-  fillStyle: string
+  fillStyle?: string
+  strokeStyle?: string
 
   floor: boolean // whether to align to whole pixels
   pos: vec2 // worldspace coordinates
@@ -43,6 +44,8 @@ export const render = (
 
   switch (r.type) {
     case Type.PATH: {
+      ctx.fillStyle = r.fillStyle
+
       const transform = mat2d.multiply(
         mat2d.create(),
         wvTransform,
@@ -61,6 +64,13 @@ export const render = (
     }
 
     case Type.RECT: {
+      if (r.fillStyle !== undefined) {
+        ctx.fillStyle = r.fillStyle
+      }
+      if (r.strokeStyle !== undefined) {
+        ctx.strokeStyle = r.strokeStyle
+      }
+
       const vmin = vec2.transformMat2d(vec2.create(), r.pos, wvTransform)
       const vmax = vec2.transformMat2d(
         vec2.create(),
@@ -73,11 +83,20 @@ export const render = (
         vec2.floor(vmax, vmax)
       }
 
-      ctx.fillRect(vmin[0], vmin[1], vmax[0] - vmin[0], vmax[1] - vmin[1])
+      const d = vec2.sub(vec2.create(), vmax, vmin)
+
+      if (r.fillStyle !== undefined) {
+        ctx.fillRect(vmin[0], vmin[1], d[0], d[1])
+      }
+      if (r.strokeStyle !== undefined) {
+        ctx.strokeRect(vmin[0], vmin[1], d[0], d[1])
+      }
       break
     }
 
     case Type.CIRCLE:
+      ctx.fillStyle = r.fillStyle
+
       const vp = vec2.transformMat2d(vec2.create(), r.pos, wvTransform)
       const edgep = vec2.transformMat2d(
         vec2.create(),

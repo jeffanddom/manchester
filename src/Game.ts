@@ -105,24 +105,36 @@ export class Game implements IGame {
         ctx.strokeStyle = 'cyan'
         if (e.damageable) {
           const aabb = e.damageable.aabb(e)
-          const vp = vec2.transformMat2d(vec2.create(), aabb[0], wvTranform)
-          ctx.strokeRect(
-            vp[0],
-            vp[1],
-            aabb[1][0] - aabb[0][0] + 1,
-            aabb[1][1] - aabb[0][1] + 1,
+          const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
+
+          renderable.render(
+            ctx,
+            {
+              type: renderable.Type.RECT,
+              strokeStyle: 'cyan',
+              floor: false,
+              pos: aabb[0],
+              dimensions: d,
+            },
+            wvTranform,
           )
         }
 
         ctx.strokeStyle = 'magenta'
         if (e.damager) {
           const aabb = e.damager.aabb(e)
-          const vp = vec2.transformMat2d(vec2.create(), aabb[0], wvTranform)
-          ctx.strokeRect(
-            vp[0],
-            vp[1],
-            aabb[1][0] - aabb[0][0] + 1,
-            aabb[1][1] - aabb[0][1] + 1,
+          const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
+
+          renderable.render(
+            ctx,
+            {
+              type: renderable.Type.RECT,
+              strokeStyle: 'magenta',
+              floor: false,
+              pos: aabb[0],
+              dimensions: d,
+            },
+            wvTranform,
           )
         }
       }
