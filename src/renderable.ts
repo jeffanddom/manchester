@@ -52,7 +52,10 @@ export const render = (
         vec2.transformMat2d(vec2.create(), p, transform),
       )
       ctx.beginPath()
-      path2.applyPath(p, ctx)
+      ctx.moveTo(p[0][0], p[0][1])
+      for (let i = 1; i < p.length; i++) {
+        ctx.lineTo(p[i][0], p[i][1])
+      }
       ctx.fill()
       break
     }
