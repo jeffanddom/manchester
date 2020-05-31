@@ -61,7 +61,6 @@ export class Playfield implements IPlayfield {
     const [tileWidth, tileHeight] = this.tileDimensions()
     const wvTransform = camera.wvTransform()
 
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
     for (let i = 0; i < tileHeight; i++) {
       const y = i * TILE_SIZE
       for (let j = 0; j < tileWidth; j++) {
