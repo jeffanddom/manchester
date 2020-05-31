@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, mat2d } from 'gl-matrix'
 import * as _ from 'lodash'
 
 import { Keyboard } from '~Keyboard'
@@ -90,9 +90,7 @@ export class Editor {
   }
 
   updateCamera(dt: number): void {
-    const cameraPos = this.camera.v2w(
-      vec2.scale(vec2.create(), this.viewportDimensions, 0.5),
-    )
+    const cameraPos = this.camera.getPosition()
 
     if (this.keyboard.downKeys.has(keyMap.cameraNorth)) {
       vec2.add(cameraPos, cameraPos, [0, -CAMERA_SPEED * dt])
@@ -106,14 +104,14 @@ export class Editor {
       vec2.add(cameraPos, cameraPos, [CAMERA_SPEED * dt, 0])
     }
 
-    let zoom = this.camera.zoom
+    let zoom = this.camera.getZoom()
     if (this.keyboard.downKeys.has(keyMap.zoomIn)) {
       zoom += ZOOM_SPEED * dt
     } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
       zoom -= ZOOM_SPEED * dt
     }
 
-    this.camera.zoom = mathutil.clamp(zoom, [0.5, 3])
+    this.camera.setZoom(mathutil.clamp(zoom, [0.5, 3]))
     this.camera.setPosition(cameraPos)
   }
 
@@ -232,10 +230,15 @@ export class Editor {
    * in tile units.
    */
   v2t(vpos: vec2): vec2 {
-    const wpos = this.camera.v2w(vpos)
+    const wp = vec2.transformMat2d(
+      vec2.create(),
+      vpos,
+      mat2d.invert(mat2d.create(), this.camera.wvTransform()),
+    )
+
     return vec2.floor(
       vec2.create(),
-      vec2.scale(vec2.create(), wpos, 1 / TILE_SIZE),
+      vec2.scale(vec2.create(), wp, 1 / TILE_SIZE),
     )
   }
 
@@ -248,9 +251,13 @@ export class Editor {
   }
 
   renderTile(tpos: vec2, fillStyle: string): void {
-    const worldOffset = vec2.scale(vec2.create(), tpos, TILE_SIZE)
+    const transform = mat2d.fromTranslation(
+      mat2d.create(),
+      vec2.scale(vec2.create(), tpos, TILE_SIZE),
+    )
+    mat2d.multiply(transform, this.camera.wvTransform(), transform)
     const transformedPath = TILE_PATH.map((v) =>
-      this.camera.w2v(vec2.add(vec2.create(), v, worldOffset)),
+      vec2.transformMat2d(vec2.create(), v, transform),
     )
 
     this.renderContext.fillStyle = fillStyle
@@ -265,33 +272,35 @@ export class Editor {
 
     this.renderContext.strokeStyle = '#DDDDDD'
 
-    for (let i = 0; i < this.map.dimensions[1]; i++) {
-      const worldp = (i + this.map.origin[1]) * TILE_SIZE
-      const renderp = vec2.add(
-        vec2.create(),
-        this.camera.w2v(vec2.fromValues(0, worldp)),
-        [0.5, 0.5], // half-pixel offset to remove antialiasing fuzz
-      )
+    const wvTransform = this.camera.wvTransform()
 
-      this.renderContext.lineWidth = worldp === 0 ? axisWeight : nonaxisWeight
+    for (let i = 0; i < this.map.dimensions[1]; i++) {
+      const wy = (i + this.map.origin[1]) * TILE_SIZE
+      const vp = vec2.transformMat2d(vec2.create(), [0, wy], wvTransform)
+
+      // remove antialiasing fuzz by drawing on the half-pixel mark
+      vec2.floor(vp, vp)
+      vec2.add(vp, vp, [0.5, 0.5])
+
+      this.renderContext.lineWidth = wy === 0 ? axisWeight : nonaxisWeight
       this.renderContext.beginPath()
-      this.renderContext.moveTo(0, renderp[1])
-      this.renderContext.lineTo(this.viewportDimensions[0], renderp[1])
+      this.renderContext.moveTo(0, vp[1])
+      this.renderContext.lineTo(this.viewportDimensions[0], vp[1])
       this.renderContext.stroke()
     }
 
     for (let j = 0; j < this.map.dimensions[0]; j++) {
-      const worldp = (j + this.map.origin[0]) * TILE_SIZE
-      const renderp = vec2.add(
-        vec2.create(),
-        this.camera.w2v(vec2.fromValues(worldp, 0)),
-        [0.5, 0.5], // half-pixel offset to remove antialiasing fuzz
-      )
+      const wx = (j + this.map.origin[0]) * TILE_SIZE
+      const vp = vec2.transformMat2d(vec2.create(), [wx, 0], wvTransform)
 
-      this.renderContext.lineWidth = worldp === 0 ? axisWeight : nonaxisWeight
+      // remove antialiasing fuzz by drawing on the half-pixel mark
+      vec2.floor(vp, vp)
+      vec2.add(vp, vp, [0.5, 0.5])
+
+      this.renderContext.lineWidth = wx === 0 ? axisWeight : nonaxisWeight
       this.renderContext.beginPath()
-      this.renderContext.moveTo(renderp[0], 0)
-      this.renderContext.lineTo(renderp[0], this.viewportDimensions[1])
+      this.renderContext.moveTo(vp[0], 0)
+      this.renderContext.lineTo(vp[0], this.viewportDimensions[1])
       this.renderContext.stroke()
     }
   }

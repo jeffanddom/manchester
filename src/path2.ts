@@ -8,18 +8,6 @@ export class path2 extends Array<vec2> {
     return raw.map((r) => vec2.fromValues(r[0], r[1]))
   }
 
-  public static translate(p: path2, offset: vec2): path2 {
-    return p.map((v) => vec2.add(vec2.create(), v, offset))
-  }
-
-  /**
-   * Rotate the provided path by the given angle. Vertices in the path are
-   * assumed to be relative to the origin.
-   */
-  public static rotate(p: path2, angle: number): path2 {
-    return p.map((v) => vec2.rotate(vec2.create(), v, [0, 0], angle))
-  }
-
   /**
    * Updates the given render context with a subpath using the points in the
    * provided paths.

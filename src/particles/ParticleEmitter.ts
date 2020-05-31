@@ -99,9 +99,13 @@ export class ParticleEmitter {
   }
 
   render(ctx: CanvasRenderingContext2D, camera: Camera): void {
+    const wvTransform = camera.wvTransform()
     this.particles.forEach((p) => {
-      const renderPos = camera.w2v(p.position)
-
+      const renderPos = vec2.transformMat2d(
+        vec2.create(),
+        p.position,
+        wvTransform,
+      )
       ctx.fillStyle = p.color
       ctx.beginPath()
       ctx.arc(renderPos[0], renderPos[1], p.radius, 0, Math.PI * 2)

@@ -1,3 +1,5 @@
+import { vec2, mat2d } from 'gl-matrix'
+
 import { path2 } from '~/path2'
 import { IEntity } from '~/entities/interfaces'
 import { IPathRenderable } from '~/entities/components/interfaces'
@@ -13,12 +15,14 @@ export class PathRenderable implements IPathRenderable {
   }
 
   render(e: IEntity, ctx: CanvasRenderingContext2D, camera: Camera): void {
-    const p = path2
-      .translate(
-        path2.rotate(this.path, e.transform.orientation),
-        e.transform.position,
-      )
-      .map((p) => camera.w2v(p))
+    const transform = mat2d.multiply(
+      mat2d.create(),
+      camera.wvTransform(),
+      e.transform.mwTransform(),
+    )
+    const p = this.path.map((p) =>
+      vec2.transformMat2d(vec2.create(), p, transform),
+    )
 
     ctx.fillStyle = this.fillStyle
     ctx.beginPath()

@@ -1,18 +1,18 @@
 import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
 import {
-  ITransform,
   IGenericComponent,
   IWallCollider,
   IPathRenderable,
   IDamageable,
   IDamager,
 } from '~/entities/components/interfaces'
+import { Transform } from '~/entities/components/Transform'
 import { Camera } from '~/Camera'
 
 export class Entity implements IEntity {
   id?: string
-  transform?: ITransform
+  transform?: Transform
   mover?: IGenericComponent
   shooter?: IGenericComponent
   wallCollider?: IWallCollider

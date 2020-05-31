@@ -87,16 +87,18 @@ export class Game implements IGame {
     this.emitters.forEach((e) => e.render(ctx, this.camera))
 
     if (DEBUG_MODE) {
+      const wvTranform = this.camera.wvTransform()
+
       for (const id in this.entities.entities) {
         const e = this.entities.entities[id]
 
         ctx.strokeStyle = 'cyan'
         if (e.damageable) {
           const aabb = e.damageable.aabb(e)
-          const renderPos = this.camera.w2v(aabb[0])
+          const vp = vec2.transformMat2d(vec2.create(), aabb[0], wvTranform)
           ctx.strokeRect(
-            renderPos[0],
-            renderPos[1],
+            vp[0],
+            vp[1],
             aabb[1][0] - aabb[0][0] + 1,
             aabb[1][1] - aabb[0][1] + 1,
           )
@@ -105,10 +107,10 @@ export class Game implements IGame {
         ctx.strokeStyle = 'magenta'
         if (e.damager) {
           const aabb = e.damager.aabb(e)
-          const renderPos = this.camera.w2v(aabb[0])
+          const vp = vec2.transformMat2d(vec2.create(), aabb[0], wvTranform)
           ctx.strokeRect(
-            renderPos[0],
-            renderPos[1],
+            vp[0],
+            vp[1],
             aabb[1][0] - aabb[0][0] + 1,
             aabb[1][1] - aabb[0][1] + 1,
           )

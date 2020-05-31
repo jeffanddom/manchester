@@ -58,6 +58,7 @@ export class Playfield implements IPlayfield {
 
   render(ctx: CanvasRenderingContext2D, camera: Camera) {
     const [tileWidth, tileHeight] = this.tileDimensions()
+    const wvTransform = camera.wvTransform()
 
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'
     for (let i = 0; i < tileHeight; i++) {
@@ -79,7 +80,12 @@ export class Playfield implements IPlayfield {
             break
         }
 
-        const renderPos = camera.w2v(vec2.fromValues(x, y))
+        const renderPos = vec2.transformMat2d(
+          vec2.create(),
+          vec2.fromValues(x, y),
+          wvTransform,
+        )
+        vec2.floor(renderPos, renderPos) // necessary to avoid render gaps between adjacent tiles
         ctx.fillRect(renderPos[0], renderPos[1], TILE_SIZE, TILE_SIZE)
       }
     }

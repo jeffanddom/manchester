@@ -4,14 +4,6 @@ import { IGame } from '~/interfaces'
 import { Camera } from '~/Camera'
 import { Hitbox } from '~/Hitbox'
 
-export interface ITransform {
-  previousPosition: vec2
-  position: vec2
-  orientation: number
-
-  update(): void
-}
-
 export interface IWallCollider {
   hitLastFrame: boolean
   collidedWalls: IEntity[]
