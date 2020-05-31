@@ -1,9 +1,9 @@
-import { Tile, IPlayfield } from '~/interfaces'
+import { Tile } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { vec2 } from 'gl-matrix'
 import { Camera } from '~/Camera'
 import * as map from '~/map/interfaces'
-import * as renderable from '~/renderable'
+import { Primitive, Renderable } from '~/renderer/interfaces'
 
 const terrainByEncoding: { [key: string]: map.Terrain } = {
   '.': map.Terrain.Grass,
@@ -19,7 +19,7 @@ const deserializeTerrain = (s: string): map.Terrain => {
   return t
 }
 
-export class Playfield implements IPlayfield {
+export class Playfield {
   tiles: Tile[][]
 
   constructor(map: string) {
@@ -57,9 +57,9 @@ export class Playfield implements IPlayfield {
     return vec2.scale(vec2.create(), this.tileDimensions(), TILE_SIZE)
   }
 
-  render(ctx: CanvasRenderingContext2D, camera: Camera) {
+  getRenderables(): Renderable[] {
+    const renderables: Renderable[] = []
     const [tileWidth, tileHeight] = this.tileDimensions()
-    const wvTransform = camera.wvTransform()
 
     for (let i = 0; i < tileHeight; i++) {
       const y = i * TILE_SIZE
@@ -82,18 +82,18 @@ export class Playfield implements IPlayfield {
             break
         }
 
-        renderable.render(
-          ctx,
-          {
-            type: renderable.Type.RECT,
-            fillStyle: fillStyle,
-            floor: true,
-            pos: vec2.fromValues(x, y),
-            dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
-          },
-          wvTransform,
-        )
+        renderables.push({
+          primitive: Primitive.RECT,
+          fillStyle: fillStyle,
+          floor: true,
+          pos: vec2.fromValues(x, y),
+          dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+        })
       }
     }
+
+    return renderables
   }
+
+  render(ctx: CanvasRenderingContext2D, camera: Camera) {}
 }

@@ -2,8 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
 import { radialTranslate2, lerp } from '~/mathutil'
-import { Camera } from '~/Camera'
-import * as renderable from '~/renderable'
+import { Renderable, Primitive } from '~renderer/interfaces'
 
 interface Particle {
   position: vec2
@@ -99,19 +98,14 @@ export class ParticleEmitter {
     }
   }
 
-  render(ctx: CanvasRenderingContext2D, camera: Camera): void {
-    const wvTransform = camera.wvTransform()
-    this.particles.forEach((p) => {
-      renderable.render(
-        ctx,
-        {
-          type: renderable.Type.CIRCLE,
-          fillStyle: p.color,
-          pos: p.position,
-          radius: p.radius,
-        },
-        wvTransform,
-      )
+  getRenderables(): Renderable[] {
+    return this.particles.map((p) => {
+      return {
+        primitive: Primitive.CIRCLE,
+        fillStyle: p.color,
+        pos: p.position,
+        radius: p.radius,
+      }
     })
   }
 }

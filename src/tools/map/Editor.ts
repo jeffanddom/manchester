@@ -9,8 +9,8 @@ import * as mathutil from '~/mathutil'
 import { path2 } from '~/path2'
 import { Map, Terrain } from '~map/interfaces'
 import * as entities from '~/entities'
-import { PathRenderable } from '~entities/components/PathRenderable'
-import * as renderable from '~/renderable'
+import { IRenderer, Primitive } from '~renderer/interfaces'
+import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 
 const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2
@@ -48,7 +48,7 @@ const ENTITY_TYPES = [
 
 export class Editor {
   canvas: HTMLCanvasElement
-  renderContext: CanvasRenderingContext2D
+  renderer: IRenderer
 
   viewportDimensions: vec2
   map: Map
@@ -64,7 +64,7 @@ export class Editor {
   entityBrush: entities.types.Type
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
-    this.renderContext = params.canvas.getContext('2d')
+    this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d'))
 
     this.viewportDimensions = vec2.fromValues(
       params.canvas.width,
@@ -168,7 +168,9 @@ export class Editor {
   }
 
   render(): void {
-    this.renderBg()
+    this.renderer.clear('#FCFCFC')
+    this.renderer.setTransform(this.camera.wvTransform())
+
     this.renderTerrain()
     this.renderGrid()
 
@@ -176,20 +178,6 @@ export class Editor {
     if (cursorPos !== undefined) {
       this.renderTile(cursorPos, 'rgba(0, 255, 255, 0.5)')
     }
-  }
-
-  renderBg(): void {
-    renderable.render(
-      this.renderContext,
-      {
-        type: renderable.Type.RECT,
-        fillStyle: '#FCFCFC',
-        floor: false,
-        pos: vec2.fromValues(0, 0),
-        dimensions: this.viewportDimensions,
-      },
-      mat2d.identity(mat2d.create()),
-    )
   }
 
   renderTerrain(): void {
@@ -257,53 +245,40 @@ export class Editor {
   }
 
   renderTile(tpos: vec2, fillStyle: string): void {
-    renderable.render(
-      this.renderContext,
-      {
-        type: renderable.Type.RECT,
-        fillStyle: fillStyle,
-        floor: true,
-        pos: vec2.scale(vec2.create(), tpos, TILE_SIZE),
-        dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
-      },
-      this.camera.wvTransform(),
-    )
+    this.renderer.render({
+      primitive: Primitive.RECT,
+      fillStyle: fillStyle,
+      floor: true,
+      pos: vec2.scale(vec2.create(), tpos, TILE_SIZE),
+      dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    })
   }
 
   renderGrid(): void {
     const axisWeight = 2
     const nonaxisWeight = 1
     const [visibleMin, visibleMax] = this.camera.getVisibleMinMax()
-    const wvTransform = this.camera.wvTransform()
 
     for (let i = 0; i < this.map.dimensions[1]; i++) {
       const y = (i + this.map.origin[1]) * TILE_SIZE
-      renderable.render(
-        this.renderContext,
-        {
-          type: renderable.Type.LINE,
-          style: '#DDDDDD',
-          width: y === 0 ? axisWeight : nonaxisWeight,
-          from: vec2.fromValues(visibleMin[0], y),
-          to: vec2.fromValues(visibleMax[0], y),
-        },
-        wvTransform,
-      )
+      this.renderer.render({
+        primitive: Primitive.LINE,
+        style: '#DDDDDD',
+        width: y === 0 ? axisWeight : nonaxisWeight,
+        from: vec2.fromValues(visibleMin[0], y),
+        to: vec2.fromValues(visibleMax[0], y),
+      })
     }
 
     for (let j = 0; j < this.map.dimensions[0]; j++) {
       const x = (j + this.map.origin[0]) * TILE_SIZE
-      renderable.render(
-        this.renderContext,
-        {
-          type: renderable.Type.LINE,
-          style: '#DDDDDD',
-          width: x === 0 ? axisWeight : nonaxisWeight,
-          from: vec2.fromValues(x, visibleMin[1]),
-          to: vec2.fromValues(x, visibleMax[1]),
-        },
-        wvTransform,
-      )
+      this.renderer.render({
+        primitive: Primitive.LINE,
+        style: '#DDDDDD',
+        width: x === 0 ? axisWeight : nonaxisWeight,
+        from: vec2.fromValues(x, visibleMin[1]),
+        to: vec2.fromValues(x, visibleMax[1]),
+      })
     }
   }
 }

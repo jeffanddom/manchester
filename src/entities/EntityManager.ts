@@ -1,11 +1,10 @@
 import { v4 } from 'uuid'
 
 import { IGame } from '~/interfaces'
-import { IEntity, IEntityManager } from '~/entities/interfaces'
-import { Camera } from '~/Camera'
-import { render } from '~/renderable'
+import { IEntity } from '~/entities/interfaces'
+import { Renderable } from '~renderer/interfaces'
 
-export class EntityManager implements IEntityManager {
+export class EntityManager {
   entities: { [key: string]: IEntity }
   toDelete: string[]
 
@@ -24,15 +23,16 @@ export class EntityManager implements IEntityManager {
     this.toDelete = []
   }
 
-  render(ctx: CanvasRenderingContext2D, camera: Camera) {
-    const wvTransform = camera.wvTransform()
+  getRenderables(): Renderable[] {
+    const renderables: Renderable[] = []
     for (let id in this.entities) {
       const e = this.entities[id]
       if (e.renderable === undefined) {
         continue
       }
-      render(ctx, e.renderable.getRenderable(e), wvTransform)
+      renderables.push(e.renderable.getRenderable(e))
     }
+    return renderables
   }
 
   register(e: IEntity) {

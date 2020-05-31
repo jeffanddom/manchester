@@ -2,6 +2,7 @@ import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { vec2 } from 'gl-matrix'
 import * as time from '~/time'
+import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
@@ -55,8 +56,11 @@ const map = {
 `,
 }
 
-const ctx = canvas.getContext('2d')
-const game = new Game(map, viewportDimensions)
+const game = new Game(
+  new Canvas2DRenderer(canvas.getContext('2d')),
+  map,
+  viewportDimensions,
+)
 let prevFrameTime = time.current()
 
 function gameLoop() {
@@ -67,7 +71,7 @@ function gameLoop() {
   prevFrameTime = now
 
   game.update(dt)
-  game.render(ctx)
+  game.render()
 }
 
 gameLoop()

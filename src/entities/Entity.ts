@@ -8,8 +8,6 @@ import {
   IDamager,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
-import { Camera } from '~/Camera'
-import * as renderable from '~/renderable'
 
 export class Entity implements IEntity {
   id?: string

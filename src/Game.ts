@@ -1,4 +1,4 @@
-import { vec2, mat2d } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import { EntityManager } from '~/entities/EntityManager'
 import { Playfield } from '~/Playfield'
@@ -9,11 +9,13 @@ import { Keyboard } from '~/Keyboard'
 import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
 import * as entities from '~/entities'
-import * as renderable from '~/renderable'
+import { Primitive, IRenderer } from '~/renderer/interfaces'
 
 let DEBUG_MODE = false
 
 export class Game implements IGame {
+  renderer: IRenderer
+
   playfield: Playfield
   entities: EntityManager
   keyboard: Keyboard
@@ -22,7 +24,9 @@ export class Game implements IGame {
   player: IEntity
   camera: Camera
 
-  constructor(map: GameMap, viewportSize: vec2) {
+  constructor(renderer: IRenderer, map: GameMap, viewportSize: vec2) {
+    this.renderer = renderer
+
     this.playfield = new Playfield(map.playfield)
     this.entities = new EntityManager()
     this.keyboard = new Keyboard()
@@ -78,64 +82,44 @@ export class Game implements IGame {
     this.keyboard.update()
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    // Clear canvas
-    renderable.render(
-      ctx,
-      {
-        type: renderable.Type.RECT,
-        fillStyle: 'magenta',
-        floor: false,
-        pos: vec2.fromValues(0, 0),
-        dimensions: this.playfield.dimensions(),
-      },
-      mat2d.identity(mat2d.create()),
+  render() {
+    this.renderer.clear('magenta')
+
+    this.renderer.setTransform(this.camera.wvTransform())
+    this.playfield.getRenderables().forEach((r) => this.renderer.render(r))
+    this.entities.getRenderables().forEach((r) => this.renderer.render(r))
+    this.emitters.forEach((e) =>
+      e.getRenderables().forEach((r) => this.renderer.render(r)),
     )
 
-    this.playfield.render(ctx, this.camera)
-    this.entities.render(ctx, this.camera)
-    this.emitters.forEach((e) => e.render(ctx, this.camera))
-
     if (DEBUG_MODE) {
-      const wvTranform = this.camera.wvTransform()
-
       for (const id in this.entities.entities) {
         const e = this.entities.entities[id]
 
-        ctx.strokeStyle = 'cyan'
         if (e.damageable) {
           const aabb = e.damageable.aabb(e)
           const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
-          renderable.render(
-            ctx,
-            {
-              type: renderable.Type.RECT,
-              strokeStyle: 'cyan',
-              floor: false,
-              pos: aabb[0],
-              dimensions: d,
-            },
-            wvTranform,
-          )
+          this.renderer.render({
+            primitive: Primitive.RECT,
+            strokeStyle: 'cyan',
+            floor: false,
+            pos: aabb[0],
+            dimensions: d,
+          })
         }
 
-        ctx.strokeStyle = 'magenta'
         if (e.damager) {
           const aabb = e.damager.aabb(e)
           const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
-          renderable.render(
-            ctx,
-            {
-              type: renderable.Type.RECT,
-              strokeStyle: 'magenta',
-              floor: false,
-              pos: aabb[0],
-              dimensions: d,
-            },
-            wvTranform,
-          )
+          this.renderer.render({
+            primitive: Primitive.RECT,
+            strokeStyle: 'magenta',
+            floor: false,
+            pos: aabb[0],
+            dimensions: d,
+          })
         }
       }
     }

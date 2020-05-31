@@ -1,7 +1,7 @@
 import { path2 } from '~/path2'
 import { IEntity } from '~/entities/interfaces'
 import { IRenderable } from '~/entities/components/interfaces'
-import * as renderable from '~/renderable'
+import { Renderable, Primitive } from '~renderer/interfaces'
 
 export class PathRenderable implements IRenderable {
   path: path2
@@ -16,9 +16,9 @@ export class PathRenderable implements IRenderable {
     this.fillStyle = s
   }
 
-  getRenderable(e: IEntity): renderable.Renderable {
+  getRenderable(e: IEntity): Renderable {
     return {
-      type: renderable.Type.PATH,
+      primitive: Primitive.PATH,
       fillStyle: this.fillStyle,
       mwTransform: e.transform.mwTransform(),
       path: this.path,
