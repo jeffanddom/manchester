@@ -85,7 +85,6 @@ export class Playfield {
         renderables.push({
           primitive: Primitive.RECT,
           fillStyle: fillStyle,
-          floor: true,
           pos: vec2.fromValues(x, y),
           dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
         })
