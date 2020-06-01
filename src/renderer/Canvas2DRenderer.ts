@@ -30,7 +30,10 @@ export class Canvas2DRenderer implements IRenderer {
           r.mwTransform,
         )
         const p = r.path.map((p) =>
-          vec2.transformMat2d(vec2.create(), p, transform),
+          vec2.floor(
+            vec2.create(),
+            vec2.transformMat2d(vec2.create(), p, transform),
+          ),
         )
         this.ctx.beginPath()
         this.ctx.moveTo(p[0][0], p[0][1])
