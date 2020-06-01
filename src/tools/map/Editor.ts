@@ -248,7 +248,6 @@ export class Editor {
     this.renderer.render({
       primitive: Primitive.RECT,
       fillStyle: fillStyle,
-      floor: true,
       pos: vec2.scale(vec2.create(), tpos, TILE_SIZE),
       dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
     })

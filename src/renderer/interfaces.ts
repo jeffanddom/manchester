@@ -11,7 +11,6 @@ export enum Primitive {
 export interface Path {
   primitive: Primitive.PATH
   fillStyle: string
-
   mwTransform: mat2d
   path: path2 // modelspace coordinates
 }
@@ -20,8 +19,6 @@ export interface Rect {
   primitive: Primitive.RECT
   fillStyle?: string
   strokeStyle?: string
-
-  floor: boolean // whether to align to whole pixels
   pos: vec2 // worldspace coordinates
   dimensions: vec2
 }
@@ -29,7 +26,6 @@ export interface Rect {
 export interface Circle {
   primitive: Primitive.CIRCLE
   fillStyle: string
-
   pos: vec2 // worldspace coordinates
   radius: number
 }

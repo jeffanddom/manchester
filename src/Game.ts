@@ -103,7 +103,6 @@ export class Game implements IGame {
           this.renderer.render({
             primitive: Primitive.RECT,
             strokeStyle: 'cyan',
-            floor: false,
             pos: aabb[0],
             dimensions: d,
           })
@@ -116,7 +115,6 @@ export class Game implements IGame {
           this.renderer.render({
             primitive: Primitive.RECT,
             strokeStyle: 'magenta',
-            floor: false,
             pos: aabb[0],
             dimensions: d,
           })

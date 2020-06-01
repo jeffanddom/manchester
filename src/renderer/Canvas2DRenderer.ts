@@ -59,10 +59,8 @@ export class Canvas2DRenderer implements IRenderer {
           this.transform,
         )
 
-        if (r.floor) {
-          vec2.floor(vmin, vmin)
-          vec2.floor(vmax, vmax)
-        }
+        vec2.floor(vmin, vmin)
+        vec2.floor(vmax, vmax)
 
         const d = vec2.sub(vec2.create(), vmax, vmin)
 
