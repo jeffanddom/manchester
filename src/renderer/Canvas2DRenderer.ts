@@ -74,17 +74,18 @@ export class Canvas2DRenderer implements IRenderer {
       }
 
       case Primitive.CIRCLE: {
-        this.ctx.fillStyle = r.fillStyle
-
-        const vp = vec2.transformMat2d(vec2.create(), r.pos, this.transform)
-        const edgep = vec2.transformMat2d(
+        const center = vec2.transformMat2d(vec2.create(), r.pos, this.transform)
+        const edge = vec2.transformMat2d(
           vec2.create(),
           vec2.add(vec2.create(), r.pos, vec2.fromValues(r.radius, 0)),
           this.transform,
         )
+        vec2.floor(center, center)
+        vec2.floor(edge, edge)
 
+        this.ctx.fillStyle = r.fillStyle
         this.ctx.beginPath()
-        this.ctx.arc(vp[0], vp[1], edgep[0] - vp[0], 0, Math.PI * 2)
+        this.ctx.arc(center[0], center[1], edge[0] - center[0], 0, Math.PI * 2)
         this.ctx.fill()
         break
       }
