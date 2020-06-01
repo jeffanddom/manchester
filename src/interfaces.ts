@@ -4,6 +4,7 @@ import * as map from '~/map/interfaces'
 import { Keyboard } from '~Keyboard'
 import { Playfield } from '~/Playfield'
 import { EntityManager } from '~entities/EntityManager'
+import { IEntity } from '~entities/interfaces'
 
 export interface Tile {
   type: map.Terrain
@@ -27,4 +28,6 @@ export interface IGame {
   keyboard: Keyboard
   emitters: ParticleEmitter[]
   camera: Camera
+
+  player: IEntity
 }

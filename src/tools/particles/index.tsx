@@ -1,11 +1,10 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { vec2 } from 'gl-matrix'
+import { vec2, mat2d } from 'gl-matrix'
 
 import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
-import { Camera } from '~/Camera'
 import * as time from '~/time'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 import { IRenderer } from '~renderer/interfaces'
@@ -49,15 +48,15 @@ document.body.prepend(canvas)
 canvas.width = 400
 canvas.height = 400
 
-const camera = new Camera([400, 400], vec2.create(), [400, 400])
-camera.setPosition([200, 200])
-
 const renderer: IRenderer = new Canvas2DRenderer(canvas.getContext('2d'))
+renderer.setTransform(
+  mat2d.fromTranslation(mat2d.create(), vec2.fromValues(200, 200)),
+)
 
 // The emitter
 const makeEmitter = () => {
   return new ParticleEmitter({
-    position: vec2.fromValues(200, 200),
+    position: vec2.fromValues(0, 0),
 
     spawnTtl: globalConfig.spawnTtl,
     particleTtl: globalConfig.particleTtl,
@@ -86,7 +85,6 @@ function gameLoop() {
   emitter.update(dt)
 
   renderer.clear(globalConfig.backgroundColor)
-  renderer.setTransform(camera.wvTransform())
   emitter.getRenderables().forEach((r) => renderer.render(r))
 
   if (emitter.dead) {
