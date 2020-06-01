@@ -25,15 +25,15 @@ const normalizeAngle = (theta: number): number => {
 const ROT_SPEED = Math.PI / 2
 
 const getAngularDistance = (from: Transform, to: Transform): number => {
-  const toPlayer = vec2.sub(vec2.create(), to.position, from.position)
+  const offset = vec2.sub(vec2.create(), to.position, from.position)
 
   let targetOrientation = 0
-  if (toPlayer[0] > 0) {
+  if (offset[0] > 0) {
     // quadrants 1 & 2
-    targetOrientation = vec2.angle(vec2.fromValues(0, -1), toPlayer)
+    targetOrientation = vec2.angle(vec2.fromValues(0, -1), offset)
   } else {
     // quadrants 3 & 4
-    targetOrientation = -vec2.angle(vec2.fromValues(0, -1), toPlayer)
+    targetOrientation = -vec2.angle(vec2.fromValues(0, -1), offset)
   }
 
   return normalizeAngle(targetOrientation - from.orientation)
