@@ -35,13 +35,9 @@ class Mover implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void {
     const diff = getAngularDistance(e.transform, g.player.transform)
     const disp = dt * ROT_SPEED
-    if (disp >= Math.abs(diff)) {
-      e.transform.orientation = e.transform.orientation + diff
-    } else {
-      e.transform.orientation = normalizeAngle(
-        e.transform.orientation + Math.sign(diff) * disp,
-      )
-    }
+    e.transform.orientation +=
+      disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp
+    e.transform.orientation = normalizeAngle(e.transform.orientation)
   }
 }
 
