@@ -26,16 +26,8 @@ const ROT_SPEED = Math.PI / 2
 
 const getAngularDistance = (from: Transform, to: Transform): number => {
   const offset = vec2.sub(vec2.create(), to.position, from.position)
-
-  let targetOrientation = 0
-  if (offset[0] > 0) {
-    // quadrants 1 & 2
-    targetOrientation = vec2.angle(vec2.fromValues(0, -1), offset)
-  } else {
-    // quadrants 3 & 4
-    targetOrientation = -vec2.angle(vec2.fromValues(0, -1), offset)
-  }
-
+  const targetOrientation =
+    Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
   return normalizeAngle(targetOrientation - from.orientation)
 }
 
