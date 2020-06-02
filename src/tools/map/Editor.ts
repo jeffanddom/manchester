@@ -6,20 +6,14 @@ import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
 import { TILE_SIZE } from '~/constants'
 import * as mathutil from '~/mathutil'
-import { path2 } from '~/path2'
 import { Map, Terrain } from '~map/interfaces'
 import * as entities from '~/entities'
 import { IRenderer, Primitive } from '~renderer/interfaces'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
+import { EventEmitter } from 'events'
 
 const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2
-const TILE_PATH = path2.fromValues([
-  [0, 0],
-  [TILE_SIZE, 0],
-  [TILE_SIZE, TILE_SIZE],
-  [0, TILE_SIZE],
-])
 
 const keyMap = {
   cameraNorth: 87, // w
@@ -33,7 +27,7 @@ const keyMap = {
   toggleEntity: 70, // f
 }
 
-enum BrushMode {
+export enum BrushMode {
   TERRAIN = 0,
   ENTITY = 1,
 }
@@ -49,22 +43,25 @@ const ENTITY_TYPES = [
 export class Editor {
   canvas: HTMLCanvasElement
   renderer: IRenderer
+  events: EventEmitter
 
   viewportDimensions: vec2
   map: Map
-  mapTileOrigin: vec2
-  mapTileDimensions: vec2
 
   camera: Camera
   keyboard: Keyboard
   mouse: Mouse
 
-  brushMode: BrushMode
-  terrainBrush: Terrain
-  entityBrush: entities.types.Type
+  cursorTilePos: vec2 | undefined
+  brush: {
+    mode: BrushMode
+    terrain: Terrain
+    entity: entities.types.Type
+  }
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
     this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d'))
+    this.events = new EventEmitter()
 
     this.viewportDimensions = vec2.fromValues(
       params.canvas.width,
@@ -80,13 +77,16 @@ export class Editor {
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(params.canvas)
 
-    this.brushMode = BrushMode.TERRAIN
-    this.terrainBrush = _.first(TERRAIN_TYPES)
-    this.entityBrush = _.first(ENTITY_TYPES)
+    this.brush = {
+      mode: BrushMode.TERRAIN,
+      terrain: _.first(TERRAIN_TYPES),
+      entity: _.first(ENTITY_TYPES),
+    }
   }
 
   update(dt: number): void {
     this.updateCamera(dt)
+    this.updateCursor()
     this.updateBrush()
     this.keyboard.update()
   }
@@ -112,56 +112,64 @@ export class Editor {
     } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
       zoom -= ZOOM_SPEED * dt
     }
+    zoom = mathutil.clamp(zoom, [0.5, 3])
+    this.events.emit('zoom', { zoom: zoom })
 
-    this.camera.setZoom(mathutil.clamp(zoom, [0.5, 3]))
+    this.camera.setZoom(zoom)
     this.camera.setPosition(cameraPos)
+  }
+
+  updateCursor(): void {
+    const mouseViewPos = this.mouse.getPos()
+    if (mouseViewPos === undefined) {
+      this.cursorTilePos = undefined
+    } else {
+      this.cursorTilePos = this.v2t(mouseViewPos)
+    }
+
+    this.events.emit('cursorMove', { tilePos: this.cursorTilePos })
   }
 
   updateBrush(): void {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
-      if (this.brushMode === BrushMode.ENTITY) {
-        this.brushMode = BrushMode.TERRAIN
+      if (this.brush.mode === BrushMode.ENTITY) {
+        this.brush.mode = BrushMode.TERRAIN
       } else {
-        this.terrainBrush =
+        this.brush.terrain =
           TERRAIN_TYPES[
-            (TERRAIN_TYPES.indexOf(this.terrainBrush) + 1) %
+            (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
               TERRAIN_TYPES.length
           ]
       }
 
-      // TODO: show visual feedback for this
-      console.log(this.brushMode)
-      console.log(this.terrainBrush)
+      this.events.emit('brushChanged', { brush: this.brush })
     } else if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
-      if (this.brushMode === BrushMode.TERRAIN) {
-        this.brushMode = BrushMode.ENTITY
+      if (this.brush.mode === BrushMode.TERRAIN) {
+        this.brush.mode = BrushMode.ENTITY
       } else {
-        this.entityBrush =
+        this.brush.entity =
           ENTITY_TYPES[
-            (ENTITY_TYPES.indexOf(this.entityBrush) + 1) % ENTITY_TYPES.length
+            (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
           ]
       }
 
-      // TODO: show visual feedback for this
-      console.log(this.brushMode)
-      console.log(this.entityBrush)
+      this.events.emit('brushChanged', { brush: this.brush })
     } else if (
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
       // TODO: send these to an event stream a la Redux.
-      const brushTile = this.getCursorTilePos()
-      if (brushTile !== undefined) {
-        const n = this.t2a(brushTile)
-        switch (this.brushMode) {
+      if (this.cursorTilePos !== undefined) {
+        const n = this.t2a(this.cursorTilePos)
+        switch (this.brush.mode) {
           case BrushMode.TERRAIN:
-            this.map.terrain[n] = this.terrainBrush
+            this.map.terrain[n] = this.brush.terrain
             break
           case BrushMode.ENTITY:
-            this.map.entities[n] = this.entityBrush
+            this.map.entities[n] = this.brush.entity
             break
           default:
-            throw new Error(`invalid brush mode ${this.brushMode}`)
+            throw new Error(`invalid brush mode ${this.brush.mode}`)
         }
       }
     }
@@ -174,9 +182,8 @@ export class Editor {
     this.renderTerrain()
     this.renderGrid()
 
-    const cursorPos = this.getCursorTilePos()
-    if (cursorPos !== undefined) {
-      this.renderTile(cursorPos, 'rgba(0, 255, 255, 0.5)')
+    if (this.cursorTilePos !== undefined) {
+      this.renderTile(this.cursorTilePos, 'rgba(0, 255, 255, 0.5)')
     }
   }
 
@@ -205,18 +212,6 @@ export class Editor {
         }
       }
     }
-  }
-
-  /**
-   * Return the tile position of the mouse cursor. Returns undefined if the
-   * mouse cursor is not over the viewport.
-   */
-  getCursorTilePos(): vec2 | undefined {
-    const vpos = this.mouse.getPos()
-    if (vpos === undefined) {
-      return undefined
-    }
-    return this.v2t(vpos)
   }
 
   /**

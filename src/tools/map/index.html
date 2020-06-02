@@ -17,7 +17,11 @@
   </head>
 
   <body>
-    <div id="controls" />
+    <div style="display: grid; grid-template-columns: auto 250px 500px auto;">
+      <div id="controls" style="grid-column: 2;"></div>
+      <div id="editor" style="grid-column: 3;"></div>
+    </div>
+
     <script src="~/tools/map/index.tsx"></script>
   </body>
 </html>
