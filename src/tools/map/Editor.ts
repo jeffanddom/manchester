@@ -1,6 +1,7 @@
 import { vec2, mat2d } from 'gl-matrix'
 import * as _ from 'lodash'
 
+import { Option } from '~util/Option'
 import { Keyboard } from '~Keyboard'
 import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
@@ -52,7 +53,7 @@ export class Editor {
   keyboard: Keyboard
   mouse: Mouse
 
-  cursorTilePos: vec2 | undefined
+  cursorTilePos: Option<vec2>
   brush: {
     mode: BrushMode
     terrain: Terrain
@@ -120,13 +121,7 @@ export class Editor {
   }
 
   updateCursor(): void {
-    const mouseViewPos = this.mouse.getPos()
-    if (mouseViewPos === undefined) {
-      this.cursorTilePos = undefined
-    } else {
-      this.cursorTilePos = this.v2t(mouseViewPos)
-    }
-
+    this.cursorTilePos = this.mouse.getPos().map((viewpos) => this.v2t(viewpos))
     this.events.emit('cursorMove', { tilePos: this.cursorTilePos })
   }
 
@@ -158,9 +153,10 @@ export class Editor {
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
-      // TODO: send these to an event stream a la Redux.
-      if (this.cursorTilePos !== undefined) {
-        const n = this.t2a(this.cursorTilePos)
+      this.cursorTilePos.map((tilePos) => {
+        const n = this.t2a(tilePos)
+
+        // TODO: send these to an event stream a la Redux, for undo etc.
         switch (this.brush.mode) {
           case BrushMode.TERRAIN:
             this.map.terrain[n] = this.brush.terrain
@@ -171,7 +167,7 @@ export class Editor {
           default:
             throw new Error(`invalid brush mode ${this.brush.mode}`)
         }
-      }
+      })
     }
   }
 
@@ -182,9 +178,9 @@ export class Editor {
     this.renderTerrain()
     this.renderGrid()
 
-    if (this.cursorTilePos !== undefined) {
-      this.renderTile(this.cursorTilePos, 'rgba(0, 255, 255, 0.5)')
-    }
+    this.cursorTilePos.map((tilePos) => {
+      this.renderTile(tilePos, 'rgba(0, 255, 255, 0.5)')
+    })
   }
 
   renderTerrain(): void {
