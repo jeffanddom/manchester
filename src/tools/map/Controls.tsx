@@ -4,12 +4,13 @@ import { vec2 } from 'gl-matrix'
 import { BrushMode, Editor } from './Editor'
 import { Terrain } from '~map/interfaces'
 import * as entities from '~entities'
+import { Option } from '~util/Option'
 
 export const Controls = ({ editor }: { editor: Editor }) => {
   const [state, setState] = useState({
     zoom: 1,
     map: editor.map,
-    tilePos: vec2.create(),
+    tilePos: Option.none<vec2>(),
     brush: editor.brush,
   })
 
@@ -43,12 +44,9 @@ export const Controls = ({ editor }: { editor: Editor }) => {
         </li>
         <li>
           Cursor position:{' '}
-          {state.tilePos !== undefined ? (
-            <span>
-              ({state.tilePos[0]}, {state.tilePos[1]})
-            </span>
-          ) : (
-            <span></span>
+          {state.tilePos.mapOr(
+            '',
+            (tilePos) => `(${tilePos[0]}, ${tilePos[1]})`,
           )}
         </li>
         <li>
