@@ -3,7 +3,8 @@
   "description": "It's another game!",
   "scripts": {
     "start": "parcel src/index.html",
-    "typecheck": "tsc -p . --noEmit"
+    "typecheck": "tsc -p . --noEmit",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -12,16 +13,19 @@
   "dependencies": {
     "@types/events": "^3.0.0",
     "@types/gl-matrix": "^2.4.5",
+    "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.152",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/uuid": "^8.0.0",
     "gl-matrix": "^3.3.0",
+    "jest": "^26.0.1",
     "lodash": "^4.17.15",
     "parcel": "^1.12.4",
     "prettier": "^2.0.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "ts-jest": "^26.1.0",
     "uuid": "^8.0.0"
   },
   "devDependencies": {
