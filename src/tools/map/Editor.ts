@@ -26,6 +26,7 @@ const keyMap = {
   paint: 32, // <space>
   toggleTerrain: 82, // r
   toggleEntity: 70, // f
+  shift: 16, // left and right shift
 }
 
 export enum BrushMode {
@@ -60,6 +61,10 @@ export class Editor {
     entity: entities.types.Type
   }
 
+  showTerrain: boolean
+  showEntities: boolean
+  showGrid: boolean
+
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
     this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d'))
     this.events = new EventEmitter()
@@ -83,6 +88,10 @@ export class Editor {
       terrain: _.first(TERRAIN_TYPES),
       entity: _.first(ENTITY_TYPES),
     }
+
+    this.showTerrain = true
+    this.showEntities = true
+    this.showGrid = true
   }
 
   update(dt: number): void {
@@ -127,6 +136,15 @@ export class Editor {
 
   updateBrush(): void {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
+      if (this.keyboard.downKeys.has(keyMap.shift)) {
+        // delete terrain under cursor
+        this.cursorTilePos.map((tpos) => {
+          this.map.terrain[this.t2a(tpos)] = undefined
+        })
+
+        return
+      }
+
       if (this.brush.mode === BrushMode.ENTITY) {
         this.brush.mode = BrushMode.TERRAIN
       } else {
@@ -138,7 +156,19 @@ export class Editor {
       }
 
       this.events.emit('brushChanged', { brush: this.brush })
-    } else if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
+
+      return
+    }
+
+    if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
+      if (this.keyboard.downKeys.has(keyMap.shift)) {
+        // delete terrain under cursor
+        this.cursorTilePos.map((tpos) => {
+          this.map.entities[this.t2a(tpos)] = undefined
+        })
+
+        return
+      }
       if (this.brush.mode === BrushMode.TERRAIN) {
         this.brush.mode = BrushMode.ENTITY
       } else {
@@ -149,7 +179,10 @@ export class Editor {
       }
 
       this.events.emit('brushChanged', { brush: this.brush })
-    } else if (
+      return
+    }
+
+    if (
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
@@ -168,6 +201,8 @@ export class Editor {
             throw new Error(`invalid brush mode ${this.brush.mode}`)
         }
       })
+
+      return
     }
   }
 
@@ -175,8 +210,17 @@ export class Editor {
     this.renderer.clear('#FCFCFC')
     this.renderer.setTransform(this.camera.wvTransform())
 
-    this.renderTerrain()
-    this.renderGrid()
+    if (this.showTerrain) {
+      this.renderTerrain()
+    }
+
+    if (this.showEntities) {
+      this.renderEntities()
+    }
+
+    if (this.showGrid) {
+      this.renderGrid()
+    }
 
     this.cursorTilePos.map((tilePos) => {
       this.renderTile(tilePos, 'rgba(0, 255, 255, 0.5)')
@@ -210,6 +254,31 @@ export class Editor {
     }
   }
 
+  renderEntities(): void {
+    const nwTile = this.v2t(vec2.fromValues(0, 0))
+    const seTile = this.v2t(this.viewportDimensions)
+
+    for (let i = nwTile[1]; i <= seTile[1]; i++) {
+      for (let j = nwTile[0]; j <= seTile[0]; j++) {
+        const tpos = vec2.fromValues(j, i)
+        const e = this.map.entities[this.t2a(tpos)]
+        if (e === undefined) {
+          continue
+        }
+
+        this.renderer.render({
+          primitive: Primitive.PATH,
+          fillStyle: entities.types.typeDefinitions[e].model.fillStyle,
+          mwTransform: mat2d.fromTranslation(
+            mat2d.create(),
+            this.t2w(tpos, { center: true }),
+          ),
+          path: entities.types.typeDefinitions[e].model.path,
+        })
+      }
+    }
+  }
+
   /**
    * Convert the given viewspace position into a worldspace position, expressed
    * in tile units.
@@ -228,7 +297,7 @@ export class Editor {
   }
 
   /**
-   * Conver the given worldspace position in tile units to a flat array offset.
+   * Convert the given worldspace position in tile units to a flat array offset.
    */
   t2a(tpos: vec2): number {
     const p = vec2.sub(vec2.create(), tpos, this.map.origin)
@@ -239,9 +308,20 @@ export class Editor {
     this.renderer.render({
       primitive: Primitive.RECT,
       fillStyle: fillStyle,
-      pos: vec2.scale(vec2.create(), tpos, TILE_SIZE),
+      pos: this.t2w(tpos),
       dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
     })
+  }
+
+  /**
+   * Convert the given tile position to a worldspace position.
+   */
+  t2w(tpos: vec2, { center }: { center: boolean } = { center: false }): vec2 {
+    const w = vec2.scale(vec2.create(), tpos, TILE_SIZE)
+    if (center) {
+      vec2.add(w, w, vec2.fromValues(TILE_SIZE / 2, TILE_SIZE / 2))
+    }
+    return w
   }
 
   renderGrid(): void {

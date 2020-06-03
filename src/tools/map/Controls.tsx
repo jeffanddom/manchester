@@ -12,6 +12,9 @@ export const Controls = ({ editor }: { editor: Editor }) => {
     map: editor.map,
     tilePos: Option.none<vec2>(),
     brush: editor.brush,
+    showTerrain: true,
+    showEntities: true,
+    showGrid: true,
   })
 
   React.useEffect(() => {
@@ -34,6 +37,27 @@ export const Controls = ({ editor }: { editor: Editor }) => {
     )
   }, [])
 
+  const toggleTerrain = () => {
+    setState((prevState) => {
+      editor.showTerrain = !state.showTerrain
+      return { ...prevState, showTerrain: !state.showTerrain }
+    })
+  }
+
+  const toggleEntities = () => {
+    setState((prevState) => {
+      editor.showEntities = !state.showEntities
+      return { ...prevState, showEntities: !state.showEntities }
+    })
+  }
+
+  const toggleGrid = () => {
+    setState((prevState) => {
+      editor.showGrid = !state.showGrid
+      return { ...prevState, showGrid: !state.showGrid }
+    })
+  }
+
   return (
     <div>
       <h4>Controls</h4>
@@ -55,6 +79,21 @@ export const Controls = ({ editor }: { editor: Editor }) => {
             ? Terrain[state.brush.terrain]
             : entities.types.Type[state.brush.entity]}
           )
+        </li>
+        <li>
+          <span style={{ cursor: 'pointer' }} onClick={toggleTerrain}>
+            <input type="checkbox" checked={state.showTerrain} /> Terrain
+          </span>
+        </li>
+        <li>
+          <span style={{ cursor: 'pointer' }} onClick={toggleEntities}>
+            <input type="checkbox" checked={state.showEntities} /> Entities
+          </span>
+        </li>
+        <li>
+          <span style={{ cursor: 'pointer' }} onClick={toggleGrid}>
+            <input type="checkbox" checked={state.showGrid} /> Grid
+          </span>
         </li>
       </ul>
     </div>

@@ -12,7 +12,10 @@ import { Damageable } from '~entities/components/Damageable'
 import { Hitbox } from '~Hitbox'
 import { vec2 } from 'gl-matrix'
 
-export const makePlayer = (): IEntity => {
+export const makePlayer = (model: {
+  path: path2
+  fillStyle: string
+}): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
   e.mover = new Mover()
@@ -27,14 +30,7 @@ export const makePlayer = (): IEntity => {
     ),
   )
   e.playfieldClamper = new PlayfieldClamper()
-  e.renderable = new PathRenderable(
-    path2.fromValues([
-      [0, -TILE_SIZE * 0.5],
-      [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-      [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-    ]),
-    '#000000',
-  )
+  e.renderable = new PathRenderable(model.path, model.fillStyle)
 
   return e
 }

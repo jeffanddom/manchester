@@ -87,7 +87,10 @@ export class Shooter implements IGenericComponent {
   }
 }
 
-export const makeTurret = (): IEntity => {
+export const makeTurret = (model: {
+  path: path2
+  fillStyle: string
+}): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
 
@@ -103,14 +106,7 @@ export const makeTurret = (): IEntity => {
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
     ),
   )
-  e.renderable = new PathRenderable(
-    path2.fromValues([
-      [0, -TILE_SIZE * 0.5],
-      [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-      [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-    ]),
-    '#FF0',
-  )
+  e.renderable = new PathRenderable(model.path, model.fillStyle)
 
   return e
 }
