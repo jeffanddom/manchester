@@ -17,11 +17,6 @@ export enum Direction {
   West = 'W',
 }
 
-export interface GameMap {
-  playfield: string
-  entities: string
-}
-
 export interface IGame {
   playfield: Playfield
   entities: EntityManager

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { vec2 } from 'gl-matrix'
 import { BrushMode, Editor } from './Editor'
-import { Terrain } from '~map/interfaces'
+import { Terrain, Map } from '~map/interfaces'
 import * as entities from '~entities'
 import { Option } from '~util/Option'
 
@@ -15,6 +15,7 @@ export const Controls = ({ editor }: { editor: Editor }) => {
     showTerrain: true,
     showEntities: true,
     showGrid: true,
+    exporting: false,
   })
 
   React.useEffect(() => {
@@ -35,6 +36,22 @@ export const Controls = ({ editor }: { editor: Editor }) => {
         return { ...prevState, brush }
       }),
     )
+
+    let savingTimeout: NodeJS.Timeout = null
+    editor.events.addListener('changed', () => {
+      if (savingTimeout === null) {
+        savingTimeout = setTimeout(() => {
+          savingTimeout = null
+          window.localStorage.setItem(
+            'tools/map',
+            JSON.stringify({
+              previous: editor.map,
+            }),
+          )
+          console.log('saved state')
+        }, 1000)
+      }
+    })
   }, [])
 
   const toggleTerrain = () => {
@@ -56,6 +73,25 @@ export const Controls = ({ editor }: { editor: Editor }) => {
       editor.showGrid = !state.showGrid
       return { ...prevState, showGrid: !state.showGrid }
     })
+  }
+
+  const startExport = () => {
+    setState((prevState) => {
+      return { ...prevState, exporting: true }
+    })
+
+    const exported = JSON.stringify(editor.map)
+    navigator.clipboard
+      .writeText(exported)
+      .then(() => {
+        console.log('copied map data to clipboard')
+      })
+      .catch((error) => console.log(`Export error: ${error}`))
+      .finally(() => {
+        setState((prevState) => {
+          return { ...prevState, exporting: false }
+        })
+      })
   }
 
   return (
@@ -94,6 +130,11 @@ export const Controls = ({ editor }: { editor: Editor }) => {
           <span style={{ cursor: 'pointer' }} onClick={toggleGrid}>
             <input type="checkbox" checked={state.showGrid} /> Grid
           </span>
+        </li>
+        <li>
+          <button disabled={state.exporting} onClick={startExport}>
+            Export
+          </button>
         </li>
       </ul>
     </div>

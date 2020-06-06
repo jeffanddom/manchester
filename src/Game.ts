@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { EntityManager } from '~/entities/EntityManager'
 import { Playfield } from '~/Playfield'
-import { GameMap, IGame } from '~/interfaces'
+import { IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Keyboard } from '~/Keyboard'
@@ -10,6 +10,7 @@ import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
 import * as entities from '~/entities'
 import { Primitive, IRenderer } from '~/renderer/interfaces'
+import { Map } from '~/map/interfaces'
 
 let DEBUG_MODE = false
 
@@ -24,10 +25,14 @@ export class Game implements IGame {
   player: IEntity
   camera: Camera
 
-  constructor(renderer: IRenderer, map: GameMap, viewportSize: vec2) {
+  constructor(renderer: IRenderer, map: Map, viewportSize: vec2) {
     this.renderer = renderer
 
-    this.playfield = new Playfield(map.playfield)
+    this.playfield = new Playfield({
+      tileOrigin: map.origin,
+      tileDimensions: map.dimensions,
+      terrain: map.terrain,
+    })
     this.entities = new EntityManager()
     this.keyboard = new Keyboard()
     this.emitters = []
@@ -45,26 +50,29 @@ export class Game implements IGame {
     })
 
     // Populate entities
-    const rows = map.entities.trim().split('\n')
-    const width = rows[0].length
-    for (let i = 0; i < rows.length; i++) {
-      for (let j = 0; j < width; j++) {
-        const et = entities.types.deserialize(rows[i][j])
-        if (et !== undefined) {
-          const entity = entities.types.make(et)
+    for (let i = 0; i < map.dimensions[1]; i++) {
+      for (let j = 0; j < map.dimensions[0]; j++) {
+        const et = map.entities[i * map.dimensions[0] + j]
+        if (et === null) {
+          continue
+        }
 
-          if (entity.transform !== undefined) {
-            entity.transform.position = vec2.fromValues(
+        const entity = entities.types.make(et)
+        if (entity.transform !== undefined) {
+          entity.transform.position = vec2.add(
+            vec2.create(),
+            this.playfield.minWorldPos(),
+            vec2.fromValues(
               j * TILE_SIZE + TILE_SIZE * 0.5,
               i * TILE_SIZE + TILE_SIZE * 0.5,
-            )
-          }
+            ),
+          )
+        }
 
-          this.entities.register(entity)
+        this.entities.register(entity)
 
-          if (et === entities.types.Type.PLAYER) {
-            this.player = entity
-          }
+        if (et === entities.types.Type.PLAYER) {
+          this.player = entity
         }
       }
     }

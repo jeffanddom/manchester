@@ -200,6 +200,8 @@ export class Editor {
           default:
             throw new Error(`invalid brush mode ${this.brush.mode}`)
         }
+
+        this.events.emit('changed')
       })
 
       return
@@ -262,7 +264,7 @@ export class Editor {
       for (let j = nwTile[0]; j <= seTile[0]; j++) {
         const tpos = vec2.fromValues(j, i)
         const e = this.map.entities[this.t2a(tpos)]
-        if (e === undefined) {
+        if (e === null) {
           continue
         }
 

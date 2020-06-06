@@ -20,54 +20,49 @@ const deserializeTerrain = (s: string): map.Terrain => {
 }
 
 export class Playfield {
-  tiles: Tile[][]
+  tileOrigin: vec2 // tile position of NW corner
+  tileDimensions: vec2 // width/height in tiles
+  terrain: (map.Terrain | null)[]
 
-  constructor(map: string) {
-    const rows = map.trim().split('\n')
-    const width = rows[0].length
-
-    this.tiles = []
-    for (let i = 0; i < rows.length; i++) {
-      const row: Tile[] = []
-      this.tiles[i] = row
-      for (let j = 0; j < width; j++) {
-        row[j] = { type: deserializeTerrain(rows[i][j]) }
-      }
-    }
-  }
-
-  tileDimensions(): vec2 {
-    return vec2.fromValues(this.tiles[0].length, this.tiles.length)
+  constructor({
+    tileOrigin,
+    tileDimensions,
+    terrain,
+  }: {
+    tileOrigin: vec2
+    tileDimensions: vec2
+    terrain: (map.Terrain | null)[]
+  }) {
+    this.tileOrigin = tileOrigin
+    this.tileDimensions = tileDimensions
+    this.terrain = terrain
   }
 
   minWorldPos(): vec2 {
-    return vec2.fromValues(0, 0)
+    return vec2.scale(vec2.create(), this.tileOrigin, TILE_SIZE)
   }
 
   maxWorldPos(): vec2 {
-    const d = this.dimensions()
-    return vec2.add(
-      vec2.create(),
-      this.minWorldPos(),
-      vec2.fromValues(d[0], d[1]),
-    )
+    return vec2.add(vec2.create(), this.minWorldPos(), this.dimensions())
   }
 
   dimensions(): vec2 {
-    return vec2.scale(vec2.create(), this.tileDimensions(), TILE_SIZE)
+    return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
   }
 
   getRenderables(): Renderable[] {
     const renderables: Renderable[] = []
-    const [tileWidth, tileHeight] = this.tileDimensions()
+    const minWorldPos = this.minWorldPos()
 
-    for (let i = 0; i < tileHeight; i++) {
-      const y = i * TILE_SIZE
-      for (let j = 0; j < tileWidth; j++) {
-        const x = j * TILE_SIZE
+    for (let i = 0; i < this.tileDimensions[1]; i++) {
+      const y = minWorldPos[1] + i * TILE_SIZE
+
+      for (let j = 0; j < this.tileDimensions[0]; j++) {
+        const x = minWorldPos[0] + j * TILE_SIZE
+        const n = i * this.tileDimensions[0] + j
 
         let fillStyle = undefined
-        switch (this.tiles[i][j].type) {
+        switch (this.terrain[n]) {
           case map.Terrain.Grass:
             fillStyle = '#7EC850'
             break
@@ -80,6 +75,8 @@ export class Playfield {
           case map.Terrain.Unknown:
             fillStyle = '#FF00FF'
             break
+          default:
+            continue
         }
 
         renderables.push({
@@ -93,6 +90,4 @@ export class Playfield {
 
     return renderables
   }
-
-  render(ctx: CanvasRenderingContext2D, camera: Camera) {}
 }
