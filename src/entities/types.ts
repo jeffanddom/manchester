@@ -3,7 +3,7 @@ import { makeWall } from '~/entities/Wall'
 import { makeTurret } from '~/entities/turret'
 import { makePlayer } from '~/entities/player'
 import { TILE_SIZE } from '~constants'
-import { path2 } from '~path2'
+import { path2 } from '~util/path2'
 
 export enum Type {
   PLAYER = 'PLAYER',

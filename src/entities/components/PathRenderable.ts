@@ -1,4 +1,4 @@
-import { path2 } from '~/path2'
+import { path2 } from '~util/path2'
 import { IEntity } from '~/entities/interfaces'
 import { IRenderable } from '~/entities/components/interfaces'
 import { Renderable, Primitive } from '~renderer/interfaces'

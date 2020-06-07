@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
-import { path2 } from '~/path2'
+import { path2 } from '~util/path2'
 import { Entity } from '~/entities/Entity'
 import { Transform } from '~/entities/components/Transform'
 import { PathRenderable } from '~/entities/components/PathRenderable'

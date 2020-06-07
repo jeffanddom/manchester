@@ -1,4 +1,4 @@
-import { path2 } from '~/path2'
+import { path2 } from '~util/path2'
 import { vec2, mat2d } from 'gl-matrix'
 
 export enum Primitive {

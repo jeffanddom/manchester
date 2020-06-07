@@ -1,6 +1,6 @@
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
-import { path2 } from '~/path2'
+import { path2 } from '~util/path2'
 import { Transform } from '~/entities/components/Transform'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { IEntity } from '~/entities/interfaces'
