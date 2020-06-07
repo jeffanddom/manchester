@@ -3,6 +3,7 @@
     "target": "esnext",
     "lib": ["es2017", "dom"],
     "moduleResolution": "node",
+    "alwaysStrict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "jsx": "react",
