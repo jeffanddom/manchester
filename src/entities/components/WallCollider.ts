@@ -1,6 +1,6 @@
 import { Direction, IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
-import { tileBox, tileCoords } from '~/tileMath'
+import { tileBox, tileCoords } from '~util/tileMath'
 import { vec2 } from 'gl-matrix'
 import { IEntity } from '~/entities/interfaces'
 import { IWallCollider } from '~/entities/components/interfaces'
