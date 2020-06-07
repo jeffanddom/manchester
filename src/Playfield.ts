@@ -1,7 +1,5 @@
-import { Tile } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { vec2 } from 'gl-matrix'
-import { Camera } from '~/Camera'
 import * as map from '~/map/interfaces'
 import { Primitive, Renderable } from '~/renderer/interfaces'
 
