@@ -20,7 +20,7 @@ export class PathRenderable implements IRenderable {
     return {
       primitive: Primitive.PATH,
       fillStyle: this.fillStyle,
-      mwTransform: e.transform.mwTransform(),
+      mwTransform: e.transform!.mwTransform(),
       path: this.path,
     }
   }

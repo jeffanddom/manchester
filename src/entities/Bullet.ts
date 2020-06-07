@@ -29,9 +29,9 @@ class BulletMover implements IGenericComponent {
     }
 
     radialTranslate2(
-      entity.transform.position,
-      entity.transform.position,
-      entity.transform.orientation,
+      entity.transform!.position,
+      entity.transform!.position,
+      entity.transform!.orientation,
       BULLET_SPEED * dt,
     )
   }
@@ -48,8 +48,8 @@ class BulletDamager implements IDamager {
 
   aabb(entity: IEntity) {
     return this.hitbox.aabb(
-      entity.transform.position,
-      entity.transform.orientation,
+      entity.transform!.position,
+      entity.transform!.orientation,
     )
   }
 
@@ -69,8 +69,8 @@ class BulletDamager implements IDamager {
       // Show explosion
       const emitterPos = radialTranslate2(
         vec2.create(),
-        entity.transform.position,
-        entity.transform.orientation,
+        entity.transform!.position,
+        entity.transform!.orientation,
         TILE_SIZE / 2,
       )
 

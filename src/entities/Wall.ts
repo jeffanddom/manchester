@@ -14,8 +14,8 @@ const WALL_HEALTH = 4.0
 
 class DisplayWallDamage implements IGenericComponent {
   update(entity: IEntity): void {
-    const color = lerp(90, 130, entity.damageable.health / WALL_HEALTH)
-    entity.renderable.setFillStyle(`rgba(${color},${color},${color},1)`)
+    const color = lerp(90, 130, entity.damageable!.health / WALL_HEALTH)
+    entity.renderable!.setFillStyle(`rgba(${color},${color},${color},1)`)
   }
 }
 

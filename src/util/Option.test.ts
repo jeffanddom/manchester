@@ -16,14 +16,18 @@ test('Option#equals', () => {
   expect(None().equals(None())).toBe(true)
   expect(Some(3).equals(Some(3))).toBe(true)
   expect(Some(3).equals(Some(4))).toBe(false)
-  expect(Some(undefined).equals(Some(null))).toBe(false)
+  expect(
+    Some<undefined | null>(undefined).equals(Some<undefined | null>(null)),
+  ).toBe(false)
 })
 
 test('Option#weakEquals', () => {
   expect(None().weakEquals(None())).toBe(true)
   expect(Some(3).weakEquals(Some(3))).toBe(true)
   expect(Some(3).weakEquals(Some(4))).toBe(false)
-  expect(Some(undefined).weakEquals(Some(null))).toBe(true)
+  expect(
+    Some<undefined | null>(undefined).weakEquals(Some<undefined | null>(null)),
+  ).toBe(true)
 })
 
 test('Option#unwrap', () => {

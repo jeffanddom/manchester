@@ -18,18 +18,18 @@ export class Mover {
   update(entity: IEntity, game: IGame, dt: number) {
     if (game.keyboard.downKeys.has(keyMap.up)) {
       radialTranslate2(
-        entity.transform.position,
-        entity.transform.position,
-        entity.transform.orientation,
+        entity.transform!.position,
+        entity.transform!.position,
+        entity.transform!.orientation,
         PLAYER_SPEED * dt,
       )
     }
 
     if (game.keyboard.downKeys.has(keyMap.right)) {
-      entity.transform.orientation += PLAYER_ROT_SPEED * dt
+      entity.transform!.orientation += PLAYER_ROT_SPEED * dt
     }
     if (game.keyboard.downKeys.has(keyMap.left)) {
-      entity.transform.orientation -= PLAYER_ROT_SPEED * dt
+      entity.transform!.orientation -= PLAYER_ROT_SPEED * dt
     }
   }
 }

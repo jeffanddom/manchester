@@ -79,7 +79,7 @@ export class ParticleEmitter {
       while (this.potentialParticles >= 1) {
         this.particles.push({
           position: vec2.clone(this.position),
-          color: sample(this.colors),
+          color: sample(this.colors)!,
           radius: lerp(0, this.particleRadius, Math.random()), // TODO: add min radius
           orientation: lerp(
             this.orientation - this.arc / 2,

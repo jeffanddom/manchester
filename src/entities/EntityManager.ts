@@ -1,5 +1,3 @@
-import { v4 } from 'uuid'
-
 import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
 import { Renderable } from '~renderer/interfaces'
@@ -36,9 +34,7 @@ export class EntityManager {
   }
 
   register(e: IEntity) {
-    const id = v4()
-    e.id = id
-    this.entities[id] = e
+    this.entities[e.id] = e
   }
 
   markForDeletion(entity: IEntity) {

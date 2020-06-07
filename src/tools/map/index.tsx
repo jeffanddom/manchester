@@ -12,7 +12,7 @@ type SaveState = {
 }
 
 const canvas = document.createElement('canvas')
-document.getElementById('editor').prepend(canvas)
+document.getElementById('editor')!.prepend(canvas)
 canvas.width = 400
 canvas.height = 400
 

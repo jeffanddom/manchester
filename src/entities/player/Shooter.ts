@@ -31,13 +31,13 @@ export class Shooter implements IGenericComponent {
 
       const bulletPos = radialTranslate2(
         vec2.create(),
-        entity.transform.position,
-        entity.transform.orientation,
+        entity.transform!.position,
+        entity.transform!.orientation,
         TILE_SIZE * 0.75,
       )
 
       game.entities.register(
-        makeBullet(bulletPos, entity.transform.orientation),
+        makeBullet(bulletPos, entity.transform!.orientation),
       )
 
       const muzzleFlash = new ParticleEmitter({
@@ -47,7 +47,7 @@ export class Shooter implements IGenericComponent {
         particleRadius: 3,
         particleRate: 240,
         particleSpeedRange: [120, 280],
-        orientation: entity.transform.orientation,
+        orientation: entity.transform!.orientation,
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })

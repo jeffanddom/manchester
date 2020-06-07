@@ -18,8 +18,8 @@ export class Damageable implements IDamageable {
 
   aabb(entity: IEntity) {
     return this.hitbox.aabb(
-      entity.transform.position,
-      entity.transform.orientation,
+      entity.transform!.position,
+      entity.transform!.orientation,
     )
   }
 
@@ -29,8 +29,8 @@ export class Damageable implements IDamageable {
 
       const emitterPos = radialTranslate2(
         vec2.create(),
-        entity.transform.position,
-        entity.transform.orientation,
+        entity.transform!.position,
+        entity.transform!.orientation,
         TILE_SIZE / 2,
       )
       const explosion = new ParticleEmitter({

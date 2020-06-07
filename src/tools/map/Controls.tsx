@@ -2,9 +2,9 @@ import * as React from 'react'
 import { useState } from 'react'
 import { vec2 } from 'gl-matrix'
 import { BrushMode, Editor } from './Editor'
-import { Terrain, Map } from '~map/interfaces'
+import { Terrain } from '~map/interfaces'
 import * as entities from '~entities'
-import { Option, Some, None } from '~util/Option'
+import { None } from '~util/Option'
 
 export const Controls = ({ editor }: { editor: Editor }) => {
   const [state, setState] = useState({
@@ -37,7 +37,7 @@ export const Controls = ({ editor }: { editor: Editor }) => {
       }),
     )
 
-    let savingTimeout: NodeJS.Timeout = null
+    let savingTimeout: NodeJS.Timeout | null = null
     editor.events.addListener('changed', () => {
       if (savingTimeout === null) {
         savingTimeout = setTimeout(() => {

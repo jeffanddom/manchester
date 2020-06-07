@@ -1,3 +1,5 @@
+import * as uuid from 'uuid'
+
 import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
 import {
@@ -10,7 +12,7 @@ import {
 import { Transform } from '~/entities/components/Transform'
 
 export class Entity implements IEntity {
-  id?: string
+  id: string
   transform?: Transform
   mover?: IGenericComponent
   shooter?: IGenericComponent
@@ -22,7 +24,9 @@ export class Entity implements IEntity {
   playfieldClamper?: IGenericComponent
   prerender?: IGenericComponent
 
-  constructor() {}
+  constructor() {
+    this.id = uuid.v4()
+  }
 
   update(game: IGame, dt: number) {
     this.transform?.update()

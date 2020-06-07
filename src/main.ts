@@ -19,7 +19,7 @@ canvas.width = viewportDimensions[0]
 canvas.height = viewportDimensions[1]
 
 const game = new Game(
-  new Canvas2DRenderer(canvas.getContext('2d')),
+  new Canvas2DRenderer(canvas.getContext('2d')!),
   Map.fromRaw(mapData),
   viewportDimensions,
 )

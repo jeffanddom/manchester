@@ -54,7 +54,7 @@ export class Camera {
         vec2.fromValues(3, 0),
         vec2.fromValues(0, -3),
         vec2.fromValues(0, 3),
-      ])
+      ])!
       this.wvTransformCache = undefined
     }
   }

@@ -33,11 +33,11 @@ const getAngularDistance = (from: Transform, to: Transform): number => {
 
 class Mover implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void {
-    const diff = getAngularDistance(e.transform, g.player.transform)
+    const diff = getAngularDistance(e.transform!, g.player.transform!)
     const disp = dt * ROT_SPEED
-    e.transform.orientation +=
+    e.transform!.orientation +=
       disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp
-    e.transform.orientation = normalizeAngle(e.transform.orientation)
+    e.transform!.orientation = normalizeAngle(e.transform!.orientation)
   }
 }
 
@@ -56,7 +56,7 @@ export class Shooter implements IGenericComponent {
       return
     }
 
-    const diff = getAngularDistance(e.transform, g.player.transform)
+    const diff = getAngularDistance(e.transform!, g.player.transform!)
     if (diff < -0.05 || 0.05 < diff) {
       return
     }
@@ -65,12 +65,12 @@ export class Shooter implements IGenericComponent {
 
     const bulletPos = radialTranslate2(
       vec2.create(),
-      e.transform.position,
-      e.transform.orientation,
+      e.transform!.position,
+      e.transform!.orientation,
       TILE_SIZE * 1.5,
     )
 
-    g.entities.register(makeBullet(bulletPos, e.transform.orientation))
+    g.entities.register(makeBullet(bulletPos, e.transform!.orientation))
 
     const muzzleFlash = new ParticleEmitter({
       spawnTtl: 0.1,
@@ -79,7 +79,7 @@ export class Shooter implements IGenericComponent {
       particleRadius: 3,
       particleRate: 240,
       particleSpeedRange: [120, 280],
-      orientation: e.transform.orientation,
+      orientation: e.transform!.orientation,
       arc: Math.PI / 4,
       colors: ['#FF9933', '#CCC', '#FFF'],
     })

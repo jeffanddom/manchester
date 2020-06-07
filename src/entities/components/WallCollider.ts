@@ -17,8 +17,8 @@ export class WallCollider implements IWallCollider {
     this.collidedWalls = []
 
     // Get all walls colliding with this entity
-    const myBox = tileBox(entity.transform.position)
-    const previousBox = tileBox(entity.transform.previousPosition)
+    const myBox = tileBox(entity.transform!.position)
+    const previousBox = tileBox(entity.transform!.previousPosition)
     let collided: [IEntity, Direction, number][] = []
     for (let id in game.entities.entities) {
       const other = game.entities.entities[id]
@@ -26,7 +26,7 @@ export class WallCollider implements IWallCollider {
         continue
       }
 
-      const wallBox = tileBox(other.transform.position)
+      const wallBox = tileBox(other.transform!.position)
 
       if (
         myBox[0][0] < wallBox[1][0] &&
@@ -56,14 +56,14 @@ export class WallCollider implements IWallCollider {
     collided = collided.filter((collision) => {
       const wall = collision[0]
       const direction = collision[1]
-      const coords = tileCoords(wall.transform.position)
+      const coords = tileCoords(wall.transform!.position)
 
       switch (direction) {
         case Direction.North:
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform.position),
+                tileCoords(c[0].transform!.position),
                 vec2.fromValues(coords[0], coords[1] - 1),
               ),
             ) === undefined
@@ -72,7 +72,7 @@ export class WallCollider implements IWallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform.position),
+                tileCoords(c[0].transform!.position),
                 vec2.fromValues(coords[0], coords[1] + 1),
               ),
             ) === undefined
@@ -81,7 +81,7 @@ export class WallCollider implements IWallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform.position),
+                tileCoords(c[0].transform!.position),
                 vec2.fromValues(coords[0] + 1, coords[1]),
               ),
             ) === undefined
@@ -90,7 +90,7 @@ export class WallCollider implements IWallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform.position),
+                tileCoords(c[0].transform!.position),
                 vec2.fromValues(coords[0] - 1, coords[1]),
               ),
             ) === undefined
@@ -108,27 +108,27 @@ export class WallCollider implements IWallCollider {
       const offset = TILE_SIZE / 2 + 1 / 1000
       switch (direction) {
         case Direction.North:
-          entity.transform.position = vec2.fromValues(
-            entity.transform.position[0],
+          entity.transform!.position = vec2.fromValues(
+            entity.transform!.position[0],
             value - offset,
           )
           break
         case Direction.South:
-          entity.transform.position = vec2.fromValues(
-            entity.transform.position[0],
+          entity.transform!.position = vec2.fromValues(
+            entity.transform!.position[0],
             value + offset,
           )
           break
         case Direction.East:
-          entity.transform.position = vec2.fromValues(
+          entity.transform!.position = vec2.fromValues(
             value + offset,
-            entity.transform.position[1],
+            entity.transform!.position[1],
           )
           break
         case Direction.West:
-          entity.transform.position = vec2.fromValues(
+          entity.transform!.position = vec2.fromValues(
             value - offset,
-            entity.transform.position[1],
+            entity.transform!.position[1],
           )
           break
       }

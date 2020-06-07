@@ -84,7 +84,7 @@ export class Game implements IGame {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    this.camera.setPosition(this.player.transform.position)
+    this.camera.setPosition(this.player.transform!.position)
     this.camera.update(dt)
 
     this.keyboard.update()

@@ -12,8 +12,8 @@ export enum Terrain {
 
 export type RawMap = {
   dimensions: convert.RawVec2
-  terrain: number[]
-  entities: string[]
+  terrain: (number | null)[]
+  entities: (string | null)[]
 }
 
 export class Map {

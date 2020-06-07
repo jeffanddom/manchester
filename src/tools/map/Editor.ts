@@ -66,7 +66,7 @@ export class Editor {
   showGrid: boolean
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
-    this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d'))
+    this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d')!)
     this.events = new EventEmitter()
 
     this.viewportDimensions = vec2.fromValues(
@@ -85,8 +85,8 @@ export class Editor {
 
     this.brush = {
       mode: BrushMode.TERRAIN,
-      terrain: _.first(TERRAIN_TYPES),
-      entity: _.first(ENTITY_TYPES),
+      terrain: _.first(TERRAIN_TYPES)!,
+      entity: _.first(ENTITY_TYPES)!,
     }
 
     this.showTerrain = true
@@ -139,7 +139,7 @@ export class Editor {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
         this.cursorTilePos.map((tpos) => {
-          this.map.terrain[this.t2a(tpos)] = undefined
+          this.map.terrain[this.t2a(tpos)] = null
         })
 
         return
@@ -164,7 +164,7 @@ export class Editor {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
         this.cursorTilePos.map((tpos) => {
-          this.map.entities[this.t2a(tpos)] = undefined
+          this.map.entities[this.t2a(tpos)] = null
         })
 
         return

@@ -9,7 +9,7 @@ import {
 import { Transform } from './components/Transform'
 
 export interface IEntity {
-  id?: string
+  id: string
   transform?: Transform
   mover?: IGenericComponent
   shooter?: IGenericComponent
