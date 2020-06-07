@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Option } from '~util/Option'
+import { Option, Some, None } from '~util/Option'
 
 export enum MouseButton {
   LEFT = 0,
@@ -20,11 +20,11 @@ export class Mouse {
   private down: Set<MouseButton>
 
   constructor(element: HTMLElement) {
-    this.pos = Option.none()
+    this.pos = None()
     this.down = new Set()
 
     element.addEventListener('mousemove', (event) => {
-      this.pos = Option.some(vec2.fromValues(event.offsetX, event.offsetY))
+      this.pos = Some(vec2.fromValues(event.offsetX, event.offsetY))
     })
 
     element.addEventListener('mousedown', (event) => {
@@ -44,12 +44,12 @@ export class Mouse {
     // clear state if the mouse leaves the root element, or if the window loses
     // focus
     element.addEventListener('mouseout', (_event) => {
-      this.pos = Option.none()
+      this.pos = None()
       this.down = new Set()
     })
 
     document.addEventListener('focusout', () => {
-      this.pos = Option.none()
+      this.pos = None()
       this.down = new Set()
     })
   }

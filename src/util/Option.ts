@@ -2,92 +2,52 @@
  * An option type with an interface inspired by Rust's Option type.
  * See https://doc.rust-lang.org/std/option/enum.Option.html
  */
-export class Option<T> {
-  public static readonly UNWRAP_ERROR = 'unwrapping none option'
 
-  private wrapped: T | undefined
-  private some: boolean
+export const Some = <T>(value: T): Option<T> => {
+  return new SomeOption(value)
+}
 
-  private constructor() {}
+// TODO: figure out if we can use a common None instance.
+export const None = <T>(): Option<T> => {
+  return new NoneOption()
+}
 
-  /**
-   * Returns a new option that wraps the provided value.
-   */
-  public static some<T>(v: T): Option<T> {
-    const option = new Option<T>()
-    option.wrapped = v
-    option.some = true
-    return option
-  }
-
-  /**
-   * Returns a new option that does not wrap a value.
-   */
-  public static none<T>(): Option<T> {
-    const option = new Option<T>()
-    option.some = false
-    return option
-  }
-
+export interface Option<T> {
   /**
    * Returns true if the option wraps a value, or false otherwise.
    */
-  public isSome(): boolean {
-    return this.some
-  }
+  isSome(): boolean
 
   /**
    * Returns false if the option does not wrap a value, or false otherwise.
    */
-  public isNone(): boolean {
-    return !this.some
-  }
+  isNone(): boolean
 
   /**
    * If both options wrap values, returns the result of strict equality
    * comparison between the two wrapped values. If neither option wraps a value,
    * return true. Otherwise returns false.
    */
-  public equals(other: Option<T>): boolean {
-    if (this.some && other.some) {
-      return this.wrapped === other.wrapped
-    }
-    return !this.some && !other.some
-  }
+  equals(other: Option<T>): boolean
 
   /**
    * If both options wrap values, returns the result of weak equality
    * comparison between the two wrapped values. If neither option wraps a value,
    * return true. Otherwise returns false.
    */
-  public weakEquals(other: Option<T>): boolean {
-    if (this.some && other.some) {
-      return this.wrapped == other.wrapped
-    }
-    return !this.some && !other.some
-  }
+  weakEquals(other: Option<T>): boolean
 
   /**
    * Returns the wrapped value. Throws an exception if the option does not wrap
    * a value.
    */
-  public unwrap(): T {
-    if (!this.some) {
-      throw new Error(Option.UNWRAP_ERROR)
-    }
-    return this.wrapped
-  }
+  unwrap(): T
 
   /**
    * Returns the wrapped value if the option wraps a value, or returns the
    * provided default value.
    */
-  public unwrapOr(def: T): T {
-    if (!this.some) {
-      return def
-    }
-    return this.wrapped
-  }
+  unwrapOr(def: T): T
 
   /**
    * A lazy-evaluated version of #unwrapOr.
@@ -95,36 +55,21 @@ export class Option<T> {
    * Returns the wrapped value if the option wraps a value, or returns the
    * result of calling the provided function.
    */
-  public unwrapOrElse(def: () => T): T {
-    if (!this.some) {
-      return def()
-    }
-    return this.wrapped
-  }
+  unwrapOrElse(def: () => T): T
 
   /**
    * If the option wraps a value, returns the result of passing the wrapped
    * value to the provided function, wrapped in another option. Otherwise,
    * returns a new none option.
    */
-  public map<MappedT>(f: (v: T) => MappedT): Option<MappedT> {
-    if (!this.some) {
-      return Option.none()
-    }
-    return Option.some(f(this.wrapped))
-  }
+  map<MappedT>(f: (v: T) => MappedT): Option<MappedT>
 
   /**
    * If the option wraps a value, returns the result of passing the wrapped
    * value to the provided function. Otherwise, returns the provided default
    * value.
    */
-  public mapOr<MappedT>(def: MappedT, f: (v: T) => MappedT): MappedT {
-    if (!this.some) {
-      return def
-    }
-    return f(this.wrapped)
-  }
+  mapOr<MappedT>(def: MappedT, f: (v: T) => MappedT): MappedT
 
   /**
    * A lazy-evaluated version of #mapOr.
@@ -133,10 +78,103 @@ export class Option<T> {
    * value to the provided function. Otherwise, returns the result of calling
    * the provided default value function.
    */
-  public mapOrElse<MappedT>(def: () => MappedT, f: (v: T) => MappedT): MappedT {
-    if (!this.some) {
-      return def()
-    }
+  mapOrElse<MappedT>(def: () => MappedT, f: (v: T) => MappedT): MappedT
+}
+
+export const UNWRAP_ERROR = 'unwrapping none option'
+
+class SomeOption<T> implements Option<T> {
+  private wrapped: T
+
+  public constructor(value: T) {
+    this.wrapped = value
+  }
+
+  public isSome(): boolean {
+    return true
+  }
+
+  public isNone(): boolean {
+    return false
+  }
+
+  public equals(other: Option<T>): boolean {
+    return other.isSome() && this.wrapped === other.unwrap()
+  }
+
+  public weakEquals(other: Option<T>): boolean {
+    return other.isSome() && this.wrapped == other.unwrap()
+  }
+
+  public unwrap(): T {
+    return this.wrapped
+  }
+
+  public unwrapOr(_def: T): T {
+    return this.wrapped
+  }
+
+  public unwrapOrElse(_def: () => T): T {
+    return this.wrapped
+  }
+
+  public map<MappedT>(f: (v: T) => MappedT): Option<MappedT> {
+    return new SomeOption(f(this.wrapped))
+  }
+
+  public mapOr<MappedT>(_def: MappedT, f: (v: T) => MappedT): MappedT {
     return f(this.wrapped)
+  }
+
+  public mapOrElse<MappedT>(
+    _def: () => MappedT,
+    f: (v: T) => MappedT,
+  ): MappedT {
+    return f(this.wrapped)
+  }
+}
+
+class NoneOption<T> implements Option<T> {
+  public isSome(): boolean {
+    return false
+  }
+
+  public isNone(): boolean {
+    return true
+  }
+
+  public equals(other: Option<T>): boolean {
+    return other.isNone()
+  }
+
+  public weakEquals(other: Option<T>): boolean {
+    return other.isNone()
+  }
+
+  public unwrap(): T {
+    throw new Error(UNWRAP_ERROR)
+  }
+
+  public unwrapOr(def: T): T {
+    return def
+  }
+
+  public unwrapOrElse(def: () => T): T {
+    return def()
+  }
+
+  public map<MappedT>(_f: (v: T) => MappedT): Option<MappedT> {
+    return None()
+  }
+
+  public mapOr<MappedT>(def: MappedT, _f: (v: T) => MappedT): MappedT {
+    return def
+  }
+
+  public mapOrElse<MappedT>(
+    def: () => MappedT,
+    _f: (v: T) => MappedT,
+  ): MappedT {
+    return def()
   }
 }

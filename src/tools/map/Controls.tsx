@@ -4,13 +4,13 @@ import { vec2 } from 'gl-matrix'
 import { BrushMode, Editor } from './Editor'
 import { Terrain, Map } from '~map/interfaces'
 import * as entities from '~entities'
-import { Option } from '~util/Option'
+import { Option, Some, None } from '~util/Option'
 
 export const Controls = ({ editor }: { editor: Editor }) => {
   const [state, setState] = useState({
     zoom: 1,
     map: editor.map,
-    tilePos: Option.none<vec2>(),
+    tilePos: None<vec2>(),
     brush: editor.brush,
     showTerrain: true,
     showEntities: true,
