@@ -3,7 +3,7 @@ import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { vec2 } from 'gl-matrix'
-import { radialTranslate2 } from '~/mathutil'
+import { radialTranslate2 } from '~util/math'
 import { IGame } from '~/interfaces'
 import { IGenericComponent } from '~/entities/components/interfaces'
 

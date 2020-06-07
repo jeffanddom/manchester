@@ -3,7 +3,7 @@ import { IEntity } from '~/entities/interfaces'
 import { IDamageable } from '~/entities/components/interfaces'
 import { Hitbox } from '~/Hitbox'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
-import { radialTranslate2 } from '~mathutil'
+import { radialTranslate2 } from '~util/math'
 import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~constants'
 

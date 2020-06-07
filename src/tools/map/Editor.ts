@@ -6,7 +6,7 @@ import { Keyboard } from '~Keyboard'
 import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
 import { TILE_SIZE } from '~/constants'
-import * as mathutil from '~/mathutil'
+import * as math from '~util/math'
 import { Map, Terrain } from '~map/interfaces'
 import * as entities from '~/entities'
 import { IRenderer, Primitive } from '~renderer/interfaces'
@@ -122,7 +122,7 @@ export class Editor {
     } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
       zoom -= ZOOM_SPEED * dt
     }
-    zoom = mathutil.clamp(zoom, [0.5, 3])
+    zoom = math.clamp(zoom, [0.5, 3])
     this.events.emit('zoom', { zoom: zoom })
 
     this.camera.setZoom(zoom)

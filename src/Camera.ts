@@ -1,6 +1,6 @@
 import { vec2, mat2d } from 'gl-matrix'
 import { sample } from 'lodash'
-import * as mathutil from '~/mathutil'
+import * as math from '~util/math'
 
 export class Camera {
   private position: vec2
@@ -77,7 +77,7 @@ export class Camera {
   }
 
   setPosition(worldPos: vec2): void {
-    mathutil.clamp2(this.position, worldPos, [
+    math.clamp2(this.position, worldPos, [
       vec2.add(
         vec2.create(),
         this.minWorldPos,

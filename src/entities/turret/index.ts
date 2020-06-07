@@ -11,7 +11,7 @@ import { IGenericComponent } from '~entities/components/interfaces'
 import { IGame } from '~interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { makeBullet } from '~entities/Bullet'
-import { radialTranslate2 } from '~mathutil'
+import { radialTranslate2 } from '~util/math'
 
 const normalizeAngle = (theta: number): number => {
   if (theta > Math.PI) {

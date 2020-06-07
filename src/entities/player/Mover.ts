@@ -1,7 +1,7 @@
 import { TILE_SIZE } from '~/constants'
 import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
-import { radialTranslate2 } from '~/mathutil'
+import { radialTranslate2 } from '~util/math'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 4)
 const PLAYER_ROT_SPEED = 1.25 * 2 * Math.PI // 1.5 rotations per second
