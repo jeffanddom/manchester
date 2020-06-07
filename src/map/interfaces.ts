@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import * as entities from '~entities'
-import * as cast from '~util/cast'
+import * as convert from '~util/convert'
 
 export enum Terrain {
   Mountain,
@@ -11,7 +11,7 @@ export enum Terrain {
 }
 
 export type RawMap = {
-  dimensions: cast.RawVec2
+  dimensions: convert.RawVec2
   terrain: number[]
   entities: string[]
 }
@@ -23,20 +23,20 @@ export class Map {
   entities: (entities.types.Type | null)[]
 
   public static fromRaw(rawMap: RawMap): Map {
-    const m = new Map(cast.toVec2(rawMap.dimensions))
+    const m = new Map(convert.toVec2(rawMap.dimensions))
 
     m.terrain = rawMap.terrain.map((raw) => {
       if (raw === null) {
         return null
       }
-      return cast.toIntEnum(Terrain, raw).unwrap()
+      return convert.toIntEnum(Terrain, raw).unwrap()
     })
 
     m.entities = rawMap.entities.map((raw) => {
       if (raw === null) {
         return null
       }
-      return cast.toStringEnum(entities.types.Type, raw).unwrap()
+      return convert.toStringEnum(entities.types.Type, raw).unwrap()
     })
 
     return m
