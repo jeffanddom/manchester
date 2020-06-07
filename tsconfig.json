@@ -5,6 +5,8 @@
     "moduleResolution": "node",
     "alwaysStrict": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
     "strictNullChecks": true,
     "jsx": "react",
     "baseUrl": ".",
