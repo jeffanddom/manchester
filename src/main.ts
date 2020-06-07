@@ -1,7 +1,7 @@
 import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { vec2 } from 'gl-matrix'
-import * as time from '~/time'
+import * as time from '~util/time'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 import * as mapData from '~/assets/maps/test.json'
 import { Map } from '~map/interfaces'

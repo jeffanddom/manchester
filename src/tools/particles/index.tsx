@@ -5,7 +5,7 @@ import { vec2, mat2d } from 'gl-matrix'
 import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
-import * as time from '~/time'
+import * as time from '~util/time'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 import { IRenderer } from '~renderer/interfaces'
 
