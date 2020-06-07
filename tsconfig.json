@@ -8,6 +8,7 @@
     "noImplicitThis": true,
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "jsx": "react",
     "baseUrl": ".",
     "paths": {

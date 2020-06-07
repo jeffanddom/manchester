@@ -4,6 +4,7 @@ import { Keyboard } from '~Keyboard'
 import { Playfield } from '~/Playfield'
 import { EntityManager } from '~entities/EntityManager'
 import { IEntity } from '~entities/interfaces'
+import { Option } from '~util/Option'
 
 export enum Direction {
   North = 'N',
@@ -19,5 +20,5 @@ export interface IGame {
   emitters: ParticleEmitter[]
   camera: Camera
 
-  player: IEntity
+  player: Option<IEntity>
 }

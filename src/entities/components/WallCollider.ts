@@ -11,6 +11,7 @@ export class WallCollider implements IWallCollider {
 
   constructor() {
     this.hitLastFrame = false
+    this.collidedWalls = []
   }
 
   update(entity: IEntity, game: IGame) {

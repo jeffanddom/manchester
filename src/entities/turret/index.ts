@@ -33,7 +33,10 @@ const getAngularDistance = (from: Transform, to: Transform): number => {
 
 class Mover implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void {
-    const diff = getAngularDistance(e.transform!, g.player.transform!)
+    const diff = getAngularDistance(
+      e.transform!,
+      g.player.unwrapOr(e).transform!,
+    )
     const disp = dt * ROT_SPEED
     e.transform!.orientation +=
       disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp
@@ -56,7 +59,10 @@ export class Shooter implements IGenericComponent {
       return
     }
 
-    const diff = getAngularDistance(e.transform!, g.player.transform!)
+    const diff = getAngularDistance(
+      e.transform!,
+      g.player.unwrapOr(e).transform!,
+    )
     if (diff < -0.05 || 0.05 < diff) {
       return
     }

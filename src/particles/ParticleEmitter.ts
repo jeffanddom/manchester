@@ -14,7 +14,6 @@ interface Particle {
 }
 
 export class ParticleEmitter {
-  startTime: number
   dead: boolean
   particles: Particle[] = []
   potentialParticles: number

@@ -1,7 +1,7 @@
 import { vec2, mat2d } from 'gl-matrix'
 import * as _ from 'lodash'
 
-import { Option } from '~util/Option'
+import { Option, None } from '~util/Option'
 import { Keyboard } from '~Keyboard'
 import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
@@ -43,7 +43,6 @@ const ENTITY_TYPES = [
 ]
 
 export class Editor {
-  canvas: HTMLCanvasElement
   renderer: IRenderer
   events: EventEmitter
 
@@ -83,6 +82,7 @@ export class Editor {
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(params.canvas)
 
+    this.cursorTilePos = None()
     this.brush = {
       mode: BrushMode.TERRAIN,
       terrain: _.first(TERRAIN_TYPES)!,

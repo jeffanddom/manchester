@@ -11,6 +11,7 @@ import { IEntity } from '~/entities/interfaces'
 import * as entities from '~/entities'
 import { Primitive, IRenderer } from '~/renderer/interfaces'
 import { Map } from '~/map/interfaces'
+import { Option, None, Some } from '~util/Option'
 
 let DEBUG_MODE = false
 
@@ -22,7 +23,7 @@ export class Game implements IGame {
   keyboard: Keyboard
   emitters: ParticleEmitter[]
 
-  player: IEntity
+  player: Option<IEntity>
   camera: Camera
 
   constructor(renderer: IRenderer, map: Map, viewportSize: vec2) {
@@ -42,6 +43,7 @@ export class Game implements IGame {
       this.playfield.minWorldPos(),
       this.playfield.dimensions(),
     )
+    this.player = None()
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
@@ -72,7 +74,7 @@ export class Game implements IGame {
         this.entities.register(entity)
 
         if (et === entities.types.Type.PLAYER) {
-          this.player = entity
+          this.player = Some(entity)
         }
       }
     }
@@ -84,7 +86,9 @@ export class Game implements IGame {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    this.camera.setPosition(this.player.transform!.position)
+    this.player.map((p) => {
+      this.camera.setPosition(p.transform!.position)
+    })
     this.camera.update(dt)
 
     this.keyboard.update()
