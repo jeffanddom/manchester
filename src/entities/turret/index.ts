@@ -11,25 +11,13 @@ import { IGenericComponent } from '~entities/components/interfaces'
 import { IGame } from '~interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { makeBullet } from '~entities/Bullet'
-import { radialTranslate2 } from '~util/math'
-
-const normalizeAngle = (theta: number): number => {
-  if (theta > Math.PI) {
-    return theta - 2 * Math.PI
-  } else if (theta < -Math.PI) {
-    return theta + 2 * Math.PI
-  }
-  return theta
-}
+import {
+  radialTranslate2,
+  getAngularDistance,
+  normalizeAngle,
+} from '~util/math'
 
 const ROT_SPEED = Math.PI / 2
-
-const getAngularDistance = (from: Transform, to: Transform): number => {
-  const offset = vec2.sub(vec2.create(), to.position, from.position)
-  const targetOrientation =
-    Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
-  return normalizeAngle(targetOrientation - from.orientation)
-}
 
 class Mover implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void {
@@ -101,15 +89,15 @@ export const makeTurret = (model: {
   e.transform = new Transform()
 
   e.mover = new Mover()
-  e.shooter = new Shooter()
+  // e.shooter = new Shooter()
 
   e.wall = { update: () => {} }
-  // e.shooter = new Shooter()
   e.damageable = new Damageable(
     10,
     new Hitbox(
       vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
+      false,
     ),
   )
   e.renderable = new PathRenderable(model.path, model.fillStyle)

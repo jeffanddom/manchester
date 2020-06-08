@@ -6,12 +6,14 @@ import { IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Keyboard } from '~/Keyboard'
+import { Mouse } from '~/Mouse'
 import { Camera } from '~/Camera'
 import { IEntity } from '~/entities/interfaces'
 import * as entities from '~/entities'
 import { Primitive, IRenderer } from '~/renderer/interfaces'
 import { Map } from '~/map/interfaces'
 import { Option, None, Some } from '~util/Option'
+import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 
 let DEBUG_MODE = false
 
@@ -21,21 +23,22 @@ export class Game implements IGame {
   playfield: Playfield
   entities: EntityManager
   keyboard: Keyboard
+  mouse: Mouse
   emitters: ParticleEmitter[]
 
   player: Option<IEntity>
   camera: Camera
 
-  constructor(renderer: IRenderer, map: Map, viewportSize: vec2) {
-    this.renderer = renderer
-
-    this.playfield = new Playfield({
-      tileOrigin: map.origin,
-      tileDimensions: map.dimensions,
-      terrain: map.terrain,
-    })
+  constructor(canvas: HTMLCanvasElement, map: Map, viewportSize: vec2) {
+    ;(this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)),
+      (this.playfield = new Playfield({
+        tileOrigin: map.origin,
+        tileDimensions: map.dimensions,
+        terrain: map.terrain,
+      }))
     this.entities = new EntityManager()
     this.keyboard = new Keyboard()
+    this.mouse = new Mouse(canvas)
     this.emitters = []
 
     this.camera = new Camera(
@@ -103,6 +106,24 @@ export class Game implements IGame {
     this.emitters.forEach((e) =>
       e.getRenderables().forEach((r) => this.renderer.render(r)),
     )
+
+    // CURSOR
+    // FIXME: this should be a renderable/entity
+    this.mouse.getPos().map((pos) => {
+      const topLeft = vec2.sub(
+        vec2.create(),
+        this.camera.viewToWorldspace(pos),
+        vec2.fromValues(3, 3),
+      )
+      const d = vec2.fromValues(6, 6)
+      this.renderer.render({
+        primitive: Primitive.RECT,
+        strokeStyle: 'black',
+        fillStyle: 'white',
+        pos: topLeft,
+        dimensions: d,
+      })
+    })
 
     if (DEBUG_MODE) {
       for (const id in this.entities.entities) {

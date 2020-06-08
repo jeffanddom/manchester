@@ -88,7 +88,9 @@ class BulletDamager implements IDamager {
       game.emitters.push(explosion)
 
       // Camera shake
-      game.camera.shake()
+      if (c === game.player.unwrap()) {
+        game.camera.shake()
+      }
 
       // Perform damage, kill bullet
       c.damageable.health = c.damageable.health - this.damageValue

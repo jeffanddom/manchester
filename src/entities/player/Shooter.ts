@@ -6,6 +6,8 @@ import { vec2 } from 'gl-matrix'
 import { radialTranslate2 } from '~util/math'
 import { IGame } from '~/interfaces'
 import { IGenericComponent } from '~/entities/components/interfaces'
+import { MouseButton } from '~/Mouse'
+import { getAngle } from '~/util/math'
 
 const keyMap = {
   fire: 32, // fire
@@ -15,30 +17,40 @@ const COOLDOWN_PERIOD = 0.25
 
 export class Shooter implements IGenericComponent {
   cooldownTtl: number
+  orientation: number
 
   constructor() {
     this.cooldownTtl = 0
+    this.orientation = 0
   }
 
   update(entity: IEntity, game: IGame, dt: number) {
+    const mousePos = game.mouse.getPos()
+    if (mousePos.isNone()) {
+      return
+    }
+
+    this.orientation = getAngle(
+      entity.transform!.position,
+      game.camera.viewToWorldspace(mousePos.unwrap()),
+    )
+
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
       return
     }
 
-    if (game.keyboard.downKeys.has(keyMap.fire)) {
+    if (game.mouse.isDown(MouseButton.LEFT)) {
       this.cooldownTtl = COOLDOWN_PERIOD
 
       const bulletPos = radialTranslate2(
         vec2.create(),
         entity.transform!.position,
-        entity.transform!.orientation,
+        this.orientation,
         TILE_SIZE * 0.75,
       )
 
-      game.entities.register(
-        makeBullet(bulletPos, entity.transform!.orientation),
-      )
+      game.entities.register(makeBullet(bulletPos, this.orientation))
 
       const muzzleFlash = new ParticleEmitter({
         spawnTtl: 0.1,
@@ -47,7 +59,7 @@ export class Shooter implements IGenericComponent {
         particleRadius: 3,
         particleRate: 240,
         particleSpeedRange: [120, 280],
-        orientation: entity.transform!.orientation,
+        orientation: this.orientation,
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })

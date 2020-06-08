@@ -16,12 +16,14 @@ export class PathRenderable implements IRenderable {
     this.fillStyle = s
   }
 
-  getRenderable(e: IEntity): Renderable {
-    return {
-      primitive: Primitive.PATH,
-      fillStyle: this.fillStyle,
-      mwTransform: e.transform!.mwTransform(),
-      path: this.path,
-    }
+  getRenderables(e: IEntity): Renderable[] {
+    return [
+      {
+        primitive: Primitive.PATH,
+        fillStyle: this.fillStyle,
+        mwTransform: e.transform!.mwTransform(),
+        path: this.path,
+      },
+    ]
   }
 }

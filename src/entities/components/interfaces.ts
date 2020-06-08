@@ -17,7 +17,7 @@ export interface IGenericComponent {
 
 export interface IRenderable {
   setFillStyle(s: string): void
-  getRenderable(e: IEntity): Renderable
+  getRenderables(e: IEntity): Renderable[]
 }
 
 export interface IDamageable extends IGenericComponent {

@@ -44,4 +44,8 @@ export class Entity implements IEntity {
     // Should be the very last thing to update.
     this.prerender?.update(this, game, dt)
   }
+
+  addChild() {
+    // sets parent and adds to children
+  }
 }

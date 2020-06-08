@@ -136,6 +136,14 @@ export class Camera {
     return mat2d.clone(this.wvTransformCache)
   }
 
+  viewToWorldspace(vpos: vec2): vec2 {
+    return vec2.transformMat2d(
+      vec2.create(),
+      vpos,
+      mat2d.invert(mat2d.create(), this.wvTransform()),
+    )
+  }
+
   /**
    * Returns the minimum and maximum visible world positions given the current
    * zoom and position.

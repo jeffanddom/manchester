@@ -2,7 +2,6 @@ import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { vec2 } from 'gl-matrix'
 import * as time from '~util/time'
-import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
 import * as mapData from '~/assets/maps/test.json'
 import { Map } from '~map/interfaces'
 
@@ -18,11 +17,7 @@ const viewportDimensions = vec2.scale(
 canvas.width = viewportDimensions[0]
 canvas.height = viewportDimensions[1]
 
-const game = new Game(
-  new Canvas2DRenderer(canvas.getContext('2d')!),
-  Map.fromRaw(mapData),
-  viewportDimensions,
-)
+const game = new Game(canvas, Map.fromRaw(mapData), viewportDimensions)
 let prevFrameTime = time.current()
 
 function gameLoop() {

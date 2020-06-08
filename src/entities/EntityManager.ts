@@ -28,7 +28,7 @@ export class EntityManager {
       if (e.renderable === undefined) {
         continue
       }
-      renderables.push(e.renderable.getRenderable(e))
+      renderables.push(...e.renderable.getRenderables(e))
     }
     return renderables
   }

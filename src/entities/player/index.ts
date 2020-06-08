@@ -5,7 +5,7 @@ import { Transform } from '~/entities/components/Transform'
 import { Shooter } from '~entities/player/Shooter'
 import { Mover } from '~entities/player/Mover'
 import { WallCollider } from '~/entities/components/WallCollider'
-import { PathRenderable } from '~/entities/components/PathRenderable'
+import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { IEntity } from '~/entities/interfaces'
 import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Damageable } from '~entities/components/Damageable'
@@ -16,13 +16,15 @@ export const makePlayer = (model: {
   path: path2
   fillStyle: string
 }): IEntity => {
+  const shooter = new Shooter()
+
   const e = new Entity()
   e.transform = new Transform()
   e.mover = new Mover()
-  e.shooter = new Shooter()
+  e.shooter = shooter
   e.wallCollider = new WallCollider()
   e.damageable = new Damageable(
-    5,
+    10,
     new Hitbox(
       vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
       vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
@@ -30,7 +32,7 @@ export const makePlayer = (model: {
     ),
   )
   e.playfieldClamper = new PlayfieldClamper()
-  e.renderable = new PathRenderable(model.path, model.fillStyle)
+  e.renderable = new PlayerRenderables(shooter)
 
   return e
 }
