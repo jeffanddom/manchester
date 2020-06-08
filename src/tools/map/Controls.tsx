@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { vec2 } from 'gl-matrix'
 import { BrushMode, Editor } from './Editor'
-import { Terrain } from '~map/interfaces'
+import * as terrain from '~terrain'
 import * as entities from '~entities'
 import { None } from '~util/Option'
 
@@ -112,7 +112,7 @@ export const Controls = ({ editor }: { editor: Editor }) => {
         <li>
           Brush: {BrushMode[state.brush.mode]} (
           {state.brush.mode === BrushMode.TERRAIN
-            ? Terrain[state.brush.terrain]
+            ? terrain.Type[state.brush.terrain]
             : entities.types.Type[state.brush.entity]}
           )
         </li>

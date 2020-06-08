@@ -1,7 +1,7 @@
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Camera } from '~/Camera'
 import { Keyboard } from '~Keyboard'
-import { Playfield } from '~/Playfield'
+import * as terrain from '~terrain'
 import { EntityManager } from '~entities/EntityManager'
 import { IEntity } from '~entities/interfaces'
 import { Option } from '~util/Option'
@@ -15,7 +15,7 @@ export enum Direction {
 }
 
 export interface IGame {
-  playfield: Playfield
+  terrain: terrain.Layer
   entities: EntityManager
   keyboard: Keyboard
   mouse: Mouse

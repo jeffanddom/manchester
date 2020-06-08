@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
 import { EntityManager } from '~/entities/EntityManager'
-import { Playfield } from '~/Playfield'
 import { IGame } from '~/interfaces'
 import { TILE_SIZE } from '~/constants'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -14,13 +13,14 @@ import { Primitive, IRenderer } from '~/renderer/interfaces'
 import { Map } from '~/map/interfaces'
 import { Option, None, Some } from '~util/Option'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
+import * as terrain from '~terrain'
 
 let DEBUG_MODE = false
 
 export class Game implements IGame {
   renderer: IRenderer
 
-  playfield: Playfield
+  terrain: terrain.Layer
   entities: EntityManager
   keyboard: Keyboard
   mouse: Mouse
@@ -30,12 +30,12 @@ export class Game implements IGame {
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement, map: Map, viewportSize: vec2) {
-    ;(this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)),
-      (this.playfield = new Playfield({
-        tileOrigin: map.origin,
-        tileDimensions: map.dimensions,
-        terrain: map.terrain,
-      }))
+    this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
+    this.terrain = new terrain.Layer({
+      tileOrigin: map.origin,
+      tileDimensions: map.dimensions,
+      terrain: map.terrain,
+    })
     this.entities = new EntityManager()
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(canvas)
@@ -43,8 +43,8 @@ export class Game implements IGame {
 
     this.camera = new Camera(
       viewportSize,
-      this.playfield.minWorldPos(),
-      this.playfield.dimensions(),
+      this.terrain.minWorldPos(),
+      this.terrain.dimensions(),
     )
     this.player = None()
 
@@ -66,7 +66,7 @@ export class Game implements IGame {
         if (entity.transform !== undefined) {
           entity.transform.position = vec2.add(
             vec2.create(),
-            this.playfield.minWorldPos(),
+            this.terrain.minWorldPos(),
             vec2.fromValues(
               j * TILE_SIZE + TILE_SIZE * 0.5,
               i * TILE_SIZE + TILE_SIZE * 0.5,
@@ -101,7 +101,9 @@ export class Game implements IGame {
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())
-    this.playfield.getRenderables().forEach((r) => this.renderer.render(r))
+    this.terrain
+      .getRenderables(this.camera.getVisibleExtents())
+      .forEach((r) => this.renderer.render(r))
     this.entities.getRenderables().forEach((r) => this.renderer.render(r))
     this.emitters.forEach((e) =>
       e.getRenderables().forEach((r) => this.renderer.render(r)),

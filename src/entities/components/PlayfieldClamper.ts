@@ -8,12 +8,12 @@ export class PlayfieldClamper implements IGenericComponent {
     vec2.max(
       entity.transform!.position,
       entity.transform!.position,
-      game.playfield.minWorldPos(),
+      game.terrain.minWorldPos(),
     )
     vec2.min(
       entity.transform!.position,
       entity.transform!.position,
-      game.playfield.maxWorldPos(),
+      game.terrain.maxWorldPos(),
     )
   }
 }

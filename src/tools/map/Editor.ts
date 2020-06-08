@@ -7,7 +7,8 @@ import { Mouse, MouseButton } from '~Mouse'
 import { Camera } from '~Camera'
 import { TILE_SIZE } from '~/constants'
 import * as math from '~util/math'
-import { Map, Terrain } from '~map/interfaces'
+import * as terrain from '~terrain'
+import { Map } from '~map/interfaces'
 import * as entities from '~/entities'
 import { IRenderer, Primitive } from '~renderer/interfaces'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
@@ -35,7 +36,11 @@ export enum BrushMode {
 }
 
 // TODO: factor these into generic functions
-const TERRAIN_TYPES = [Terrain.Grass, Terrain.Mountain, Terrain.River]
+const TERRAIN_TYPES = [
+  terrain.Type.Grass,
+  terrain.Type.Mountain,
+  terrain.Type.River,
+]
 const ENTITY_TYPES = [
   entities.types.Type.PLAYER,
   entities.types.Type.TURRET,
@@ -48,6 +53,7 @@ export class Editor {
 
   viewportDimensions: vec2
   map: Map
+  terrain: terrain.Layer
 
   camera: Camera
   keyboard: Keyboard
@@ -56,7 +62,7 @@ export class Editor {
   cursorTilePos: Option<vec2>
   brush: {
     mode: BrushMode
-    terrain: Terrain
+    terrain: terrain.Type
     entity: entities.types.Type
   }
 
@@ -73,6 +79,11 @@ export class Editor {
       params.canvas.height,
     )
     this.map = params.map
+    this.terrain = new terrain.Layer({
+      tileOrigin: this.map.origin,
+      tileDimensions: this.map.dimensions,
+      terrain: this.map.terrain,
+    })
 
     this.camera = new Camera(
       this.viewportDimensions,
@@ -230,30 +241,9 @@ export class Editor {
   }
 
   renderTerrain(): void {
-    const nwTile = this.v2t(vec2.fromValues(0, 0))
-    const seTile = this.v2t(this.viewportDimensions)
-
-    for (let i = nwTile[1]; i <= seTile[1]; i++) {
-      for (let j = nwTile[0]; j <= seTile[0]; j++) {
-        const n = this.t2a(vec2.fromValues(j, i))
-
-        // TODO: need to DRY this up with playfield rendering
-        switch (this.map.terrain[n]) {
-          case Terrain.Grass:
-            this.renderTile(vec2.fromValues(j, i), '#7EC850')
-            break
-          case Terrain.Mountain:
-            this.renderTile(vec2.fromValues(j, i), '#5B5036')
-            break
-          case Terrain.River:
-            this.renderTile(vec2.fromValues(j, i), '#2B5770')
-            break
-          default:
-            // do nothing
-            break
-        }
-      }
-    }
+    this.terrain
+      .getRenderables(this.camera.getVisibleExtents())
+      .forEach((r) => this.renderer.render(r))
   }
 
   renderEntities(): void {
@@ -329,7 +319,7 @@ export class Editor {
   renderGrid(): void {
     const axisWeight = 2
     const nonaxisWeight = 1
-    const [visibleMin, visibleMax] = this.camera.getVisibleMinMax()
+    const [visibleMin, visibleMax] = this.camera.getVisibleExtents()
 
     for (let i = 0; i < this.map.dimensions[1]; i++) {
       const y = (i + this.map.origin[1]) * TILE_SIZE

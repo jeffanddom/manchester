@@ -148,7 +148,7 @@ export class Camera {
    * Returns the minimum and maximum visible world positions given the current
    * zoom and position.
    */
-  getVisibleMinMax(): [vec2, vec2] {
+  getVisibleExtents(): [vec2, vec2] {
     const transform = this.wvTransform()
     mat2d.invert(transform, transform)
     return [
