@@ -1,6 +1,7 @@
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { path2 } from '~util/path2'
+import { Rotator } from '~/entities/components/Rotator'
 import { Transform } from '~/entities/components/Transform'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { IEntity } from '~/entities/interfaces'
@@ -11,24 +12,23 @@ import { IGenericComponent } from '~entities/components/interfaces'
 import { IGame } from '~interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { makeBullet } from '~entities/Bullet'
-import {
-  radialTranslate2,
-  getAngularDistance,
-  normalizeAngle,
-} from '~util/math'
+import { radialTranslate2 } from '~util/math'
 
-const ROT_SPEED = Math.PI / 2
+const TURRET_ROT_SPEED = Math.PI / 2
 
 class Mover implements IGenericComponent {
+  rotator: Rotator
+
+  constructor() {
+    this.rotator = new Rotator({ speed: TURRET_ROT_SPEED })
+  }
+
   update(e: IEntity, g: IGame, dt: number): void {
-    const diff = getAngularDistance(
-      e.transform!,
-      g.player.unwrapOr(e).transform!,
-    )
-    const disp = dt * ROT_SPEED
-    e.transform!.orientation +=
-      disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp
-    e.transform!.orientation = normalizeAngle(e.transform!.orientation)
+    e.transform!.orientation = this.rotator.rotate({
+      from: e.transform!,
+      to: g.player.unwrapOr(e).transform!.position,
+      dt,
+    })
   }
 }
 
@@ -44,14 +44,6 @@ export class Shooter implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number) {
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
-      return
-    }
-
-    const diff = getAngularDistance(
-      e.transform!,
-      g.player.unwrapOr(e).transform!,
-    )
-    if (diff < -0.05 || 0.05 < diff) {
       return
     }
 
@@ -89,7 +81,7 @@ export const makeTurret = (model: {
   e.transform = new Transform()
 
   e.mover = new Mover()
-  // e.shooter = new Shooter()
+  e.shooter = new Shooter()
 
   e.wall = { update: () => {} }
   e.damageable = new Damageable(

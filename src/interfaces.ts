@@ -6,6 +6,7 @@ import { EntityManager } from '~entities/EntityManager'
 import { IEntity } from '~entities/interfaces'
 import { Option } from '~util/Option'
 import { Mouse } from '~Mouse'
+import { vec2 } from 'gl-matrix'
 
 export enum Direction {
   North = 'N',
@@ -23,4 +24,9 @@ export interface IGame {
   camera: Camera
 
   player: Option<IEntity>
+}
+
+export interface TransformData {
+  orientation: number
+  position: vec2
 }
