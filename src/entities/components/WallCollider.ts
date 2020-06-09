@@ -21,7 +21,7 @@ export class WallCollider implements IWallCollider {
     const myBox = tileBox(entity.transform!.position)
     const previousBox = tileBox(entity.transform!.previousPosition)
     let collided: [IEntity, Direction, number][] = []
-    for (let id in game.entities.entities) {
+    for (const id in game.entities.entities) {
       const other = game.entities.entities[id]
       if (other.wall === undefined) {
         continue

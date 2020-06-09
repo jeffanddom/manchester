@@ -52,7 +52,7 @@ export const typeDefinitions = {
 }
 
 export const make = (t: Type): IEntity => {
-  for (let k in typeDefinitions) {
+  for (const k in typeDefinitions) {
     if (k !== t) {
       continue
     }
@@ -63,7 +63,7 @@ export const make = (t: Type): IEntity => {
 }
 
 export const serialize = (t: Type): string => {
-  for (let k in typeDefinitions) {
+  for (const k in typeDefinitions) {
     if (k !== t) {
       continue
     }
@@ -73,7 +73,7 @@ export const serialize = (t: Type): string => {
 }
 
 export const deserialize = (s: string): Type | undefined => {
-  for (let k in typeDefinitions) {
+  for (const k in typeDefinitions) {
     const c = k as keyof typeof Type
     if (typeDefinitions[c].serialized === s) {
       return Type[c]

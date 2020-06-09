@@ -23,7 +23,7 @@ export class EntityManager {
 
   getRenderables(): Renderable[] {
     const renderables: Renderable[] = []
-    for (let id in this.entities) {
+    for (const id in this.entities) {
       const e = this.entities[id]
       if (e.renderable === undefined) {
         continue
