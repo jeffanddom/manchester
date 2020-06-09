@@ -26,7 +26,11 @@ export const makeWall = (model: {
 }): IEntity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.wall = { update: () => {} }
+  e.wall = {
+    update: () => {
+      /* do nothing */
+    },
+  }
   e.renderable = new PathRenderable(model.path, model.fillStyle)
   e.damageable = new Damageable(
     WALL_HEALTH,
