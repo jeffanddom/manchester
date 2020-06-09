@@ -1,3 +1,5 @@
+import { vec2 } from 'gl-matrix'
+
 import { Camera } from '~/Camera'
 import { EntityManager } from '~/entities/EntityManager'
 import { IEntity } from '~/entities/interfaces'
@@ -23,4 +25,9 @@ export interface IGame {
   camera: Camera
 
   player: Option<IEntity>
+}
+
+export interface TransformData {
+  orientation: number
+  position: vec2
 }

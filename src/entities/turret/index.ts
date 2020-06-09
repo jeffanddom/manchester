@@ -11,25 +11,20 @@ import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
 import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import {
-  getAngularDistance,
-  normalizeAngle,
-  radialTranslate2,
-} from '~/util/math'
+import { radialTranslate2 } from '~/util/math'
 import { path2 } from '~/util/path2'
+import { rotate } from '~/util/rotator'
 
-const ROT_SPEED = Math.PI / 2
+const TURRET_ROT_SPEED = Math.PI / 2
 
 class Mover implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number): void {
-    const diff = getAngularDistance(
-      e.transform!,
-      g.player.unwrapOr(e).transform!,
-    )
-    const disp = dt * ROT_SPEED
-    e.transform!.orientation +=
-      disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp
-    e.transform!.orientation = normalizeAngle(e.transform!.orientation)
+    e.transform!.orientation = rotate({
+      from: e.transform!,
+      to: g.player.unwrapOr(e).transform!.position,
+      speed: TURRET_ROT_SPEED,
+      dt,
+    })
   }
 }
 
@@ -45,14 +40,6 @@ export class Shooter implements IGenericComponent {
   update(e: IEntity, g: IGame, dt: number) {
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
-      return
-    }
-
-    const diff = getAngularDistance(
-      e.transform!,
-      g.player.unwrapOr(e).transform!,
-    )
-    if (diff < -0.05 || 0.05 < diff) {
       return
     }
 
@@ -90,7 +77,7 @@ export const makeTurret = (model: {
   e.transform = new Transform()
 
   e.mover = new Mover()
-  // e.shooter = new Shooter()
+  e.shooter = new Shooter()
 
   e.wall = {
     update: () => {
