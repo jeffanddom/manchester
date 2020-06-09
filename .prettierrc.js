@@ -3,5 +3,5 @@ module.exports = {
   useTabs: false,
   singleQuote: true,
   semi: false,
-  trailingComma: "all"
+  trailingComma: 'all',
 }
