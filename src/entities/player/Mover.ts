@@ -1,8 +1,7 @@
 import { TILE_SIZE } from '~/constants'
-import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
-import { radialTranslate2, lerp } from '~util/math'
-import { vec2 } from 'gl-matrix'
+import { IGame } from '~/interfaces'
+import { lerp, radialTranslate2 } from '~/util/math'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
 const PLAYER_ROT_SPEED = 1.5 * Math.PI // 1.5 rotations per second

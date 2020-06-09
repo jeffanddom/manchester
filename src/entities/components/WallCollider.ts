@@ -1,9 +1,10 @@
-import { Direction, IGame } from '~/interfaces'
-import { TILE_SIZE } from '~/constants'
-import { tileBox, tileCoords } from '~util/tileMath'
 import { vec2 } from 'gl-matrix'
-import { IEntity } from '~/entities/interfaces'
+
+import { TILE_SIZE } from '~/constants'
 import { IWallCollider } from '~/entities/components/interfaces'
+import { IEntity } from '~/entities/interfaces'
+import { Direction, IGame } from '~/interfaces'
+import { tileBox, tileCoords } from '~/util/tileMath'
 
 export class WallCollider implements IWallCollider {
   hitLastFrame: boolean

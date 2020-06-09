@@ -1,6 +1,7 @@
-import { vec2, mat2d } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
-import * as math from '~util/math'
+
+import * as math from '~/util/math'
 
 export class Camera {
   private position: vec2

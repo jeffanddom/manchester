@@ -1,15 +1,15 @@
 import * as uuid from 'uuid'
 
-import { IGame } from '~/interfaces'
-import { IEntity } from '~/entities/interfaces'
 import {
-  IGenericComponent,
-  IWallCollider,
-  IRenderable,
   IDamageable,
   IDamager,
+  IGenericComponent,
+  IRenderable,
+  IWallCollider,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
+import { IEntity } from '~/entities/interfaces'
+import { IGame } from '~/interfaces'
 
 export class Entity implements IEntity {
   id: string

@@ -1,7 +1,7 @@
-import { path2 } from '~util/path2'
-import { IEntity } from '~/entities/interfaces'
 import { IRenderable } from '~/entities/components/interfaces'
-import { Renderable, Primitive } from '~renderer/interfaces'
+import { IEntity } from '~/entities/interfaces'
+import { Primitive, Renderable } from '~/renderer/interfaces'
+import { path2 } from '~/util/path2'
 
 export class PathRenderable implements IRenderable {
   path: path2

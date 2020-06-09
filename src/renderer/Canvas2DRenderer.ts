@@ -1,5 +1,6 @@
-import { Primitive, Renderable, IRenderer } from '~/renderer/interfaces'
-import { vec2, mat2d } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
+
+import { IRenderer, Primitive, Renderable } from '~/renderer/interfaces'
 
 export class Canvas2DRenderer implements IRenderer {
   private ctx: CanvasRenderingContext2D

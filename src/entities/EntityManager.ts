@@ -1,6 +1,6 @@
-import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
-import { Renderable } from '~renderer/interfaces'
+import { IGame } from '~/interfaces'
+import { Renderable } from '~/renderer/interfaces'
 
 export class EntityManager {
   entities: { [key: string]: IEntity }

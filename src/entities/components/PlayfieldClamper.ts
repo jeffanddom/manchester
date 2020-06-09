@@ -1,7 +1,8 @@
-import { IGenericComponent } from './interfaces'
-import { IGame } from '~/interfaces'
-import { IEntity } from '~/entities/interfaces'
 import { vec2 } from 'gl-matrix'
+
+import { IGenericComponent } from '~/entities/components/interfaces'
+import { IEntity } from '~/entities/interfaces'
+import { IGame } from '~/interfaces'
 
 export class PlayfieldClamper implements IGenericComponent {
   update(entity: IEntity, game: IGame): void {

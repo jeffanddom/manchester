@@ -1,9 +1,10 @@
-import { VIEWPORT_TILE_DIMENSIONS, TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
 import { vec2 } from 'gl-matrix'
-import * as time from '~util/time'
+
 import * as mapData from '~/assets/maps/test.json'
-import { Map } from '~map/interfaces'
+import { TILE_SIZE, VIEWPORT_TILE_DIMENSIONS } from '~/constants'
+import { Game } from '~/Game'
+import { Map } from '~/map/interfaces'
+import * as time from '~/util/time'
 
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
