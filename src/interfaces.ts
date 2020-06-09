@@ -1,11 +1,11 @@
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Camera } from '~/Camera'
-import { Keyboard } from '~Keyboard'
-import * as terrain from '~terrain'
-import { EntityManager } from '~entities/EntityManager'
-import { IEntity } from '~entities/interfaces'
-import { Option } from '~util/Option'
-import { Mouse } from '~Mouse'
+import { EntityManager } from '~/entities/EntityManager'
+import { IEntity } from '~/entities/interfaces'
+import { Keyboard } from '~/Keyboard'
+import { Mouse } from '~/Mouse'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import * as terrain from '~/terrain'
+import { Option } from '~/util/Option'
 
 export enum Direction {
   North = 'N',

@@ -1,10 +1,11 @@
-import { path2 } from '~util/path2'
-import { IEntity } from '~/entities/interfaces'
+import { mat2d } from 'gl-matrix'
+
 import { IRenderable } from '~/entities/components/interfaces'
-import { Renderable, Primitive } from '~renderer/interfaces'
+import { IEntity } from '~/entities/interfaces'
 import { TILE_SIZE } from '~constants'
 import { Shooter } from '~entities/player/Shooter'
-import { mat2d } from 'gl-matrix'
+import { Primitive, Renderable } from '~renderer/interfaces'
+import { path2 } from '~util/path2'
 
 export class PlayerRenderables implements IRenderable {
   bodyPath: path2

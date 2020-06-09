@@ -1,11 +1,12 @@
+import { vec2 } from 'gl-matrix'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { vec2 } from 'gl-matrix'
 
+import { Editor } from './Editor'
+
+import { Map, RawMap } from '~map/interfaces'
 import { Controls } from '~tools/map/Controls'
 import * as time from '~util/time'
-import { Editor } from './Editor'
-import { RawMap, Map } from '~map/interfaces'
 
 type SaveState = {
   previous: RawMap

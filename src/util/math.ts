@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+
 import { Transform } from '~/entities/components/Transform'
 
 export const clamp = (v: number, range: [number, number]): number => {

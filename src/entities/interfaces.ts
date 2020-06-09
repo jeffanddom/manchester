@@ -1,12 +1,13 @@
-import { IGame } from '~/interfaces'
+import { Transform } from './components/Transform'
+
 import {
-  IGenericComponent,
-  IWallCollider,
   IDamageable,
   IDamager,
+  IGenericComponent,
   IRenderable,
+  IWallCollider,
 } from '~/entities/components/interfaces'
-import { Transform } from './components/Transform'
+import { IGame } from '~/interfaces'
 
 export interface IEntity {
   id: string

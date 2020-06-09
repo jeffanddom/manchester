@@ -1,21 +1,22 @@
-import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
-import { path2 } from '~util/path2'
-import { Transform } from '~/entities/components/Transform'
-import { PathRenderable } from '~/entities/components/PathRenderable'
-import { IEntity } from '~/entities/interfaces'
-import { Damageable } from '~entities/components/Damageable'
-import { Hitbox } from '~Hitbox'
 import { vec2 } from 'gl-matrix'
+
+import { TILE_SIZE } from '~/constants'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { Transform } from '~/entities/components/Transform'
+import { Entity } from '~/entities/Entity'
+import { IEntity } from '~/entities/interfaces'
+import { makeBullet } from '~entities/Bullet'
+import { Damageable } from '~entities/components/Damageable'
 import { IGenericComponent } from '~entities/components/interfaces'
+import { Hitbox } from '~Hitbox'
 import { IGame } from '~interfaces'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
-import { makeBullet } from '~entities/Bullet'
 import {
-  radialTranslate2,
   getAngularDistance,
   normalizeAngle,
+  radialTranslate2,
 } from '~util/math'
+import { path2 } from '~util/path2'
 
 const ROT_SPEED = Math.PI / 2
 

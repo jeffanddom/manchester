@@ -1,11 +1,12 @@
-import { IGame } from '~/interfaces'
-import { IEntity } from '~/entities/interfaces'
+import { vec2 } from 'gl-matrix'
+
 import { IDamageable } from '~/entities/components/interfaces'
+import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
+import { IGame } from '~/interfaces'
+import { TILE_SIZE } from '~constants'
 import { ParticleEmitter } from '~particles/ParticleEmitter'
 import { radialTranslate2 } from '~util/math'
-import { vec2 } from 'gl-matrix'
-import { TILE_SIZE } from '~constants'
 
 export class Damageable implements IDamageable {
   health: number

@@ -1,9 +1,10 @@
-import { Direction, IGame } from '~/interfaces'
-import { TILE_SIZE } from '~/constants'
-import { tileBox, tileCoords } from '~util/tileMath'
 import { vec2 } from 'gl-matrix'
-import { IEntity } from '~/entities/interfaces'
+
+import { TILE_SIZE } from '~/constants'
 import { IWallCollider } from '~/entities/components/interfaces'
+import { IEntity } from '~/entities/interfaces'
+import { Direction, IGame } from '~/interfaces'
+import { tileBox, tileCoords } from '~util/tileMath'
 
 export class WallCollider implements IWallCollider {
   hitLastFrame: boolean
@@ -21,7 +22,7 @@ export class WallCollider implements IWallCollider {
     const myBox = tileBox(entity.transform!.position)
     const previousBox = tileBox(entity.transform!.previousPosition)
     let collided: [IEntity, Direction, number][] = []
-    for (let id in game.entities.entities) {
+    for (const id in game.entities.entities) {
       const other = game.entities.entities[id]
       if (other.wall === undefined) {
         continue

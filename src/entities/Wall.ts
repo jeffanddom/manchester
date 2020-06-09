@@ -1,14 +1,15 @@
-import { TILE_SIZE } from '~/constants'
-import { path2 } from '~util/path2'
-import { Entity } from '~/entities/Entity'
-import { Transform } from '~/entities/components/Transform'
-import { Damageable } from '~/entities/components/Damageable'
-import { PathRenderable } from '~/entities/components/PathRenderable'
-import { lerp } from '~util/math'
-import { IEntity } from '~/entities/interfaces'
-import { IGenericComponent } from '~/entities/components/interfaces'
 import { vec2 } from 'gl-matrix'
+
+import { TILE_SIZE } from '~/constants'
+import { Damageable } from '~/entities/components/Damageable'
+import { IGenericComponent } from '~/entities/components/interfaces'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { Transform } from '~/entities/components/Transform'
+import { Entity } from '~/entities/Entity'
+import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
+import { lerp } from '~util/math'
+import { path2 } from '~util/path2'
 
 const WALL_HEALTH = 4.0
 

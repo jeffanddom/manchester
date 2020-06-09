@@ -1,18 +1,19 @@
-import { vec2, mat2d } from 'gl-matrix'
+import { EventEmitter } from 'events'
+
+import { mat2d, vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
-import { Option, None } from '~util/Option'
-import { Keyboard } from '~Keyboard'
-import { Mouse, MouseButton } from '~Mouse'
-import { Camera } from '~Camera'
 import { TILE_SIZE } from '~/constants'
-import * as math from '~util/math'
-import * as terrain from '~terrain'
-import { Map } from '~map/interfaces'
 import * as entities from '~/entities'
-import { IRenderer, Primitive } from '~renderer/interfaces'
+import { Camera } from '~Camera'
+import { Keyboard } from '~Keyboard'
+import { Map } from '~map/interfaces'
+import { Mouse, MouseButton } from '~Mouse'
 import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
-import { EventEmitter } from 'events'
+import { IRenderer, Primitive } from '~renderer/interfaces'
+import * as terrain from '~terrain'
+import * as math from '~util/math'
+import { None, Option } from '~util/Option'
 
 const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2

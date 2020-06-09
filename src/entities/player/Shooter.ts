@@ -1,13 +1,14 @@
-import { IEntity } from '~/entities/interfaces'
+import { vec2 } from 'gl-matrix'
+
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { vec2 } from 'gl-matrix'
-import { radialTranslate2 } from '~util/math'
-import { IGame } from '~/interfaces'
 import { IGenericComponent } from '~/entities/components/interfaces'
+import { IEntity } from '~/entities/interfaces'
+import { IGame } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { getAngle } from '~/util/math'
+import { radialTranslate2 } from '~util/math'
 
 const keyMap = {
   fire: 32, // fire
