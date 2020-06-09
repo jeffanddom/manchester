@@ -56,7 +56,7 @@ class BulletDamager implements IDamager {
   update(entity: IEntity, game: IGame, _dt: number): void {
     const aabb = this.aabb(entity)
 
-    for (let id in game.entities.entities) {
+    for (const id in game.entities.entities) {
       const c = game.entities.entities[id]
 
       if (c.damageable === undefined) {
