@@ -8,8 +8,8 @@ import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
-import { lerp } from '~util/math'
-import { path2 } from '~util/path2'
+import { lerp } from '~/util/math'
+import { path2 } from '~/util/path2'
 
 const WALL_HEALTH = 4.0
 

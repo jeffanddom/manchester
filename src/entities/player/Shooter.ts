@@ -7,12 +7,7 @@ import { IEntity } from '~/entities/interfaces'
 import { IGame } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { getAngle } from '~/util/math'
-import { radialTranslate2 } from '~util/math'
-
-const keyMap = {
-  fire: 32, // fire
-}
+import { getAngle, radialTranslate2 } from '~/util/math'
 
 const COOLDOWN_PERIOD = 0.25
 

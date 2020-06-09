@@ -1,17 +1,17 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { Damageable } from '~/entities/components/Damageable'
 import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Transform } from '~/entities/components/Transform'
 import { WallCollider } from '~/entities/components/WallCollider'
 import { Entity } from '~/entities/Entity'
 import { IEntity } from '~/entities/interfaces'
+import { Mover } from '~/entities/player/Mover'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
-import { Damageable } from '~entities/components/Damageable'
-import { Mover } from '~entities/player/Mover'
-import { Shooter } from '~entities/player/Shooter'
-import { Hitbox } from '~Hitbox'
-import { path2 } from '~util/path2'
+import { Shooter } from '~/entities/player/Shooter'
+import { Hitbox } from '~/Hitbox'
+import { path2 } from '~/util/path2'
 
 export const makePlayer = (model: {
   path: path2

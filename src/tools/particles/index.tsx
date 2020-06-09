@@ -2,12 +2,12 @@ import { mat2d, vec2 } from 'gl-matrix'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
+import { IRenderer } from '~/renderer/interfaces'
 import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
-import { ParticleEmitter } from '~particles/ParticleEmitter'
-import { Canvas2DRenderer } from '~renderer/Canvas2DRenderer'
-import { IRenderer } from '~renderer/interfaces'
-import * as time from '~util/time'
+import * as time from '~/util/time'
 
 const storage = window.localStorage
 const storedConfig = storage.getItem('config')

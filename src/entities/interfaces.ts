@@ -1,5 +1,3 @@
-import { Transform } from './components/Transform'
-
 import {
   IDamageable,
   IDamager,
@@ -7,6 +5,7 @@ import {
   IRenderable,
   IWallCollider,
 } from '~/entities/components/interfaces'
+import { Transform } from '~/entities/components/Transform'
 import { IGame } from '~/interfaces'
 
 export interface IEntity {

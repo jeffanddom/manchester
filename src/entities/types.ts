@@ -1,9 +1,9 @@
+import { TILE_SIZE } from '~/constants'
 import { IEntity } from '~/entities/interfaces'
 import { makePlayer } from '~/entities/player'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/Wall'
-import { TILE_SIZE } from '~constants'
-import { path2 } from '~util/path2'
+import { path2 } from '~/util/path2'
 
 export enum Type {
   PLAYER = 'PLAYER',

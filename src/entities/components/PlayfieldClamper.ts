@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { IGenericComponent } from './interfaces'
-
+import { IGenericComponent } from '~/entities/components/interfaces'
 import { IEntity } from '~/entities/interfaces'
 import { IGame } from '~/interfaces'
 

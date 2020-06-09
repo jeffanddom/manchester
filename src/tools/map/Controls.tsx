@@ -2,11 +2,10 @@ import { vec2 } from 'gl-matrix'
 import * as React from 'react'
 import { useState } from 'react'
 
-import { BrushMode, Editor } from './Editor'
-
-import * as entities from '~entities'
-import * as terrain from '~terrain'
-import { None } from '~util/Option'
+import * as entities from '~/entities'
+import * as terrain from '~/terrain'
+import { BrushMode, Editor } from '~/tools/map/Editor'
+import { None } from '~/util/Option'
 
 export const Controls = ({ editor }: { editor: Editor }) => {
   const [state, setState] = useState({

@@ -9,8 +9,8 @@ import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
 import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { aabbOverlap, radialTranslate2 } from '~util/math'
-import { path2 } from '~util/path2'
+import { aabbOverlap, radialTranslate2 } from '~/util/math'
+import { path2 } from '~/util/path2'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 const TIME_TO_LIVE = 2

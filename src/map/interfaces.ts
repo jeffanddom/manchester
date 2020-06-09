@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
-import * as entities from '~entities'
-import * as terrain from '~terrain'
-import * as convert from '~util/convert'
+import * as entities from '~/entities'
+import * as terrain from '~/terrain'
+import * as convert from '~/util/convert'
 
 export type RawMap = {
   dimensions: convert.RawVec2

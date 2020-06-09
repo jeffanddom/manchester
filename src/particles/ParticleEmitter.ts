@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
-import { Primitive, Renderable } from '~renderer/interfaces'
-import { lerp, radialTranslate2 } from '~util/math'
+import { Primitive, Renderable } from '~/renderer/interfaces'
+import { lerp, radialTranslate2 } from '~/util/math'
 
 interface Particle {
   position: vec2
