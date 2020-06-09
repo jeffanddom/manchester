@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Option, Some, None } from '~util/Option'
+import { None, Option, Some } from '~/util/Option'
 
 export enum MouseButton {
   LEFT = 0,

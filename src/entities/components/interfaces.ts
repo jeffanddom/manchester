@@ -1,8 +1,9 @@
 import { vec2 } from 'gl-matrix'
+
 import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
 import { Hitbox } from '~/Hitbox'
-import { Renderable } from '~renderer/interfaces'
+import { IGame } from '~/interfaces'
+import { Renderable } from '~/renderer/interfaces'
 
 export interface IWallCollider {
   hitLastFrame: boolean

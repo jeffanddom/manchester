@@ -1,18 +1,22 @@
-import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
-import { path2 } from '~util/path2'
-import { Rotator } from '~/entities/components/Rotator'
-import { Transform } from '~/entities/components/Transform'
-import { PathRenderable } from '~/entities/components/PathRenderable'
-import { IEntity } from '~/entities/interfaces'
-import { Damageable } from '~entities/components/Damageable'
-import { Hitbox } from '~Hitbox'
 import { vec2 } from 'gl-matrix'
-import { IGenericComponent } from '~entities/components/interfaces'
-import { IGame } from '~interfaces'
-import { ParticleEmitter } from '~particles/ParticleEmitter'
-import { makeBullet } from '~entities/Bullet'
-import { radialTranslate2 } from '~util/math'
+
+import { TILE_SIZE } from '~/constants'
+import { makeBullet } from '~/entities/Bullet'
+import { Damageable } from '~/entities/components/Damageable'
+import { IGenericComponent } from '~/entities/components/interfaces'
+import { PathRenderable } from '~/entities/components/PathRenderable'
+import { Transform } from '~/entities/components/Transform'
+import { Entity } from '~/entities/Entity'
+import { IEntity } from '~/entities/interfaces'
+import { Hitbox } from '~/Hitbox'
+import { IGame } from '~/interfaces'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import {
+  getAngularDistance,
+  normalizeAngle,
+  radialTranslate2,
+} from '~/util/math'
+import { path2 } from '~/util/path2'
 
 const TURRET_ROT_SPEED = Math.PI / 2
 
@@ -83,7 +87,11 @@ export const makeTurret = (model: {
   e.mover = new Mover()
   e.shooter = new Shooter()
 
-  e.wall = { update: () => {} }
+  e.wall = {
+    update: () => {
+      /* do nothing */
+    },
+  }
   e.damageable = new Damageable(
     10,
     new Hitbox(

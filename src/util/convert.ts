@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Option, None, Some } from '~util/Option'
+import { None, Option, Some } from '~/util/Option'
 
 export type RawVec2 = { '0': number; '1': number }
 

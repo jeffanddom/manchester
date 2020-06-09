@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
-import { Type } from '~terrain/Type'
-import { Renderable, Primitive } from '~renderer/interfaces'
-import { TILE_SIZE } from '~constants'
+import { TILE_SIZE } from '~/constants'
+import { Primitive, Renderable } from '~/renderer/interfaces'
+import { Type } from '~/terrain/Type'
 
 export class Layer {
   private tileOrigin: vec2

@@ -1,4 +1,4 @@
-import { vec2, mat2d } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
 export class Transform {
   previousPosition: vec2

@@ -1,6 +1,6 @@
-import { IGame } from '~/interfaces'
 import { IEntity } from '~/entities/interfaces'
-import { Renderable } from '~renderer/interfaces'
+import { IGame } from '~/interfaces'
+import { Renderable } from '~/renderer/interfaces'
 
 export class EntityManager {
   entities: { [key: string]: IEntity }
@@ -23,7 +23,7 @@ export class EntityManager {
 
   getRenderables(): Renderable[] {
     const renderables: Renderable[] = []
-    for (let id in this.entities) {
+    for (const id in this.entities) {
       const e = this.entities[id]
       if (e.renderable === undefined) {
         continue

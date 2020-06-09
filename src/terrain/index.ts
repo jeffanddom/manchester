@@ -1,2 +1,2 @@
-export { Type } from '~terrain/Type'
-export { Layer } from '~terrain/Layer'
+export { Type } from '~/terrain/Type'
+export { Layer } from '~/terrain/Layer'
