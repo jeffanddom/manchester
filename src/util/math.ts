@@ -1,8 +1,5 @@
 import { vec2 } from 'gl-matrix'
 
-import { Transform } from '~/entities/components/Transform'
-import { TransformData } from '~/interfaces'
-
 export const clamp = (v: number, range: [number, number]): number => {
   return Math.min(Math.max(range[0], v), range[1])
 }

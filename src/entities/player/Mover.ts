@@ -1,7 +1,8 @@
 import { TILE_SIZE } from '~/constants'
 import { IEntity } from '~/entities/interfaces'
 import { IGame } from '~/interfaces'
-import { lerp, radialTranslate2 } from '~/util/math'
+import { radialTranslate2 } from '~/util/math'
+import { rotate } from '~/util/rotator'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
 const PLAYER_ROT_SPEED = Math.PI
@@ -14,12 +15,6 @@ const keyMap = {
 }
 
 export class Mover {
-  rotator: Rotator
-
-  constructor() {
-    this.rotator = new Rotator({ speed: PLAYER_ROT_SPEED })
-  }
-
   update(entity: IEntity, game: IGame, dt: number) {
     // Direction controls
     let angle
@@ -47,10 +42,10 @@ export class Mover {
     }
 
     if (angle !== undefined) {
-      // FIXME: model off of the turret turning behavior
-      entity.transform!.orientation = this.rotator.rotate({
+      entity.transform!.orientation = rotate({
         from: entity.transform!,
         to: angle,
+        speed: PLAYER_ROT_SPEED,
         dt,
       })
 

@@ -12,7 +12,7 @@ const normalizeAngle = (theta: number): number => {
   return theta
 }
 
-export const getAngularDistance = (params: {
+const getAngularDistance = (params: {
   from: TransformData
   to: vec2 | number
 }): number => {
@@ -22,22 +22,18 @@ export const getAngularDistance = (params: {
   return normalizeAngle(targetOrientation - from.orientation)
 }
 
-export class Rotator {
+export const rotate = (params: {
+  from: TransformData
+  to: vec2 | number
   speed: number
+  dt: number
+}): number => {
+  const { from, to, dt } = params
+  const diff = getAngularDistance({ from, to })
+  const disp = dt * params.speed
 
-  constructor(params: { speed: number }) {
-    this.speed = params.speed
-  }
-
-  rotate(params: { from: TransformData; to: vec2 | number; dt: number }) {
-    const { from, to, dt } = params
-    const diff = getAngularDistance({ from, to })
-    const disp = dt * this.speed
-
-    let newOrientation =
-      from.orientation +
-      (disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp)
-    newOrientation = normalizeAngle(newOrientation)
-    return newOrientation
-  }
+  let newOrientation =
+    from.orientation + (disp >= Math.abs(diff) ? diff : Math.sign(diff) * disp)
+  newOrientation = normalizeAngle(newOrientation)
+  return newOrientation
 }

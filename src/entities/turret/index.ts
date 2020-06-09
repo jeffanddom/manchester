@@ -11,26 +11,18 @@ import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
 import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import {
-  getAngularDistance,
-  normalizeAngle,
-  radialTranslate2,
-} from '~/util/math'
+import { radialTranslate2 } from '~/util/math'
 import { path2 } from '~/util/path2'
+import { rotate } from '~/util/rotator'
 
 const TURRET_ROT_SPEED = Math.PI / 2
 
 class Mover implements IGenericComponent {
-  rotator: Rotator
-
-  constructor() {
-    this.rotator = new Rotator({ speed: TURRET_ROT_SPEED })
-  }
-
   update(e: IEntity, g: IGame, dt: number): void {
-    e.transform!.orientation = this.rotator.rotate({
+    e.transform!.orientation = rotate({
       from: e.transform!,
       to: g.player.unwrapOr(e).transform!.position,
+      speed: TURRET_ROT_SPEED,
       dt,
     })
   }
