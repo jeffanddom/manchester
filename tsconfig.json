@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "lib": ["es2017", "dom"],
+    "lib": [
+      "es2017",
+      "dom"
+    ],
     "moduleResolution": "node",
     "alwaysStrict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "noUnusedLocals": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
@@ -13,7 +17,9 @@
     "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      "~*": ["./src/*"]
+      "~*": [
+        "./src/*"
+      ]
     },
     "skipLibCheck": true,
     "resolveJsonModule": true
