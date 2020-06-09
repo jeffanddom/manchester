@@ -4,7 +4,7 @@
   "scripts": {
     "start": "parcel src/index.html",
     "typecheck": "tsc -p . --noEmit",
-    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest"
   },
   "repository": {
