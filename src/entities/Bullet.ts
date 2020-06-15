@@ -10,31 +10,32 @@ import { Hitbox } from '~/Hitbox'
 import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
+import { Some } from '~/util/Option'
 import { path2 } from '~/util/path2'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
-const TIME_TO_LIVE = 2
 
 class BulletMover implements IGenericComponent {
-  ttl: number
+  origin: vec2
+  range: number
 
-  constructor() {
-    this.ttl = TIME_TO_LIVE
+  constructor(origin: vec2, range: number) {
+    this.origin = origin
+    this.range = range
   }
 
   update(entity: IEntity, game: IGame, dt: number): void {
-    this.ttl -= dt
-    if (this.ttl <= 0) {
-      game.entities.markForDeletion(entity)
-      return
-    }
-
     radialTranslate2(
       entity.transform!.position,
       entity.transform!.position,
       entity.transform!.orientation,
       BULLET_SPEED * dt,
     )
+
+    if (vec2.distance(entity.transform!.position, this.origin) >= this.range) {
+      game.entities.markForDeletion(entity)
+      return
+    }
   }
 }
 
@@ -89,7 +90,7 @@ class BulletDamager implements IDamager {
       game.emitters.push(explosion)
 
       // Camera shake
-      if (c === game.player.unwrap()) {
+      if (game.player.equals(Some(c))) {
         game.camera.shake()
       }
 
@@ -101,14 +102,22 @@ class BulletDamager implements IDamager {
   }
 }
 
-export const makeBullet = (position: vec2, orientation: number): IEntity => {
+export const makeBullet = ({
+  position,
+  orientation,
+  range,
+}: {
+  position: vec2
+  orientation: number
+  range: number
+}): IEntity => {
   const e = new Entity()
 
   e.transform = new Transform()
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.mover = new BulletMover()
+  e.mover = new BulletMover(vec2.clone(position), range)
   e.renderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],

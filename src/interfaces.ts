@@ -25,6 +25,8 @@ export interface IGame {
   camera: Camera
 
   player: Option<IEntity>
+
+  setViewportDimensions(d: vec2): void
 }
 
 export interface TransformData {

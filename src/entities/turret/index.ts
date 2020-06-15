@@ -37,35 +37,52 @@ export class Shooter implements IGenericComponent {
     this.cooldownTtl = 0
   }
 
-  update(e: IEntity, g: IGame, dt: number) {
+  update(e: IEntity, g: IGame, dt: number): void {
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
       return
     }
 
-    this.cooldownTtl = COOLDOWN_PERIOD
+    const range = 240
 
-    const bulletPos = radialTranslate2(
-      vec2.create(),
-      e.transform!.position,
-      e.transform!.orientation,
-      TILE_SIZE * 1.5,
-    )
+    g.player.map((player) => {
+      if (
+        vec2.distance(player.transform!.position, e.transform!.position) >
+        range * 2
+      ) {
+        return
+      }
 
-    g.entities.register(makeBullet(bulletPos, e.transform!.orientation))
+      this.cooldownTtl = COOLDOWN_PERIOD
 
-    const muzzleFlash = new ParticleEmitter({
-      spawnTtl: 0.1,
-      position: bulletPos,
-      particleTtl: 0.065,
-      particleRadius: 3,
-      particleRate: 240,
-      particleSpeedRange: [120, 280],
-      orientation: e.transform!.orientation,
-      arc: Math.PI / 4,
-      colors: ['#FF9933', '#CCC', '#FFF'],
+      const bulletPos = radialTranslate2(
+        vec2.create(),
+        e.transform!.position,
+        e.transform!.orientation,
+        TILE_SIZE * 1.5,
+      )
+
+      g.entities.register(
+        makeBullet({
+          position: bulletPos,
+          orientation: e.transform!.orientation,
+          range: 240,
+        }),
+      )
+
+      const muzzleFlash = new ParticleEmitter({
+        spawnTtl: 0.1,
+        position: bulletPos,
+        particleTtl: 0.065,
+        particleRadius: 3,
+        particleRate: 240,
+        particleSpeedRange: [120, 280],
+        orientation: e.transform!.orientation,
+        arc: Math.PI / 4,
+        colors: ['#FF9933', '#CCC', '#FFF'],
+      })
+      g.emitters.push(muzzleFlash)
     })
-    g.emitters.push(muzzleFlash)
   }
 }
 

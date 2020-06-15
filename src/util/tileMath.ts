@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 
-export const tileBox = (pos: vec2) => {
+export const tileBox = (pos: vec2): [vec2, vec2] => {
   return [
     vec2.fromValues(pos[0] - TILE_SIZE / 2, pos[1] - TILE_SIZE / 2),
     vec2.fromValues(pos[0] + TILE_SIZE / 2, pos[1] + TILE_SIZE / 2),

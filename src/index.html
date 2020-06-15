@@ -2,8 +2,15 @@
 <html>
   <head>
     <style>
+      html {
+        height: 100%;
+        background-color: purple;
+      }
+
       body,
       canvas {
+        width: 100%;
+        height: 100%;
         text-align: center;
         margin: 0 auto;
         padding: 0;
@@ -16,9 +23,8 @@
   <body>
     <script src="~/main.ts"></script>
 
-    <hr />
-
-    <ul>
+    <!-- Add links so Parcel finds these tools -->
+    <ul style="display: none;">
       <li><a href="~/tools/map/index.html">Map editor</a></li>
       <li><a href="~/tools/particles/index.html">Particle creator</a></li>
     </ul>

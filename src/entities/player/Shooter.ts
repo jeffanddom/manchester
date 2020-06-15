@@ -46,7 +46,13 @@ export class Shooter implements IGenericComponent {
         TILE_SIZE * 0.75,
       )
 
-      game.entities.register(makeBullet(bulletPos, this.orientation))
+      game.entities.register(
+        makeBullet({
+          position: bulletPos,
+          orientation: this.orientation,
+          range: 240,
+        }),
+      )
 
       const muzzleFlash = new ParticleEmitter({
         spawnTtl: 0.1,
@@ -60,8 +66,6 @@ export class Shooter implements IGenericComponent {
         colors: ['#FF9933', '#CCC', '#FFF'],
       })
       game.emitters.push(muzzleFlash)
-
-      game.camera.shake()
     }
   }
 }

@@ -22,9 +22,13 @@ export class Camera {
   // - shakeOffset
   wvTransformCache?: mat2d
 
-  constructor(viewportSize: vec2, minWorldPos: vec2, worldDimensions: vec2) {
+  constructor(
+    viewportDimensions: vec2,
+    minWorldPos: vec2,
+    worldDimensions: vec2,
+  ) {
     this.position = vec2.create()
-    this.viewportDimensions = viewportSize
+    this.viewportDimensions = viewportDimensions
     this.minWorldPos = minWorldPos
     this.worldDimensions = worldDimensions
     this.zoom = 1
@@ -37,6 +41,10 @@ export class Camera {
   shake(): void {
     this.ttl = 0.25
     this.cooldownTtl = 0
+  }
+
+  setViewportDimensions(d: vec2): void {
+    this.viewportDimensions = d
   }
 
   update(dt: number): void {

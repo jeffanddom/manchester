@@ -29,7 +29,7 @@ export class Game implements IGame {
   player: Option<IEntity>
   camera: Camera
 
-  constructor(canvas: HTMLCanvasElement, map: Map, viewportSize: vec2) {
+  constructor(canvas: HTMLCanvasElement, map: Map) {
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
     this.terrain = new terrain.Layer({
       tileOrigin: map.origin,
@@ -42,7 +42,7 @@ export class Game implements IGame {
     this.emitters = []
 
     this.camera = new Camera(
-      viewportSize,
+      vec2.fromValues(canvas.width, canvas.height),
       this.terrain.minWorldPos(),
       this.terrain.dimensions(),
     )
@@ -81,6 +81,10 @@ export class Game implements IGame {
         }
       }
     }
+  }
+
+  setViewportDimensions(d: vec2): void {
+    this.camera.setViewportDimensions(d)
   }
 
   update(dt: number) {
