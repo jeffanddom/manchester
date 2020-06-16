@@ -1,27 +1,27 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { IWallCollider } from '~/entities/components/interfaces'
-import { IEntity } from '~/entities/interfaces'
-import { Direction, IGame } from '~/interfaces'
+import { Entity } from '~/entities/Entity'
+import { Game } from '~/Game'
+import { Direction } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
-export class WallCollider implements IWallCollider {
+export class WallCollider {
   hitLastFrame: boolean
-  collidedWalls: IEntity[]
+  collidedWalls: Entity[]
 
   constructor() {
     this.hitLastFrame = false
     this.collidedWalls = []
   }
 
-  update(entity: IEntity, game: IGame) {
+  update(entity: Entity, game: Game) {
     this.collidedWalls = []
 
     // Get all walls colliding with this entity
     const myBox = tileBox(entity.transform!.position)
     const previousBox = tileBox(entity.transform!.previousPosition)
-    let collided: [IEntity, Direction, number][] = []
+    let collided: [Entity, Direction, number][] = []
     for (const id in game.entities.entities) {
       const other = game.entities.entities[id]
       if (other.wall === undefined) {

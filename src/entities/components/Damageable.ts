@@ -1,14 +1,13 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { IDamageable } from '~/entities/components/interfaces'
-import { IEntity } from '~/entities/interfaces'
+import { Entity } from '~/entities/Entity'
+import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
-import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { radialTranslate2 } from '~/util/math'
 
-export class Damageable implements IDamageable {
+export class Damageable {
   health: number
   hitbox: Hitbox
 
@@ -17,14 +16,14 @@ export class Damageable implements IDamageable {
     this.hitbox = hitbox
   }
 
-  aabb(entity: IEntity) {
+  aabb(entity: Entity) {
     return this.hitbox.aabb(
       entity.transform!.position,
       entity.transform!.orientation,
     )
   }
 
-  update(entity: IEntity, game: IGame, _dt: number) {
+  update(entity: Entity, game: Game, _dt: number) {
     if (this.health <= 0) {
       game.entities.markForDeletion(entity)
 

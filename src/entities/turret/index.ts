@@ -7,9 +7,8 @@ import { IGenericComponent } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { IEntity } from '~/entities/interfaces'
+import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
-import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { radialTranslate2 } from '~/util/math'
 import { path2 } from '~/util/path2'
@@ -18,7 +17,7 @@ import { rotate } from '~/util/rotator'
 const TURRET_ROT_SPEED = Math.PI / 2
 
 class Mover implements IGenericComponent {
-  update(e: IEntity, g: IGame, dt: number): void {
+  update(e: Entity, g: Game, dt: number): void {
     e.transform!.orientation = rotate({
       from: e.transform!,
       to: g.player.unwrapOr(e).transform!.position,
@@ -37,7 +36,7 @@ export class Shooter implements IGenericComponent {
     this.cooldownTtl = 0
   }
 
-  update(e: IEntity, g: IGame, dt: number): void {
+  update(e: Entity, g: Game, dt: number): void {
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
       return
@@ -89,7 +88,7 @@ export class Shooter implements IGenericComponent {
 export const makeTurret = (model: {
   path: path2
   fillStyle: string
-}): IEntity => {
+}): Entity => {
   const e = new Entity()
   e.transform = new Transform()
 

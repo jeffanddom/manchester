@@ -1,25 +1,25 @@
 import * as uuid from 'uuid'
 
+import { Damageable } from './components/Damageable'
+import { WallCollider } from './components/WallCollider'
+
 import {
-  IDamageable,
   IDamager,
   IGenericComponent,
   IRenderable,
-  IWallCollider,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
-import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
+import { Game } from '~/Game'
 
-export class Entity implements IEntity {
+export class Entity {
   id: string
   transform?: Transform
   mover?: IGenericComponent
   shooter?: IGenericComponent
-  wallCollider?: IWallCollider
+  wallCollider?: WallCollider
   wall?: IGenericComponent
   renderable?: IRenderable
-  damageable?: IDamageable
+  damageable?: Damageable
   damager?: IDamager
   playfieldClamper?: IGenericComponent
   prerender?: IGenericComponent
@@ -28,7 +28,7 @@ export class Entity implements IEntity {
     this.id = uuid.v4()
   }
 
-  update(game: IGame, dt: number) {
+  update(game: Game, dt: number) {
     this.transform?.update()
     this.mover?.update(this, game, dt)
     this.wall?.update(this, game, dt)

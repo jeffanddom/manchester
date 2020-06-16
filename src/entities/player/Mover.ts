@@ -1,6 +1,6 @@
 import { TILE_SIZE } from '~/constants'
-import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
+import { Entity } from '~/entities/Entity'
+import { Game } from '~/Game'
 import { radialTranslate2 } from '~/util/math'
 import { rotate } from '~/util/rotator'
 
@@ -15,7 +15,7 @@ const keyMap = {
 }
 
 export class Mover {
-  update(entity: IEntity, game: IGame, dt: number) {
+  update(entity: Entity, game: Game, dt: number) {
     // Direction controls
     let angle
 

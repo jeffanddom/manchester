@@ -6,7 +6,6 @@ import { IGenericComponent } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { IEntity } from '~/entities/interfaces'
 import { Hitbox } from '~/Hitbox'
 import { lerp } from '~/util/math'
 import { path2 } from '~/util/path2'
@@ -14,16 +13,13 @@ import { path2 } from '~/util/path2'
 const WALL_HEALTH = 4.0
 
 class DisplayWallDamage implements IGenericComponent {
-  update(entity: IEntity): void {
+  update(entity: Entity): void {
     const color = lerp(90, 130, entity.damageable!.health / WALL_HEALTH)
     entity.renderable!.setFillStyle(`rgba(${color},${color},${color},1)`)
   }
 }
 
-export const makeWall = (model: {
-  path: path2
-  fillStyle: string
-}): IEntity => {
+export const makeWall = (model: { path: path2; fillStyle: string }): Entity => {
   const e = new Entity()
   e.transform = new Transform()
   e.wall = {

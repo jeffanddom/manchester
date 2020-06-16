@@ -1,5 +1,5 @@
 import { TILE_SIZE } from '~/constants'
-import { IEntity } from '~/entities/interfaces'
+import { Entity } from '~/entities/Entity'
 import { makePlayer } from '~/entities/player'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/Wall'
@@ -51,7 +51,7 @@ export const typeDefinitions = {
   },
 }
 
-export const make = (t: Type): IEntity => {
+export const make = (t: Type): Entity => {
   for (const k in typeDefinitions) {
     if (k !== t) {
       continue

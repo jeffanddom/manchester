@@ -2,7 +2,7 @@ import { mat2d } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { IRenderable } from '~/entities/components/interfaces'
-import { IEntity } from '~/entities/interfaces'
+import { Entity } from '~/entities/Entity'
 import { Shooter } from '~/entities/player/Shooter'
 import { Primitive, Renderable } from '~/renderer/interfaces'
 import { path2 } from '~/util/path2'
@@ -32,7 +32,7 @@ export class PlayerRenderables implements IRenderable {
     // unimplemented
   }
 
-  getRenderables(e: IEntity): Renderable[] {
+  getRenderables(e: Entity): Renderable[] {
     const t = mat2d.fromTranslation(mat2d.create(), e.transform!.position)
     const r = mat2d.fromRotation(mat2d.create(), this.shooter.orientation)
     const turretTransform = mat2d.multiply(mat2d.create(), t, r)

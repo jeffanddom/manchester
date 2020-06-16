@@ -3,9 +3,8 @@ import { vec2 } from 'gl-matrix'
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
+import { Entity } from '~/entities/Entity'
 import { EntityManager } from '~/entities/EntityManager'
-import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
 import { Keyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
@@ -17,7 +16,7 @@ import { None, Option, Some } from '~/util/Option'
 
 let DEBUG_MODE = false
 
-export class Game implements IGame {
+export class Game implements Game {
   renderer: IRenderer
 
   terrain: terrain.Layer
@@ -26,7 +25,7 @@ export class Game implements IGame {
   mouse: Mouse
   emitters: ParticleEmitter[]
 
-  player: Option<IEntity>
+  player: Option<Entity>
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement, map: Map) {

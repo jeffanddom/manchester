@@ -3,8 +3,8 @@ import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
 import { IGenericComponent } from '~/entities/components/interfaces'
-import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
+import { Entity } from '~/entities/Entity'
+import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { getAngle, radialTranslate2 } from '~/util/math'
@@ -20,7 +20,7 @@ export class Shooter implements IGenericComponent {
     this.orientation = 0
   }
 
-  update(entity: IEntity, game: IGame, dt: number) {
+  update(entity: Entity, game: Game, dt: number) {
     const mousePos = game.mouse.getPos()
     if (mousePos.isNone()) {
       return

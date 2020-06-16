@@ -1,9 +1,9 @@
-import { IEntity } from '~/entities/interfaces'
-import { IGame } from '~/interfaces'
+import { Entity } from '~/entities/Entity'
+import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
 
 export class EntityManager {
-  entities: { [key: string]: IEntity }
+  entities: { [key: string]: Entity }
   toDelete: string[]
 
   constructor() {
@@ -12,7 +12,7 @@ export class EntityManager {
   }
 
   // TODO: order by object type
-  update(g: IGame, dt: number) {
+  update(g: Game, dt: number) {
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
     })
@@ -33,11 +33,11 @@ export class EntityManager {
     return renderables
   }
 
-  register(e: IEntity) {
+  register(e: Entity) {
     this.entities[e.id] = e
   }
 
-  markForDeletion(entity: IEntity) {
+  markForDeletion(entity: Entity) {
     this.toDelete.push(entity.id)
   }
 }

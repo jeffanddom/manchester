@@ -1,5 +1,5 @@
 import { IRenderable } from '~/entities/components/interfaces'
-import { IEntity } from '~/entities/interfaces'
+import { Entity } from '~/entities/Entity'
 import { Primitive, Renderable } from '~/renderer/interfaces'
 import { path2 } from '~/util/path2'
 
@@ -16,7 +16,7 @@ export class PathRenderable implements IRenderable {
     this.fillStyle = s
   }
 
-  getRenderables(e: IEntity): Renderable[] {
+  getRenderables(e: Entity): Renderable[] {
     return [
       {
         primitive: Primitive.PATH,

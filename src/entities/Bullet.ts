@@ -5,9 +5,8 @@ import { IDamager, IGenericComponent } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { IEntity } from '~/entities/interfaces'
+import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
-import { IGame } from '~/interfaces'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 import { Some } from '~/util/Option'
@@ -24,7 +23,7 @@ class BulletMover implements IGenericComponent {
     this.range = range
   }
 
-  update(entity: IEntity, game: IGame, dt: number): void {
+  update(entity: Entity, game: Game, dt: number): void {
     radialTranslate2(
       entity.transform!.position,
       entity.transform!.position,
@@ -48,14 +47,14 @@ class BulletDamager implements IDamager {
     this.hitbox = hitbox
   }
 
-  aabb(entity: IEntity) {
+  aabb(entity: Entity) {
     return this.hitbox.aabb(
       entity.transform!.position,
       entity.transform!.orientation,
     )
   }
 
-  update(entity: IEntity, game: IGame, _dt: number): void {
+  update(entity: Entity, game: Game, _dt: number): void {
     const aabb = this.aabb(entity)
 
     for (const id in game.entities.entities) {
@@ -110,7 +109,7 @@ export const makeBullet = ({
   position: vec2
   orientation: number
   range: number
-}): IEntity => {
+}): Entity => {
   const e = new Entity()
 
   e.transform = new Transform()

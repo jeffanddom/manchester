@@ -6,7 +6,6 @@ import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Transform } from '~/entities/components/Transform'
 import { WallCollider } from '~/entities/components/WallCollider'
 import { Entity } from '~/entities/Entity'
-import { IEntity } from '~/entities/interfaces'
 import { Mover } from '~/entities/player/Mover'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Shooter } from '~/entities/player/Shooter'
@@ -16,7 +15,7 @@ import { path2 } from '~/util/path2'
 export const makePlayer = (_model: {
   path: path2
   fillStyle: string
-}): IEntity => {
+}): Entity => {
   const shooter = new Shooter()
 
   const e = new Entity()
