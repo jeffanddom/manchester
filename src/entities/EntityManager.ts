@@ -1,6 +1,7 @@
 import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
+import * as systems from '~/systems'
 
 export class EntityManager {
   entities: { [key: string]: Entity }
@@ -13,6 +14,9 @@ export class EntityManager {
 
   // TODO: order by object type
   update(g: Game, dt: number): void {
+    systems.transformInit(g)
+    systems.motion(g, dt)
+
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
     })
@@ -37,7 +41,7 @@ export class EntityManager {
     this.entities[e.id] = e
   }
 
-  markForDeletion(entity: Entity): void {
-    this.toDelete.push(entity.id)
+  markForDeletion(id: string): void {
+    this.toDelete.push(id)
   }
 }

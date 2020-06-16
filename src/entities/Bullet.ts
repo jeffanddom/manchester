@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { IDamager, IGenericComponent } from '~/entities/components/interfaces'
+import { IDamager, IMotionLogic } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -14,7 +14,7 @@ import { path2 } from '~/util/path2'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 
-class BulletMover implements IGenericComponent {
+class MotionLogic implements IMotionLogic {
   origin: vec2
   range: number
 
@@ -23,16 +23,16 @@ class BulletMover implements IGenericComponent {
     this.range = range
   }
 
-  update(entity: Entity, game: Game, dt: number): void {
+  update(transform: Transform, entityId: string, game: Game, dt: number): void {
     radialTranslate2(
-      entity.transform!.position,
-      entity.transform!.position,
-      entity.transform!.orientation,
+      transform.position,
+      transform.position,
+      transform.orientation,
       BULLET_SPEED * dt,
     )
 
-    if (vec2.distance(entity.transform!.position, this.origin) >= this.range) {
-      game.entities.markForDeletion(entity)
+    if (vec2.distance(transform.position, this.origin) >= this.range) {
+      game.entities.markForDeletion(entityId)
       return
     }
   }
@@ -95,7 +95,7 @@ class BulletDamager implements IDamager {
 
       // Perform damage, kill bullet
       c.damageable.health = c.damageable.health - this.damageValue
-      game.entities.markForDeletion(entity)
+      game.entities.markForDeletion(entity.id)
       return
     }
   }
@@ -116,7 +116,7 @@ export const makeBullet = ({
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.mover = new BulletMover(vec2.clone(position), range)
+  e.motionLogic = new MotionLogic(vec2.clone(position), range)
   e.renderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],
