@@ -16,14 +16,14 @@ export class Damageable {
     this.hitbox = hitbox
   }
 
-  aabb(entity: Entity) {
+  aabb(entity: Entity): [vec2, vec2] {
     return this.hitbox.aabb(
       entity.transform!.position,
       entity.transform!.orientation,
     )
   }
 
-  update(entity: Entity, game: Game, _dt: number) {
+  update(entity: Entity, game: Game, _dt: number): void {
     if (this.health <= 0) {
       game.entities.markForDeletion(entity)
 

@@ -20,7 +20,7 @@ export class Shooter implements IGenericComponent {
     this.orientation = 0
   }
 
-  update(entity: Entity, game: Game, dt: number) {
+  update(entity: Entity, game: Game, dt: number): void {
     const mousePos = game.mouse.getPos()
     if (mousePos.isNone()) {
       return

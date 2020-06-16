@@ -86,7 +86,7 @@ export class Game implements Game {
     this.camera.setViewportDimensions(d)
   }
 
-  update(dt: number) {
+  update(dt: number): void {
     this.entities.update(this, dt)
 
     this.emitters = this.emitters.filter((e) => !e.dead)
@@ -100,7 +100,7 @@ export class Game implements Game {
     this.keyboard.update()
   }
 
-  render() {
+  render(): void {
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())

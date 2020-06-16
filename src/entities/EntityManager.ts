@@ -12,7 +12,7 @@ export class EntityManager {
   }
 
   // TODO: order by object type
-  update(g: Game, dt: number) {
+  update(g: Game, dt: number): void {
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
     })
@@ -33,11 +33,11 @@ export class EntityManager {
     return renderables
   }
 
-  register(e: Entity) {
+  register(e: Entity): void {
     this.entities[e.id] = e
   }
 
-  markForDeletion(entity: Entity) {
+  markForDeletion(entity: Entity): void {
     this.toDelete.push(entity.id)
   }
 }

@@ -28,7 +28,7 @@ export class Entity {
     this.id = uuid.v4()
   }
 
-  update(game: Game, dt: number) {
+  update(game: Game, dt: number): void {
     this.transform?.update()
     this.mover?.update(this, game, dt)
     this.wall?.update(this, game, dt)

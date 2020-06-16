@@ -15,7 +15,7 @@ const keyMap = {
 }
 
 export class Mover {
-  update(entity: Entity, game: Game, dt: number) {
+  update(entity: Entity, game: Game, dt: number): void {
     // Direction controls
     let angle
 

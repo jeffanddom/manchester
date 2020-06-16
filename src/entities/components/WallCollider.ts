@@ -15,7 +15,7 @@ export class WallCollider {
     this.collidedWalls = []
   }
 
-  update(entity: Entity, game: Game) {
+  update(entity: Entity, game: Game): void {
     this.collidedWalls = []
 
     // Get all walls colliding with this entity
