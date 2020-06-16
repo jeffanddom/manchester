@@ -28,7 +28,7 @@ export class PlayerRenderables implements IRenderable {
     ])
   }
 
-  setFillStyle(s: string): void {
+  setFillStyle(_s: string): void {
     // unimplemented
   }
 

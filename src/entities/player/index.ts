@@ -13,7 +13,7 @@ import { Shooter } from '~/entities/player/Shooter'
 import { Hitbox } from '~/Hitbox'
 import { path2 } from '~/util/path2'
 
-export const makePlayer = (model: {
+export const makePlayer = (_model: {
   path: path2
   fillStyle: string
 }): IEntity => {
