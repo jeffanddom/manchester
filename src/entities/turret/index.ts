@@ -10,6 +10,7 @@ import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { segmentToAabb } from '~/util/collision'
 import { radialTranslate2 } from '~/util/math'
 import { path2 } from '~/util/path2'
 import { rotate } from '~/util/rotator'
@@ -49,6 +50,41 @@ export class Shooter implements IGenericComponent {
         vec2.distance(player.transform!.position, e.transform!.position) >
         range * 2
       ) {
+        return
+      }
+
+      // Line of sight
+      const lineOfSight: [vec2, vec2] = [
+        e.transform!.position,
+        player.transform!.position,
+      ]
+      let potentialHits = []
+      for (const id in g.entities.entities) {
+        const other = g.entities.entities[id]
+
+        if (other.damageable === undefined || other === e) {
+          continue
+        }
+
+        if (segmentToAabb(lineOfSight, other.damageable.aabb(other))) {
+          potentialHits.push(other)
+        }
+      }
+
+      potentialHits = potentialHits
+        .map((hit) => {
+          const withDistance: [Entity, number] = [
+            hit,
+            vec2.distance(hit.transform!.position, e.transform!.position),
+          ]
+          return withDistance
+        })
+        .sort((a, b) => {
+          return a[1] - b[1]
+        })
+
+      // Something is in the way
+      if (potentialHits[0][0] !== player) {
         return
       }
 
