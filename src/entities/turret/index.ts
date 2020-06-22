@@ -134,11 +134,7 @@ export const makeTurret = (model: {
   e.motionLogic = new MotionLogic()
   e.shooter = new Shooter()
 
-  e.wall = {
-    update: () => {
-      /* do nothing */
-    },
-  }
+  e.wall = true
   e.damageable = new Damageable(
     10,
     new Hitbox(

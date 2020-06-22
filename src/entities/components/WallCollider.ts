@@ -24,7 +24,7 @@ export class WallCollider {
     let collided: [Entity, Direction, number][] = []
     for (const id in game.entities.entities) {
       const other = game.entities.entities[id]
-      if (other.wall === undefined) {
+      if (!other.wall) {
         continue
       }
 

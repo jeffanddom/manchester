@@ -18,7 +18,7 @@ export class Entity {
   motionLogic?: IMotionLogic
   shooter?: IGenericComponent
   wallCollider?: WallCollider
-  wall?: IGenericComponent
+  wall: boolean
   renderable?: IRenderable
   damageable?: Damageable
   damager?: IDamager
@@ -27,10 +27,10 @@ export class Entity {
 
   constructor() {
     this.id = uuid.v4()
+    this.wall = false
   }
 
   update(game: Game, dt: number): void {
-    this.wall?.update(this, game, dt)
     this.wallCollider?.update(this, game)
     this.shooter?.update(this, game, dt)
     this.damager?.update(this, game, dt)

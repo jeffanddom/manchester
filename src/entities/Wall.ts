@@ -22,11 +22,7 @@ class DisplayWallDamage implements IGenericComponent {
 export const makeWall = (model: { path: path2; fillStyle: string }): Entity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.wall = {
-    update: () => {
-      /* do nothing */
-    },
-  }
+  e.wall = true
   e.renderable = new PathRenderable(model.path, model.fillStyle)
   e.damageable = new Damageable(
     WALL_HEALTH,
