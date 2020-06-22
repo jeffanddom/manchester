@@ -1,5 +1,7 @@
+import { IMotionLogic } from '../components/interfaces'
+import { Transform } from '../components/Transform'
+
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { radialTranslate2 } from '~/util/math'
 import { rotate } from '~/util/rotator'
@@ -14,8 +16,13 @@ const keyMap = {
   moveRight: 65,
 }
 
-export class Mover {
-  update(entity: Entity, game: Game, dt: number): void {
+export class MotionLogic implements IMotionLogic {
+  update(
+    transform: Transform,
+    _entityId: string,
+    game: Game,
+    dt: number,
+  ): void {
     // Direction controls
     let angle
 
@@ -42,16 +49,16 @@ export class Mover {
     }
 
     if (angle !== undefined) {
-      entity.transform!.orientation = rotate({
-        from: entity.transform!,
+      transform.orientation = rotate({
+        from: transform,
         to: angle,
         speed: PLAYER_ROT_SPEED,
         dt,
       })
 
       radialTranslate2(
-        entity.transform!.position,
-        entity.transform!.position,
+        transform.position,
+        transform.position,
         angle,
         PLAYER_SPEED * dt,
       )

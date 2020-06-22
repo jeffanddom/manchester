@@ -25,7 +25,7 @@ export class Damageable {
 
   update(entity: Entity, game: Game, _dt: number): void {
     if (this.health <= 0) {
-      game.entities.markForDeletion(entity)
+      game.entities.markForDeletion(entity.id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),

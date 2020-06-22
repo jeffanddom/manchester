@@ -1,5 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
+import { Transform } from './Transform'
+
 import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
@@ -19,4 +21,8 @@ export interface IDamager extends IGenericComponent {
   hitbox: Hitbox
 
   aabb(e: Entity): [vec2, vec2]
+}
+
+export interface IMotionLogic {
+  update(t: Transform, entityId: string, g: Game, dt: number): void
 }

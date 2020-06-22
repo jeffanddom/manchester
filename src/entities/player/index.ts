@@ -6,7 +6,7 @@ import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Transform } from '~/entities/components/Transform'
 import { WallCollider } from '~/entities/components/WallCollider'
 import { Entity } from '~/entities/Entity'
-import { Mover } from '~/entities/player/Mover'
+import { MotionLogic } from '~/entities/player/MotionLogic'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Shooter } from '~/entities/player/Shooter'
 import { Hitbox } from '~/Hitbox'
@@ -20,7 +20,7 @@ export const makePlayer = (_model: {
 
   const e = new Entity()
   e.transform = new Transform()
-  e.mover = new Mover()
+  e.motionLogic = new MotionLogic()
   e.shooter = shooter
   e.wallCollider = new WallCollider()
   e.damageable = new Damageable(
