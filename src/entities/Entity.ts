@@ -1,7 +1,6 @@
 import * as uuid from 'uuid'
 
 import { Damageable } from './components/Damageable'
-import { WallCollider } from './components/WallCollider'
 
 import {
   IDamager,
@@ -17,7 +16,7 @@ export class Entity {
   transform?: Transform
   motionLogic?: IMotionLogic
   shooter?: IGenericComponent
-  wallCollider?: WallCollider
+  wallCollider: boolean
   wall: boolean
   renderable?: IRenderable
   damageable?: Damageable
@@ -28,10 +27,10 @@ export class Entity {
   constructor() {
     this.id = uuid.v4()
     this.wall = false
+    this.wallCollider = false
   }
 
   update(game: Game, dt: number): void {
-    this.wallCollider?.update(this, game)
     this.shooter?.update(this, game, dt)
     this.damager?.update(this, game, dt)
     this.damageable?.update(this, game, dt)
