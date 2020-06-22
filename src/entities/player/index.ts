@@ -4,7 +4,6 @@ import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
 import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Transform } from '~/entities/components/Transform'
-import { WallCollider } from '~/entities/components/WallCollider'
 import { Entity } from '~/entities/Entity'
 import { MotionLogic } from '~/entities/player/MotionLogic'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
@@ -22,7 +21,7 @@ export const makePlayer = (_model: {
   e.transform = new Transform()
   e.motionLogic = new MotionLogic()
   e.shooter = shooter
-  e.wallCollider = new WallCollider()
+  e.wallCollider = true
   e.damageable = new Damageable(
     10,
     new Hitbox(

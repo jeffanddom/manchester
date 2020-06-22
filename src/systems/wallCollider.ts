@@ -1,34 +1,29 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
+import { Transform } from '~/entities/components/Transform'
 import { Game } from '~/Game'
 import { Direction } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
-export class WallCollider {
-  hitLastFrame: boolean
-  collidedWalls: Entity[]
-
-  constructor() {
-    this.hitLastFrame = false
-    this.collidedWalls = []
-  }
-
-  update(entity: Entity, game: Game): void {
-    this.collidedWalls = []
+export const update = (g: Game): void => {
+  for (const id in g.entities.entities) {
+    const e = g.entities.entities[id]
+    if (!e.transform || !e.wallCollider) {
+      continue
+    }
 
     // Get all walls colliding with this entity
-    const myBox = tileBox(entity.transform!.position)
-    const previousBox = tileBox(entity.transform!.previousPosition)
-    let collided: [Entity, Direction, number][] = []
-    for (const id in game.entities.entities) {
-      const other = game.entities.entities[id]
-      if (!other.wall) {
+    const myBox = tileBox(e.transform.position)
+    const previousBox = tileBox(e.transform.previousPosition)
+    let collided: [Transform, Direction, number][] = []
+    for (const id in g.entities.entities) {
+      const other = g.entities.entities[id]
+      if (!other.wall || !other.transform) {
         continue
       }
-
-      const wallBox = tileBox(other.transform!.position)
+      const otherTransform = other.transform
+      const wallBox = tileBox(otherTransform.position)
 
       if (
         myBox[0][0] < wallBox[1][0] &&
@@ -38,34 +33,34 @@ export class WallCollider {
       ) {
         // North
         if (previousBox[1][1] < wallBox[0][1] && myBox[1][1] > wallBox[0][1]) {
-          collided.push([other, Direction.North, wallBox[0][1]])
+          collided.push([otherTransform, Direction.North, wallBox[0][1]])
         }
         // South
         if (previousBox[0][1] > wallBox[1][1] && myBox[0][1] < wallBox[1][1]) {
-          collided.push([other, Direction.South, wallBox[1][1]])
+          collided.push([otherTransform, Direction.South, wallBox[1][1]])
         }
         // East
         if (previousBox[0][0] > wallBox[1][0] && myBox[0][0] < wallBox[1][0]) {
-          collided.push([other, Direction.East, wallBox[1][0]])
+          collided.push([otherTransform, Direction.East, wallBox[1][0]])
         }
         // West
         if (previousBox[1][0] < wallBox[0][0] && myBox[1][0] > wallBox[0][0]) {
-          collided.push([other, Direction.West, wallBox[0][0]])
+          collided.push([otherTransform, Direction.West, wallBox[0][0]])
         }
       }
     }
 
     collided = collided.filter((collision) => {
-      const wall = collision[0]
+      const wallTransform = collision[0]
       const direction = collision[1]
-      const coords = tileCoords(wall.transform!.position)
+      const coords = tileCoords(wallTransform.position)
 
       switch (direction) {
         case Direction.North:
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform!.position),
+                tileCoords(c[0].position),
                 vec2.fromValues(coords[0], coords[1] - 1),
               ),
             ) === undefined
@@ -74,7 +69,7 @@ export class WallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform!.position),
+                tileCoords(c[0].position),
                 vec2.fromValues(coords[0], coords[1] + 1),
               ),
             ) === undefined
@@ -83,7 +78,7 @@ export class WallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform!.position),
+                tileCoords(c[0].position),
                 vec2.fromValues(coords[0] + 1, coords[1]),
               ),
             ) === undefined
@@ -92,7 +87,7 @@ export class WallCollider {
           return (
             collided.find((c) =>
               vec2.equals(
-                tileCoords(c[0].transform!.position),
+                tileCoords(c[0].position),
                 vec2.fromValues(coords[0] - 1, coords[1]),
               ),
             ) === undefined
@@ -100,8 +95,8 @@ export class WallCollider {
       }
     })
 
-    // Track walls that were collided with
-    this.collidedWalls = collided.map((c) => c[0])
+    // TypeScript issues a "possibly-undefined" error without this binding. Why?
+    const transform = e.transform
 
     // Halt motion for collided edges
     collided.forEach((collision) => {
@@ -110,32 +105,30 @@ export class WallCollider {
       const offset = TILE_SIZE / 2 + 1 / 1000
       switch (direction) {
         case Direction.North:
-          entity.transform!.position = vec2.fromValues(
-            entity.transform!.position[0],
+          transform.position = vec2.fromValues(
+            transform.position[0],
             value - offset,
           )
           break
         case Direction.South:
-          entity.transform!.position = vec2.fromValues(
-            entity.transform!.position[0],
+          transform.position = vec2.fromValues(
+            transform.position[0],
             value + offset,
           )
           break
         case Direction.East:
-          entity.transform!.position = vec2.fromValues(
+          transform.position = vec2.fromValues(
             value + offset,
-            entity.transform!.position[1],
+            transform.position[1],
           )
           break
         case Direction.West:
-          entity.transform!.position = vec2.fromValues(
+          transform.position = vec2.fromValues(
             value - offset,
-            entity.transform!.position[1],
+            transform.position[1],
           )
           break
       }
     })
-
-    this.hitLastFrame = collided.length > 0
   }
 }

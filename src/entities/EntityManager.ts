@@ -16,6 +16,7 @@ export class EntityManager {
   update(g: Game, dt: number): void {
     systems.transformInit(g)
     systems.motion(g, dt)
+    systems.wallCollider(g)
 
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
