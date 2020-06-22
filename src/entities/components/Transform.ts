@@ -11,10 +11,6 @@ export class Transform {
     this.orientation = 0
   }
 
-  update() {
-    this.previousPosition = vec2.clone(this.position)
-  }
-
   /**
    * Returns a transform matrix mapping modelspace positions to worldspace
    * positions.

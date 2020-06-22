@@ -1,3 +1,5 @@
+import { vec2 } from 'gl-matrix'
+
 import { Game } from '~/Game'
 
 export const update = (g: Game): void => {
@@ -7,6 +9,6 @@ export const update = (g: Game): void => {
       continue
     }
 
-    e.transform.previousPosition = e.transform.position
+    e.transform.previousPosition = vec2.clone(e.transform.position)
   }
 }
