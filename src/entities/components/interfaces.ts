@@ -4,7 +4,6 @@ import { Transform } from './Transform'
 
 import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
-import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 
 export interface IGenericComponent {
@@ -16,11 +15,9 @@ export interface IRenderable {
   getRenderables(e: Entity): Renderable[]
 }
 
-export interface IDamager extends IGenericComponent {
-  damageValue: number
-  hitbox: Hitbox
-
-  aabb(e: Entity): [vec2, vec2]
+export interface IDamagerLogic {
+  aabb(transform: Transform): [vec2, vec2]
+  update(transform: Transform, entityId: string, g: Game): void
 }
 
 export interface IMotionLogic {

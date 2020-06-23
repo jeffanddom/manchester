@@ -18,6 +18,7 @@ export class EntityManager {
     systems.motion(g, dt)
     systems.wallCollider(g)
     systems.shooter(g, dt)
+    systems.damager(g)
 
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
