@@ -19,6 +19,7 @@ export class EntityManager {
     systems.wallCollider(g)
     systems.shooter(g, dt)
     systems.damager(g)
+    systems.damageable(g)
 
     Object.keys(this.entities).forEach((id) => {
       this.entities[id].update(g, dt)
