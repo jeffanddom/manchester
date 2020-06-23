@@ -32,8 +32,6 @@ export class Entity {
   }
 
   update(game: Game, dt: number): void {
-    this.damageable?.update(this, game, dt)
-
     // Should go after any business logic that modifies the
     // transform.
     this.playfieldClamper?.update(this, game, dt)
