@@ -1,9 +1,10 @@
 import { vec2 } from 'gl-matrix'
 
+import { Transform } from '../components/Transform'
+
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
-import { IGenericComponent } from '~/entities/components/interfaces'
-import { Entity } from '~/entities/Entity'
+import { IShooterLogic } from '~/entities/components/interfaces'
 import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -11,7 +12,7 @@ import { getAngle, radialTranslate2 } from '~/util/math'
 
 const COOLDOWN_PERIOD = 0.25
 
-export class Shooter implements IGenericComponent {
+export class ShooterLogic implements IShooterLogic {
   cooldownTtl: number
   orientation: number
 
@@ -20,14 +21,14 @@ export class Shooter implements IGenericComponent {
     this.orientation = 0
   }
 
-  update(entity: Entity, game: Game, dt: number): void {
+  update(transform: Transform, entityId: string, game: Game, dt: number): void {
     const mousePos = game.mouse.getPos()
     if (mousePos.isNone()) {
       return
     }
 
     this.orientation = getAngle(
-      entity.transform!.position,
+      transform.position,
       game.camera.viewToWorldspace(mousePos.unwrap()),
     )
 
@@ -41,7 +42,7 @@ export class Shooter implements IGenericComponent {
 
       const bulletPos = radialTranslate2(
         vec2.create(),
-        entity.transform!.position,
+        transform.position,
         this.orientation,
         TILE_SIZE * 0.75,
       )

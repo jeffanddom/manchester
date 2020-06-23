@@ -26,3 +26,7 @@ export interface IDamager extends IGenericComponent {
 export interface IMotionLogic {
   update(t: Transform, entityId: string, g: Game, dt: number): void
 }
+
+export interface IShooterLogic {
+  update(t: Transform, entityId: string, g: Game, dt: number): void
+}

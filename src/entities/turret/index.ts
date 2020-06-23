@@ -3,10 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
 import { Damageable } from '~/entities/components/Damageable'
-import {
-  IGenericComponent,
-  IMotionLogic,
-} from '~/entities/components/interfaces'
+import { IMotionLogic, IShooterLogic } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -33,14 +30,14 @@ class MotionLogic implements IMotionLogic {
 
 const COOLDOWN_PERIOD = 0.5
 
-export class Shooter implements IGenericComponent {
+export class ShooterLogic implements IShooterLogic {
   cooldownTtl: number
 
   constructor() {
     this.cooldownTtl = 0
   }
 
-  update(e: Entity, g: Game, dt: number): void {
+  update(transform: Transform, entityId: string, g: Game, dt: number): void {
     if (this.cooldownTtl > 0) {
       this.cooldownTtl -= dt
       return
@@ -50,7 +47,7 @@ export class Shooter implements IGenericComponent {
 
     g.player.map((player) => {
       if (
-        vec2.distance(player.transform!.position, e.transform!.position) >
+        vec2.distance(player.transform!.position, transform.position) >
         range * 2
       ) {
         return
@@ -58,14 +55,14 @@ export class Shooter implements IGenericComponent {
 
       // Line of sight
       const lineOfSight: [vec2, vec2] = [
-        e.transform!.position,
+        transform.position,
         player.transform!.position,
       ]
       let potentialHits = []
       for (const id in g.entities.entities) {
         const other = g.entities.entities[id]
 
-        if (other.damageable === undefined || other === e) {
+        if (other.damageable === undefined || id === entityId) {
           continue
         }
 
@@ -78,7 +75,7 @@ export class Shooter implements IGenericComponent {
         .map((hit) => {
           const withDistance: [Entity, number] = [
             hit,
-            vec2.distance(hit.transform!.position, e.transform!.position),
+            vec2.distance(hit.transform!.position, transform.position),
           ]
           return withDistance
         })
@@ -95,15 +92,15 @@ export class Shooter implements IGenericComponent {
 
       const bulletPos = radialTranslate2(
         vec2.create(),
-        e.transform!.position,
-        e.transform!.orientation,
+        transform.position,
+        transform.orientation,
         TILE_SIZE * 1.5,
       )
 
       g.entities.register(
         makeBullet({
           position: bulletPos,
-          orientation: e.transform!.orientation,
+          orientation: transform.orientation,
           range: 240,
         }),
       )
@@ -115,7 +112,7 @@ export class Shooter implements IGenericComponent {
         particleRadius: 3,
         particleRate: 240,
         particleSpeedRange: [120, 280],
-        orientation: e.transform!.orientation,
+        orientation: transform.orientation,
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })
@@ -132,7 +129,7 @@ export const makeTurret = (model: {
   e.transform = new Transform()
 
   e.motionLogic = new MotionLogic()
-  e.shooter = new Shooter()
+  e.shooterLogic = new ShooterLogic()
 
   e.wall = true
   e.damageable = new Damageable(

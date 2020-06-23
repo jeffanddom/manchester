@@ -7,7 +7,7 @@ import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { MotionLogic } from '~/entities/player/MotionLogic'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
-import { Shooter } from '~/entities/player/Shooter'
+import { ShooterLogic } from '~/entities/player/ShooterLogic'
 import { Hitbox } from '~/Hitbox'
 import { path2 } from '~/util/path2'
 
@@ -15,12 +15,11 @@ export const makePlayer = (_model: {
   path: path2
   fillStyle: string
 }): Entity => {
-  const shooter = new Shooter()
-
+  const shooterLogic = new ShooterLogic()
   const e = new Entity()
   e.transform = new Transform()
   e.motionLogic = new MotionLogic()
-  e.shooter = shooter
+  e.shooterLogic = shooterLogic
   e.wallCollider = true
   e.damageable = new Damageable(
     10,
@@ -31,7 +30,7 @@ export const makePlayer = (_model: {
     ),
   )
   e.playfieldClamper = new PlayfieldClamper()
-  e.renderable = new PlayerRenderables(shooter)
+  e.renderable = new PlayerRenderables(shooterLogic)
 
   return e
 }

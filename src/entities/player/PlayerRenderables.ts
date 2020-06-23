@@ -3,16 +3,16 @@ import { mat2d } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { IRenderable } from '~/entities/components/interfaces'
 import { Entity } from '~/entities/Entity'
-import { Shooter } from '~/entities/player/Shooter'
+import { ShooterLogic } from '~/entities/player/ShooterLogic'
 import { Primitive, Renderable } from '~/renderer/interfaces'
 import { path2 } from '~/util/path2'
 
 export class PlayerRenderables implements IRenderable {
   bodyPath: path2
   turretPath: path2
-  shooter: Shooter
+  shooter: ShooterLogic
 
-  constructor(shooter: Shooter) {
+  constructor(shooter: ShooterLogic) {
     this.shooter = shooter
     this.turretPath = path2.fromValues([
       [-TILE_SIZE * 0.1, -TILE_SIZE * 0.7],
