@@ -4,13 +4,12 @@ import { Damageable } from './components/Damageable'
 
 import {
   IDamagerLogic,
-  IGenericComponent,
   IMotionLogic,
+  IPrerenderLogic,
   IRenderable,
   IShooterLogic,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
-import { Game } from '~/Game'
 
 export class Entity {
   id: string
@@ -23,17 +22,12 @@ export class Entity {
   damageable?: Damageable
   damagerLogic?: IDamagerLogic
   enablePlayfieldClamping?: boolean
-  prerender?: IGenericComponent
+  prerenderLogic?: IPrerenderLogic
 
   constructor() {
     this.id = uuid.v4()
     this.wall = false
     this.wallCollider = false
     this.enablePlayfieldClamping = false
-  }
-
-  update(game: Game, dt: number): void {
-    // Should be the very last thing to update.
-    this.prerender?.update(this, game, dt)
   }
 }

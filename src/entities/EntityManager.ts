@@ -21,10 +21,7 @@ export class EntityManager {
     systems.damager(g)
     systems.damageable(g)
     systems.playfieldClamping(g)
-
-    Object.keys(this.entities).forEach((id) => {
-      this.entities[id].update(g, dt)
-    })
+    systems.prerender(g)
 
     this.toDelete.forEach((id) => delete this.entities[id])
     this.toDelete = []
