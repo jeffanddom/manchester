@@ -6,10 +6,6 @@ import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
 
-export interface IGenericComponent {
-  update(e: Entity, g: Game, dt: number): void
-}
-
 export interface IRenderable {
   setFillStyle(s: string): void
   getRenderables(e: Entity): Renderable[]
@@ -26,4 +22,8 @@ export interface IMotionLogic {
 
 export interface IShooterLogic {
   update(t: Transform, entityId: string, g: Game, dt: number): void
+}
+
+export interface IPrerenderLogic {
+  update(entityId: string, g: Game): void
 }
