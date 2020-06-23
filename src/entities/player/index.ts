@@ -2,7 +2,6 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
-import { PlayfieldClamper } from '~/entities/components/PlayfieldClamper'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { MotionLogic } from '~/entities/player/MotionLogic'
@@ -29,7 +28,7 @@ export const makePlayer = (_model: {
       false,
     ),
   )
-  e.playfieldClamper = new PlayfieldClamper()
+  e.enablePlayfieldClamping = true
   e.renderable = new PlayerRenderables(shooterLogic)
 
   return e
