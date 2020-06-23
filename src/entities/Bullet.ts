@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { IDamager, IMotionLogic } from '~/entities/components/interfaces'
+import { IDamagerLogic, IMotionLogic } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -38,7 +38,7 @@ class MotionLogic implements IMotionLogic {
   }
 }
 
-class BulletDamager implements IDamager {
+class BulletDamager implements IDamagerLogic {
   damageValue: number
   hitbox: Hitbox
 
@@ -47,15 +47,12 @@ class BulletDamager implements IDamager {
     this.hitbox = hitbox
   }
 
-  aabb(entity: Entity) {
-    return this.hitbox.aabb(
-      entity.transform!.position,
-      entity.transform!.orientation,
-    )
+  aabb(transform: Transform): [vec2, vec2] {
+    return this.hitbox.aabb(transform.position, transform.orientation)
   }
 
-  update(entity: Entity, game: Game, _dt: number): void {
-    const aabb = this.aabb(entity)
+  update(transform: Transform, entityId: string, game: Game): void {
+    const aabb = this.aabb(transform)
 
     for (const id in game.entities.entities) {
       const c = game.entities.entities[id]
@@ -70,8 +67,8 @@ class BulletDamager implements IDamager {
       // Show explosion
       const emitterPos = radialTranslate2(
         vec2.create(),
-        entity.transform!.position,
-        entity.transform!.orientation,
+        transform.position,
+        transform.orientation,
         TILE_SIZE / 2,
       )
 
@@ -95,7 +92,7 @@ class BulletDamager implements IDamager {
 
       // Perform damage, kill bullet
       c.damageable.health = c.damageable.health - this.damageValue
-      game.entities.markForDeletion(entity.id)
+      game.entities.markForDeletion(entityId)
       return
     }
   }
@@ -126,7 +123,7 @@ export const makeBullet = ({
     '#FF0000',
   )
 
-  e.damager = new BulletDamager(
+  e.damagerLogic = new BulletDamager(
     1,
     new Hitbox(
       vec2.fromValues(-TILE_SIZE * 0.1, -TILE_SIZE * 0.5),

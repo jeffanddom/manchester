@@ -3,7 +3,7 @@ import * as uuid from 'uuid'
 import { Damageable } from './components/Damageable'
 
 import {
-  IDamager,
+  IDamagerLogic,
   IGenericComponent,
   IMotionLogic,
   IRenderable,
@@ -21,7 +21,7 @@ export class Entity {
   wall: boolean
   renderable?: IRenderable
   damageable?: Damageable
-  damager?: IDamager
+  damagerLogic?: IDamagerLogic
   playfieldClamper?: IGenericComponent
   prerender?: IGenericComponent
 
@@ -32,7 +32,6 @@ export class Entity {
   }
 
   update(game: Game, dt: number): void {
-    this.damager?.update(this, game, dt)
     this.damageable?.update(this, game, dt)
 
     // Should go after any business logic that modifies the

@@ -146,8 +146,8 @@ export class Game implements Game {
           })
         }
 
-        if (e.damager) {
-          const aabb = e.damager.aabb(e)
+        if (e.damagerLogic) {
+          const aabb = e.damagerLogic.aabb(e.transform!)
           const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
           this.renderer.render({
