@@ -22,20 +22,17 @@ export class Entity {
   renderable?: IRenderable
   damageable?: Damageable
   damagerLogic?: IDamagerLogic
-  playfieldClamper?: IGenericComponent
+  enablePlayfieldClamping?: boolean
   prerender?: IGenericComponent
 
   constructor() {
     this.id = uuid.v4()
     this.wall = false
     this.wallCollider = false
+    this.enablePlayfieldClamping = false
   }
 
   update(game: Game, dt: number): void {
-    // Should go after any business logic that modifies the
-    // transform.
-    this.playfieldClamper?.update(this, game, dt)
-
     // Should be the very last thing to update.
     this.prerender?.update(this, game, dt)
   }
