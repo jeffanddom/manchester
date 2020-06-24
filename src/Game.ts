@@ -134,8 +134,12 @@ export class Game implements Game {
       for (const id in this.entities.entities) {
         const e = this.entities.entities[id]
 
+        if (!e.transform) {
+          continue
+        }
+
         if (e.damageable) {
-          const aabb = e.damageable.aabb(e)
+          const aabb = e.damageable.aabb(e.transform)
           const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
           this.renderer.render({
@@ -147,7 +151,7 @@ export class Game implements Game {
         }
 
         if (e.damagerLogic) {
-          const aabb = e.damagerLogic.aabb(e.transform!)
+          const aabb = e.damagerLogic.aabb(e.transform)
           const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
           this.renderer.render({
