@@ -57,10 +57,11 @@ class BulletDamager implements IDamagerLogic {
     for (const id in game.entities.entities) {
       const c = game.entities.entities[id]
 
-      if (c.damageable === undefined) {
+      if (!c.damageable || !c.transform) {
         continue
       }
-      if (!aabbOverlap(c.damageable.aabb(c), aabb)) {
+
+      if (!aabbOverlap(c.damageable.aabb(c.transform), aabb)) {
         continue
       }
 

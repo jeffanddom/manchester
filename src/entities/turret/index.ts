@@ -62,11 +62,13 @@ export class ShooterLogic implements IShooterLogic {
       for (const id in g.entities.entities) {
         const other = g.entities.entities[id]
 
-        if (other.damageable === undefined || id === entityId) {
+        if (!other.damageable || !other.transform || id === entityId) {
           continue
         }
 
-        if (segmentToAabb(lineOfSight, other.damageable.aabb(other))) {
+        if (
+          segmentToAabb(lineOfSight, other.damageable.aabb(other.transform))
+        ) {
           potentialHits.push(other)
         }
       }
