@@ -16,8 +16,6 @@ let prevFrameTime = time.current()
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
-  console.log(size)
-
   canvas.width = size[0]
   canvas.height = size[1]
   game.setViewportDimensions(size)

@@ -10,14 +10,15 @@ import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
-import { IRenderer, Primitive } from '~/renderer/interfaces'
+import { IRenderer, Primitive, Renderable } from '~/renderer/interfaces'
 import * as terrain from '~/terrain'
 import { None, Option, Some } from '~/util/Option'
 
-let DEBUG_MODE = false
-
 export class Game implements Game {
   renderer: IRenderer
+
+  debugDraw: boolean
+  debugRenderables: Renderable[]
 
   terrain: terrain.Layer
   entities: EntityManager
@@ -30,6 +31,10 @@ export class Game implements Game {
 
   constructor(canvas: HTMLCanvasElement, map: Map) {
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
+
+    this.debugDraw = false
+    this.debugRenderables = []
+
     this.terrain = new terrain.Layer({
       tileOrigin: map.origin,
       tileDimensions: map.dimensions,
@@ -49,7 +54,7 @@ export class Game implements Game {
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
-        DEBUG_MODE = !DEBUG_MODE
+        this.debugDraw = !this.debugDraw
       }
     })
 
@@ -130,7 +135,12 @@ export class Game implements Game {
       })
     })
 
-    if (DEBUG_MODE) {
+    if (this.debugDraw) {
+      this.debugRenderables.forEach((r) => {
+        this.renderer.render(r)
+      })
+      this.debugRenderables = []
+
       for (const id in this.entities.entities) {
         const e = this.entities.entities[id]
 

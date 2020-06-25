@@ -12,7 +12,6 @@ export class EntityManager {
     this.toDelete = []
   }
 
-  // TODO: order by object type
   update(g: Game, dt: number): void {
     systems.transformInit(g)
     systems.motion(g, dt)

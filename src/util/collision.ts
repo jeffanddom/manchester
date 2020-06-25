@@ -86,18 +86,15 @@ export const segmentSegment = (s1: [vec2, vec2], s2: [vec2, vec2]): boolean => {
 }
 
 export const segmentToAabb = (s: [vec2, vec2], aabb: [vec2, vec2]): boolean => {
-  const northeast = vec2.fromValues(aabb[1][0], aabb[0][1])
-  const southwest = vec2.fromValues(aabb[0][0], aabb[1][1])
-
-  const topSegment: [vec2, vec2] = [aabb[0], northeast]
-  const bottomSegment: [vec2, vec2] = [southwest, aabb[1]]
-  const leftSegment: [vec2, vec2] = [aabb[0], southwest]
-  const rightSegment: [vec2, vec2] = [northeast, aabb[1]]
+  const nw = vec2.fromValues(aabb[0][0], aabb[0][1])
+  const ne = vec2.fromValues(aabb[1][0], aabb[0][1])
+  const sw = vec2.fromValues(aabb[0][0], aabb[1][1])
+  const se = vec2.fromValues(aabb[1][0], aabb[1][1])
 
   return (
-    segmentSegment(s, topSegment) ||
-    segmentSegment(s, bottomSegment) ||
-    segmentSegment(s, leftSegment) ||
-    segmentSegment(s, rightSegment)
+    segmentSegment(s, [nw, ne]) ||
+    segmentSegment(s, [sw, se]) ||
+    segmentSegment(s, [nw, sw]) ||
+    segmentSegment(s, [ne, se])
   )
 }
