@@ -10,6 +10,7 @@ import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { Primitive } from '~/renderer/interfaces'
 import { segmentToAabb } from '~/util/collision'
 import { radialTranslate2 } from '~/util/math'
 import { path2 } from '~/util/path2'
@@ -38,11 +39,6 @@ export class ShooterLogic implements IShooterLogic {
   }
 
   update(transform: Transform, entityId: string, g: Game, dt: number): void {
-    if (this.cooldownTtl > 0) {
-      this.cooldownTtl -= dt
-      return
-    }
-
     const range = 240
 
     g.player.map((player) => {
@@ -58,6 +54,7 @@ export class ShooterLogic implements IShooterLogic {
         transform.position,
         player.transform!.position,
       ]
+
       let potentialHits = []
       for (const id in g.entities.entities) {
         const other = g.entities.entities[id]
@@ -73,6 +70,10 @@ export class ShooterLogic implements IShooterLogic {
         }
       }
 
+      if (potentialHits.length === 0) {
+        return
+      }
+
       potentialHits = potentialHits
         .map((hit) => {
           const withDistance: [Entity, number] = [
@@ -84,6 +85,29 @@ export class ShooterLogic implements IShooterLogic {
         .sort((a, b) => {
           return a[1] - b[1]
         })
+
+      if (g.debugDraw) {
+        g.debugRenderables.push({
+          primitive: Primitive.LINE,
+          width: 1,
+          style: 'purple',
+          from: transform.position,
+          to: player.transform!.position,
+        })
+
+        g.debugRenderables.push({
+          primitive: Primitive.LINE,
+          width: 1,
+          style: 'red',
+          from: transform.position,
+          to: potentialHits[0][0].transform!.position,
+        })
+      }
+
+      if (this.cooldownTtl > 0) {
+        this.cooldownTtl -= dt
+        return
+      }
 
       // Something is in the way
       if (potentialHits[0][0] !== player) {
