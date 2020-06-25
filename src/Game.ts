@@ -17,8 +17,8 @@ import { None, Option, Some } from '~/util/Option'
 export class Game implements Game {
   renderer: IRenderer
 
-  debugDraw: boolean
-  debugRenderables: Renderable[]
+  enableDebugDraw: boolean
+  debugDrawRenderables: Renderable[]
 
   terrain: terrain.Layer
   entities: EntityManager
@@ -32,8 +32,8 @@ export class Game implements Game {
   constructor(canvas: HTMLCanvasElement, map: Map) {
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
 
-    this.debugDraw = false
-    this.debugRenderables = []
+    this.enableDebugDraw = false
+    this.debugDrawRenderables = []
 
     this.terrain = new terrain.Layer({
       tileOrigin: map.origin,
@@ -54,7 +54,7 @@ export class Game implements Game {
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
-        this.debugDraw = !this.debugDraw
+        this.enableDebugDraw = !this.enableDebugDraw
       }
     })
 
@@ -135,43 +135,18 @@ export class Game implements Game {
       })
     })
 
-    if (this.debugDraw) {
-      this.debugRenderables.forEach((r) => {
+    if (this.enableDebugDraw) {
+      this.debugDrawRenderables.forEach((r) => {
         this.renderer.render(r)
       })
-      this.debugRenderables = []
-
-      for (const id in this.entities.entities) {
-        const e = this.entities.entities[id]
-
-        if (!e.transform) {
-          continue
-        }
-
-        if (e.damageable) {
-          const aabb = e.damageable.aabb(e.transform)
-          const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
-
-          this.renderer.render({
-            primitive: Primitive.RECT,
-            strokeStyle: 'cyan',
-            pos: aabb[0],
-            dimensions: d,
-          })
-        }
-
-        if (e.damagerLogic) {
-          const aabb = e.damagerLogic.aabb(e.transform)
-          const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
-
-          this.renderer.render({
-            primitive: Primitive.RECT,
-            strokeStyle: 'magenta',
-            pos: aabb[0],
-            dimensions: d,
-          })
-        }
-      }
     }
+    this.debugDrawRenderables = []
+  }
+
+  debugDraw(makeRenderable: () => Renderable): void {
+    if (!this.enableDebugDraw) {
+      return
+    }
+    this.debugDrawRenderables.push(makeRenderable())
   }
 }

@@ -55,7 +55,7 @@ export class ShooterLogic implements IShooterLogic {
         player.transform!.position,
       ]
 
-      let potentialHits = []
+      const potentialHits = []
       for (const id in g.entities.entities) {
         const other = g.entities.entities[id]
 
@@ -74,35 +74,35 @@ export class ShooterLogic implements IShooterLogic {
         return
       }
 
-      potentialHits = potentialHits
-        .map((hit) => {
-          const withDistance: [Entity, number] = [
+      const hitsWithDistance = potentialHits
+        .map((hit): [Entity, number] => {
+          return [
             hit,
             vec2.distance(hit.transform!.position, transform.position),
           ]
-          return withDistance
         })
         .sort((a, b) => {
           return a[1] - b[1]
         })
 
-      if (g.debugDraw) {
-        g.debugRenderables.push({
+      g.debugDraw(() => {
+        return {
           primitive: Primitive.LINE,
           width: 1,
           style: 'purple',
           from: transform.position,
           to: player.transform!.position,
-        })
-
-        g.debugRenderables.push({
+        }
+      })
+      g.debugDraw(() => {
+        return {
           primitive: Primitive.LINE,
           width: 1,
           style: 'red',
           from: transform.position,
-          to: potentialHits[0][0].transform!.position,
-        })
-      }
+          to: hitsWithDistance[0][0].transform!.position,
+        }
+      })
 
       if (this.cooldownTtl > 0) {
         this.cooldownTtl -= dt
@@ -110,7 +110,7 @@ export class ShooterLogic implements IShooterLogic {
       }
 
       // Something is in the way
-      if (potentialHits[0][0] !== player) {
+      if (hitsWithDistance[0][0] !== player) {
         return
       }
 

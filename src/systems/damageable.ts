@@ -3,22 +3,37 @@ import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { Primitive } from '~/renderer/interfaces'
 import { radialTranslate2 } from '~/util/math'
 
 export const update = (g: Game): void => {
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
-    if (!e.transform || !e.damageable) {
+    const transform = e.transform
+    const damageable = e.damageable
+    if (!transform || !damageable) {
       continue
     }
 
-    if (e.damageable.health <= 0) {
+    g.debugDraw(() => {
+      const aabb = damageable.aabb(transform)
+      const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
+
+      return {
+        primitive: Primitive.RECT,
+        strokeStyle: 'cyan',
+        pos: aabb[0],
+        dimensions: d,
+      }
+    })
+
+    if (damageable.health <= 0) {
       g.entities.markForDeletion(id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),
-        e.transform.position,
-        e.transform.orientation,
+        transform.position,
+        transform.orientation,
         TILE_SIZE / 2,
       )
       const explosion = new ParticleEmitter({
