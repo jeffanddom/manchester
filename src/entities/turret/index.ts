@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
 import { Damageable } from '~/entities/components/Damageable'
-import { IMotionLogic, IShooterLogic } from '~/entities/components/interfaces'
+import { IMotionScript, IShooterScript } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -18,7 +18,7 @@ import { rotate } from '~/util/rotator'
 
 const TURRET_ROT_SPEED = Math.PI / 2
 
-class MotionLogic implements IMotionLogic {
+class MotionScript implements IMotionScript {
   update(transform: Transform, _entityId: string, g: Game, dt: number): void {
     transform.orientation = rotate({
       from: transform,
@@ -31,7 +31,7 @@ class MotionLogic implements IMotionLogic {
 
 const COOLDOWN_PERIOD = 0.5
 
-export class ShooterLogic implements IShooterLogic {
+class ShooterScript implements IShooterScript {
   cooldownTtl: number
 
   constructor() {
@@ -154,8 +154,8 @@ export const makeTurret = (model: {
   const e = new Entity()
   e.transform = new Transform()
 
-  e.motionLogic = new MotionLogic()
-  e.shooterLogic = new ShooterLogic()
+  e.motionScript = new MotionScript()
+  e.shooterScript = new ShooterScript()
 
   e.wall = true
   e.damageable = new Damageable(

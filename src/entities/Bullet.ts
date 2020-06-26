@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { IDamagerLogic, IMotionLogic } from '~/entities/components/interfaces'
+import { IDamagerScript, IMotionScript } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -14,7 +14,7 @@ import { path2 } from '~/util/path2'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 
-class MotionLogic implements IMotionLogic {
+class MotionScript implements IMotionScript {
   origin: vec2
   range: number
 
@@ -38,7 +38,7 @@ class MotionLogic implements IMotionLogic {
   }
 }
 
-class BulletDamager implements IDamagerLogic {
+class BulletDamager implements IDamagerScript {
   damageValue: number
   hitbox: Hitbox
 
@@ -114,7 +114,7 @@ export const makeBullet = ({
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.motionLogic = new MotionLogic(vec2.clone(position), range)
+  e.motionScript = new MotionScript(vec2.clone(position), range)
   e.renderable = new PathRenderable(
     path2.fromValues([
       [0, -TILE_SIZE * 0.5],
@@ -124,7 +124,7 @@ export const makeBullet = ({
     '#FF0000',
   )
 
-  e.damagerLogic = new BulletDamager(
+  e.damagerScript = new BulletDamager(
     1,
     new Hitbox(
       vec2.fromValues(-TILE_SIZE * 0.1, -TILE_SIZE * 0.5),

@@ -4,7 +4,7 @@ import { Transform } from '../components/Transform'
 
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
-import { IShooterLogic } from '~/entities/components/interfaces'
+import { IShooterScript } from '~/entities/components/interfaces'
 import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -12,7 +12,7 @@ import { getAngle, radialTranslate2 } from '~/util/math'
 
 const COOLDOWN_PERIOD = 0.25
 
-export class ShooterLogic implements IShooterLogic {
+export class ShooterScript implements IShooterScript {
   cooldownTtl: number
   orientation: number
 
