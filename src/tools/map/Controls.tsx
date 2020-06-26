@@ -1,3 +1,4 @@
+import { saveAs } from 'file-saver'
 import { vec2 } from 'gl-matrix'
 import * as React from 'react'
 import { ReactElement, useRef, useState } from 'react'
@@ -22,7 +23,7 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
     fileOperationInProgress: false,
   })
 
-  const fileLoadRef = useRef<HTMLInputElement>(null)
+  const fileOpenRef = useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     editor.events.addListener('zoom', ({ zoom }) =>
@@ -76,27 +77,30 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
     })
   }
 
-  const startExport = () => {
+  const startSave = () => {
     setState((prevState) => {
       return { ...prevState, fileOperationInProgress: true }
     })
 
-    const exported = JSON.stringify(editor.map)
-    navigator.clipboard
-      .writeText(exported)
-      .then(() => {
-        console.log('copied map data to clipboard')
+    try {
+      saveAs(
+        new Blob([JSON.stringify(editor.map)], {
+          type: 'text/plain;charset=utf-8',
+        }),
+        'map.json',
+        { autoBom: false },
+      )
+    } catch (err) {
+      console.log(`save error: ${err}`)
+    } finally {
+      setState((prevState) => {
+        return { ...prevState, fileOperationInProgress: false }
       })
-      .catch((error) => console.log(`Export error: ${error}`))
-      .finally(() => {
-        setState((prevState) => {
-          return { ...prevState, fileOperationInProgress: false }
-        })
-      })
+    }
   }
 
-  const startLoad = () => {
-    const fnode = fileLoadRef.current
+  const startOpen = () => {
+    const fnode = fileOpenRef.current
     if (!fnode) {
       return
     }
@@ -166,15 +170,12 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
           </span>
         </li>
         <li>
-          Load:{' '}
-          <input type="file" ref={fileLoadRef} onChange={startLoad}></input>
+          Open:{' '}
+          <input type="file" ref={fileOpenRef} onChange={startOpen}></input>
         </li>
         <li>
-          <button
-            disabled={state.fileOperationInProgress}
-            onClick={startExport}
-          >
-            Export
+          <button disabled={state.fileOperationInProgress} onClick={startSave}>
+            Save
           </button>
         </li>
       </ul>
