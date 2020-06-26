@@ -1,13 +1,16 @@
 import { vec2 } from 'gl-matrix'
 import * as React from 'react'
-import { useState } from 'react'
+import { ReactElement, useRef, useState } from 'react'
+
+import { saveMap } from './storage'
 
 import * as entities from '~/entities'
+import { Map } from '~/map/interfaces'
 import * as terrain from '~/terrain'
 import { BrushMode, Editor } from '~/tools/map/Editor'
 import { None } from '~/util/Option'
 
-export const Controls = ({ editor }: { editor: Editor }) => {
+export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
   const [state, setState] = useState({
     zoom: 1,
     map: editor.map,
@@ -16,8 +19,10 @@ export const Controls = ({ editor }: { editor: Editor }) => {
     showTerrain: true,
     showEntities: true,
     showGrid: true,
-    exporting: false,
+    fileOperationInProgress: false,
   })
+
+  const fileLoadRef = useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     editor.events.addListener('zoom', ({ zoom }) =>
@@ -43,12 +48,7 @@ export const Controls = ({ editor }: { editor: Editor }) => {
       if (savingTimeout === null) {
         savingTimeout = setTimeout(() => {
           savingTimeout = null
-          window.localStorage.setItem(
-            'tools/map',
-            JSON.stringify({
-              previous: editor.map,
-            }),
-          )
+          saveMap(editor.map)
           console.log('saved state')
         }, 1000)
       }
@@ -78,7 +78,7 @@ export const Controls = ({ editor }: { editor: Editor }) => {
 
   const startExport = () => {
     setState((prevState) => {
-      return { ...prevState, exporting: true }
+      return { ...prevState, fileOperationInProgress: true }
     })
 
     const exported = JSON.stringify(editor.map)
@@ -90,7 +90,40 @@ export const Controls = ({ editor }: { editor: Editor }) => {
       .catch((error) => console.log(`Export error: ${error}`))
       .finally(() => {
         setState((prevState) => {
-          return { ...prevState, exporting: false }
+          return { ...prevState, fileOperationInProgress: false }
+        })
+      })
+  }
+
+  const startLoad = () => {
+    const fnode = fileLoadRef.current
+    if (!fnode) {
+      return
+    }
+
+    const files = fnode.files
+    if (!files || files.length === 0) {
+      return
+    }
+    const f = files[0]
+
+    setState((prevState) => {
+      return { ...prevState, fileOperationInProgress: true }
+    })
+
+    f.text()
+      .then((json) => {
+        try {
+          const raw = JSON.parse(json)
+          saveMap(Map.fromRaw(raw))
+          location.reload()
+        } catch (err) {
+          console.log(`could not parse ${f.name}: ${err}`)
+        }
+      })
+      .finally(() => {
+        setState((prevState) => {
+          return { ...prevState, fileOperationInProgress: false }
         })
       })
   }
@@ -133,7 +166,14 @@ export const Controls = ({ editor }: { editor: Editor }) => {
           </span>
         </li>
         <li>
-          <button disabled={state.exporting} onClick={startExport}>
+          Load:{' '}
+          <input type="file" ref={fileLoadRef} onChange={startLoad}></input>
+        </li>
+        <li>
+          <button
+            disabled={state.fileOperationInProgress}
+            onClick={startExport}
+          >
             Export
           </button>
         </li>
