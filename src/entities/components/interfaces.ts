@@ -11,19 +11,19 @@ export interface IRenderable {
   getRenderables(e: Entity): Renderable[]
 }
 
-export interface IDamagerLogic {
+export interface IDamagerScript {
   aabb(transform: Transform): [vec2, vec2]
   update(transform: Transform, entityId: string, g: Game): void
 }
 
-export interface IMotionLogic {
+export interface IMotionScript {
   update(t: Transform, entityId: string, g: Game, dt: number): void
 }
 
-export interface IShooterLogic {
+export interface IShooterScript {
   update(t: Transform, entityId: string, g: Game, dt: number): void
 }
 
-export interface IPrerenderLogic {
+export interface IPrerenderScript {
   update(entityId: string, g: Game): void
 }

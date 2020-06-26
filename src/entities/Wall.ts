@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
-import { IPrerenderLogic } from '~/entities/components/interfaces'
+import { IPrerenderScript } from '~/entities/components/interfaces'
 import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
@@ -13,7 +13,7 @@ import { path2 } from '~/util/path2'
 
 const WALL_HEALTH = 4.0
 
-class DisplayWallDamage implements IPrerenderLogic {
+class DisplayWallDamage implements IPrerenderScript {
   update(entityId: string, g: Game): void {
     const entity = g.entities.entities[entityId]
     const color = lerp(90, 130, entity!.damageable!.health / WALL_HEALTH)
@@ -33,6 +33,6 @@ export const makeWall = (model: { path: path2; fillStyle: string }): Entity => {
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
     ),
   )
-  e.prerenderLogic = new DisplayWallDamage()
+  e.prerenderScript = new DisplayWallDamage()
   return e
 }

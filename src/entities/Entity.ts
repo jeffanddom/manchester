@@ -3,26 +3,26 @@ import * as uuid from 'uuid'
 import { Damageable } from './components/Damageable'
 
 import {
-  IDamagerLogic,
-  IMotionLogic,
-  IPrerenderLogic,
+  IDamagerScript,
+  IMotionScript,
+  IPrerenderScript,
   IRenderable,
-  IShooterLogic,
+  IShooterScript,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
 
 export class Entity {
   id: string
   transform?: Transform
-  motionLogic?: IMotionLogic
-  shooterLogic?: IShooterLogic
+  motionScript?: IMotionScript
+  shooterScript?: IShooterScript
   wallCollider: boolean
   wall: boolean
   renderable?: IRenderable
   damageable?: Damageable
-  damagerLogic?: IDamagerLogic
+  damagerScript?: IDamagerScript
   enablePlayfieldClamping?: boolean
-  prerenderLogic?: IPrerenderLogic
+  prerenderScript?: IPrerenderScript
 
   constructor() {
     this.id = uuid.v4()

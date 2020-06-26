@@ -4,9 +4,9 @@ import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { MotionLogic } from '~/entities/player/MotionLogic'
+import { MotionScript } from '~/entities/player/MotionScript'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
-import { ShooterLogic } from '~/entities/player/ShooterLogic'
+import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Hitbox } from '~/Hitbox'
 import { path2 } from '~/util/path2'
 
@@ -14,11 +14,11 @@ export const makePlayer = (_model: {
   path: path2
   fillStyle: string
 }): Entity => {
-  const shooterLogic = new ShooterLogic()
+  const shooterScript = new ShooterScript()
   const e = new Entity()
   e.transform = new Transform()
-  e.motionLogic = new MotionLogic()
-  e.shooterLogic = shooterLogic
+  e.motionScript = new MotionScript()
+  e.shooterScript = shooterScript
   e.wallCollider = true
   e.damageable = new Damageable(
     10,
@@ -29,7 +29,7 @@ export const makePlayer = (_model: {
     ),
   )
   e.enablePlayfieldClamping = true
-  e.renderable = new PlayerRenderables(shooterLogic)
+  e.renderable = new PlayerRenderables(shooterScript)
 
   return e
 }

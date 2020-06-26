@@ -1,4 +1,4 @@
-import { IMotionLogic } from '../components/interfaces'
+import { IMotionScript } from '../components/interfaces'
 import { Transform } from '../components/Transform'
 
 import { TILE_SIZE } from '~/constants'
@@ -16,7 +16,7 @@ const keyMap = {
   moveRight: 65,
 }
 
-export class MotionLogic implements IMotionLogic {
+export class MotionScript implements IMotionScript {
   update(
     transform: Transform,
     _entityId: string,

@@ -7,15 +7,15 @@ export const update = (g: Game): void => {
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
     const transform = e.transform
-    const damagerLogic = e.damagerLogic
-    if (!transform || !damagerLogic) {
+    const damagerScript = e.damagerScript
+    if (!transform || !damagerScript) {
       continue
     }
 
-    damagerLogic.update(transform, id, g)
+    damagerScript.update(transform, id, g)
 
     g.debugDraw(() => {
-      const aabb = damagerLogic.aabb(transform)
+      const aabb = damagerScript.aabb(transform)
       const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
 
       return {
