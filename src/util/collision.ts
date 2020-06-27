@@ -2,32 +2,6 @@ import { glMatrix, vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '~/util/math'
 
-const lineFormula = (a: vec2, b: vec2): [number, number, number] => {
-  const rise = b[1] - a[1]
-  const run = b[0] - a[0]
-  if (glMatrix.equals(run, 0)) {
-    return [1, 0, a[0]]
-  }
-
-  const slope = rise / run
-  const yint = a[1] - slope * a[0]
-
-  return [-slope, 1, yint]
-}
-
-const minmax = (a: number, b: number): [number, number] => {
-  if (a < b) {
-    return [a, b]
-  } else {
-    return [b, a]
-  }
-}
-
-const between = (a: number, b: number, v: number): boolean => {
-  const [min, max] = minmax(a, b)
-  return min < v && v < max
-}
-
 const aabbFromSegment = (s: [vec2, vec2]): [vec2, vec2] => {
   const northwest = vec2.fromValues(
     Math.min(s[0][0], s[1][0]),
@@ -40,49 +14,36 @@ const aabbFromSegment = (s: [vec2, vec2]): [vec2, vec2] => {
   return [northwest, southeast]
 }
 
+const crossScalar = (v: vec2, w: vec2): number => {
+  return v[0] * w[1] - v[1] * w[0]
+}
+
+// From https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 export const segmentSegment = (s1: [vec2, vec2], s2: [vec2, vec2]): boolean => {
-  if (!aabbOverlap(aabbFromSegment(s1), aabbFromSegment(s2))) {
-    return false
-  }
+  const p = s1[0]
+  const r = vec2.sub(vec2.create(), s1[1], s1[0])
 
-  const [a, b, c] = lineFormula(s1[0], s1[1])
-  const [u, v, w] = lineFormula(s2[0], s2[1])
+  const q = s2[0]
+  const s = vec2.sub(vec2.create(), s2[1], s2[0])
 
-  // One or more line segments is vertical or horizontal
-  if (
-    glMatrix.equals(a, 0) ||
-    glMatrix.equals(b, 0) ||
-    glMatrix.equals(u, 0) ||
-    glMatrix.equals(v, 0)
-  ) {
-    return true
-  }
+  const divisor = crossScalar(r, s)
+  const un = crossScalar(vec2.subtract(vec2.create(), q, p), r)
 
-  // Multiple point of intersection (same line)
-  const divisor = (-u * b) / a + v
   if (glMatrix.equals(divisor, 0)) {
-    // Lines are colinear
-    if (
-      glMatrix.equals(a, u) &&
-      glMatrix.equals(b, v) &&
-      glMatrix.equals(c, w)
-    ) {
-      return true
+    if (glMatrix.equals(un, 0)) {
+      // colinear
+      return aabbOverlap(aabbFromSegment(s1), aabbFromSegment(s2))
+    } else {
+      // parallel, no colinear
+      return false
     }
+  } else {
+    const tn = crossScalar(vec2.subtract(vec2.create(), q, p), s)
+    const t = tn / divisor
+    const u = un / divisor
 
-    return false
+    return 0 <= u && u <= 1 && 0 <= t && t <= 1
   }
-
-  // Point of intersection
-  const y = (w - (u * c) / a) / divisor
-  const x = (-b * y + c) / a
-
-  return (
-    between(s1[0][0], s1[1][0], x) &&
-    between(s1[0][1], s1[1][1], y) &&
-    between(s2[0][0], s2[1][0], x) &&
-    between(s2[0][1], s2[1][1], y)
-  )
 }
 
 export const segmentToAabb = (s: [vec2, vec2], aabb: [vec2, vec2]): boolean => {

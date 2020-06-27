@@ -84,7 +84,6 @@ test('colinear, non-axis aligned, overlapping line segment', () => {
 test('colinear, non-axis aligned, semi-overlapping line segment', () => {
   const segment1: [vec2, vec2] = [vec2.fromValues(0, 0), vec2.fromValues(2, 2)]
   const segment2: [vec2, vec2] = [vec2.fromValues(1, 1), vec2.fromValues(3, 3)]
-
   expect(segmentSegment(segment1, segment2)).toBe(true)
   expect(segmentSegment(segment2, segment1)).toBe(true)
 })
@@ -92,6 +91,17 @@ test('colinear, non-axis aligned, semi-overlapping line segment', () => {
 test('colinear, non-axis aligned, non-overlapping line segment', () => {
   const segment1: [vec2, vec2] = [vec2.fromValues(0, 0), vec2.fromValues(2, 2)]
   const segment2: [vec2, vec2] = [vec2.fromValues(3, 3), vec2.fromValues(5, 5)]
+
+  expect(segmentSegment(segment1, segment2)).toBe(false)
+  expect(segmentSegment(segment2, segment1)).toBe(false)
+})
+
+test('lines with overlapping bounding boxes that do not intersect', () => {
+  const segment1: [vec2, vec2] = [
+    vec2.fromValues(-3, 3),
+    vec2.fromValues(3, -3),
+  ]
+  const segment2: [vec2, vec2] = [vec2.fromValues(0, 1), vec2.fromValues(1, 1)]
 
   expect(segmentSegment(segment1, segment2)).toBe(false)
   expect(segmentSegment(segment2, segment1)).toBe(false)
