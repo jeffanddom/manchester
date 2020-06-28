@@ -85,24 +85,22 @@ class ShooterScript implements IShooterScript {
           return a[1] - b[1]
         })
 
-      g.debugDraw(() => {
-        return {
+      g.debugDraw(() => [
+        {
           primitive: Primitive.LINE,
           width: 1,
           style: 'purple',
           from: transform.position,
           to: player.transform!.position,
-        }
-      })
-      g.debugDraw(() => {
-        return {
+        },
+        {
           primitive: Primitive.LINE,
           width: 1,
           style: 'red',
           from: transform.position,
           to: hitsWithDistance[0][0].transform!.position,
-        }
-      })
+        },
+      ])
 
       if (this.cooldownTtl > 0) {
         this.cooldownTtl -= dt

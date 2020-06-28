@@ -143,10 +143,13 @@ export class Game implements Game {
     this.debugDrawRenderables = []
   }
 
-  debugDraw(makeRenderable: () => Renderable): void {
+  debugDraw(makeRenderables: () => Renderable[]): void {
     if (!this.enableDebugDraw) {
       return
     }
-    this.debugDrawRenderables.push(makeRenderable())
+
+    this.debugDrawRenderables = this.debugDrawRenderables.concat(
+      makeRenderables(),
+    )
   }
 }

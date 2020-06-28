@@ -18,13 +18,14 @@ export const update = (g: Game): void => {
     g.debugDraw(() => {
       const aabb = damageable.aabb(transform)
       const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
-
-      return {
-        primitive: Primitive.RECT,
-        strokeStyle: 'cyan',
-        pos: aabb[0],
-        dimensions: d,
-      }
+      return [
+        {
+          primitive: Primitive.RECT,
+          strokeStyle: 'cyan',
+          pos: aabb[0],
+          dimensions: d,
+        },
+      ]
     })
 
     if (damageable.health <= 0) {
