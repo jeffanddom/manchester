@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <style>
-      html {
-        height: 100%;
-        background-color: purple;
-      }
 
-      body,
-      canvas {
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        margin: 0 auto;
-        padding: 0;
-        display: block;
-        cursor: none;
-      }
-    </style>
-  </head>
+<head>
+  <style>
+    html {
+      height: 100%;
+      background-color: purple;
+    }
 
-  <body>
-    <script src="~/main.ts"></script>
+    body,
+    canvas {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      margin: 0 auto;
+      padding: 0;
+      display: block;
+      cursor: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
 
-    <!-- Add links so Parcel finds these tools -->
-    <ul style="display: none;">
-      <li><a href="~/tools/map/index.html">Map editor</a></li>
-      <li><a href="~/tools/particles/index.html">Particle creator</a></li>
-    </ul>
-  </body>
+    #controls {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="controls"></div>
+
+  <!-- Add links so Parcel finds these tools -->
+  <ul style="display: none;">
+    <li><a href="~/tools/map/index.html">Map editor</a></li>
+    <li><a href="~/tools/particles/index.html">Particle creator</a></li>
+  </ul>
+
+  <script src="~/main.tsx"></script>
+</body>
+
 </html>
