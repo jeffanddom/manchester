@@ -1,12 +1,14 @@
 import { Map, RawMap } from '~/map/interfaces'
 import { None, Option, Some } from '~/util/Option'
 
+const STORAGE_KEY = 'tools/map'
+
 export type SaveState = {
   previous: RawMap
 }
 
 export const loadMap = (): Option<Map> => {
-  const json = window.localStorage.getItem('tools/map')
+  const json = window.localStorage.getItem(STORAGE_KEY)
   if (json === null) {
     console.log('no previous map data found')
     return None()
@@ -29,9 +31,13 @@ export const loadMap = (): Option<Map> => {
 
 export const saveMap = (map: Map): void => {
   window.localStorage.setItem(
-    'tools/map',
+    STORAGE_KEY,
     JSON.stringify({
       previous: map,
     }),
   )
+}
+
+export const reset = (): void => {
+  window.localStorage.removeItem(STORAGE_KEY)
 }

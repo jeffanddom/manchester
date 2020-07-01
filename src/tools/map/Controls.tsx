@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import * as React from 'react'
 import { ReactElement, useRef, useState } from 'react'
 
-import { saveMap } from './storage'
+import { reset, saveMap } from './storage'
 
 import * as entities from '~/entities'
 import { Map } from '~/map/interfaces'
@@ -132,6 +132,17 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
       })
   }
 
+  const resetMapData = () => {
+    reset()
+    const blank = new Map(vec2.fromValues(64, 64))
+    editor.map = blank
+    editor.terrain = new terrain.Layer({
+      tileOrigin: blank.origin,
+      tileDimensions: blank.dimensions,
+      terrain: blank.terrain,
+    })
+  }
+
   return (
     <div>
       <h4>Controls</h4>
@@ -177,6 +188,9 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
           <button disabled={state.fileOperationInProgress} onClick={startSave}>
             Save
           </button>
+        </li>
+        <li>
+          <button onClick={resetMapData}>Reset</button>
         </li>
       </ul>
     </div>
