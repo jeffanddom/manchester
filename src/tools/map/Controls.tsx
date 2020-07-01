@@ -44,7 +44,7 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
       }),
     )
 
-    let savingTimeout: NodeJS.Timeout | null = null
+    let savingTimeout: number | null = null
     editor.events.addListener('changed', () => {
       if (savingTimeout === null) {
         savingTimeout = setTimeout(() => {
