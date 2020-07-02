@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
+import { Game, GameState } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
 import { radialTranslate2 } from '~/util/math'
@@ -49,6 +49,12 @@ export const update = (g: Game): void => {
         colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
       })
       g.emitters.push(explosion)
+
+      g.player.map((player) => {
+        if (player.id === id) {
+          g.setState(GameState.YouDied)
+        }
+      })
     }
   }
 }

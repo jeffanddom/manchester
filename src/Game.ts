@@ -11,10 +11,21 @@ import { Mouse } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import { IRenderer, Primitive, Renderable } from '~/renderer/interfaces'
+import * as systems from '~/systems'
 import * as terrain from '~/terrain'
 import { None, Option, Some } from '~/util/Option'
 
+export enum GameState {
+  None,
+  Running,
+  YouDied,
+}
+
 export class Game implements Game {
+  state: GameState
+  nextState: Option<GameState>
+  map: Map
+
   renderer: IRenderer
 
   enableDebugDraw: boolean
@@ -22,14 +33,19 @@ export class Game implements Game {
 
   terrain: terrain.Layer
   entities: EntityManager
+  emitters: ParticleEmitter[]
+
   keyboard: Keyboard
   mouse: Mouse
-  emitters: ParticleEmitter[]
 
   player: Option<Entity>
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement, map: Map) {
+    this.state = GameState.None
+    this.nextState = None()
+    this.map = map
+
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
 
     this.enableDebugDraw = false
@@ -41,27 +57,38 @@ export class Game implements Game {
       terrain: map.terrain,
     })
     this.entities = new EntityManager()
-    this.keyboard = new Keyboard()
-    this.mouse = new Mouse(canvas)
     this.emitters = []
 
+    this.keyboard = new Keyboard()
+    this.mouse = new Mouse(canvas)
+
+    this.player = None()
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
       this.terrain.minWorldPos(),
       this.terrain.dimensions(),
     )
-    this.player = None()
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
         this.enableDebugDraw = !this.enableDebugDraw
       }
     })
+  }
+
+  setViewportDimensions(d: vec2): void {
+    this.camera.setViewportDimensions(d)
+  }
+
+  startPlay(): void {
+    this.entities = new EntityManager()
+    this.emitters = []
+    this.player = None()
 
     // Populate entities
-    for (let i = 0; i < map.dimensions[1]; i++) {
-      for (let j = 0; j < map.dimensions[0]; j++) {
-        const et = map.entities[i * map.dimensions[0] + j]
+    for (let i = 0; i < this.map.dimensions[1]; i++) {
+      for (let j = 0; j < this.map.dimensions[0]; j++) {
+        const et = this.map.entities[i * this.map.dimensions[0] + j]
         if (et === null) {
           continue
         }
@@ -87,12 +114,44 @@ export class Game implements Game {
     }
   }
 
-  setViewportDimensions(d: vec2): void {
-    this.camera.setViewportDimensions(d)
+  setState(s: GameState): void {
+    this.nextState = Some(s)
   }
 
   update(dt: number): void {
-    this.entities.update(this, dt)
+    this.nextState.map((nextState) => {
+      this.state = nextState
+      this.nextState = None()
+
+      switch (this.state) {
+        case GameState.Running:
+          this.startPlay()
+          break
+      }
+    })
+
+    systems.transformInit(this)
+    systems.motion(this, dt)
+    systems.wallCollider(this)
+
+    if (this.state === GameState.Running) {
+      systems.shooter(this, dt)
+    }
+
+    systems.damager(this)
+    systems.damageable(this)
+    systems.playfieldClamping(this)
+
+    if (this.state === GameState.YouDied) {
+      // 'r' for restart
+      if (this.keyboard.upKeys.has(82)) {
+        this.setState(GameState.Running)
+      }
+    }
+
+    systems.prerender(this)
+
+    this.entities.update() // entity cleanup
 
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
@@ -109,11 +168,12 @@ export class Game implements Game {
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())
+
     this.terrain
       .getRenderables(this.camera.getVisibleExtents())
       .forEach((r) => this.renderer.render(r))
     this.entities.getRenderables().forEach((r) => this.renderer.render(r))
-    this.emitters.forEach((e) =>
+    this.emitters!.forEach((e) =>
       e.getRenderables().forEach((r) => this.renderer.render(r)),
     )
 
@@ -141,6 +201,18 @@ export class Game implements Game {
       })
     }
     this.debugDrawRenderables = []
+
+    systems.playerHealthBar(this)
+
+    if (this.state === GameState.YouDied) {
+      this.renderer.render({
+        primitive: Primitive.TEXT,
+        text: 'YOU DIED',
+        pos: vec2.fromValues(100, 100),
+        font: '48px serif',
+        style: 'red',
+      })
+    }
   }
 
   debugDraw(makeRenderables: () => Renderable[]): void {

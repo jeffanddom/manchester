@@ -1,7 +1,5 @@
 import { Entity } from '~/entities/Entity'
-import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
-import * as systems from '~/systems'
 
 export class EntityManager {
   entities: { [key: string]: Entity }
@@ -12,16 +10,7 @@ export class EntityManager {
     this.toDelete = []
   }
 
-  update(g: Game, dt: number): void {
-    systems.transformInit(g)
-    systems.motion(g, dt)
-    systems.wallCollider(g)
-    systems.shooter(g, dt)
-    systems.damager(g)
-    systems.damageable(g)
-    systems.playfieldClamping(g)
-    systems.prerender(g)
-
+  update(): void {
     this.toDelete.forEach((id) => delete this.entities[id])
     this.toDelete = []
   }

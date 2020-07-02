@@ -108,6 +108,15 @@ export class Canvas2DRenderer implements IRenderer {
         this.ctx.moveTo(vfrom[0], vfrom[1])
         this.ctx.lineTo(vto[0], vto[1])
         this.ctx.stroke()
+        break
+      }
+
+      case Primitive.TEXT: {
+        const vpos = vec2.transformMat2d(vec2.create(), r.pos, this.transform)
+        this.ctx.font = r.font
+        this.ctx.fillStyle = r.style
+        this.ctx.fillText(r.text, vpos[0], vpos[1])
+        break
       }
     }
   }

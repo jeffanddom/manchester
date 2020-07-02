@@ -26,8 +26,9 @@
     "jest": "^26.0.1",
     "lodash": "^4.17.15",
     "parcel": "^1.12.4",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": ">= 16.8.0",
+    "react-dom": ">= 16.8.0",
+    "react-is": ">= 16.8.0",
     "styled-components": "^5.1.1",
     "ts-jest": "^26.1.0",
     "uuid": "^8.0.0"

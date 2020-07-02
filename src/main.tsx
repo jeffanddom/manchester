@@ -3,11 +3,18 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { maps } from '~/assets/maps'
-import { Game } from '~/Game'
+import { Game, GameState } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { getCurrentMap } from '~/storage'
 import { Controls } from '~/ui/Controls'
 import * as time from '~/util/time'
+
+declare global {
+  interface Window {
+    g: Game
+    game: Game
+  }
+}
 
 const htmlNode = document.getElementById('controls')
 ReactDOM.render(<Controls />, htmlNode)
@@ -19,7 +26,11 @@ canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
 const map = maps[getCurrentMap() || 'bigMap']
+
 const game = new Game(canvas, Map.fromRaw(map))
+game.setState(GameState.Running)
+window.g = window.game = game // expose game to console
+
 let prevFrameTime = time.current()
 
 function syncViewportSize() {

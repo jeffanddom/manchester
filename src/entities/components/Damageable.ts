@@ -4,10 +4,12 @@ import { Transform } from '~/entities/components/Transform'
 import { Hitbox } from '~/Hitbox'
 
 export class Damageable {
+  maxHealth: number
   health: number
   hitbox: Hitbox
 
   constructor(health: number, hitbox: Hitbox) {
+    this.maxHealth = health
     this.health = health
     this.hitbox = hitbox
   }

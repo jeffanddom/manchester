@@ -7,6 +7,7 @@ export enum Primitive {
   RECT = 1,
   CIRCLE = 2,
   LINE = 3,
+  TEXT = 4,
 }
 
 export interface Path {
@@ -39,7 +40,15 @@ export interface Line {
   width: number
 }
 
-export type Renderable = Path | Rect | Circle | Line
+export interface Text {
+  primitive: Primitive.TEXT
+  style: string
+  font: string
+  pos: vec2
+  text: string
+}
+
+export type Renderable = Path | Rect | Circle | Line | Text
 
 export interface IRenderer {
   clear(color: string): void

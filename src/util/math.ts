@@ -12,6 +12,10 @@ export const lerp = (min: number, max: number, alpha: number): number => {
   return min + alpha * (max - min)
 }
 
+export const inverseLerp = (min: number, max: number, pos: number): number => {
+  return (pos - min) / (max - min)
+}
+
 /**
  * Translate vector start by amount in a direction indicated by orientation.
  * orientation is interpreted as clockwise radians from north (negative y).
