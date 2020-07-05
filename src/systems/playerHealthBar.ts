@@ -1,12 +1,10 @@
-import { mat2d, vec2 } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import { Game } from '~/Game'
 import { Primitive } from '~/renderer/interfaces'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (g: Game): void => {
-  g.renderer.setTransform(mat2d.identity(mat2d.create()))
-
   const damageable = g.player.unwrap().damageable!
   const maxFill = 100
   const fill = lerp(
