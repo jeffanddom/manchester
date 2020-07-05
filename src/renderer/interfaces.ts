@@ -40,12 +40,20 @@ export interface Line {
   width: number
 }
 
+export enum TextAlign {
+  Min,
+  Center,
+  Max,
+}
+
 export interface Text {
   primitive: Primitive.TEXT
   style: string
   font: string
   pos: vec2
   text: string
+  hAlign: TextAlign
+  vAlign: TextAlign
 }
 
 export type Renderable = Path | Rect | Circle | Line | Text

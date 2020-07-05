@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
@@ -10,7 +10,12 @@ import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
-import { IRenderer, Primitive, Renderable } from '~/renderer/interfaces'
+import {
+  IRenderer,
+  Primitive,
+  Renderable,
+  TextAlign,
+} from '~/renderer/interfaces'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
 import { None, Option, Some } from '~/util/Option'
@@ -202,13 +207,19 @@ export class Game implements Game {
     }
     this.debugDrawRenderables = []
 
+    // Viewspace rendering
+
+    this.renderer.setTransform(mat2d.identity(mat2d.create()))
+
     systems.playerHealthBar(this)
 
     if (this.state === GameState.YouDied) {
       this.renderer.render({
         primitive: Primitive.TEXT,
         text: 'YOU DIED',
-        pos: vec2.fromValues(100, 100),
+        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+        hAlign: TextAlign.Center,
+        vAlign: TextAlign.Center,
         font: '48px serif',
         style: 'red',
       })
