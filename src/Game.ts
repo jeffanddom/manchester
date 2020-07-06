@@ -160,14 +160,14 @@ export class Game implements Game {
 
     systems.transformInit(this)
     systems.motion(this, dt)
-    systems.wallCollider(this)
-    systems.pickups(this)
 
     if (this.state === GameState.Running) {
       systems.playerMover(this, dt)
       systems.shooter(this, dt)
     }
 
+    systems.pickups(this)
+    systems.wallCollider(this)
     systems.damager(this)
     systems.damageable(this)
     systems.playfieldClamping(this)
