@@ -1,5 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { maps } from '~/assets/maps'
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
@@ -24,19 +25,24 @@ export enum GameState {
   None,
   Running,
   YouDied,
+  LevelComplete,
 }
+
+const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
   state: GameState
   nextState: Option<GameState>
-  map: Map
+
+  currentLevel: number
 
   renderer: IRenderer
 
   enableDebugDraw: boolean
   debugDrawRenderables: Renderable[]
 
-  terrain: terrain.Layer
+  map: Map
+  terrainLayer: terrain.Layer
   entities: EntityManager
   emitters: ParticleEmitter[]
 
@@ -46,21 +52,16 @@ export class Game implements Game {
   player: Option<Entity>
   camera: Camera
 
-  constructor(canvas: HTMLCanvasElement, map: Map) {
+  constructor(canvas: HTMLCanvasElement) {
     this.state = GameState.None
     this.nextState = None()
-    this.map = map
 
+    this.currentLevel = 0
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
 
     this.enableDebugDraw = false
     this.debugDrawRenderables = []
 
-    this.terrain = new terrain.Layer({
-      tileOrigin: map.origin,
-      tileDimensions: map.dimensions,
-      terrain: map.terrain,
-    })
     this.entities = new EntityManager()
     this.emitters = []
 
@@ -68,10 +69,16 @@ export class Game implements Game {
     this.mouse = new Mouse(canvas)
 
     this.player = None()
+    this.map = Map.empty()
+    this.terrainLayer = new terrain.Layer({
+      tileOrigin: vec2.create(),
+      tileDimensions: vec2.create(),
+      terrain: this.map.terrain,
+    })
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
-      this.terrain.minWorldPos(),
-      this.terrain.dimensions(),
+      vec2.create(),
+      vec2.create(),
     )
 
     document.addEventListener('keyup', (event) => {
@@ -90,6 +97,16 @@ export class Game implements Game {
     this.emitters = []
     this.player = None()
 
+    // Level setup
+    this.map = Map.fromRaw(gameProgression[this.currentLevel])
+    this.terrainLayer = new terrain.Layer({
+      tileOrigin: this.map.origin,
+      tileDimensions: this.map.dimensions,
+      terrain: this.map.terrain,
+    })
+    this.camera.minWorldPos = this.terrainLayer.minWorldPos()
+    this.camera.worldDimensions = this.terrainLayer.dimensions()
+
     // Populate entities
     for (let i = 0; i < this.map.dimensions[1]; i++) {
       for (let j = 0; j < this.map.dimensions[0]; j++) {
@@ -102,7 +119,7 @@ export class Game implements Game {
         if (entity.transform !== undefined) {
           entity.transform.position = vec2.add(
             vec2.create(),
-            this.terrain.minWorldPos(),
+            this.terrainLayer.minWorldPos(),
             vec2.fromValues(
               j * TILE_SIZE + TILE_SIZE * 0.5,
               i * TILE_SIZE + TILE_SIZE * 0.5,
@@ -132,14 +149,22 @@ export class Game implements Game {
         case GameState.Running:
           this.startPlay()
           break
+        case GameState.YouDied:
+          this.currentLevel = 0
+          break
+        case GameState.LevelComplete:
+          this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
+          break
       }
     })
 
     systems.transformInit(this)
     systems.motion(this, dt)
     systems.wallCollider(this)
+    systems.pickups(this)
 
     if (this.state === GameState.Running) {
+      systems.playerMover(this, dt)
       systems.shooter(this, dt)
     }
 
@@ -150,6 +175,16 @@ export class Game implements Game {
     if (this.state === GameState.YouDied) {
       // 'r' for restart
       if (this.keyboard.upKeys.has(82)) {
+        this.setState(GameState.Running)
+      }
+    }
+
+    if (this.state === GameState.Running) {
+      systems.levelCompletion(this)
+    }
+
+    if (this.state === GameState.LevelComplete) {
+      if (this.keyboard.upKeys.has(32)) {
         this.setState(GameState.Running)
       }
     }
@@ -174,7 +209,7 @@ export class Game implements Game {
 
     this.renderer.setTransform(this.camera.wvTransform())
 
-    this.terrain
+    this.terrainLayer
       .getRenderables(this.camera.getVisibleExtents())
       .forEach((r) => this.renderer.render(r))
     this.entities.getRenderables().forEach((r) => this.renderer.render(r))
@@ -222,6 +257,32 @@ export class Game implements Game {
         vAlign: TextAlign.Center,
         font: '48px serif',
         style: 'red',
+      })
+    }
+
+    if (this.state === GameState.LevelComplete) {
+      this.renderer.render({
+        primitive: Primitive.TEXT,
+        text: 'YOU WIN',
+        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+        hAlign: TextAlign.Center,
+        vAlign: TextAlign.Center,
+        font: '48px serif',
+        style: 'black',
+      })
+
+      this.renderer.render({
+        primitive: Primitive.TEXT,
+        text: 'Press space to continue',
+        pos: vec2.add(
+          vec2.create(),
+          vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+          vec2.fromValues(0, 50),
+        ),
+        hAlign: TextAlign.Center,
+        vAlign: TextAlign.Center,
+        font: '24px serif',
+        style: 'black',
       })
     }
   }

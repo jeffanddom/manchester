@@ -16,6 +16,13 @@ export class Map {
   terrain: (terrain.Type | null)[]
   entities: (entities.types.Type | null)[]
 
+  public static empty(): Map {
+    const m = new Map(vec2.fromValues(1, 1))
+    m.terrain = [terrain.Type.Grass]
+    m.entities = [null]
+    return m
+  }
+
   public static fromRaw(rawMap: RawMap): Map {
     const m = new Map(convert.toVec2(rawMap.dimensions))
 

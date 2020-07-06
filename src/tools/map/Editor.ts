@@ -46,6 +46,7 @@ const ENTITY_TYPES = [
   entities.types.Type.PLAYER,
   entities.types.Type.TURRET,
   entities.types.Type.WALL,
+  entities.types.Type.PICKUP_NADA,
 ]
 
 export class Editor {

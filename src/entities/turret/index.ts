@@ -23,8 +23,9 @@ export const makeTurret = (_model: {
   e.shooterScript = new ShooterScript()
 
   e.wall = true
+  e.enemy = true
   e.damageable = new Damageable(
-    10,
+    3,
     new Hitbox(
       vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
       vec2.fromValues(TILE_SIZE, TILE_SIZE),

@@ -4,7 +4,6 @@ import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { MotionScript } from '~/entities/player/MotionScript'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Hitbox } from '~/Hitbox'
@@ -17,7 +16,6 @@ export const makePlayer = (_model: {
   const shooterScript = new ShooterScript()
   const e = new Entity()
   e.transform = new Transform()
-  e.motionScript = new MotionScript()
   e.shooterScript = shooterScript
   e.wallCollider = true
   e.damageable = new Damageable(

@@ -5,6 +5,7 @@ import { Damageable } from './components/Damageable'
 import {
   IDamagerScript,
   IMotionScript,
+  IPickupScript,
   IPrerenderScript,
   IRenderable,
   IShooterScript,
@@ -23,11 +24,14 @@ export class Entity {
   damagerScript?: IDamagerScript
   enablePlayfieldClamping?: boolean
   prerenderScript?: IPrerenderScript
+  enemy: boolean
+  pickupScript?: IPickupScript
 
   constructor() {
     this.id = uuid.v4()
     this.wall = false
     this.wallCollider = false
     this.enablePlayfieldClamping = false
+    this.enemy = false
   }
 }

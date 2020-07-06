@@ -16,6 +16,11 @@ export interface IDamagerScript {
   update(transform: Transform, entityId: string, g: Game): void
 }
 
+export interface IPickupScript {
+  aabb(transform: Transform): [vec2, vec2]
+  update(g: Game): void
+}
+
 export interface IMotionScript {
   update(t: Transform, entityId: string, g: Game, dt: number): void
 }

@@ -1,5 +1,6 @@
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
+import { makeNadaPickup } from '~/entities/pickups/Nada'
 import { makePlayer } from '~/entities/player'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/Wall'
@@ -9,6 +10,7 @@ export enum Type {
   PLAYER = 'PLAYER',
   TURRET = 'TURRET',
   WALL = 'WALL',
+  NADA = 'NADA',
 }
 
 export const typeDefinitions = {
@@ -47,6 +49,19 @@ export const typeDefinitions = {
         [-TILE_SIZE * 0.5, TILE_SIZE * 0.5],
       ]),
       fillStyle: 'rgba(130, 130, 130, 1)',
+    },
+  },
+  [Type.NADA]: {
+    make: makeNadaPickup,
+    serialized: 'tktk',
+    model: {
+      path: path2.fromValues([
+        [0, -TILE_SIZE * 0.5],
+        [TILE_SIZE * 0.5, 0],
+        [0, TILE_SIZE * 0.5],
+        [-TILE_SIZE * 0.5, 0],
+      ]),
+      fillStyle: 'blue',
     },
   },
 }

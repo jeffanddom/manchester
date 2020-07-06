@@ -12,12 +12,12 @@ export const update = (g: Game): void => {
     vec2.max(
       e.transform.position,
       e.transform.position,
-      g.terrain.minWorldPos(),
+      g.terrainLayer.minWorldPos(),
     )
     vec2.min(
       e.transform.position,
       e.transform.position,
-      g.terrain.maxWorldPos(),
+      g.terrainLayer.maxWorldPos(),
     )
   }
 }
