@@ -110,8 +110,9 @@ export class Game implements Game {
     // Populate entities
     for (let i = 0; i < this.map.dimensions[1]; i++) {
       for (let j = 0; j < this.map.dimensions[0]; j++) {
-        const et = this.map.entities[i * this.map.dimensions[0] + j]
-        if (et === null) {
+        const et = this.map.entities2[`${j}:${i}`]
+
+        if (et === null || et === undefined) {
           continue
         }
 

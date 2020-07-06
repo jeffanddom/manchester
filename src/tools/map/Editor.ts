@@ -46,7 +46,7 @@ const ENTITY_TYPES = [
   entities.types.Type.PLAYER,
   entities.types.Type.TURRET,
   entities.types.Type.WALL,
-  entities.types.Type.PICKUP_NADA,
+  entities.types.Type.NADA,
 ]
 
 export class Editor {
@@ -175,9 +175,9 @@ export class Editor {
 
     if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
-        // delete terrain under cursor
+        // delete entity under cursor
         this.cursorTilePos.map((tpos) => {
-          this.map.entities[this.t2a(tpos)] = null
+          delete this.map.entities2[this.t2s(tpos)]
         })
 
         return
@@ -201,6 +201,7 @@ export class Editor {
     ) {
       this.cursorTilePos.map((tilePos) => {
         const n = this.t2a(tilePos)
+        const index = this.t2s(tilePos)
 
         // TODO: send these to an event stream a la Redux, for undo etc.
         switch (this.brush.mode) {
@@ -208,7 +209,7 @@ export class Editor {
             this.map.terrain[n] = this.brush.terrain
             break
           case BrushMode.ENTITY:
-            this.map.entities[n] = this.brush.entity
+            this.map.entities2[index] = this.brush.entity
             break
           default:
             throw new Error(`invalid brush mode ${this.brush.mode}`)
@@ -255,8 +256,10 @@ export class Editor {
     for (let i = nwTile[1]; i <= seTile[1]; i++) {
       for (let j = nwTile[0]; j <= seTile[0]; j++) {
         const tpos = vec2.fromValues(j, i)
-        const e = this.map.entities[this.t2a(tpos)]
-        if (e === null) {
+        const e = this.map.entities2[this.t2s(tpos)]
+
+        // FIXME: e === undefined only when scrolling to bottom of editor. off-by-one somewhere in the row count?
+        if (e === null || e === undefined) {
           continue
         }
 
@@ -296,6 +299,10 @@ export class Editor {
   t2a(tpos: vec2): number {
     const p = vec2.sub(vec2.create(), tpos, this.map.origin)
     return p[1] * this.map.dimensions[0] + p[0]
+  }
+  t2s(tpos: vec2): string {
+    const p = vec2.sub(vec2.create(), tpos, this.map.origin)
+    return `${p[0]}:${p[1]}`
   }
 
   renderTile(tpos: vec2, fillStyle: string): void {

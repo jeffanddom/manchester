@@ -11,8 +11,9 @@ import * as time from '~/util/time'
 
 const canvas = document.createElement('canvas')
 document.getElementById('editor')!.prepend(canvas)
-canvas.width = 400
-canvas.height = 400
+
+canvas.width = 500
+canvas.height = 500
 
 const map = loadMap().mapOrElse(
   () => {
