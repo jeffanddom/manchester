@@ -46,3 +46,7 @@ export const getAngle = (from: vec2, to: vec2): number => {
   const offset = vec2.sub(vec2.create(), to, from)
   return Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
 }
+
+export const vec2FromValuesBatch = (raw: [number, number][]): Array<vec2> => {
+  return raw.map((r) => vec2.fromValues(r[0], r[1]))
+}

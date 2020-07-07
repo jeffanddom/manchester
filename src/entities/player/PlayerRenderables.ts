@@ -1,26 +1,26 @@
-import { mat2d } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { IRenderable } from '~/entities/components/interfaces'
 import { Entity } from '~/entities/Entity'
 import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Primitive, Renderable } from '~/renderer/interfaces'
-import { path2 } from '~/util/path2'
+import { vec2FromValuesBatch } from '~/util/math'
 
 export class PlayerRenderables implements IRenderable {
-  bodyPath: path2
-  turretPath: path2
+  bodyPath: Array<vec2>
+  turretPath: Array<vec2>
   shooter: ShooterScript
 
   constructor(shooter: ShooterScript) {
     this.shooter = shooter
-    this.turretPath = path2.fromValues([
+    this.turretPath = vec2FromValuesBatch([
       [-TILE_SIZE * 0.1, -TILE_SIZE * 0.7],
       [TILE_SIZE * 0.1, -TILE_SIZE * 0.7],
       [TILE_SIZE * 0.2, TILE_SIZE * 0.3],
       [-TILE_SIZE * 0.2, TILE_SIZE * 0.3],
     ])
-    this.bodyPath = path2.fromValues([
+    this.bodyPath = vec2FromValuesBatch([
       [-TILE_SIZE * 0.3, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.3, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.4, TILE_SIZE * 0.5],

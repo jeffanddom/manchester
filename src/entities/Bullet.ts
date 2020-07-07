@@ -8,9 +8,8 @@ import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { aabbOverlap, radialTranslate2 } from '~/util/math'
+import { aabbOverlap, radialTranslate2, vec2FromValuesBatch } from '~/util/math'
 import { Some } from '~/util/Option'
-import { path2 } from '~/util/path2'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 
@@ -116,7 +115,7 @@ export const makeBullet = ({
 
   e.motionScript = new MotionScript(vec2.clone(position), range)
   e.renderable = new PathRenderable(
-    path2.fromValues([
+    vec2FromValuesBatch([
       [0, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
       [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],

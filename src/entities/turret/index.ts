@@ -8,10 +8,9 @@ import { MotionScript } from '~/entities/turret/MotionScript'
 import { ShooterScript } from '~/entities/turret/ShooterScript'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Hitbox } from '~/Hitbox'
-import { path2 } from '~/util/path2'
 
 export const makeTurret = (_model: {
-  path: path2
+  path: Array<vec2>
   fillStyle: string
 }): Entity => {
   const transform = new Transform()
