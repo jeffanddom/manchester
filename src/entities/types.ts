@@ -4,7 +4,7 @@ import { makeNadaPickup } from '~/entities/pickups/Nada'
 import { makePlayer } from '~/entities/player'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/Wall'
-import { path2 } from '~/util/path2'
+import { vec2FromValuesBatch } from '~/util/math'
 
 export enum Type {
   PLAYER = 'PLAYER',
@@ -18,7 +18,7 @@ export const typeDefinitions = {
     make: makePlayer,
     serialized: 'p',
     model: {
-      path: path2.fromValues([
+      path: vec2FromValuesBatch([
         [0, -TILE_SIZE * 0.5],
         [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
         [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
@@ -30,7 +30,7 @@ export const typeDefinitions = {
     make: makeTurret,
     serialized: 't',
     model: {
-      path: path2.fromValues([
+      path: vec2FromValuesBatch([
         [0, -TILE_SIZE * 0.5],
         [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
         [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
@@ -42,7 +42,7 @@ export const typeDefinitions = {
     make: makeWall,
     serialized: 'w',
     model: {
-      path: path2.fromValues([
+      path: vec2FromValuesBatch([
         [-TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
         [TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
         [TILE_SIZE * 0.5, TILE_SIZE * 0.5],
@@ -55,7 +55,7 @@ export const typeDefinitions = {
     make: makeNadaPickup,
     serialized: 'tktk',
     model: {
-      path: path2.fromValues([
+      path: vec2FromValuesBatch([
         [0, -TILE_SIZE * 0.5],
         [TILE_SIZE * 0.5, 0],
         [0, TILE_SIZE * 0.5],

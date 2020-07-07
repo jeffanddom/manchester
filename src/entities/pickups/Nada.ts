@@ -7,7 +7,6 @@ import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
-import { path2 } from '~/util/path2'
 
 class PickupScript implements IPickupScript {
   hitbox: Hitbox
@@ -25,7 +24,7 @@ class PickupScript implements IPickupScript {
 }
 
 export const makeNadaPickup = (model: {
-  path: path2
+  path: Array<vec2>
   fillStyle: string
 }): Entity => {
   const e = new Entity()

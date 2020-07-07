@@ -7,10 +7,9 @@ import { Entity } from '~/entities/Entity'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Hitbox } from '~/Hitbox'
-import { path2 } from '~/util/path2'
 
 export const makePlayer = (_model: {
-  path: path2
+  path: Array<vec2>
   fillStyle: string
 }): Entity => {
   const shooterScript = new ShooterScript()

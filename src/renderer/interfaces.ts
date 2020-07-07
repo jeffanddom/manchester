@@ -1,7 +1,5 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { path2 } from '~/util/path2'
-
 export enum Primitive {
   PATH = 0,
   RECT = 1,
@@ -14,7 +12,7 @@ export interface Path {
   primitive: Primitive.PATH
   fillStyle: string
   mwTransform: mat2d
-  path: path2 // modelspace coordinates
+  path: Array<vec2> // modelspace coordinates
 }
 
 export interface Rect {

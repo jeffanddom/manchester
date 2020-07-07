@@ -1,13 +1,14 @@
+import { vec2 } from 'gl-matrix'
+
 import { IRenderable } from '~/entities/components/interfaces'
 import { Entity } from '~/entities/Entity'
 import { Primitive, Renderable } from '~/renderer/interfaces'
-import { path2 } from '~/util/path2'
 
 export class PathRenderable implements IRenderable {
-  path: path2
+  path: Array<vec2>
   fillStyle: string
 
-  constructor(path: path2, fillStyle: string) {
+  constructor(path: Array<vec2>, fillStyle: string) {
     this.path = path
     this.fillStyle = fillStyle
   }

@@ -9,7 +9,6 @@ import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 import { lerp } from '~/util/math'
-import { path2 } from '~/util/path2'
 
 const WALL_HEALTH = 4.0
 
@@ -21,7 +20,10 @@ class DisplayWallDamage implements IPrerenderScript {
   }
 }
 
-export const makeWall = (model: { path: path2; fillStyle: string }): Entity => {
+export const makeWall = (model: {
+  path: Array<vec2>
+  fillStyle: string
+}): Entity => {
   const e = new Entity()
   e.transform = new Transform()
   e.wall = true
