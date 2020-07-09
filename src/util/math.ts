@@ -47,6 +47,28 @@ export const getAngle = (from: vec2, to: vec2): number => {
   return Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
 }
 
+const normalizeAngle = (theta: number): number => {
+  if (theta > Math.PI) {
+    return theta - 2 * Math.PI
+  } else if (theta < -Math.PI) {
+    return theta + 2 * Math.PI
+  }
+  return theta
+}
+
+export const rotateUntil = (params: {
+  from: number
+  to: number
+  amount: number
+}): number => {
+  const { from, to, amount } = params
+  const diff = normalizeAngle(to - from)
+
+  return normalizeAngle(
+    from + (amount >= Math.abs(diff) ? diff : Math.sign(diff) * amount),
+  )
+}
+
 export const vec2FromValuesBatch = (raw: [number, number][]): Array<vec2> => {
   return raw.map((r) => vec2.fromValues(r[0], r[1]))
 }
