@@ -1,7 +1,6 @@
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
-import { radialTranslate2 } from '~/util/math'
-import { rotate } from '~/util/rotator'
+import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
 const PLAYER_ROT_SPEED = Math.PI
@@ -42,7 +41,7 @@ export const update = (game: Game, dt: number): void => {
   }
 
   if (angle !== undefined) {
-    transform.orientation = rotate({
+    transform.orientation = rotateUntil({
       from: transform.orientation,
       to: angle,
       amount: PLAYER_ROT_SPEED * dt,
