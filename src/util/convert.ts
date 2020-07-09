@@ -4,15 +4,21 @@ import { None, Option, Some } from '~/util/Option'
 
 export type RawVec2 = { '0': number; '1': number }
 
-export const toIntEnum = <T>(e: T, raw: number): Option<T[keyof T]> => {
-  if ((<any>e)[raw] === undefined) {
+export const toIntEnum = <T extends { [key: number]: number | string }>(
+  e: T,
+  raw: number,
+): Option<T[keyof T]> => {
+  if (e[raw] === undefined) {
     return None()
   }
   return Some((raw as unknown) as T[keyof T])
 }
 
-export const toStringEnum = <T>(e: T, raw: string): Option<T[keyof T]> => {
-  if (Object.keys(e).find((k) => (<any>e)[k] === raw) === undefined) {
+export const toStringEnum = <T extends { [key: string]: string }>(
+  e: T,
+  raw: string,
+): Option<T[keyof T]> => {
+  if (Object.keys(e).find((k) => e[k] === raw) === undefined) {
     return None()
   }
   return Some((raw as unknown) as T[keyof T])
