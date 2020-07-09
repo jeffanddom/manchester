@@ -43,10 +43,9 @@ export const update = (game: Game, dt: number): void => {
 
   if (angle !== undefined) {
     transform.orientation = rotate({
-      from: transform,
+      from: transform.orientation,
       to: angle,
-      speed: PLAYER_ROT_SPEED,
-      dt,
+      amount: PLAYER_ROT_SPEED * dt,
     })
 
     radialTranslate2(
