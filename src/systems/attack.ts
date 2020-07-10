@@ -8,7 +8,7 @@ import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
-import { None, Some } from '~/util/Option'
+import { Some } from '~/util/Option'
 
 export const update = (g: Game): void => {
   const damagers: [string, Damager, Transform][] = []
@@ -45,24 +45,16 @@ export const update = (g: Game): void => {
       ]
     })
 
-    let hit = None<[string, Damageable]>()
-    for (const j in damageables) {
-      const [targetId, damageable, targetTransform] = damageables[j]
-
-      if (
+    const hit = damageables.find(
+      ([targetId, damageable, targetTransform]) =>
         attackerId !== targetId &&
-        aabbOverlap(damageable.aabb(targetTransform), attackerAabb)
-      ) {
-        hit = Some([targetId, damageable])
-        break
-      }
-    }
-
-    if (!hit.isSome()) {
+        aabbOverlap(damageable.aabb(targetTransform), attackerAabb),
+    )
+    if (!hit) {
       continue
     }
 
-    const [targetId, damageable] = hit.unwrap()
+    const [targetId, damageable] = hit
 
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
