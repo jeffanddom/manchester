@@ -1,9 +1,8 @@
 import * as uuid from 'uuid'
 
-import { Damageable } from './components/Damageable'
-
+import { Damageable } from '~/entities/components/Damageable'
+import { Damager } from '~/entities/components/Damager'
 import {
-  IDamagerScript,
   IMotionScript,
   IPickupScript,
   IPrerenderScript,
@@ -27,7 +26,7 @@ export class Entity {
   shooterScript?: IShooterScript
   renderable?: IRenderable
   damageable?: Damageable
-  damagerScript?: IDamagerScript
+  damager?: Damager
   prerenderScript?: IPrerenderScript
   pickupScript?: IPickupScript
 

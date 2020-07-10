@@ -11,11 +11,6 @@ export interface IRenderable {
   getRenderables(e: Entity): Renderable[]
 }
 
-export interface IDamagerScript {
-  aabb(transform: Transform): [vec2, vec2]
-  update(transform: Transform, entityId: string, g: Game): void
-}
-
 export interface IPickupScript {
   aabb(transform: Transform): [vec2, vec2]
   update(g: Game): void

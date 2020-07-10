@@ -168,7 +168,7 @@ export class Game implements Game {
 
     systems.pickups(this)
     systems.wallCollider(this)
-    systems.damager(this)
+    systems.attack(this)
     systems.damageable(this)
     systems.playfieldClamping(this)
 
