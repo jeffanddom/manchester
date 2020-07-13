@@ -163,6 +163,7 @@ export class Game implements Game {
 
     if (this.state === GameState.Running) {
       systems.playerMover(this, dt)
+      systems.pilot(this, dt)
       systems.shooter(this, dt)
     }
 
@@ -202,6 +203,7 @@ export class Game implements Game {
     this.camera.update(dt)
 
     this.keyboard.update()
+    this.mouse.update()
   }
 
   render(): void {

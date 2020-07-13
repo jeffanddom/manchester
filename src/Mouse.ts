@@ -18,10 +18,12 @@ function mouseButtonFromRaw(raw: number): MouseButton | undefined {
 export class Mouse {
   private pos: Option<vec2>
   private down: Set<MouseButton>
+  private up: Set<MouseButton>
 
   constructor(element: HTMLElement) {
     this.pos = None()
     this.down = new Set()
+    this.up = new Set()
 
     element.addEventListener('mousemove', (event) => {
       this.pos = Some(vec2.fromValues(event.offsetX, event.offsetY))
@@ -37,7 +39,10 @@ export class Mouse {
     element.addEventListener('mouseup', (event) => {
       const b = mouseButtonFromRaw(event.button)
       if (b !== undefined) {
-        this.down.delete(b)
+        if (this.down.has(b)) {
+          this.up.add(b)
+          this.down.delete(b)
+        }
       }
     })
 
@@ -60,5 +65,13 @@ export class Mouse {
 
   isDown(b: MouseButton): boolean {
     return this.down.has(b)
+  }
+
+  isUp(b: MouseButton): boolean {
+    return this.up.has(b)
+  }
+
+  update(): void {
+    this.up.clear()
   }
 }

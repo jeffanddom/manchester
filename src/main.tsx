@@ -13,6 +13,9 @@ declare global {
   }
 }
 
+// disable right clicks
+document.addEventListener('contextmenu', (e) => e.preventDefault())
+
 // const htmlNode = document.getElementById('controls')
 // ReactDOM.render(<Controls />, htmlNode)
 
