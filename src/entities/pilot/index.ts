@@ -8,10 +8,10 @@ import { Entity } from '~/entities/Entity'
 import { Destination } from '~/entities/pilot/Destination'
 import { vec2FromValuesBatch } from '~/util/math'
 
-export const make = (destination: vec2): Entity => {
+export const make = (destination: vec2, path: vec2[]): Entity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.destination = new Destination(destination)
+  e.destination = new Destination(destination, path)
   e.renderable = new PathRenderable(
     vec2FromValuesBatch([
       [0, -TILE_SIZE * 0.25],
