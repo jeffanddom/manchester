@@ -6,10 +6,17 @@ import { PilotState } from '~/entities/pilot/Pilot'
 import { Game } from '~/Game'
 import { PathFinder } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
+import { Primitive, Renderable } from '~/renderer/interfaces'
 import { tileCoords } from '~/util/tileMath'
 
+let pathfinder: PathFinder
+let currentPath = []
+
 export const update = (g: Game, dt: number): void => {
-  const pathfinder = new PathFinder(g.map)
+  if (pathfinder === undefined || pathfinder.map != g.map) {
+    pathfinder = new PathFinder(g.map)
+  }
+
   const playerTilePos = tileCoords(g.player.unwrap().transform!.position)
 
   // spawn pilot
@@ -17,7 +24,10 @@ export const update = (g: Game, dt: number): void => {
     const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
 
     // Generate path to tile position
-    const path = pathfinder.discover(playerTilePos, tileCoords(destPos))
+    const path = (currentPath = pathfinder.discover(
+      playerTilePos,
+      tileCoords(destPos),
+    ))
 
     const pilot = make(destPos, g.player.unwrap().id, path)
     pilot.transform!.position = vec2.clone(
@@ -48,7 +58,7 @@ export const update = (g: Game, dt: number): void => {
       !vec2.equals(e.pilot.target, g.player.unwrap().transform!.position)
     ) {
       e.pilot.target = vec2.clone(g.player.unwrap().transform!.position)
-      e.pilot.path = pathfinder.discover(
+      e.pilot.path = currentPath = pathfinder.discover(
         tileCoords(e.transform.position),
         tileCoords(e.pilot.target),
       )
@@ -74,4 +84,20 @@ export const update = (g: Game, dt: number): void => {
 
     vec2.add(e.transform.position, e.transform.position, disp)
   }
+
+  g.debugDraw(() => {
+    const renderables: Renderable[] = []
+    for (const key in pathfinder.nodes) {
+      const [x, y] = key
+        .split(':')
+        .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
+      renderables.push({
+        primitive: Primitive.CIRCLE,
+        fillStyle: 'rgba(128,128,128,0.45)',
+        pos: vec2.fromValues(x, y),
+        radius: TILE_SIZE / 8,
+      })
+    }
+    return renderables
+  })
 }

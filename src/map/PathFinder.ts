@@ -20,7 +20,6 @@ const newNode = (): Node => {
 
 export class PathFinder {
   map: Map
-
   nodes: { [key: string]: Node }
 
   constructor(map: Map) {
@@ -104,7 +103,7 @@ export class PathFinder {
     neighbors.forEach(([dx, dy]) => {
       // t2a function from editor
       const p = vec2.sub(vec2.create(), [x, y], this.map.origin)
-      let score = 24
+      let score = 1
 
       if (
         dx != 0 &&
@@ -122,7 +121,7 @@ export class PathFinder {
       }
       if (dx != 0 && dy != 0) {
         // Diagonal movement
-        score = Math.SQRT2 * 24
+        score = Math.SQRT2
         if (
           this.map.entities[
             (p[1] + dy) * this.map.dimensions[0] + (p[0] + dx)
