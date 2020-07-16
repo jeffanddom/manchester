@@ -78,7 +78,7 @@ export class PathFinder {
         .sort((a, b) => {
           const nodeA = this.nodes[vecToPos(a)]
           const nodeB = this.nodes[vecToPos(b)]
-          return nodeA!.distance - nodeB!.distance
+          return nodeA.score + nodeA.distance - (nodeB.score + nodeB.distance)
         })
     }
 
@@ -91,40 +91,69 @@ export class PathFinder {
     const neighborList: [number, number][] = []
 
     const cur = this.nodes[vecToPos(coord)]
-    ;[
-      [x, y - 1], // North
-      [x, y + 1], // South
-      [x - 1, y], // West
-      [x + 1, y], // East
-      // TODO - add diagonals?
-    ].forEach(([nx, ny]) => {
-      // t2a function from editor
-      const p = vec2.sub(vec2.create(), [nx, ny], this.map.origin)
-      if (
-        this.map.entities[p[1] * this.map.dimensions[0] + p[0]] != Type.WALL
-      ) {
-        const pos = vecToPos([nx, ny])
+    const neighbors: [number, number][] = [
+      [0, -1], // North
+      [0, +1], // South
+      [-1, 0], // West
+      [+1, 0], // East
+      [-1, -1], // NW
+      [+1, -1], // NE
+      [-1, +1], // SW
+      [+1, +1], // SE
+    ]
 
-        let neighborNode = this.nodes[pos]
-        if (neighborNode) {
-          // Update score and previous node
-          // if a better path is found
-          if (neighborNode.score > cur.score + 1) {
-            neighborNode.prev = [x, y]
-            neighborNode.score = cur.score + 1
-            this.nodes[pos] = neighborNode
-          }
-        } else {
-          // If we haven't seen this node before, record it on the
-          // map, and add it to our potential search space
-          neighborNode = {
-            prev: [x, y],
-            score: cur.score + 1,
-            distance: vec2.distance(vec2.fromValues(nx, ny), to),
-          }
-          this.nodes[pos] = neighborNode
-          neighborList.push([nx, ny])
+    neighbors.forEach(([dx, dy]) => {
+      // t2a function from editor
+      const p = vec2.sub(vec2.create(), [x, y], this.map.origin)
+      let score = 24
+
+      if (
+        dx != 0 &&
+        this.map.entities[p[1] * this.map.dimensions[0] + p[0] + dx] ==
+          Type.WALL
+      ) {
+        return
+      }
+      if (
+        dy != 0 &&
+        this.map.entities[(p[1] + dy) * this.map.dimensions[0] + p[0]] ==
+          Type.WALL
+      ) {
+        return
+      }
+      if (dx != 0 && dy != 0) {
+        // Diagonal movement
+        score = Math.SQRT2 * 24
+        if (
+          this.map.entities[
+            (p[1] + dy) * this.map.dimensions[0] + (p[0] + dx)
+          ] == Type.WALL
+        ) {
+          return
         }
+      }
+
+      const pos = vecToPos([x + dx, y + dy])
+
+      let neighborNode = this.nodes[pos]
+      if (neighborNode) {
+        // Update score and previous node
+        // if a better path is found
+        if (neighborNode.score > cur.score + score) {
+          neighborNode.prev = [x, y]
+          neighborNode.score = cur.score + score
+          this.nodes[pos] = neighborNode
+        }
+      } else {
+        // If we haven't seen this node before, record it on the
+        // map, and add it to our potential search space
+        neighborNode = {
+          prev: [x, y],
+          score: cur.score + score,
+          distance: vec2.distance(vec2.fromValues(x + dx, y + dy), to),
+        }
+        this.nodes[pos] = neighborNode
+        neighborList.push([x + dx, y + dy])
       }
     })
 
