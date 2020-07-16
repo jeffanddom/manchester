@@ -53,12 +53,11 @@ export class PathFinder {
 
       if (vec2.equals(checkCoord, to)) {
         // Success!
-
         const path = [vec2.fromValues(...checkCoord)]
 
         // Build path to destination
         let node = this.nodes[vecToPos(checkCoord)]
-        while (node.prev) {
+        while (node.prev && !vec2.equals(node.prev, from)) {
           path.push(vec2.fromValues(...node.prev))
           node = this.nodes[vecToPos(node.prev)]
         }

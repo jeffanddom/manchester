@@ -2,34 +2,24 @@ import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/pilot'
+import { PilotState } from '~/entities/pilot/Pilot'
 import { Game } from '~/Game'
 import { PathFinder } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
+import { tileCoords } from '~/util/tileMath'
 
 export const update = (g: Game, dt: number): void => {
+  const pathfinder = new PathFinder(g.map)
+  const playerTilePos = tileCoords(g.player.unwrap().transform!.position)
+
   // spawn pilot
   if (g.mouse.isUp(MouseButton.RIGHT) && g.mouse.getPos().isSome()) {
     const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
 
-    // Find tile positions of pilot and destination
-    const playerTilePos = vec2.floor(
-      vec2.create(),
-      vec2.scale(
-        vec2.create(),
-        g.player.unwrap().transform!.position,
-        1 / TILE_SIZE,
-      ),
-    )
-    const tilePos = vec2.floor(
-      vec2.create(),
-      vec2.scale(vec2.create(), destPos, 1 / TILE_SIZE),
-    )
-
     // Generate path to tile position
-    const pathfinder = new PathFinder(g.map)
-    const path = pathfinder.discover(playerTilePos, tilePos)
+    const path = pathfinder.discover(playerTilePos, tileCoords(destPos))
 
-    const pilot = make(destPos, path)
+    const pilot = make(destPos, g.player.unwrap().id, path)
     pilot.transform!.position = vec2.clone(
       g.player.unwrap().transform!.position,
     )
@@ -39,27 +29,37 @@ export const update = (g: Game, dt: number): void => {
   // destination system
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
-    if (!e.destination || !e.transform) {
+    if (!e.pilot || !e.transform) {
       continue
     }
 
     // If we're at a path point, remove the head of the path and
     // keep moving
-    if (vec2.equals(e.transform.position, e.destination.path[0])) {
-      e.destination.path.shift()
+    if (vec2.equals(e.transform.position, e.pilot.path[0])) {
+      e.pilot.path.shift()
     }
 
-    // Remove destination and continue once we've reached the end of a path
-    if (e.destination.path.length == 0) {
-      e.destination = undefined
+    if (e.pilot.state == PilotState.leaveHost && e.pilot.path.length == 0) {
+      e.pilot.state = PilotState.returnToHost
+    }
+
+    if (
+      e.pilot.state == PilotState.returnToHost &&
+      !vec2.equals(e.pilot.target, g.player.unwrap().transform!.position)
+    ) {
+      e.pilot.target = vec2.clone(g.player.unwrap().transform!.position)
+      e.pilot.path = pathfinder.discover(
+        tileCoords(e.transform.position),
+        tileCoords(e.pilot.target),
+      )
+    }
+
+    if (e.pilot.state == PilotState.returnToHost && e.pilot.path.length == 0) {
+      g.entities.markForDeletion(id)
       continue
     }
 
-    const d = vec2.sub(
-      vec2.create(),
-      e.destination.path[0],
-      e.transform.position,
-    )
+    const d = vec2.sub(vec2.create(), e.pilot.path[0], e.transform.position)
     const dlen = vec2.len(d)
     if (glMatrix.equals(dlen, 0)) {
       continue
