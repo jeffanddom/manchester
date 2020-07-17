@@ -1,6 +1,6 @@
 import * as uuid from 'uuid'
 
-import { Destination } from './pilot/Destination'
+import { Pilot } from './pilot/Pilot'
 
 import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
@@ -31,7 +31,7 @@ export class Entity {
   damager?: Damager
   prerenderScript?: IPrerenderScript
   pickupScript?: IPickupScript
-  destination?: Destination
+  pilot?: Pilot
 
   constructor() {
     this.id = uuid.v4()
