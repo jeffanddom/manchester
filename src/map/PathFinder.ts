@@ -14,10 +14,6 @@ const vecToPos = (v: vec2): string => {
   return `${v[0]}:${v[1]}`
 }
 
-const newNode = (): Node => {
-  return { score: Number.MAX_VALUE, distance: Number.MAX_VALUE, prev: null }
-}
-
 export class PathFinder {
   map: Map
   nodes: { [key: string]: Node }
@@ -35,7 +31,7 @@ export class PathFinder {
     let toVisit: [number, number][] = []
 
     // Set up starting node
-    const startNode = newNode()
+    const startNode = { score: Number.MAX_VALUE, distance: Number.MAX_VALUE }
     startNode.distance = vec2.distance(from, to)
     startNode.score = 0
     toVisit.push([from[0], from[1]])

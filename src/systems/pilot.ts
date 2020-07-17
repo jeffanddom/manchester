@@ -10,7 +10,6 @@ import { Primitive, Renderable } from '~/renderer/interfaces'
 import { tileCoords } from '~/util/tileMath'
 
 let pathfinder: PathFinder
-let currentPath = []
 
 export const update = (g: Game, dt: number): void => {
   if (pathfinder === undefined || pathfinder.map != g.map) {
@@ -24,10 +23,7 @@ export const update = (g: Game, dt: number): void => {
     const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
 
     // Generate path to tile position
-    const path = (currentPath = pathfinder.discover(
-      playerTilePos,
-      tileCoords(destPos),
-    ))
+    const path = pathfinder.discover(playerTilePos, tileCoords(destPos))
 
     const pilot = make(destPos, g.player.unwrap().id, path)
     pilot.transform!.position = vec2.clone(
@@ -58,7 +54,7 @@ export const update = (g: Game, dt: number): void => {
       !vec2.equals(e.pilot.target, g.player.unwrap().transform!.position)
     ) {
       e.pilot.target = vec2.clone(g.player.unwrap().transform!.position)
-      e.pilot.path = currentPath = pathfinder.discover(
+      e.pilot.path = pathfinder.discover(
         tileCoords(e.transform.position),
         tileCoords(e.pilot.target),
       )
