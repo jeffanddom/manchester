@@ -5,7 +5,8 @@
     "start": "parcel src/index.html",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "test": "jest"
+    "test": "jest",
+    "clean": "rm -rf .dist cache"
   },
   "repository": {
     "type": "git",
