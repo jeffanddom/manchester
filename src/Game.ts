@@ -163,7 +163,7 @@ export class Game implements Game {
 
     if (this.state === GameState.Running) {
       systems.playerMover(this, dt)
-      systems.pilot(this, dt)
+      systems.builder(this, dt)
       systems.shooter(this, dt)
       systems.turret(this, dt)
     }

@@ -1,5 +1,6 @@
 import * as uuid from 'uuid'
 
+import { Builder } from '~/entities/builder/Builder'
 import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
 import {
@@ -10,7 +11,6 @@ import {
   IShooterScript,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
-import { Pilot } from '~/entities/pilot/Pilot'
 import { Team } from '~/entities/team'
 import { Turret } from '~/entities/turret/Turret'
 
@@ -32,7 +32,7 @@ export class Entity {
   damager?: Damager
   prerenderScript?: IPrerenderScript
   pickupScript?: IPickupScript
-  pilot?: Pilot
+  builder?: Builder
   turret?: Turret
 
   constructor() {

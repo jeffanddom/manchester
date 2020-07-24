@@ -1,8 +1,8 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { make } from '~/entities/pilot'
-import { PilotState } from '~/entities/pilot/Pilot'
+import { make } from '~/entities/builder'
+import { BuilderState } from '~/entities/builder/Builder'
 import { Team } from '~/entities/team'
 import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
@@ -20,60 +20,66 @@ export const update = (g: Game, dt: number): void => {
 
   const playerTilePos = tileCoords(g.player.unwrap().transform!.position)
 
-  // spawn pilot
+  // spawn builder
   if (g.mouse.isUp(MouseButton.RIGHT) && g.mouse.getPos().isSome()) {
     const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
 
     // Generate path to tile position
     const path = pathfinder.discover(playerTilePos, tileCoords(destPos))
 
-    const pilot = make(destPos, g.player.unwrap().id, path)
-    pilot.transform!.position = vec2.clone(
+    const builder = make(destPos, g.player.unwrap().id, path)
+    builder.transform!.position = vec2.clone(
       g.player.unwrap().transform!.position,
     )
-    g.entities.register(pilot)
+    g.entities.register(builder)
   }
 
   // destination system
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
-    if (!e.pilot || !e.transform) {
+    if (!e.builder || !e.transform) {
       continue
     }
 
     // If we're at a path point, remove the head of the path and
     // keep moving
-    if (vec2.equals(e.transform.position, e.pilot.path[0])) {
-      e.pilot.path.shift()
+    if (vec2.equals(e.transform.position, e.builder.path[0])) {
+      e.builder.path.shift()
     }
 
-    if (e.pilot.state == PilotState.leaveHost && e.pilot.path.length == 0) {
+    if (
+      e.builder.state == BuilderState.leaveHost &&
+      e.builder.path.length == 0
+    ) {
       // create turret
       const turret = makeTurret({ path: [], fillStyle: '' })
       turret.team = Team.Friendly
       turret.transform!.position = tileToWorld(tileCoords(e.transform.position))
       g.entities.register(turret)
 
-      e.pilot.state = PilotState.returnToHost
+      e.builder.state = BuilderState.returnToHost
     }
 
     if (
-      e.pilot.state == PilotState.returnToHost &&
-      !vec2.equals(e.pilot.target, g.player.unwrap().transform!.position)
+      e.builder.state == BuilderState.returnToHost &&
+      !vec2.equals(e.builder.target, g.player.unwrap().transform!.position)
     ) {
-      e.pilot.target = vec2.clone(g.player.unwrap().transform!.position)
-      e.pilot.path = pathfinder.discover(
+      e.builder.target = vec2.clone(g.player.unwrap().transform!.position)
+      e.builder.path = pathfinder.discover(
         tileCoords(e.transform.position),
-        tileCoords(e.pilot.target),
+        tileCoords(e.builder.target),
       )
     }
 
-    if (e.pilot.state == PilotState.returnToHost && e.pilot.path.length == 0) {
+    if (
+      e.builder.state == BuilderState.returnToHost &&
+      e.builder.path.length == 0
+    ) {
       g.entities.markForDeletion(id)
       continue
     }
 
-    const d = vec2.sub(vec2.create(), e.pilot.path[0], e.transform.position)
+    const d = vec2.sub(vec2.create(), e.builder.path[0], e.transform.position)
     const dlen = vec2.len(d)
     if (glMatrix.equals(dlen, 0)) {
       continue
