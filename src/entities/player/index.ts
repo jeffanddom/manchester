@@ -6,6 +6,7 @@ import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { ShooterScript } from '~/entities/player/ShooterScript'
+import { Team } from '~/entities/team'
 import { Hitbox } from '~/Hitbox'
 
 export const makePlayer = (_model: {
@@ -27,6 +28,7 @@ export const makePlayer = (_model: {
   )
   e.enablePlayfieldClamping = true
   e.renderable = new PlayerRenderables(shooterScript)
+  e.team = Team.Friendly
 
   return e
 }

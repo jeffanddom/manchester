@@ -5,6 +5,7 @@ import { Transform } from '../components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/Bullet'
 import { IShooterScript } from '~/entities/components/interfaces'
+import { Team } from '~/entities/team'
 import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -21,7 +22,13 @@ export class ShooterScript implements IShooterScript {
     this.orientation = 0
   }
 
-  update(transform: Transform, entityId: string, game: Game, dt: number): void {
+  update(
+    transform: Transform,
+    _team: Team,
+    entityId: string,
+    game: Game,
+    dt: number,
+  ): void {
     const mousePos = game.mouse.getPos()
     if (mousePos.isNone()) {
       return

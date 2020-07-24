@@ -8,8 +8,10 @@ import { vec2FromValuesBatch } from '~/util/math'
 
 export class TurretRenderables implements IRenderable {
   turretPath: Array<vec2>
+  bodyStyle: string
 
   constructor() {
+    this.bodyStyle = ''
     this.turretPath = vec2FromValuesBatch([
       [-TILE_SIZE * 0.1, -TILE_SIZE * 0.5],
       [TILE_SIZE * 0.1, -TILE_SIZE * 0.5],
@@ -18,8 +20,8 @@ export class TurretRenderables implements IRenderable {
     ])
   }
 
-  setFillStyle(_s: string): void {
-    // unimplemented
+  setFillStyle(s: string): void {
+    this.bodyStyle = s
   }
 
   getRenderables(e: Entity): Renderable[] {
@@ -30,7 +32,7 @@ export class TurretRenderables implements IRenderable {
     return [
       {
         primitive: Primitive.CIRCLE,
-        fillStyle: 'red',
+        fillStyle: this.bodyStyle,
         pos: e.transform!.position,
         radius: TILE_SIZE * 0.45,
       },

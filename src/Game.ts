@@ -165,6 +165,7 @@ export class Game implements Game {
       systems.playerMover(this, dt)
       systems.pilot(this, dt)
       systems.shooter(this, dt)
+      systems.turret(this, dt)
     }
 
     systems.pickups(this)

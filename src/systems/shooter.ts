@@ -7,6 +7,6 @@ export const update = (g: Game, dt: number): void => {
       continue
     }
 
-    e.shooterScript.update(e.transform, id, g, dt)
+    e.shooterScript.update(e.transform, e.team, id, g, dt)
   }
 }

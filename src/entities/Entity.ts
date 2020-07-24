@@ -1,7 +1,5 @@
 import * as uuid from 'uuid'
 
-import { Pilot } from './pilot/Pilot'
-
 import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
 import {
@@ -12,6 +10,9 @@ import {
   IShooterScript,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
+import { Pilot } from '~/entities/pilot/Pilot'
+import { Team } from '~/entities/team'
+import { Turret } from '~/entities/turret/Turret'
 
 export class Entity {
   id: string
@@ -20,7 +21,7 @@ export class Entity {
   wallCollider: boolean
   wall: boolean
   enablePlayfieldClamping?: boolean
-  enemy: boolean
+  team: Team
 
   // components
   transform?: Transform
@@ -32,6 +33,7 @@ export class Entity {
   prerenderScript?: IPrerenderScript
   pickupScript?: IPickupScript
   pilot?: Pilot
+  turret?: Turret
 
   constructor() {
     this.id = uuid.v4()
@@ -39,6 +41,6 @@ export class Entity {
     this.wall = false
     this.wallCollider = false
     this.enablePlayfieldClamping = false
-    this.enemy = false
+    this.team = Team.Neutral
   }
 }

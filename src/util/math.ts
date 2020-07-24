@@ -62,7 +62,7 @@ export const rotateUntil = (params: {
   amount: number
 }): number => {
   const { from, to, amount } = params
-  const diff = normalizeAngle(to - from)
+  const diff = normalizeAngle(normalizeAngle(to) - normalizeAngle(from))
 
   return normalizeAngle(
     from + (amount >= Math.abs(diff) ? diff : Math.sign(diff) * amount),

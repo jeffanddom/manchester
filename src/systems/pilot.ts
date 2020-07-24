@@ -3,11 +3,13 @@ import { glMatrix, vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/pilot'
 import { PilotState } from '~/entities/pilot/Pilot'
+import { Team } from '~/entities/team'
+import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
 import { PathFinder } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
 import { Primitive, Renderable } from '~/renderer/interfaces'
-import { tileCoords } from '~/util/tileMath'
+import { tileCoords, tileToWorld } from '~/util/tileMath'
 
 let pathfinder: PathFinder
 
@@ -46,6 +48,12 @@ export const update = (g: Game, dt: number): void => {
     }
 
     if (e.pilot.state == PilotState.leaveHost && e.pilot.path.length == 0) {
+      // create turret
+      const turret = makeTurret({ path: [], fillStyle: '' })
+      turret.team = Team.Friendly
+      turret.transform!.position = tileToWorld(tileCoords(e.transform.position))
+      g.entities.register(turret)
+
       e.pilot.state = PilotState.returnToHost
     }
 
