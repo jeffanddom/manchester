@@ -6,7 +6,7 @@
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",
-    "clean": "rm -rf .dist cache"
+    "clean": "rm -rf dist .cache"
   },
   "repository": {
     "type": "git",
