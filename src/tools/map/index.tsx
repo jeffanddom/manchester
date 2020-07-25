@@ -14,16 +14,14 @@ document.getElementById('editor')!.prepend(canvas)
 canvas.width = 400
 canvas.height = 400
 
-const map = loadMap().mapOrElse(
-  () => {
-    console.log('no saved map in storage')
-    return new Map(vec2.fromValues(64, 64))
-  },
-  (m) => {
-    console.log('loaded map from storage')
-    return m
-  },
-)
+let map = loadMap()
+if (map) {
+  console.log('loaded map from storage')
+} else {
+  console.log('no saved map in storage')
+  map = new Map(vec2.fromValues(64, 64))
+}
+
 const editor = new Editor({ canvas, map })
 
 let prevFrameTime = time.current()
