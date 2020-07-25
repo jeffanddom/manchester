@@ -1,5 +1,4 @@
 import { Map, RawMap } from '~/map/interfaces'
-import { None, Option, Some } from '~/util/Option'
 
 const STORAGE_KEY = 'tools/map'
 
@@ -7,25 +6,25 @@ export type SaveState = {
   previous: RawMap
 }
 
-export const loadMap = (): Option<Map> => {
+export const loadMap = (): Map | null => {
   const json = window.localStorage.getItem(STORAGE_KEY)
   if (json === null) {
     console.log('no previous map data found')
-    return None()
+    return null
   }
 
   try {
     const s: SaveState = JSON.parse(json)
     if (s.previous === undefined) {
       console.log('no previous map data found')
-      return None()
+      return null
     }
 
     console.log('map data found')
-    return Some(Map.fromRaw(s.previous))
+    return Map.fromRaw(s.previous)
   } catch (error) {
     console.log(`error loading parsing map data: {$error}`)
-    return None()
+    return null
   }
 }
 

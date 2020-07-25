@@ -9,13 +9,12 @@ import * as entities from '~/entities'
 import { Map } from '~/map/interfaces'
 import * as terrain from '~/terrain'
 import { BrushMode, Editor } from '~/tools/map/Editor'
-import { None } from '~/util/Option'
 
 export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
   const [state, setState] = useState({
     zoom: 1,
     map: editor.map,
-    tilePos: None<vec2>(),
+    tilePos: null,
     brush: editor.brush,
     showTerrain: true,
     showEntities: true,
@@ -153,10 +152,7 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
         </li>
         <li>
           Cursor position:{' '}
-          {state.tilePos.mapOr(
-            '',
-            (tilePos) => `(${tilePos[0]}, ${tilePos[1]})`,
-          )}
+          {state.tilePos ? `(${state.tilePos![0]}, ${state.tilePos![1]})` : ''}
         </li>
         <li>
           Brush: {BrushMode[state.brush.mode]} (

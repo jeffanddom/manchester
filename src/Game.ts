@@ -19,7 +19,6 @@ import {
 } from '~/renderer/interfaces'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
-import { None, Option, Some } from '~/util/Option'
 
 export enum GameState {
   None,
@@ -32,7 +31,7 @@ const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
   state: GameState
-  nextState: Option<GameState>
+  nextState: GameState | null
 
   currentLevel: number
 
@@ -49,12 +48,12 @@ export class Game implements Game {
   keyboard: Keyboard
   mouse: Mouse
 
-  player: Option<Entity>
+  player: Entity | null
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement) {
     this.state = GameState.None
-    this.nextState = None()
+    this.nextState = null
 
     this.currentLevel = 0
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
@@ -68,13 +67,14 @@ export class Game implements Game {
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(canvas)
 
-    this.player = None()
     this.map = Map.empty()
     this.terrainLayer = new terrain.Layer({
       tileOrigin: vec2.create(),
       tileDimensions: vec2.create(),
       terrain: this.map.terrain,
     })
+
+    this.player = null
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
       vec2.create(),
@@ -95,7 +95,7 @@ export class Game implements Game {
   startPlay(): void {
     this.entities = new EntityManager()
     this.emitters = []
-    this.player = None()
+    this.player = null
 
     // Level setup
     this.map = Map.fromRaw(gameProgression[this.currentLevel])
@@ -130,20 +130,20 @@ export class Game implements Game {
         this.entities.register(entity)
 
         if (et === entities.types.Type.PLAYER) {
-          this.player = Some(entity)
+          this.player = entity
         }
       }
     }
   }
 
   setState(s: GameState): void {
-    this.nextState = Some(s)
+    this.nextState = s
   }
 
   update(dt: number): void {
-    this.nextState.map((nextState) => {
-      this.state = nextState
-      this.nextState = None()
+    if (this.nextState) {
+      this.state = this.nextState
+      this.nextState = null
 
       switch (this.state) {
         case GameState.Running:
@@ -156,7 +156,7 @@ export class Game implements Game {
           this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
           break
       }
-    })
+    }
 
     systems.transformInit(this)
     systems.motion(this, dt)
@@ -198,9 +198,9 @@ export class Game implements Game {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    this.player.map((p) => {
-      this.camera.setPosition(p.transform!.position)
-    })
+    if (this.player) {
+      this.camera.setPosition(this.player.transform!.position)
+    }
     this.camera.update(dt)
 
     this.keyboard.update()
@@ -222,10 +222,11 @@ export class Game implements Game {
 
     // CURSOR
     // FIXME: this should be a renderable/entity
-    this.mouse.getPos().map((pos) => {
+    const mousePos = this.mouse.getPos()
+    if (mousePos) {
       const topLeft = vec2.sub(
         vec2.create(),
-        this.camera.viewToWorldspace(pos),
+        this.camera.viewToWorldspace(mousePos),
         vec2.fromValues(3, 3),
       )
       const d = vec2.fromValues(6, 6)
@@ -236,7 +237,7 @@ export class Game implements Game {
         pos: topLeft,
         dimensions: d,
       })
-    })
+    }
 
     if (this.enableDebugDraw) {
       this.debugDrawRenderables.forEach((r) => {

@@ -60,11 +60,9 @@ export const update = (g: Game): void => {
       })
       g.emitters.push(explosion)
 
-      g.player.map((player) => {
-        if (player.id === id) {
-          g.setState(GameState.YouDied)
-        }
-      })
+      if (g.player && g.player.id === id) {
+        g.setState(GameState.YouDied)
+      }
     }
   }
 }

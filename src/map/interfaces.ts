@@ -30,14 +30,14 @@ export class Map {
       if (raw === null) {
         return null
       }
-      return convert.toIntEnum(terrain.Type, raw).unwrap()
+      return convert.toIntEnum(terrain.Type, raw)!
     })
 
     m.entities = rawMap.entities.map((raw) => {
       if (raw === null) {
         return null
       }
-      return convert.toStringEnum(entities.types.Type, raw).unwrap()
+      return convert.toStringEnum(entities.types.Type, raw)!
     })
 
     return m

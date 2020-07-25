@@ -1,27 +1,25 @@
 import { vec2 } from 'gl-matrix'
 
-import { None, Option, Some } from '~/util/Option'
-
 export type RawVec2 = { '0': number; '1': number }
 
 export const toIntEnum = <T extends { [key: number]: number | string }>(
   e: T,
   raw: number,
-): Option<T[keyof T]> => {
+): T[keyof T] | null => {
   if (e[raw] === undefined) {
-    return None()
+    return null
   }
-  return Some((raw as unknown) as T[keyof T])
+  return (raw as unknown) as T[keyof T]
 }
 
 export const toStringEnum = <T extends { [key: string]: string }>(
   e: T,
   raw: string,
-): Option<T[keyof T]> => {
+): T[keyof T] | null => {
   if (Object.keys(e).find((k) => e[k] === raw) === undefined) {
-    return None()
+    return null
   }
-  return Some((raw as unknown) as T[keyof T])
+  return (raw as unknown) as T[keyof T]
 }
 
 export const toVec2 = (raw: RawVec2): vec2 => {

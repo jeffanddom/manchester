@@ -30,13 +30,13 @@ export class ShooterScript implements IShooterScript {
     dt: number,
   ): void {
     const mousePos = game.mouse.getPos()
-    if (mousePos.isNone()) {
+    if (!mousePos) {
       return
     }
 
     this.orientation = getAngle(
       transform.position,
-      game.camera.viewToWorldspace(mousePos.unwrap()),
+      game.camera.viewToWorldspace(mousePos),
     )
 
     if (this.cooldownTtl > 0) {

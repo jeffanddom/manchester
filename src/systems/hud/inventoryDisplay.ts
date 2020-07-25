@@ -7,11 +7,14 @@ import { Primitive } from '~/renderer/interfaces'
 
 export const update = (g: Game): void => {
   const player = g.player
+  if (!player) {
+    return
+  }
 
   const x = 50
   let y = 15
 
-  player.unwrap().inventory!.forEach((pickup) => {
+  player.inventory!.forEach((pickup) => {
     const model = PickupModels[pickup][0]
 
     g.renderer.render({
