@@ -250,6 +250,7 @@ export class Game implements Game {
     this.renderer.setTransform(mat2d.identity(mat2d.create()))
 
     systems.playerHealthBar(this)
+    systems.inventoryDisplay(this)
 
     if (this.state === GameState.YouDied) {
       this.renderer.render({

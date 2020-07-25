@@ -3,21 +3,15 @@ import { glMatrix, vec2 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
 import { BuilderState } from '~/entities/builder/Builder'
+import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
 import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
-import { PathFinder } from '~/map/PathFinder'
+import { pathfind } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
-import { Primitive, Renderable } from '~/renderer/interfaces'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
-let pathfinder: PathFinder
-
 export const update = (g: Game, dt: number): void => {
-  if (pathfinder === undefined || pathfinder.map != g.map) {
-    pathfinder = new PathFinder(g.map)
-  }
-
   const playerTilePos = tileCoords(g.player.unwrap().transform!.position)
 
   // spawn builder
@@ -25,13 +19,14 @@ export const update = (g: Game, dt: number): void => {
     const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
 
     // Generate path to tile position
-    const path = pathfinder.discover(playerTilePos, tileCoords(destPos))
-
-    const builder = make(destPos, g.player.unwrap().id, path)
-    builder.transform!.position = vec2.clone(
-      g.player.unwrap().transform!.position,
-    )
-    g.entities.register(builder)
+    const path = pathfind(g, playerTilePos, tileCoords(destPos))
+    if (path) {
+      const builder = make(destPos, g.player.unwrap().id, path)
+      builder.transform!.position = vec2.clone(
+        g.player.unwrap().transform!.position,
+      )
+      g.entities.register(builder)
+    }
   }
 
   // destination system
@@ -52,10 +47,17 @@ export const update = (g: Game, dt: number): void => {
       e.builder.path.length == 0
     ) {
       // create turret
-      const turret = makeTurret({ path: [], fillStyle: '' })
-      turret.team = Team.Friendly
-      turret.transform!.position = tileToWorld(tileCoords(e.transform.position))
-      g.entities.register(turret)
+      const inventory = g.player.unwrap().inventory!
+      if (inventory.includes(PickupType.Core)) {
+        inventory.splice(inventory.indexOf(PickupType.Core), 1)
+
+        const turret = makeTurret({ path: [], fillStyle: '' })
+        turret.team = Team.Friendly
+        turret.transform!.position = tileToWorld(
+          tileCoords(e.transform.position),
+        )
+        g.entities.register(turret)
+      }
 
       e.builder.state = BuilderState.returnToHost
     }
@@ -65,10 +67,13 @@ export const update = (g: Game, dt: number): void => {
       !vec2.equals(e.builder.target, g.player.unwrap().transform!.position)
     ) {
       e.builder.target = vec2.clone(g.player.unwrap().transform!.position)
-      e.builder.path = pathfinder.discover(
+      const newPath = pathfind(
+        g,
         tileCoords(e.transform.position),
         tileCoords(e.builder.target),
       )
+      // FIXME: this is a code smell; we should handle null better
+      e.builder.path = newPath || []
     }
 
     if (
@@ -95,19 +100,20 @@ export const update = (g: Game, dt: number): void => {
     vec2.add(e.transform.position, e.transform.position, disp)
   }
 
-  g.debugDraw(() => {
-    const renderables: Renderable[] = []
-    for (const key in pathfinder.nodes) {
-      const [x, y] = key
-        .split(':')
-        .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
-      renderables.push({
-        primitive: Primitive.CIRCLE,
-        fillStyle: 'rgba(128,128,128,0.45)',
-        pos: vec2.fromValues(x, y),
-        radius: TILE_SIZE / 8,
-      })
-    }
-    return renderables
-  })
+  // TODO: fix me
+  // g.debugDraw(() => {
+  //   const renderables: Renderable[] = []
+  //   for (const key in pathfinder.nodes) {
+  //     const [x, y] = key
+  //       .split(':')
+  //       .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
+  //     renderables.push({
+  //       primitive: Primitive.CIRCLE,
+  //       fillStyle: 'rgba(128,128,128,0.45)',
+  //       pos: vec2.fromValues(x, y),
+  //       radius: TILE_SIZE / 8,
+  //     })
+  //   }
+  //   return renderables
+  // })
 }

@@ -5,14 +5,15 @@ import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
 import {
   IMotionScript,
-  IPickupScript,
   IPrerenderScript,
   IRenderable,
   IShooterScript,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
+import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
 import { Turret } from '~/entities/turret/Turret'
+import { Hitbox } from '~/Hitbox'
 
 export class Entity {
   id: string
@@ -22,18 +23,22 @@ export class Entity {
   wall: boolean
   enablePlayfieldClamping?: boolean
   team: Team
+  pickupType?: PickupType
+  dropType?: PickupType
 
   // components
   transform?: Transform
   motionScript?: IMotionScript
   shooterScript?: IShooterScript
   renderable?: IRenderable
+  prerenderScript?: IPrerenderScript
+  hitbox?: Hitbox
+  harmbox?: Hitbox
   damageable?: Damageable
   damager?: Damager
-  prerenderScript?: IPrerenderScript
-  pickupScript?: IPickupScript
   builder?: Builder
   turret?: Turret
+  inventory?: PickupType[]
 
   constructor() {
     this.id = uuid.v4()

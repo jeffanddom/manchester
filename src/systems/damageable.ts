@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { PickupConstructors } from '~/entities/pickups'
 import { Game, GameState } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
@@ -29,6 +30,15 @@ export const update = (g: Game): void => {
     })
 
     if (damageable.health <= 0) {
+      if (e.dropType) {
+        const core = PickupConstructors[e.dropType]({
+          path: [],
+          fillStyle: '',
+        })
+        core.transform!.position = vec2.clone(e.transform!.position)
+
+        g.entities.register(core)
+      }
       g.entities.markForDeletion(id)
 
       const emitterPos = radialTranslate2(

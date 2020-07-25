@@ -29,6 +29,7 @@ export const makePlayer = (_model: {
   e.enablePlayfieldClamping = true
   e.renderable = new PlayerRenderables(shooterScript)
   e.team = Team.Friendly
+  e.inventory = []
 
   return e
 }

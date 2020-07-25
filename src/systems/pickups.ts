@@ -7,14 +7,14 @@ export const update = (g: Game): void => {
 
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
-    if (!e.pickupScript) {
+    if (e.pickupType === undefined) {
       continue
     }
 
-    const aabb = e.pickupScript!.aabb(e.transform!)
+    const aabb = e.hitbox!.aabb(e.transform!.position, e.transform!.orientation)
 
     if (aabbOverlap(playerAabb, aabb)) {
-      e.pickupScript.update(g)
+      player.inventory!.push(e.pickupType)
       g.entities.markForDeletion(e.id)
     }
   }

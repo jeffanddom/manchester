@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { IPrerenderScript } from '../components/interfaces'
+import { PickupType } from '../pickup'
 
 import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
@@ -33,6 +34,7 @@ export const makeTurret = (_model: {
   const e = new Entity()
   e.wall = true
   e.team = Team.Enemy
+  e.dropType = PickupType.Core
 
   e.transform = new Transform()
   e.turret = new Turret()
