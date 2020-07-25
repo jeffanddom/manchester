@@ -222,10 +222,11 @@ export class Game implements Game {
 
     // CURSOR
     // FIXME: this should be a renderable/entity
-    this.mouse.getPos().map((pos) => {
+    const mousePos = this.mouse.getPos()
+    if (mousePos) {
       const topLeft = vec2.sub(
         vec2.create(),
-        this.camera.viewToWorldspace(pos),
+        this.camera.viewToWorldspace(mousePos),
         vec2.fromValues(3, 3),
       )
       const d = vec2.fromValues(6, 6)
@@ -236,7 +237,7 @@ export class Game implements Game {
         pos: topLeft,
         dimensions: d,
       })
-    })
+    }
 
     if (this.enableDebugDraw) {
       this.debugDrawRenderables.forEach((r) => {

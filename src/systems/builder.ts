@@ -15,8 +15,9 @@ export const update = (g: Game, dt: number): void => {
   const playerTilePos = tileCoords(g.player!.transform!.position)
 
   // spawn builder
-  if (g.mouse.isUp(MouseButton.RIGHT) && g.mouse.getPos().isSome()) {
-    const destPos = g.camera.viewToWorldspace(g.mouse.getPos().unwrap())
+  const mousePos = g.mouse.getPos()
+  if (g.mouse.isUp(MouseButton.RIGHT) && mousePos) {
+    const destPos = g.camera.viewToWorldspace(mousePos)
 
     // Generate path to tile position
     const path = pathfind(g, playerTilePos, tileCoords(destPos))

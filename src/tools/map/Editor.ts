@@ -13,7 +13,6 @@ import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import { IRenderer, Primitive } from '~/renderer/interfaces'
 import * as terrain from '~/terrain'
 import * as math from '~/util/math'
-import { None, Option } from '~/util/Option'
 
 const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2
@@ -61,7 +60,7 @@ export class Editor {
   keyboard: Keyboard
   mouse: Mouse
 
-  cursorTilePos: Option<vec2>
+  cursorTilePos: vec2 | null
   brush: {
     mode: BrushMode
     terrain: terrain.Type
@@ -95,7 +94,7 @@ export class Editor {
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(params.canvas)
 
-    this.cursorTilePos = None()
+    this.cursorTilePos = null
     this.brush = {
       mode: BrushMode.TERRAIN,
       terrain: _.first(TERRAIN_TYPES)!,
@@ -143,7 +142,10 @@ export class Editor {
   }
 
   updateCursor(): void {
-    this.cursorTilePos = this.mouse.getPos().map((viewpos) => this.v2t(viewpos))
+    const mousePos = this.mouse.getPos()
+    if (mousePos) {
+      this.cursorTilePos = this.v2t(mousePos)
+    }
     this.events.emit('cursorMove', { tilePos: this.cursorTilePos })
   }
 
@@ -151,9 +153,9 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        this.cursorTilePos.map((tpos) => {
-          this.map.terrain[this.t2a(tpos)] = null
-        })
+        if (this.cursorTilePos) {
+          this.map.terrain[this.t2a(this.cursorTilePos)] = null
+        }
 
         return
       }
@@ -176,9 +178,9 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        this.cursorTilePos.map((tpos) => {
-          this.map.entities[this.t2a(tpos)] = null
-        })
+        if (this.cursorTilePos) {
+          this.map.entities[this.t2a(this.cursorTilePos)] = null
+        }
 
         return
       }
@@ -199,8 +201,8 @@ export class Editor {
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
-      this.cursorTilePos.map((tilePos) => {
-        const n = this.t2a(tilePos)
+      if (this.cursorTilePos) {
+        const n = this.t2a(this.cursorTilePos)
 
         // TODO: send these to an event stream a la Redux, for undo etc.
         switch (this.brush.mode) {
@@ -215,7 +217,7 @@ export class Editor {
         }
 
         this.events.emit('changed')
-      })
+      }
 
       return
     }
@@ -237,9 +239,9 @@ export class Editor {
       this.renderGrid()
     }
 
-    this.cursorTilePos.map((tilePos) => {
-      this.renderTile(tilePos, 'rgba(0, 255, 255, 0.5)')
-    })
+    if (this.cursorTilePos) {
+      this.renderTile(this.cursorTilePos, 'rgba(0, 255, 255, 0.5)')
+    }
   }
 
   renderTerrain(): void {
