@@ -32,7 +32,7 @@ const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
   state: GameState
-  nextState: Option<GameState>
+  nextState: GameState | null
 
   currentLevel: number
 
@@ -54,7 +54,7 @@ export class Game implements Game {
 
   constructor(canvas: HTMLCanvasElement) {
     this.state = GameState.None
-    this.nextState = None()
+    this.nextState = null
 
     this.currentLevel = 0
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
@@ -137,13 +137,13 @@ export class Game implements Game {
   }
 
   setState(s: GameState): void {
-    this.nextState = Some(s)
+    this.nextState = s
   }
 
   update(dt: number): void {
-    this.nextState.map((nextState) => {
-      this.state = nextState
-      this.nextState = None()
+    if (this.nextState) {
+      this.state = this.nextState
+      this.nextState = null
 
       switch (this.state) {
         case GameState.Running:
@@ -156,7 +156,7 @@ export class Game implements Game {
           this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
           break
       }
-    })
+    }
 
     systems.transformInit(this)
     systems.motion(this, dt)
