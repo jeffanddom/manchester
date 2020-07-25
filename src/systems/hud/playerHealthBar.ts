@@ -5,7 +5,7 @@ import { Primitive } from '~/renderer/interfaces'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (g: Game): void => {
-  const damageable = g.player.unwrap().damageable!
+  const damageable = g.player!.damageable!
   const maxFill = 100
   const fill = lerp(
     0,

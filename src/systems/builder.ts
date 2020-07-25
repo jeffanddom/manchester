@@ -12,7 +12,7 @@ import { MouseButton } from '~/Mouse'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
 export const update = (g: Game, dt: number): void => {
-  const playerTilePos = tileCoords(g.player.unwrap().transform!.position)
+  const playerTilePos = tileCoords(g.player!.transform!.position)
 
   // spawn builder
   if (g.mouse.isUp(MouseButton.RIGHT) && g.mouse.getPos().isSome()) {
@@ -21,10 +21,8 @@ export const update = (g: Game, dt: number): void => {
     // Generate path to tile position
     const path = pathfind(g, playerTilePos, tileCoords(destPos))
     if (path) {
-      const builder = make(destPos, g.player.unwrap().id, path)
-      builder.transform!.position = vec2.clone(
-        g.player.unwrap().transform!.position,
-      )
+      const builder = make(destPos, g.player!.id, path)
+      builder.transform!.position = vec2.clone(g.player!.transform!.position)
       g.entities.register(builder)
     }
   }
@@ -47,7 +45,7 @@ export const update = (g: Game, dt: number): void => {
       e.builder.path.length == 0
     ) {
       // create turret
-      const inventory = g.player.unwrap().inventory!
+      const inventory = g.player!.inventory!
       if (inventory.includes(PickupType.Core)) {
         inventory.splice(inventory.indexOf(PickupType.Core), 1)
 
@@ -64,9 +62,9 @@ export const update = (g: Game, dt: number): void => {
 
     if (
       e.builder.state == BuilderState.returnToHost &&
-      !vec2.equals(e.builder.target, g.player.unwrap().transform!.position)
+      !vec2.equals(e.builder.target, g.player!.transform!.position)
     ) {
-      e.builder.target = vec2.clone(g.player.unwrap().transform!.position)
+      e.builder.target = vec2.clone(g.player!.transform!.position)
       const newPath = pathfind(
         g,
         tileCoords(e.transform.position),

@@ -13,7 +13,7 @@ const keyMap = {
 }
 
 export const update = (game: Game, dt: number): void => {
-  const transform = game.player.unwrap().transform!
+  const transform = game.player!.transform!
 
   // Direction controls
   let angle

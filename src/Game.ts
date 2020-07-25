@@ -19,7 +19,6 @@ import {
 } from '~/renderer/interfaces'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
-import { None, Option, Some } from '~/util/Option'
 
 export enum GameState {
   None,
@@ -49,7 +48,7 @@ export class Game implements Game {
   keyboard: Keyboard
   mouse: Mouse
 
-  player: Option<Entity>
+  player: Entity | null
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement) {
@@ -68,13 +67,14 @@ export class Game implements Game {
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(canvas)
 
-    this.player = None()
     this.map = Map.empty()
     this.terrainLayer = new terrain.Layer({
       tileOrigin: vec2.create(),
       tileDimensions: vec2.create(),
       terrain: this.map.terrain,
     })
+
+    this.player = null
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
       vec2.create(),
@@ -95,7 +95,7 @@ export class Game implements Game {
   startPlay(): void {
     this.entities = new EntityManager()
     this.emitters = []
-    this.player = None()
+    this.player = null
 
     // Level setup
     this.map = Map.fromRaw(gameProgression[this.currentLevel])
@@ -130,7 +130,7 @@ export class Game implements Game {
         this.entities.register(entity)
 
         if (et === entities.types.Type.PLAYER) {
-          this.player = Some(entity)
+          this.player = entity
         }
       }
     }
@@ -198,9 +198,9 @@ export class Game implements Game {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    this.player.map((p) => {
-      this.camera.setPosition(p.transform!.position)
-    })
+    if (this.player) {
+      this.camera.setPosition(this.player.transform!.position)
+    }
     this.camera.update(dt)
 
     this.keyboard.update()

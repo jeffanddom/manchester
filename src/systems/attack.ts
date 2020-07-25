@@ -8,7 +8,6 @@ import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
-import { Some } from '~/util/Option'
 
 export const update = (g: Game): void => {
   const damagers: [string, Damager, Transform][] = []
@@ -83,7 +82,7 @@ export const update = (g: Game): void => {
     })
     g.emitters.push(explosion)
 
-    if (g.player.map((p) => p.id).equals(Some(targetId))) {
+    if (g.player && g.player.id === targetId) {
       g.camera.shake()
     }
   }
