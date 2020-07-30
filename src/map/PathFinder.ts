@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
+import { PriorityQueue } from '~/util/PriorityQueue'
 import { tileCoords } from '~/util/tileMath'
 
 interface Node {
@@ -14,7 +15,7 @@ const vecToPos = (v: vec2): string => {
   return `${v[0]}:${v[1]}`
 }
 
-const MAX_PATH_LENGTH = 15
+const MAX_PATH_LENGTH = 100
 
 export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
   // Generate fresh node mapping
@@ -33,7 +34,11 @@ export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
     }, {} as { [key: string]: boolean })
 
   // Coordinates to check
-  let toVisit: [number, number][] = []
+  const toVisit = new PriorityQueue<[number, number]>((a, b) => {
+    const nodeA = nodes[vecToPos(a)]
+    const nodeB = nodes[vecToPos(b)]
+    return nodeA.score + nodeA.distance - (nodeB.score + nodeB.distance)
+  })
 
   // Set up starting node
   const startNode = { score: Number.MAX_VALUE, distance: Number.MAX_VALUE }
@@ -42,8 +47,8 @@ export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
   toVisit.push([from[0], from[1]])
   nodes[vecToPos(from)] = startNode
 
-  while (toVisit.length > 0) {
-    const checkCoord = toVisit.shift()
+  while (toVisit.length() > 0) {
+    const checkCoord = toVisit.pop()
 
     // We ended up with undefined somehow
     // This shouldn't happen
@@ -72,13 +77,7 @@ export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
 
     // Get neighbors we haven't visited, and sort nodes to
     // search by distance from the target destination
-    toVisit = toVisit
-      .concat(getNeighbors(nodes, walls, checkCoord, to))
-      .sort((a, b) => {
-        const nodeA = nodes[vecToPos(a)]
-        const nodeB = nodes[vecToPos(b)]
-        return nodeA.score + nodeA.distance - (nodeB.score + nodeB.distance)
-      })
+    getNeighbors(nodes, walls, checkCoord, to).forEach((n) => toVisit.push(n))
   }
 
   return null
@@ -139,7 +138,7 @@ const getNeighbors = (
       // if a better path is found
       if (neighborNode.score > cur.score + score) {
         neighborNode.prev = [x, y]
-        neighborNode.score = cur.score + score
+        neighborNode.score = cur.score + score // TODO: need to re-sort toVisit based on decreased priority
         nodes[pos] = neighborNode
       }
     } else {
