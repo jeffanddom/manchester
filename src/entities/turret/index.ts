@@ -1,36 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
-import { IPrerenderScript } from '../components/interfaces'
-import { PickupType } from '../pickup'
-
 import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
+import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
 import { Turret } from '~/entities/turret/Turret'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
-import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 
-class TurretPrerender implements IPrerenderScript {
-  update(entityId: string, g: Game): void {
-    const entity = g.entities.entities[entityId]
-    switch (entity.team) {
-      case Team.Friendly:
-        entity!.renderable!.setFillStyle('blue')
-        break
-      case Team.Enemy:
-        entity!.renderable!.setFillStyle('red')
-        break
-    }
-  }
-}
-
-export const makeTurret = (_model: {
-  path: Array<vec2>
-  fillStyle: string
-}): Entity => {
+export const makeTurret = (): Entity => {
   const e = new Entity()
   e.wall = true
   e.team = Team.Enemy
@@ -47,7 +27,6 @@ export const makeTurret = (_model: {
     ),
   )
   e.renderable = new TurretRenderables()
-  e.prerenderScript = new TurretPrerender()
 
   return e
 }

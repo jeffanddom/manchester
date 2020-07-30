@@ -9,10 +9,7 @@ import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Team } from '~/entities/team'
 import { Hitbox } from '~/Hitbox'
 
-export const makePlayer = (_model: {
-  path: Array<vec2>
-  fillStyle: string
-}): Entity => {
+export const makePlayer = (): Entity => {
   const shooterScript = new ShooterScript()
   const e = new Entity()
   e.transform = new Transform()

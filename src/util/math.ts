@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
 export const clamp = (v: number, range: [number, number]): number => {
   return Math.min(Math.max(range[0], v), range[1])
@@ -71,4 +71,26 @@ export const rotateUntil = (params: {
 
 export const vec2FromValuesBatch = (raw: [number, number][]): Array<vec2> => {
   return raw.map((r) => vec2.fromValues(r[0], r[1]))
+}
+
+/**
+ * Applies uniform scaling and translation to a circle. This will not perform
+ * skew or rotation.
+ */
+export const transformCircle = (
+  { pos, radius }: { pos: vec2; radius: number },
+  transform: mat2d,
+): { pos: vec2; radius: number } => {
+  const center = vec2.transformMat2d(vec2.create(), pos, transform)
+  const edge = vec2.create()
+  vec2.transformMat2d(
+    edge,
+    vec2.add(edge, pos, vec2.fromValues(radius, 0)),
+    transform,
+  )
+
+  return {
+    pos: center,
+    radius: vec2.length(vec2.sub(edge, edge, center)),
+  }
 }

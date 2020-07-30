@@ -31,10 +31,7 @@ export const update = (g: Game): void => {
 
     if (damageable.health <= 0) {
       if (e.dropType) {
-        const core = PickupConstructors[e.dropType]({
-          path: [],
-          fillStyle: '',
-        })
+        const core = PickupConstructors[e.dropType]()
         core.transform!.position = vec2.clone(e.transform!.position)
 
         g.entities.register(core)

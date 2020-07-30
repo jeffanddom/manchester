@@ -2,13 +2,14 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Damager } from '~/entities/components/Damager'
+import { DefaultModelRenderable } from '~/entities/components/DefaultModelRenderable'
 import { IMotionScript } from '~/entities/components/interfaces'
-import { PathRenderable } from '~/entities/components/PathRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
-import { radialTranslate2, vec2FromValuesBatch } from '~/util/math'
+import * as models from '~/models'
+import { radialTranslate2 } from '~/util/math'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 8)
 
@@ -52,14 +53,7 @@ export const makeBullet = ({
   e.transform.orientation = orientation
 
   e.motionScript = new MotionScript(vec2.clone(position), range)
-  e.renderable = new PathRenderable(
-    vec2FromValuesBatch([
-      [0, -TILE_SIZE * 0.5],
-      [TILE_SIZE * 0.1, TILE_SIZE * 0.5],
-      [-TILE_SIZE * 0.1, TILE_SIZE * 0.5],
-    ]),
-    '#FF0000',
-  )
+  e.renderable = new DefaultModelRenderable(models.bullet)
 
   e.damager = new Damager(
     1,

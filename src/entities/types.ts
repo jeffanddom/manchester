@@ -1,10 +1,9 @@
-import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { makeNadaPickup } from '~/entities/pickups/Nada'
 import { makePlayer } from '~/entities/player'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/Wall'
-import { vec2FromValuesBatch } from '~/util/math'
+import * as models from '~/models'
 
 export enum Type {
   PLAYER = 'PLAYER',
@@ -16,53 +15,19 @@ export enum Type {
 export const typeDefinitions = {
   [Type.PLAYER]: {
     make: makePlayer,
-    serialized: 'p',
-    model: {
-      path: vec2FromValuesBatch([
-        [0, -TILE_SIZE * 0.5],
-        [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-        [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-      ]),
-      fillStyle: 'black',
-    },
+    editorModel: models.tank,
   },
   [Type.TURRET]: {
     make: makeTurret,
-    serialized: 't',
-    model: {
-      path: vec2FromValuesBatch([
-        [0, -TILE_SIZE * 0.5],
-        [TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-        [-TILE_SIZE * 0.3, TILE_SIZE * 0.5],
-      ]),
-      fillStyle: '#FF0',
-    },
+    editorModel: models.turret,
   },
   [Type.WALL]: {
     make: makeWall,
-    serialized: 'w',
-    model: {
-      path: vec2FromValuesBatch([
-        [-TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
-        [TILE_SIZE * 0.5, -TILE_SIZE * 0.5],
-        [TILE_SIZE * 0.5, TILE_SIZE * 0.5],
-        [-TILE_SIZE * 0.5, TILE_SIZE * 0.5],
-      ]),
-      fillStyle: 'rgba(130, 130, 130, 1)',
-    },
+    editorModel: models.wall,
   },
   [Type.NADA]: {
     make: makeNadaPickup,
-    serialized: 'tktk',
-    model: {
-      path: vec2FromValuesBatch([
-        [0, -TILE_SIZE * 0.5],
-        [TILE_SIZE * 0.5, 0],
-        [0, TILE_SIZE * 0.5],
-        [-TILE_SIZE * 0.5, 0],
-      ]),
-      fillStyle: 'blue',
-    },
+    editorModel: models.pickup,
   },
 }
 
@@ -72,27 +37,7 @@ export const make = (t: Type): Entity => {
       continue
     }
     const def = typeDefinitions[k]
-    return def.make(def.model)
+    return def.make()
   }
   throw new Error(`invalid entity type ${t}`)
-}
-
-export const serialize = (t: Type): string => {
-  for (const k in typeDefinitions) {
-    if (k !== t) {
-      continue
-    }
-    return typeDefinitions[k].serialized
-  }
-  throw new Error(`invalid entity type ${t}`)
-}
-
-export const deserialize = (s: string): Type | undefined => {
-  for (const k in typeDefinitions) {
-    const c = k as keyof typeof Type
-    if (typeDefinitions[c].serialized === s) {
-      return Type[c]
-    }
-  }
-  return undefined
 }

@@ -8,6 +8,7 @@ import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { Keyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
+import { toRenderables } from '~/Model'
 import { Mouse, MouseButton } from '~/Mouse'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import { IRenderer, Primitive } from '~/renderer/interfaces'
@@ -262,15 +263,12 @@ export class Editor {
           continue
         }
 
-        this.renderer.render({
-          primitive: Primitive.PATH,
-          fillStyle: entities.types.typeDefinitions[e].model.fillStyle,
-          mwTransform: mat2d.fromTranslation(
+        toRenderables(entities.types.typeDefinitions[e].editorModel, {
+          worldTransform: mat2d.fromTranslation(
             mat2d.create(),
             this.t2w(tpos, { center: true }),
           ),
-          path: entities.types.typeDefinitions[e].model.path,
-        })
+        }).forEach((r) => this.renderer.render(r))
       }
     }
   }

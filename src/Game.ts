@@ -191,8 +191,6 @@ export class Game implements Game {
       }
     }
 
-    systems.prerender(this)
-
     this.entities.update() // entity cleanup
 
     this.emitters = this.emitters.filter((e) => !e.dead)
