@@ -6,6 +6,7 @@ import {
   Renderable,
   TextAlign,
 } from '~/renderer/interfaces'
+import { transformCircle } from '~/util/math'
 
 export class Canvas2DRenderer implements IRenderer {
   private ctx: CanvasRenderingContext2D
@@ -83,25 +84,17 @@ export class Canvas2DRenderer implements IRenderer {
 
       case Primitive.CIRCLE:
         {
-          const center = vec2.transformMat2d(
-            vec2.create(),
-            r.pos,
+          const transformed = transformCircle(
+            { pos: r.pos, radius: r.radius },
             this.transform,
           )
-          const edge = vec2.transformMat2d(
-            vec2.create(),
-            vec2.add(vec2.create(), r.pos, vec2.fromValues(r.radius, 0)),
-            this.transform,
-          )
-          vec2.floor(center, center)
-          vec2.floor(edge, edge)
 
           this.ctx.fillStyle = r.fillStyle
           this.ctx.beginPath()
           this.ctx.arc(
-            center[0],
-            center[1],
-            edge[0] - center[0],
+            Math.floor(transformed.pos[0]),
+            Math.floor(transformed.pos[1]),
+            Math.floor(transformed.radius),
             0,
             Math.PI * 2,
           )

@@ -1,55 +1,29 @@
-import { mat2d, vec2 } from 'gl-matrix'
+import { mat2d } from 'gl-matrix'
 
-import { TILE_SIZE } from '~/constants'
 import { IRenderable } from '~/entities/components/interfaces'
 import { Entity } from '~/entities/Entity'
 import { ShooterScript } from '~/entities/player/ShooterScript'
-import { Primitive, Renderable } from '~/renderer/interfaces'
-import { vec2FromValuesBatch } from '~/util/math'
+import { toRenderables } from '~/Model'
+import * as models from '~/models'
+import { Renderable } from '~/renderer/interfaces'
 
 export class PlayerRenderables implements IRenderable {
-  bodyPath: Array<vec2>
-  turretPath: Array<vec2>
   shooter: ShooterScript
 
   constructor(shooter: ShooterScript) {
     this.shooter = shooter
-    this.turretPath = vec2FromValuesBatch([
-      [-TILE_SIZE * 0.1, -TILE_SIZE * 0.7],
-      [TILE_SIZE * 0.1, -TILE_SIZE * 0.7],
-      [TILE_SIZE * 0.2, TILE_SIZE * 0.3],
-      [-TILE_SIZE * 0.2, TILE_SIZE * 0.3],
-    ])
-    this.bodyPath = vec2FromValuesBatch([
-      [-TILE_SIZE * 0.3, -TILE_SIZE * 0.5],
-      [TILE_SIZE * 0.3, -TILE_SIZE * 0.5],
-      [TILE_SIZE * 0.4, TILE_SIZE * 0.5],
-      [-TILE_SIZE * 0.4, TILE_SIZE * 0.5],
-    ])
-  }
-
-  setFillStyle(_s: string): void {
-    // unimplemented
   }
 
   getRenderables(e: Entity): Renderable[] {
-    const t = mat2d.fromTranslation(mat2d.create(), e.transform!.position)
-    const r = mat2d.fromRotation(mat2d.create(), this.shooter.orientation)
-    const turretTransform = mat2d.multiply(mat2d.create(), t, r)
-
-    return [
-      {
-        primitive: Primitive.PATH,
-        fillStyle: 'black',
-        mwTransform: e.transform!.mwTransform(),
-        path: this.bodyPath,
+    return toRenderables(models.tank, {
+      worldTransform: mat2d.fromTranslation(
+        mat2d.create(),
+        e.transform!.position,
+      ),
+      itemTransforms: {
+        body: mat2d.fromRotation(mat2d.create(), e.transform!.orientation),
+        gun: mat2d.fromRotation(mat2d.create(), this.shooter.orientation),
       },
-      {
-        primitive: Primitive.PATH,
-        fillStyle: 'red',
-        mwTransform: turretTransform,
-        path: this.turretPath,
-      },
-    ]
+    })
   }
 }

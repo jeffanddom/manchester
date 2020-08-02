@@ -50,7 +50,7 @@ export const update = (g: Game, dt: number): void => {
       if (inventory.includes(PickupType.Core)) {
         inventory.splice(inventory.indexOf(PickupType.Core), 1)
 
-        const turret = makeTurret({ path: [], fillStyle: '' })
+        const turret = makeTurret()
         turret.team = Team.Friendly
         turret.transform!.position = tileToWorld(
           tileCoords(e.transform.position),

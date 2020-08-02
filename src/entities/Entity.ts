@@ -5,7 +5,6 @@ import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
 import {
   IMotionScript,
-  IPrerenderScript,
   IRenderable,
   IShooterScript,
 } from '~/entities/components/interfaces'
@@ -31,7 +30,6 @@ export class Entity {
   motionScript?: IMotionScript
   shooterScript?: IShooterScript
   renderable?: IRenderable
-  prerenderScript?: IPrerenderScript
   hitbox?: Hitbox
   harmbox?: Hitbox
   damageable?: Damageable

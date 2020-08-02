@@ -6,7 +6,6 @@ import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
 
 export interface IRenderable {
-  setFillStyle(s: string): void
   getRenderables(e: Entity): Renderable[]
 }
 
@@ -16,8 +15,4 @@ export interface IMotionScript {
 
 export interface IShooterScript {
   update(t: Transform, team: Team, entityId: string, g: Game, dt: number): void
-}
-
-export interface IPrerenderScript {
-  update(entityId: string, g: Game): void
 }

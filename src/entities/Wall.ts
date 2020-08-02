@@ -1,33 +1,42 @@
-import { vec2 } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
-import { IPrerenderScript } from '~/entities/components/interfaces'
-import { PathRenderable } from '~/entities/components/PathRenderable'
+import { IRenderable } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
+import { toRenderables } from '~/Model'
+import * as models from '~/models'
+import { Renderable } from '~/renderer/interfaces'
 import { lerp } from '~/util/math'
 
 const WALL_HEALTH = 4.0
 
-class DisplayWallDamage implements IPrerenderScript {
-  update(entityId: string, g: Game): void {
-    const entity = g.entities.entities[entityId]
-    const color = lerp(90, 130, entity!.damageable!.health / WALL_HEALTH)
-    entity!.renderable!.setFillStyle(`rgba(${color},${color},${color},1)`)
+class WallRenderable implements IRenderable {
+  getRenderables(e: Entity): Renderable[] {
+    const color = lerp(90, 130, e!.damageable!.health / WALL_HEALTH)
+
+    return toRenderables(models.wall, {
+      worldTransform: mat2d.fromTranslation(
+        mat2d.create(),
+        e.transform!.position,
+      ),
+      itemTransforms: {
+        gun: mat2d.fromRotation(mat2d.create(), e.transform!.orientation),
+      },
+      itemFillStyles: {
+        body: `rgba(${color},${color},${color},1)`,
+      },
+    })
   }
 }
 
-export const makeWall = (model: {
-  path: Array<vec2>
-  fillStyle: string
-}): Entity => {
+export const makeWall = (): Entity => {
   const e = new Entity()
   e.transform = new Transform()
   e.wall = true
-  e.renderable = new PathRenderable(model.path, model.fillStyle)
+  e.renderable = new WallRenderable()
   e.damageable = new Damageable(
     WALL_HEALTH,
     new Hitbox(
@@ -35,6 +44,5 @@ export const makeWall = (model: {
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
     ),
   )
-  e.prerenderScript = new DisplayWallDamage()
   return e
 }
