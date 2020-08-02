@@ -29,7 +29,15 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-non-null-assertion': 'off',
-    // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
-    // e.g. "@typescript-eslint/explicit-function-return-type": "off",
+    'prettier/prettier': [
+      1,
+      {
+        tabWidth: 2,
+        useTabs: false,
+        singleQuote: true,
+        semi: false,
+        trailingComma: 'all',
+      },
+    ],
   },
 }
