@@ -1,5 +1,4 @@
 import { mat2d, vec2 } from 'gl-matrix'
-import { max } from 'lodash'
 
 export const clamp = (v: number, range: [number, number]): number => {
   return Math.min(Math.max(range[0], v), range[1])
