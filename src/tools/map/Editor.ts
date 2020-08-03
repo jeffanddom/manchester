@@ -42,12 +42,7 @@ const TERRAIN_TYPES = [
   terrain.Type.Mountain,
   terrain.Type.River,
 ]
-const ENTITY_TYPES = [
-  entities.types.Type.PLAYER,
-  entities.types.Type.TURRET,
-  entities.types.Type.WALL,
-  entities.types.Type.NADA,
-]
+const ENTITY_TYPES = Object.values(entities.types.Type)
 
 export class Editor {
   renderer: IRenderer

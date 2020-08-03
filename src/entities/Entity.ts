@@ -20,6 +20,9 @@ export class Entity {
   // flags
   wallCollider: boolean
   wall: boolean
+  targetable: boolean
+  obscuring: boolean
+  obscured: boolean
   enablePlayfieldClamping?: boolean
   team: Team
   pickupType?: PickupType
@@ -43,6 +46,9 @@ export class Entity {
 
     this.wall = false
     this.wallCollider = false
+    this.targetable = false
+    this.obscuring = false
+    this.obscured = false
     this.enablePlayfieldClamping = false
     this.team = Team.Neutral
   }

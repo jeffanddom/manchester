@@ -15,6 +15,12 @@ export const makePlayer = (): Entity => {
   e.transform = new Transform()
   e.shooterScript = shooterScript
   e.wallCollider = true
+  e.targetable = true
+  e.hitbox = new Hitbox(
+    vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
+    vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
+    false,
+  )
   e.damageable = new Damageable(
     10,
     new Hitbox(

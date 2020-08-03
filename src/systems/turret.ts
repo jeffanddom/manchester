@@ -24,7 +24,12 @@ export const update = (g: Game, dt: number): void => {
 
     const shootables = Object.values(g.entities.entities)
       .filter(
-        (other) => !!other.transform && !!other.damageable && other.id !== e.id,
+        (other) =>
+          !!other.transform &&
+          !!other.damageable &&
+          other.targetable &&
+          !other.obscured &&
+          other.id !== e.id,
       )
       .filter(
         (other) =>

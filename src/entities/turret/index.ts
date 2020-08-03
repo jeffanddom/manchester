@@ -13,6 +13,7 @@ import { Hitbox } from '~/Hitbox'
 export const makeTurret = (): Entity => {
   const e = new Entity()
   e.wall = true
+  e.targetable = true
   e.team = Team.Enemy
   e.dropType = PickupType.Core
 

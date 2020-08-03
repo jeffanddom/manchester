@@ -1,4 +1,5 @@
 import { mat2d, vec2 } from 'gl-matrix'
+import { max } from 'lodash'
 
 export const clamp = (v: number, range: [number, number]): number => {
   return Math.min(Math.max(range[0], v), range[1])
@@ -39,6 +40,13 @@ export const aabbOverlap = (a: [vec2, vec2], b: [vec2, vec2]): boolean => {
     a[1][0] >= b[0][0] &&
     a[0][1] <= b[1][1] &&
     a[1][1] >= b[0][1]
+  )
+}
+
+export const aabbOverlapArea = (a: [vec2, vec2], b: [vec2, vec2]): number => {
+  return (
+    Math.max(0, Math.min(a[1][0], b[1][0]) - Math.max(a[0][0], b[0][0])) *
+    Math.max(0, Math.min(a[1][1], b[1][1]) - Math.max(a[0][1], b[0][1]))
   )
 }
 

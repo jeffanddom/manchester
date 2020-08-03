@@ -24,6 +24,10 @@ export class PlayerRenderables implements IRenderable {
         body: mat2d.fromRotation(mat2d.create(), e.transform!.orientation),
         gun: mat2d.fromRotation(mat2d.create(), this.shooter.orientation),
       },
+      itemFillStyles: {
+        body: e.obscured ? 'rgba(0,0,0,0.65)' : 'black',
+        gun: e.obscured ? 'rgba(255,0,0,0.65)' : 'red',
+      },
     })
   }
 }
