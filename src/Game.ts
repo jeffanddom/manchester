@@ -1,5 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { RightClickMode } from './systems/playerInput'
+
 import { maps } from '~/assets/maps'
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
@@ -49,6 +51,10 @@ export class Game implements Game {
   mouse: Mouse
 
   player: Entity | null
+  playerInputState: {
+    rightClickMode: RightClickMode
+  }
+
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement) {
@@ -75,6 +81,8 @@ export class Game implements Game {
     })
 
     this.player = null
+    this.playerInputState = { rightClickMode: RightClickMode.NONE }
+
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
       vec2.create(),
@@ -162,7 +170,7 @@ export class Game implements Game {
     systems.motion(this, dt)
 
     if (this.state === GameState.Running) {
-      systems.playerMover(this, dt)
+      systems.playerInput(this, dt)
       systems.hiding(this)
       systems.builder(this, dt)
       systems.shooter(this, dt)
@@ -219,24 +227,7 @@ export class Game implements Game {
       e.getRenderables().forEach((r) => this.renderer.render(r)),
     )
 
-    // CURSOR
-    // FIXME: this should be a renderable/entity
-    const mousePos = this.mouse.getPos()
-    if (mousePos) {
-      const topLeft = vec2.sub(
-        vec2.create(),
-        this.camera.viewToWorldspace(mousePos),
-        vec2.fromValues(3, 3),
-      )
-      const d = vec2.fromValues(6, 6)
-      this.renderer.render({
-        primitive: Primitive.RECT,
-        strokeStyle: 'black',
-        fillStyle: 'white',
-        pos: topLeft,
-        dimensions: d,
-      })
-    }
+    systems.crosshair(this)
 
     if (this.enableDebugDraw) {
       this.debugDrawRenderables.forEach((r) => {

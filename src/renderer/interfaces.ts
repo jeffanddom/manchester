@@ -59,5 +59,6 @@ export type Renderable = Path | Rect | Circle | Line | Text
 export interface IRenderer {
   clear(color: string): void
   setTransform(t: mat2d): void
+  setGlobalOpacity(alpha: number): void
   render(r: Renderable): void
 }

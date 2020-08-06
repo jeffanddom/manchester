@@ -1,8 +1,10 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
+import { RightClickMode } from './playerInput'
+
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
-import { BuilderState } from '~/entities/builder/Builder'
+import { BuilderMode, BuilderState } from '~/entities/builder/Builder'
 import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
 import { makeTurret } from '~/entities/turret'
@@ -11,22 +13,54 @@ import { pathfind } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
-export const update = (g: Game, dt: number): void => {
-  const playerTilePos = tileCoords(g.player!.transform!.position)
-
-  // spawn builder
+const maybeSpawn = (g: Game): void => {
   const mousePos = g.mouse.getPos()
-  if (g.mouse.isUp(MouseButton.RIGHT) && mousePos) {
-    const destPos = g.camera.viewToWorldspace(mousePos)
-
-    // Generate path to tile position
-    const path = pathfind(g, playerTilePos, tileCoords(destPos))
-    if (path) {
-      const builder = make(destPos, g.player!.id, path)
-      builder.transform!.position = vec2.clone(g.player!.transform!.position)
-      g.entities.register(builder)
-    }
+  if (
+    !g.mouse.isUp(MouseButton.RIGHT) ||
+    !mousePos ||
+    g.playerInputState.rightClickMode === RightClickMode.NONE
+  ) {
+    return
   }
+
+  let mode
+  switch (g.playerInputState.rightClickMode) {
+    case RightClickMode.HARVEST:
+      mode = BuilderMode.HARVEST
+      break
+    case RightClickMode.BUILD_TURRET:
+      const inventory = g.player!.inventory!
+      if (!inventory.includes(PickupType.Core)) {
+        return
+      }
+
+      inventory.splice(inventory.indexOf(PickupType.Core), 1)
+      mode = BuilderMode.BUILD_TURRET
+      break
+    case RightClickMode.MOVE_BUILDER:
+      mode = BuilderMode.MOVE
+      break
+  }
+
+  const destPos = g.camera.viewToWorldspace(mousePos)
+  const playerTilePos = tileCoords(g.player!.transform!.position)
+  const path = pathfind(g, playerTilePos, tileCoords(destPos))
+  if (!path) {
+    return
+  }
+
+  const params = {
+    source: vec2.clone(g.player!.transform!.position),
+    destination: destPos,
+    host: g.player!.id,
+    path: path,
+  }
+
+  g.entities.register(make({ ...params, mode }))
+}
+
+export const update = (g: Game, dt: number): void => {
+  maybeSpawn(g)
 
   // destination system
   for (const id in g.entities.entities) {
@@ -45,17 +79,25 @@ export const update = (g: Game, dt: number): void => {
       e.builder.state == BuilderState.leaveHost &&
       e.builder.path.length == 0
     ) {
-      // create turret
-      const inventory = g.player!.inventory!
-      if (inventory.includes(PickupType.Core)) {
-        inventory.splice(inventory.indexOf(PickupType.Core), 1)
+      switch (e.builder.mode) {
+        case BuilderMode.HARVEST:
+          // TODO
+          break
 
-        const turret = makeTurret()
-        turret.team = Team.Friendly
-        turret.transform!.position = tileToWorld(
-          tileCoords(e.transform.position),
-        )
-        g.entities.register(turret)
+        case BuilderMode.BUILD_TURRET:
+          delete e.dropType
+
+          const turret = makeTurret()
+          turret.team = Team.Friendly
+          turret.transform!.position = tileToWorld(
+            tileCoords(e.transform.position),
+          )
+          g.entities.register(turret)
+          break
+
+        case BuilderMode.MOVE:
+          // do nothing
+          break
       }
 
       e.builder.state = BuilderState.returnToHost

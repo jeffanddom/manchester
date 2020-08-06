@@ -26,6 +26,10 @@ export class Canvas2DRenderer implements IRenderer {
     this.transform = mat2d.clone(t)
   }
 
+  setGlobalOpacity(alpha: number): void {
+    this.ctx.globalAlpha = alpha
+  }
+
   render(r: Renderable): void {
     switch (r.primitive) {
       case Primitive.PATH:

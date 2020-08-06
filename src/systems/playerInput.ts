@@ -6,14 +6,35 @@ const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
 const PLAYER_ROT_SPEED = Math.PI
 
 const keyMap = {
-  moveUp: 87,
-  moveDown: 83,
-  moveLeft: 68,
-  moveRight: 65,
+  moveUp: 87, // W
+  moveDown: 83, // S
+  moveLeft: 68, // A
+  moveRight: 65, // D
+  harvestMode: 49, // 1
+  buildTurretMode: 50, // 2
+  moveBuilderMode: 51, // 3
+}
+
+export enum RightClickMode {
+  NONE,
+  MOVE_BUILDER,
+  HARVEST,
+  BUILD_TURRET,
 }
 
 export const update = (game: Game, dt: number): void => {
   const transform = game.player!.transform!
+
+  // Right click mode
+  if (game.keyboard.downKeys.has(keyMap.harvestMode)) {
+    game.playerInputState.rightClickMode = RightClickMode.HARVEST
+  } else if (game.keyboard.downKeys.has(keyMap.buildTurretMode)) {
+    game.playerInputState.rightClickMode = RightClickMode.BUILD_TURRET
+  } else if (game.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
+    game.playerInputState.rightClickMode = RightClickMode.MOVE_BUILDER
+  } else {
+    game.playerInputState.rightClickMode = RightClickMode.NONE
+  }
 
   // Direction controls
   let angle
