@@ -4,9 +4,9 @@ import { TILE_SIZE } from '~/constants'
 import { DefaultModelRenderable } from '~/entities/components/DefaultModelRenderable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { PickupType } from '~/entities/pickup'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
+import { PickupType } from '~/systems/pickups'
 
 export const makeNadaPickup = (): Entity => {
   const e = new Entity()

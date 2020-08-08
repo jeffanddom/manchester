@@ -1,17 +1,48 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { RightClickMode } from './playerInput'
+import { PickupType } from './pickups'
 
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
-import { BuilderMode, BuilderState } from '~/entities/builder/Builder'
-import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
 import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
+import { RightClickMode } from '~/systems/playerInput'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
+
+export enum BuilderMode {
+  HARVEST,
+  BUILD_TURRET,
+  MOVE,
+}
+
+export enum BuilderState {
+  leaveHost,
+  returnToHost,
+}
+
+export class BuilderComponent {
+  mode: BuilderMode
+  state: BuilderState
+  target: vec2
+  host: string // Entity ID
+  path: vec2[]
+
+  constructor(params: {
+    mode: BuilderMode
+    target: vec2
+    host: string
+    path: vec2[]
+  }) {
+    this.mode = params.mode
+    this.state = BuilderState.leaveHost
+    this.target = params.target
+    this.host = params.host
+    this.path = params.path
+  }
+}
 
 const maybeSpawn = (g: Game): void => {
   const mousePos = g.mouse.getPos()

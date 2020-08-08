@@ -4,11 +4,11 @@ import { TILE_SIZE } from '~/constants'
 import { Damageable } from '~/entities/components/Damageable'
 import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
-import { Turret } from '~/entities/turret/Turret'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Hitbox } from '~/Hitbox'
+import { PickupType } from '~/systems/pickups'
+import { TurretComponent } from '~/systems/turret'
 
 export const makeTurret = (): Entity => {
   const e = new Entity()
@@ -18,7 +18,7 @@ export const makeTurret = (): Entity => {
   e.dropType = PickupType.Core
 
   e.transform = new Transform()
-  e.turret = new Turret()
+  e.turret = new TurretComponent()
   e.damageable = new Damageable(
     3,
     new Hitbox(
