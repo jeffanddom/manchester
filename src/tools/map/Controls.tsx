@@ -93,21 +93,25 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
       return { ...prevState, fileOperationInProgress: true }
     })
 
-    f.text()
-      .then((json) => {
-        try {
-          const raw = JSON.parse(json)
-          saveMap(Map.fromRaw(raw))
-          location.reload()
-        } catch (err) {
-          console.log(`could not parse ${f.name}: ${err}`)
-        }
+    const fr = new FileReader()
+    fr.onloadend = () => {
+      setState((prevState) => {
+        return { ...prevState, fileOperationInProgress: false }
       })
-      .finally(() => {
-        setState((prevState) => {
-          return { ...prevState, fileOperationInProgress: false }
-        })
-      })
+    }
+    fr.onerror = () => {
+      console.log(`could not load ${f.name}: ${fr.error}`)
+    }
+    fr.onload = () => {
+      try {
+        const raw = JSON.parse(fr.result as string)
+        saveMap(Map.fromRaw(raw))
+        location.reload()
+      } catch (err) {
+        console.log(`error parsing ${f.name}: ${err}`)
+      }
+    }
+    fr.readAsText(f)
   }
 
   const resetMapData = () => {
