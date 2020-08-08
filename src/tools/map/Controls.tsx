@@ -55,27 +55,6 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
     })
   }, [])
 
-  const toggleTerrain = () => {
-    setState((prevState) => {
-      editor.showTerrain = !state.showTerrain
-      return { ...prevState, showTerrain: !state.showTerrain }
-    })
-  }
-
-  const toggleEntities = () => {
-    setState((prevState) => {
-      editor.showEntities = !state.showEntities
-      return { ...prevState, showEntities: !state.showEntities }
-    })
-  }
-
-  const toggleGrid = () => {
-    setState((prevState) => {
-      editor.showGrid = !state.showGrid
-      return { ...prevState, showGrid: !state.showGrid }
-    })
-  }
-
   const startSave = () => {
     setState((prevState) => {
       return { ...prevState, fileOperationInProgress: true }
@@ -162,19 +141,52 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
           )
         </li>
         <li>
-          <span style={{ cursor: 'pointer' }} onClick={toggleTerrain}>
-            <input type="checkbox" checked={state.showTerrain} /> Terrain
-          </span>
+          <label style={{ cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={state.showTerrain}
+              onChange={(e) => {
+                const show = e.target.checked // don't inline; this is a synthetic event
+                setState((prevState) => {
+                  editor.showTerrain = show
+                  return { ...prevState, showTerrain: show }
+                })
+              }}
+            />{' '}
+            Terrain
+          </label>
         </li>
         <li>
-          <span style={{ cursor: 'pointer' }} onClick={toggleEntities}>
-            <input type="checkbox" checked={state.showEntities} /> Entities
-          </span>
+          <label style={{ cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={state.showEntities}
+              onChange={(e) => {
+                const show = e.target.checked // don't inline; this is a synthetic event
+                setState((prevState) => {
+                  editor.showEntities = show
+                  return { ...prevState, showEntities: show }
+                })
+              }}
+            />{' '}
+            Entities
+          </label>
         </li>
         <li>
-          <span style={{ cursor: 'pointer' }} onClick={toggleGrid}>
-            <input type="checkbox" checked={state.showGrid} /> Grid
-          </span>
+          <label style={{ cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={state.showGrid}
+              onChange={(e) => {
+                const show = e.target.checked // don't inline; this is a synthetic event
+                setState((prevState) => {
+                  editor.showGrid = show
+                  return { ...prevState, showGrid: show }
+                })
+              }}
+            />{' '}
+            Grid
+          </label>
         </li>
         <li>
           Open:{' '}
