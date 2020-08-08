@@ -1,9 +1,6 @@
 import { TILE_SIZE } from '~/constants'
+import { PickupType } from '~/systems/pickups'
 import { vec2FromValuesBatch } from '~/util/math'
-
-export enum PickupType {
-  Core = 'Core',
-}
 
 export const PickupModels = {
   [PickupType.Core]: [

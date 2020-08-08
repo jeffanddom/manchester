@@ -1,9 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { PickupType } from '../pickup'
-
 import { TILE_SIZE } from '~/constants'
-import { Builder, BuilderMode } from '~/entities/builder/Builder'
 import { Damageable } from '~/entities/components/Damageable'
 import { DefaultModelRenderable } from '~/entities/components/DefaultModelRenderable'
 import { Transform } from '~/entities/components/Transform'
@@ -11,6 +8,8 @@ import { Entity } from '~/entities/Entity'
 import { Team } from '~/entities/team'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
+import { BuilderComponent, BuilderMode } from '~/systems/builder'
+import { PickupType } from '~/systems/pickups'
 
 export const make = (params: {
   source: vec2
@@ -27,7 +26,7 @@ export const make = (params: {
     e.dropType = PickupType.Core
   }
 
-  e.builder = new Builder({
+  e.builder = new BuilderComponent({
     mode: params.mode,
     target: params.destination,
     host: params.host,

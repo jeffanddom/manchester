@@ -1,6 +1,5 @@
 import * as uuid from 'uuid'
 
-import { Builder } from '~/entities/builder/Builder'
 import { Damageable } from '~/entities/components/Damageable'
 import { Damager } from '~/entities/components/Damager'
 import {
@@ -9,10 +8,11 @@ import {
   IShooterScript,
 } from '~/entities/components/interfaces'
 import { Transform } from '~/entities/components/Transform'
-import { PickupType } from '~/entities/pickup'
 import { Team } from '~/entities/team'
-import { Turret } from '~/entities/turret/Turret'
 import { Hitbox } from '~/Hitbox'
+import { BuilderComponent } from '~/systems/builder'
+import { PickupType } from '~/systems/pickups'
+import { TurretComponent } from '~/systems/turret'
 
 export class Entity {
   id: string
@@ -37,8 +37,8 @@ export class Entity {
   harmbox?: Hitbox
   damageable?: Damageable
   damager?: Damager
-  builder?: Builder
-  turret?: Turret
+  builder?: BuilderComponent
+  turret?: TurretComponent
   inventory?: PickupType[]
 
   constructor() {

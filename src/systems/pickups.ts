@@ -1,6 +1,10 @@
 import { Game } from '~/Game'
 import { aabbOverlap } from '~/util/math'
 
+export enum PickupType {
+  Core = 'Core',
+}
+
 export const update = (g: Game): void => {
   const player = g.player!
   const playerAabb = player.damageable!.aabb(player.transform!)

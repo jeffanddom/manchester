@@ -13,6 +13,14 @@ const TURRET_ROT_SPEED = Math.PI / 2
 const RANGE = 240
 const COOLDOWN_PERIOD = 0.5
 
+export class TurretComponent {
+  cooldownTtl: number
+
+  constructor() {
+    this.cooldownTtl = 0
+  }
+}
+
 export const update = (g: Game, dt: number): void => {
   for (const id in g.entities.entities) {
     const e = g.entities.entities[id]
