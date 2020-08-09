@@ -1,10 +1,10 @@
 import { vec2 } from 'gl-matrix'
 
+import { Damageable } from '~/components/Damageable'
+import { Team } from '~/components/team'
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { Damageable } from '~/entities/components/Damageable'
-import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
-import { Team } from '~/entities/team'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Hitbox } from '~/Hitbox'
 import { PickupType } from '~/systems/pickups'

@@ -1,9 +1,9 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { Damageable } from '~/components/Damageable'
+import { IRenderable } from '~/components/interfaces'
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { Damageable } from '~/entities/components/Damageable'
-import { IRenderable } from '~/entities/components/interfaces'
-import { Transform } from '~/entities/components/Transform'
 import { Entity } from '~/entities/Entity'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'

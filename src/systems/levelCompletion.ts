@@ -1,6 +1,6 @@
 import { some } from 'lodash'
 
-import { Team } from '~/entities/team'
+import { Team } from '~/components/team'
 import { Game, GameState } from '~/Game'
 
 export const update = (g: Game): void => {

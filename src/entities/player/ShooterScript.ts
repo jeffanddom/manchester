@@ -1,11 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
-import { Transform } from '../components/Transform'
+import { Transform } from '../../components/Transform'
 
+import { IShooterScript } from '~/components/interfaces'
+import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { IShooterScript } from '~/entities/components/interfaces'
-import { Team } from '~/entities/team'
 import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'

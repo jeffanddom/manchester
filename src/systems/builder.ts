@@ -2,9 +2,9 @@ import { glMatrix, vec2 } from 'gl-matrix'
 
 import { PickupType } from './pickups'
 
+import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
-import { Team } from '~/entities/team'
 import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
