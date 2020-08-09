@@ -1,7 +1,5 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { PickupType } from './pickups'
-
 import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
@@ -9,6 +7,8 @@ import { makeTurret } from '~/entities/turret'
 import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
+import { Primitive, Renderable } from '~/renderer/interfaces'
+import { PickupType } from '~/systems/pickups'
 import { RightClickMode } from '~/systems/playerInput'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
@@ -44,6 +44,8 @@ export class BuilderComponent {
   }
 }
 
+const debugPaths: { [key: string]: string[] } = {}
+
 const maybeSpawn = (g: Game): void => {
   const mousePos = g.mouse.getPos()
   if (
@@ -75,7 +77,7 @@ const maybeSpawn = (g: Game): void => {
 
   const destPos = g.camera.viewToWorldspace(mousePos)
   const playerTilePos = tileCoords(g.player!.transform!.position)
-  const path = pathfind(g, playerTilePos, tileCoords(destPos))
+  const [path, nodes] = pathfind(g, playerTilePos, tileCoords(destPos))
   if (!path) {
     return
   }
@@ -87,11 +89,15 @@ const maybeSpawn = (g: Game): void => {
     path: path,
   }
 
-  g.entities.register(make({ ...params, mode }))
+  const newBuilder = make({ ...params, mode })
+  debugPaths[newBuilder.id] = nodes
+  g.entities.register(newBuilder)
 }
 
 export const update = (g: Game, dt: number): void => {
   maybeSpawn(g)
+
+  const existingBuilders: string[] = []
 
   // destination system
   for (const id in g.entities.entities) {
@@ -99,6 +105,9 @@ export const update = (g: Game, dt: number): void => {
     if (!e.builder || !e.transform) {
       continue
     }
+
+    // Used for tracking live builders in debugDraw
+    existingBuilders.push(id)
 
     // If we're at a path point, remove the head of the path and
     // keep moving
@@ -139,11 +148,13 @@ export const update = (g: Game, dt: number): void => {
       !vec2.equals(e.builder.target, g.player!.transform!.position)
     ) {
       e.builder.target = vec2.clone(g.player!.transform!.position)
-      const newPath = pathfind(
+      const [newPath, newNodes] = pathfind(
         g,
         tileCoords(e.transform.position),
         tileCoords(e.builder.target),
       )
+      debugPaths[e.id] = newNodes
+
       // FIXME: this is a code smell; we should handle null better
       e.builder.path = newPath || []
     }
@@ -172,20 +183,30 @@ export const update = (g: Game, dt: number): void => {
     vec2.add(e.transform.position, e.transform.position, disp)
   }
 
-  // TODO: fix me
-  // g.debugDraw(() => {
-  //   const renderables: Renderable[] = []
-  //   for (const key in pathfinder.nodes) {
-  //     const [x, y] = key
-  //       .split(':')
-  //       .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
-  //     renderables.push({
-  //       primitive: Primitive.CIRCLE,
-  //       fillStyle: 'rgba(128,128,128,0.45)',
-  //       pos: vec2.fromValues(x, y),
-  //       radius: TILE_SIZE / 8,
-  //     })
-  //   }
-  //   return renderables
-  // })
+  g.debugDraw(() => {
+    const renderables: Renderable[] = []
+    for (const builderId in debugPaths) {
+      if (!existingBuilders.includes(builderId)) {
+        delete debugPaths[builderId]
+        continue
+      }
+
+      const builderNodes = debugPaths[builderId]
+
+      for (const key of builderNodes) {
+        const [x, y] = key
+          .split(':')
+          .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
+
+        renderables.push({
+          primitive: Primitive.CIRCLE,
+          fillStyle: 'rgba(128,128,128,0.45)',
+          pos: vec2.fromValues(x, y),
+          radius: TILE_SIZE / 8,
+        })
+      }
+    }
+
+    return renderables
+  })
 }

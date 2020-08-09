@@ -17,7 +17,11 @@ const vecToPos = (v: vec2): string => {
 
 const MAX_PATH_LENGTH = 100
 
-export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
+export const pathfind = (
+  g: Game,
+  from: vec2,
+  to: vec2,
+): [vec2[] | null, string[]] => {
   // Generate fresh node mapping
   const nodes: { [key: string]: Node } = {}
   const walls = Object.values(g.entities.entities)
@@ -68,11 +72,14 @@ export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
       }
 
       // Convert map from tile coordinates to world coordinates
-      return path.reverse().map((t) => {
-        const w = vec2.scale(vec2.create(), t, TILE_SIZE)
-        vec2.add(w, w, vec2.fromValues(TILE_SIZE / 2, TILE_SIZE / 2))
-        return w
-      })
+      return [
+        path.reverse().map((t) => {
+          const w = vec2.scale(vec2.create(), t, TILE_SIZE)
+          vec2.add(w, w, vec2.fromValues(TILE_SIZE / 2, TILE_SIZE / 2))
+          return w
+        }),
+        Object.keys(nodes),
+      ]
     }
 
     // Get neighbors we haven't visited, and sort nodes to
@@ -80,7 +87,7 @@ export const pathfind = (g: Game, from: vec2, to: vec2): vec2[] | null => {
     getNeighbors(nodes, walls, checkCoord, to).forEach((n) => toVisit.push(n))
   }
 
-  return null
+  return [null, Object.keys(nodes)]
 }
 
 // Add nodes with distances for NSEW iff they're not a wall
