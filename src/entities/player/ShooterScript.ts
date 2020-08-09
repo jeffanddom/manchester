@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Transform } from '../components/Transform'
 
 import { TILE_SIZE } from '~/constants'
-import { makeBullet } from '~/entities/Bullet'
+import { makeBullet } from '~/entities/bullet'
 import { IShooterScript } from '~/entities/components/interfaces'
 import { Team } from '~/entities/team'
 import { Game } from '~/Game'
