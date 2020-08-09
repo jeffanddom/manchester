@@ -1,9 +1,9 @@
 import { Entity } from '~/entities/Entity'
-import { makeNadaPickup } from '~/entities/pickups/Nada'
+import { makeNadaPickup } from '~/entities/pickups/nada'
 import { makePlayer } from '~/entities/player'
-import { makeTree } from '~/entities/Tree'
+import { makeTree } from '~/entities/tree'
 import { makeTurret } from '~/entities/turret'
-import { makeWall } from '~/entities/Wall'
+import { makeWall } from '~/entities/wall'
 import * as models from '~/models'
 
 export enum Type {

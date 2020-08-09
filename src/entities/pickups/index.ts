@@ -1,4 +1,4 @@
-import { makeNadaPickup } from '~/entities/pickups/Nada'
+import { makeNadaPickup } from '~/entities/pickups/nada'
 import { PickupType } from '~/systems/pickups'
 
 export const PickupConstructors = {
