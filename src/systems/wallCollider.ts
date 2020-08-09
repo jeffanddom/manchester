@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { Transform } from '~/entities/components/Transform'
 import { Game } from '~/Game'
 import { Direction } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'

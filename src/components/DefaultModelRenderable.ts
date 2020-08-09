@@ -1,4 +1,4 @@
-import { IRenderable } from '~/entities/components/interfaces'
+import { IRenderable } from '~/components/interfaces'
 import { Entity } from '~/entities/Entity'
 import { Model, toRenderables } from '~/Model'
 import { Renderable } from '~/renderer/interfaces'

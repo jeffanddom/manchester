@@ -1,7 +1,7 @@
 import { Transform } from './Transform'
 
+import { Team } from '~/components/team'
 import { Entity } from '~/entities/Entity'
-import { Team } from '~/entities/team'
 import { Game } from '~/Game'
 import { Renderable } from '~/renderer/interfaces'
 

@@ -1,14 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
-import { Transform } from '~/entities/components/Transform'
+import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
 
-export class Damager {
-  damageValue: number
+export class Damageable {
+  maxHealth: number
+  health: number
   hitbox: Hitbox
 
-  constructor(damageValue: number, hitbox: Hitbox) {
-    this.damageValue = damageValue
+  constructor(health: number, hitbox: Hitbox) {
+    this.maxHealth = health
+    this.health = health
     this.hitbox = hitbox
   }
 

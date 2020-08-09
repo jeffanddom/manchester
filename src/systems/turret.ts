@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
+import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { Team } from '~/entities/team'
 import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'

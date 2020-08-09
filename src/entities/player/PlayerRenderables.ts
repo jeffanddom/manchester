@@ -1,6 +1,6 @@
 import { mat2d } from 'gl-matrix'
 
-import { IRenderable } from '~/entities/components/interfaces'
+import { IRenderable } from '~/components/interfaces'
 import { Entity } from '~/entities/Entity'
 import { ShooterScript } from '~/entities/player/ShooterScript'
 import { toRenderables } from '~/Model'

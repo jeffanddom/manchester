@@ -1,9 +1,9 @@
 import { vec2 } from 'gl-matrix'
 
+import { Damageable } from '~/components/Damageable'
+import { Damager } from '~/components/Damager'
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { Damageable } from '~/entities/components/Damageable'
-import { Damager } from '~/entities/components/Damager'
-import { Transform } from '~/entities/components/Transform'
 import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'

@@ -1,14 +1,14 @@
 import * as uuid from 'uuid'
 
-import { Damageable } from '~/entities/components/Damageable'
-import { Damager } from '~/entities/components/Damager'
+import { Damageable } from '~/components/Damageable'
+import { Damager } from '~/components/Damager'
 import {
   IMotionScript,
   IRenderable,
   IShooterScript,
-} from '~/entities/components/interfaces'
-import { Transform } from '~/entities/components/Transform'
-import { Team } from '~/entities/team'
+} from '~/components/interfaces'
+import { Team } from '~/components/team'
+import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
 import { BuilderComponent } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
