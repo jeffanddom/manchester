@@ -27,6 +27,11 @@ export const makeTurret = (): Entity => {
       false,
     ),
   )
+  e.hitbox = new Hitbox(
+    vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    false,
+  )
   e.renderable = new TurretRenderables()
 
   return e

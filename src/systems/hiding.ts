@@ -1,3 +1,4 @@
+import { Team } from '~/components/team'
 import { Game } from '~/Game'
 import { aabbOverlapArea } from '~/util/math'
 
@@ -8,25 +9,30 @@ export const update = (g: Game): void => {
     (e) => e.hitbox && e.obscuring,
   )
 
-  const player = g.player!
-  player.obscured = false
-  const playerArea = player.hitbox!.dimensions[0] * player.hitbox!.dimensions[1]
-  let overlap = 0
+  const hideables = Object.values(g.entities.entities).filter(
+    (e) => !!e.transform && !!e.hitbox && e.team === Team.Friendly,
+  )
 
-  for (const i in obscurings) {
-    const o = obscurings[i]
-    overlap +=
-      aabbOverlapArea(
-        o.hitbox!.aabb(o.transform!.position, o.transform!.orientation),
-        player.hitbox!.aabb(
-          player.transform!.position,
-          player.transform!.orientation,
-        ),
-      ) / playerArea
+  for (const check of hideables) {
+    check.obscured = false
+    const checkArea = check.hitbox!.dimensions[0] * check.hitbox!.dimensions[1]
+    let overlap = 0
 
-    if (overlap > REQUIRED_OVERLAP) {
-      player.obscured = true
-      return
+    for (const i in obscurings) {
+      const o = obscurings[i]
+      overlap +=
+        aabbOverlapArea(
+          o.hitbox!.aabb(o.transform!.position, o.transform!.orientation),
+          check.hitbox!.aabb(
+            check.transform!.position,
+            check.transform!.orientation,
+          ),
+        ) / checkArea
+
+      if (overlap > REQUIRED_OVERLAP) {
+        check.obscured = true
+        break
+      }
     }
   }
 }

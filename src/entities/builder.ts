@@ -43,5 +43,10 @@ export const make = (params: {
       vec2.fromValues(TILE_SIZE, TILE_SIZE),
     ),
   )
+  e.hitbox = new Hitbox(
+    vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  )
+
   return e
 }
