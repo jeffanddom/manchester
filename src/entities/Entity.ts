@@ -1,12 +1,9 @@
 import * as uuid from 'uuid'
 
+import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
-import {
-  IMotionScript,
-  IRenderable,
-  IShooterScript,
-} from '~/components/interfaces'
+import { IRenderable, IShooterScript } from '~/components/interfaces'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
@@ -18,28 +15,28 @@ export class Entity {
   id: string
 
   // flags
-  wallCollider: boolean
-  wall: boolean
-  targetable: boolean
-  obscuring: boolean
-  obscured: boolean
-  enablePlayfieldClamping?: boolean
-  team: Team
-  pickupType?: PickupType
   dropType?: PickupType
+  harvestType?: PickupType
+  enablePlayfieldClamping?: boolean
+  obscured: boolean
+  obscuring: boolean
+  pickupType?: PickupType
+  targetable: boolean
+  team: Team
+  wall: boolean
+  wallCollider: boolean
 
   // components
-  transform?: Transform
-  motionScript?: IMotionScript
-  shooterScript?: IShooterScript
-  renderable?: IRenderable
-  hitbox?: Hitbox
-  harmbox?: Hitbox
+  builder?: BuilderComponent
+  bullet?: Bullet
   damageable?: Damageable
   damager?: Damager
-  builder?: BuilderComponent
-  turret?: TurretComponent
+  hitbox?: Hitbox
   inventory?: PickupType[]
+  renderable?: IRenderable
+  shooterScript?: IShooterScript
+  transform?: Transform
+  turret?: TurretComponent
 
   constructor() {
     this.id = uuid.v4()

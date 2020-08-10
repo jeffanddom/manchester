@@ -14,4 +14,15 @@ export const PickupModels = {
       fillStyle: 'blue',
     },
   ],
+  [PickupType.Wood]: [
+    {
+      path: vec2FromValuesBatch([
+        [0, -TILE_SIZE * 0.5],
+        [TILE_SIZE * 0.5, 0],
+        [0, TILE_SIZE * 0.5],
+        [-TILE_SIZE * 0.5, 0],
+      ]),
+      fillStyle: 'brown',
+    },
+  ],
 }

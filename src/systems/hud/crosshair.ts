@@ -50,10 +50,17 @@ export const update = (g: Game): void => {
 
       switch (g.playerInputState.rightClickMode) {
         case RightClickMode.HARVEST:
-          // todo
+          toRenderables(models.harvestIcon, {
+            worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
+          }).forEach((r) => g.renderer.render(r))
           break
         case RightClickMode.BUILD_TURRET:
           toRenderables(models.turret, {
+            worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
+          }).forEach((r) => g.renderer.render(r))
+          break
+        case RightClickMode.BUILD_WALL:
+          toRenderables(models.wall, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
           }).forEach((r) => g.renderer.render(r))
           break

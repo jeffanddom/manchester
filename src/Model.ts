@@ -7,6 +7,7 @@ import { Primitive, Renderable } from '~/renderer/interfaces'
 export enum ModelPrimitive {
   PATH = 0,
   CIRCLE = 1,
+  LINE = 2,
 }
 
 export interface ModelPath {
@@ -21,10 +22,18 @@ export interface ModelCircle {
   fillStyle: string
 }
 
+export interface ModelLine {
+  primitive: ModelPrimitive.LINE
+  from: vec2
+  to: vec2
+  style: string
+  width: number
+}
+
 // TODO:
 // - have notion of sort order for items
 // - allow items to be offset from model origin
-export type ModelItem = ModelPath | ModelCircle
+export type ModelItem = ModelPath | ModelCircle | ModelLine
 
 export type Model = { [key: string]: ModelItem }
 
@@ -76,6 +85,18 @@ export const toRenderables = (
             pos: c.pos,
             radius: c.radius,
             fillStyle: fillStyles[k] || r.fillStyle,
+          })
+        }
+        break
+      case ModelPrimitive.LINE:
+        {
+          const r = model[k] as ModelLine
+          result.push({
+            primitive: Primitive.LINE,
+            from: vec2.transformMat2d(vec2.create(), r.from, mwTransform),
+            to: vec2.transformMat2d(vec2.create(), r.to, mwTransform),
+            style: r.style,
+            width: r.width,
           })
         }
         break

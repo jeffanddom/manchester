@@ -11,7 +11,7 @@ import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 
 const TURRET_ROT_SPEED = Math.PI / 2
 const RANGE = 240
-const COOLDOWN_PERIOD = 0.5
+const COOLDOWN_PERIOD = 0.25
 
 export class TurretComponent {
   cooldownTtl: number
@@ -109,14 +109,14 @@ export const update = (g: Game, dt: number): void => {
       vec2.create(),
       e.transform!.position,
       e.transform!.orientation,
-      TILE_SIZE * 1.5,
+      TILE_SIZE * 0.25,
     )
 
     g.entities.register(
       makeBullet({
         position: bulletPos,
         orientation: e.transform!.orientation,
-        range: 240,
+        owner: id,
       }),
     )
 

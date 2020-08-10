@@ -22,11 +22,8 @@ export const update = (g: Game): void => {
       const o = obscurings[i]
       overlap +=
         aabbOverlapArea(
-          o.hitbox!.aabb(o.transform!.position, o.transform!.orientation),
-          check.hitbox!.aabb(
-            check.transform!.position,
-            check.transform!.orientation,
-          ),
+          o.hitbox!.aabb(o.transform!.position),
+          check.hitbox!.aabb(check.transform!.position),
         ) / checkArea
 
       if (overlap > REQUIRED_OVERLAP) {

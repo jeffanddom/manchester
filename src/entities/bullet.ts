@@ -1,50 +1,21 @@
 import { vec2 } from 'gl-matrix'
 
+import { Bullet } from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
-import { IMotionScript } from '~/components/interfaces'
 import { Transform } from '~/components/Transform'
-import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
-import { Game } from '~/Game'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
-import { radialTranslate2 } from '~/util/math'
-
-const BULLET_SPEED = 60 * (TILE_SIZE / 8)
-
-class MotionScript implements IMotionScript {
-  origin: vec2
-  range: number
-
-  constructor(origin: vec2, range: number) {
-    this.origin = origin
-    this.range = range
-  }
-
-  update(transform: Transform, entityId: string, game: Game, dt: number): void {
-    radialTranslate2(
-      transform.position,
-      transform.position,
-      transform.orientation,
-      BULLET_SPEED * dt,
-    )
-
-    if (vec2.distance(transform.position, this.origin) >= this.range) {
-      game.entities.markForDeletion(entityId)
-      return
-    }
-  }
-}
 
 export const makeBullet = ({
   position,
+  owner,
   orientation,
-  range,
 }: {
   position: vec2
+  owner: string
   orientation: number
-  range: number
 }): Entity => {
   const e = new Entity()
 
@@ -52,16 +23,14 @@ export const makeBullet = ({
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.motionScript = new MotionScript(vec2.clone(position), range)
+  e.bullet = new Bullet(vec2.clone(e.transform.position))
   e.renderable = new DefaultModelRenderable(models.bullet)
 
-  e.damager = new Damager(
-    1,
-    new Hitbox(
-      vec2.fromValues(-TILE_SIZE * 0.1, -TILE_SIZE * 0.5),
-      vec2.fromValues(TILE_SIZE * 0.2, TILE_SIZE * 0.2),
-    ),
-  )
+  e.damager = new Damager({
+    damageValue: 1,
+    hitbox: new Hitbox(vec2.fromValues(-2, -2), vec2.fromValues(4, 4)),
+    immuneList: [owner],
+  })
 
   return e
 }

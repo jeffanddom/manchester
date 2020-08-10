@@ -15,6 +15,6 @@ export class Damageable {
   }
 
   aabb(transform: Transform): [vec2, vec2] {
-    return this.hitbox.aabb(transform.position, transform.orientation)
+    return this.hitbox.aabb(transform.position)
   }
 }

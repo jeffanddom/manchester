@@ -3,7 +3,9 @@ import { glMatrix, vec2 } from 'gl-matrix'
 import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
+import { Entity } from '~/entities/Entity'
 import { makeTurret } from '~/entities/turret'
+import { makeWall } from '~/entities/wall'
 import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
 import { MouseButton } from '~/Mouse'
@@ -15,6 +17,7 @@ import { tileCoords, tileToWorld } from '~/util/tileMath'
 export enum BuilderMode {
   HARVEST,
   BUILD_TURRET,
+  BUILD_WALL,
   MOVE,
 }
 
@@ -57,18 +60,26 @@ const maybeSpawn = (g: Game): void => {
   }
 
   let mode
+  const inventory = g.player!.inventory!
   switch (g.playerInputState.rightClickMode) {
     case RightClickMode.HARVEST:
       mode = BuilderMode.HARVEST
       break
     case RightClickMode.BUILD_TURRET:
-      const inventory = g.player!.inventory!
       if (!inventory.includes(PickupType.Core)) {
         return
       }
 
       inventory.splice(inventory.indexOf(PickupType.Core), 1)
       mode = BuilderMode.BUILD_TURRET
+      break
+    case RightClickMode.BUILD_WALL:
+      if (!inventory.includes(PickupType.Wood)) {
+        return
+      }
+
+      inventory.splice(inventory.indexOf(PickupType.Wood), 1)
+      mode = BuilderMode.BUILD_WALL
       break
     case RightClickMode.MOVE_BUILDER:
       mode = BuilderMode.MOVE
@@ -119,9 +130,23 @@ export const update = (g: Game, dt: number): void => {
       e.builder.state == BuilderState.leaveHost &&
       e.builder.path.length == 0
     ) {
+      const ourTilePos = tileCoords(e.transform!.position)
       switch (e.builder.mode) {
         case BuilderMode.HARVEST:
-          // TODO
+          const harvestable = Object.values(g.entities.entities).find(
+            (other: Entity) => {
+              if (!other.harvestType || !other.transform) {
+                return false
+              }
+
+              const otherTilePos = tileCoords(other.transform!.position)
+              return vec2.equals(ourTilePos, otherTilePos)
+            },
+          )
+          if (harvestable) {
+            g.entities.markForDeletion(harvestable.id)
+            e.dropType = PickupType.Wood
+          }
           break
 
         case BuilderMode.BUILD_TURRET:
@@ -129,10 +154,16 @@ export const update = (g: Game, dt: number): void => {
 
           const turret = makeTurret()
           turret.team = Team.Friendly
-          turret.transform!.position = tileToWorld(
-            tileCoords(e.transform.position),
-          )
+          turret.transform!.position = tileToWorld(ourTilePos)
           g.entities.register(turret)
+          break
+
+        case BuilderMode.BUILD_WALL:
+          delete e.dropType
+
+          const wall = makeWall()
+          wall.transform!.position = tileToWorld(ourTilePos)
+          g.entities.register(wall)
           break
 
         case BuilderMode.MOVE:
@@ -163,6 +194,9 @@ export const update = (g: Game, dt: number): void => {
       e.builder.state == BuilderState.returnToHost &&
       e.builder.path.length == 0
     ) {
+      if (e.dropType) {
+        g.player!.inventory!.push(e.dropType)
+      }
       g.entities.markForDeletion(id)
       continue
     }

@@ -1,6 +1,7 @@
 export { model as builder } from './builder'
 export { model as bullet } from './bullet'
-export { model as pickup } from './pickup'
+export { model as harvestIcon } from './harvestIcon'
+export { model as pickup, modelWood as wood } from './pickup'
 export { model as tank } from './tank'
 export { model as tree } from './tree'
 export { model as turret } from './turret'

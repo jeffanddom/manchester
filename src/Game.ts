@@ -167,7 +167,6 @@ export class Game implements Game {
     }
 
     systems.transformInit(this)
-    systems.motion(this, dt)
 
     if (this.state === GameState.Running) {
       systems.playerInput(this, dt)
@@ -177,6 +176,7 @@ export class Game implements Game {
       systems.turret(this, dt)
     }
 
+    systems.bullet(this, dt)
     systems.pickups(this)
     systems.wallCollider(this)
     systems.attack(this)

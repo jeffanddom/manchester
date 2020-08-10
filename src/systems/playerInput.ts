@@ -12,7 +12,8 @@ const keyMap = {
   moveRight: 65, // D
   harvestMode: 49, // 1
   buildTurretMode: 50, // 2
-  moveBuilderMode: 51, // 3
+  buildWallMode: 51, // 3
+  moveBuilderMode: 52, // 4
 }
 
 export enum RightClickMode {
@@ -20,6 +21,7 @@ export enum RightClickMode {
   MOVE_BUILDER,
   HARVEST,
   BUILD_TURRET,
+  BUILD_WALL,
 }
 
 export const update = (game: Game, dt: number): void => {
@@ -30,6 +32,8 @@ export const update = (game: Game, dt: number): void => {
     game.playerInputState.rightClickMode = RightClickMode.HARVEST
   } else if (game.keyboard.downKeys.has(keyMap.buildTurretMode)) {
     game.playerInputState.rightClickMode = RightClickMode.BUILD_TURRET
+  } else if (game.keyboard.downKeys.has(keyMap.buildWallMode)) {
+    game.playerInputState.rightClickMode = RightClickMode.BUILD_WALL
   } else if (game.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
     game.playerInputState.rightClickMode = RightClickMode.MOVE_BUILDER
   } else {

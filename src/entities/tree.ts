@@ -10,6 +10,7 @@ import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Renderable } from '~/renderer/interfaces'
+import { PickupType } from '~/systems/pickups'
 
 const TREE_HEALTH = 0.1
 
@@ -35,6 +36,7 @@ class TreeRenderable implements IRenderable {
 export const makeTree = (): Entity => {
   const e = new Entity()
   e.obscuring = true
+  e.harvestType = PickupType.Wood
   e.transform = new Transform()
   e.renderable = new TreeRenderable()
   e.hitbox = new Hitbox(

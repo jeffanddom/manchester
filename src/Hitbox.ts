@@ -3,30 +3,20 @@ import { vec2 } from 'gl-matrix'
 export class Hitbox {
   offset: vec2
   dimensions: vec2
-  shouldRotate: boolean
 
-  constructor(offset: vec2, dimensions: vec2, shouldRotate?: boolean) {
+  constructor(offset: vec2, dimensions: vec2) {
     this.offset = offset
     this.dimensions = dimensions
-    this.shouldRotate = shouldRotate === undefined ? true : shouldRotate
   }
 
-  aabb(position: vec2, orientation: number): [vec2, vec2] {
-    const rotatedOffset = this.shouldRotate
-      ? vec2.rotate(
-          vec2.create(),
-          this.offset,
-          vec2.fromValues(0, 0),
-          orientation,
-        )
-      : vec2.clone(this.offset)
-    vec2.add(rotatedOffset, rotatedOffset, position)
+  aabb(position: vec2): [vec2, vec2] {
+    const offsetPosition = vec2.add(vec2.create(), this.offset, position)
 
     return [
-      rotatedOffset,
+      offsetPosition,
       vec2.fromValues(
-        rotatedOffset[0] + this.dimensions[0],
-        rotatedOffset[1] + this.dimensions[1],
+        offsetPosition[0] + this.dimensions[0],
+        offsetPosition[1] + this.dimensions[1],
       ),
     ]
   }

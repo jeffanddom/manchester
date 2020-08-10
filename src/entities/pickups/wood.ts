@@ -8,14 +8,14 @@ import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { PickupType } from '~/systems/pickups'
 
-export const makeNadaPickup = (): Entity => {
+export const makeWoodPickup = (): Entity => {
   const e = new Entity()
   e.transform = new Transform()
-  e.pickupType = PickupType.Core
+  e.pickupType = PickupType.Wood
   e.hitbox = new Hitbox(
     vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     vec2.fromValues(TILE_SIZE, TILE_SIZE),
   )
-  e.renderable = new DefaultModelRenderable(models.pickup)
+  e.renderable = new DefaultModelRenderable(models.wood)
   return e
 }

@@ -37,7 +37,7 @@ export const update = (g: Game): void => {
       return [
         {
           primitive: Primitive.RECT,
-          strokeStyle: 'magenta',
+          strokeStyle: 'black',
           pos: attackerAabb[0],
           dimensions: d,
         },
@@ -47,6 +47,7 @@ export const update = (g: Game): void => {
     const hit = damageables.find(
       ([targetId, damageable, targetTransform]) =>
         attackerId !== targetId &&
+        !damager.immuneList.includes(targetId) &&
         aabbOverlap(damageable.aabb(targetTransform), attackerAabb),
     )
     if (!hit) {

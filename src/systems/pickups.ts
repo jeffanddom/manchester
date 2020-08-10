@@ -3,6 +3,7 @@ import { aabbOverlap } from '~/util/math'
 
 export enum PickupType {
   Core = 'Core',
+  Wood = 'Wood',
 }
 
 export const update = (g: Game): void => {
@@ -15,7 +16,7 @@ export const update = (g: Game): void => {
       continue
     }
 
-    const aabb = e.hitbox!.aabb(e.transform!.position, e.transform!.orientation)
+    const aabb = e.hitbox!.aabb(e.transform!.position)
 
     if (aabbOverlap(playerAabb, aabb)) {
       player.inventory!.push(e.pickupType)

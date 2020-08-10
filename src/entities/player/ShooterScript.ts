@@ -51,14 +51,14 @@ export class ShooterScript implements IShooterScript {
         vec2.create(),
         transform.position,
         this.orientation,
-        TILE_SIZE * 0.75,
+        TILE_SIZE * 0.25,
       )
 
       game.entities.register(
         makeBullet({
           position: bulletPos,
           orientation: this.orientation,
-          range: 240,
+          owner: entityId,
         }),
       )
 
