@@ -3,12 +3,13 @@ import * as uuid from 'uuid'
 import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
-import { IRenderable, IShooterScript } from '~/components/interfaces'
+import { IRenderable } from '~/components/interfaces'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
 import { BuilderComponent } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
+import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
 export class Entity {
@@ -34,7 +35,7 @@ export class Entity {
   hitbox?: Hitbox
   inventory?: PickupType[]
   renderable?: IRenderable
-  shooterScript?: IShooterScript
+  shooter?: ShooterComponent
   transform?: Transform
   turret?: TurretComponent
 

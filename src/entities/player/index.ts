@@ -6,14 +6,14 @@ import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
-import { ShooterScript } from '~/entities/player/ShooterScript'
 import { Hitbox } from '~/Hitbox'
+import { ShooterComponent } from '~/systems/shooter'
 
 export const makePlayer = (): Entity => {
-  const shooterScript = new ShooterScript()
+  const shooter = new ShooterComponent()
   const e = new Entity()
   e.transform = new Transform()
-  e.shooterScript = shooterScript
+  e.shooter = shooter
   e.wallCollider = true
   e.targetable = true
   e.hitbox = new Hitbox(
@@ -28,7 +28,7 @@ export const makePlayer = (): Entity => {
     ),
   )
   e.enablePlayfieldClamping = true
-  e.renderable = new PlayerRenderables(shooterScript)
+  e.renderable = new PlayerRenderables(shooter)
   e.team = Team.Friendly
   e.inventory = []
 

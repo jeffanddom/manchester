@@ -2,15 +2,15 @@ import { mat2d } from 'gl-matrix'
 
 import { IRenderable } from '~/components/interfaces'
 import { Entity } from '~/entities/Entity'
-import { ShooterScript } from '~/entities/player/ShooterScript'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Renderable } from '~/renderer/interfaces'
+import { ShooterComponent } from '~/systems/shooter'
 
 export class PlayerRenderables implements IRenderable {
-  shooter: ShooterScript
+  shooter: ShooterComponent
 
-  constructor(shooter: ShooterScript) {
+  constructor(shooter: ShooterComponent) {
     this.shooter = shooter
   }
 

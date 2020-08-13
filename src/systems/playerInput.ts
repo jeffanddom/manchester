@@ -1,5 +1,6 @@
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
+import { MouseButton } from '~/Mouse'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
@@ -78,5 +79,17 @@ export const update = (game: Game, dt: number): void => {
       angle,
       PLAYER_SPEED * dt,
     )
+  }
+
+  // shooting
+  let targetPos = null
+  const mousePos = game.mouse.getPos()
+  if (mousePos) {
+    targetPos = game.camera.viewToWorldspace(mousePos)
+  }
+
+  game.player!.shooter!.input = {
+    target: targetPos,
+    fire: game.mouse.isDown(MouseButton.LEFT),
   }
 }

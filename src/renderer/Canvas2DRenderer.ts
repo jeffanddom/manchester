@@ -62,6 +62,7 @@ export class Canvas2DRenderer implements IRenderer {
             this.ctx.fillStyle = r.fillStyle
           }
           if (r.strokeStyle !== undefined) {
+            this.ctx.lineWidth = 1
             this.ctx.strokeStyle = r.strokeStyle
           }
 
