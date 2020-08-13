@@ -1,6 +1,6 @@
 import { mat2d } from 'gl-matrix'
 
-import { IRenderable } from '~/components/interfaces'
+import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import { Entity } from '~/entities/Entity'
 import { toRenderables } from '~/Model'

@@ -1,7 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
-import { IRenderable } from '~/components/interfaces'
+import { IRenderable } from '~/components/IRenderable'
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
