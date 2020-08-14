@@ -8,10 +8,8 @@ import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
 import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
-import { MouseButton } from '~/Mouse'
 import { Primitive, Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
-import { RightClickMode } from '~/systems/playerInput'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
 export enum BuilderMode {
@@ -24,6 +22,17 @@ export enum BuilderMode {
 export enum BuilderState {
   leaveHost,
   returnToHost,
+}
+
+export class BuilderCreator {
+  nextBuilder: {
+    mode: BuilderMode
+    dest: vec2
+  } | null
+
+  constructor() {
+    this.nextBuilder = null
+  }
 }
 
 export class BuilderComponent {
@@ -47,67 +56,47 @@ export class BuilderComponent {
   }
 }
 
-const debugPaths: { [key: string]: string[] } = {}
-
-const maybeSpawn = (g: Game): void => {
-  const mousePos = g.mouse.getPos()
-  if (
-    !g.mouse.isUp(MouseButton.RIGHT) ||
-    !mousePos ||
-    g.playerInputState.rightClickMode === RightClickMode.NONE
-  ) {
-    return
-  }
-
-  let mode
-  const inventory = g.player!.inventory!
-  switch (g.playerInputState.rightClickMode) {
-    case RightClickMode.HARVEST:
-      mode = BuilderMode.HARVEST
-      break
-    case RightClickMode.BUILD_TURRET:
-      if (!inventory.includes(PickupType.Core)) {
-        return
-      }
-
-      inventory.splice(inventory.indexOf(PickupType.Core), 1)
-      mode = BuilderMode.BUILD_TURRET
-      break
-    case RightClickMode.BUILD_WALL:
-      if (!inventory.includes(PickupType.Wood)) {
-        return
-      }
-
-      inventory.splice(inventory.indexOf(PickupType.Wood), 1)
-      mode = BuilderMode.BUILD_WALL
-      break
-    case RightClickMode.MOVE_BUILDER:
-      mode = BuilderMode.MOVE
-      break
-  }
-
-  const destPos = g.camera.viewToWorldspace(mousePos)
-  const playerTilePos = tileCoords(g.player!.transform!.position)
-  const [path, nodes] = pathfind(g, playerTilePos, tileCoords(destPos))
-  if (!path) {
-    return
-  }
-
-  const params = {
-    source: vec2.clone(g.player!.transform!.position),
-    destination: destPos,
-    host: g.player!.id,
-    path: path,
-  }
-
-  const newBuilder = make({ ...params, mode })
-  debugPaths[newBuilder.id] = nodes
-  g.entities.register(newBuilder)
+export const update = (g: Game, dt: number): void => {
+  spawnBuilders(g)
+  updateBuilders(g, dt)
 }
 
-export const update = (g: Game, dt: number): void => {
-  maybeSpawn(g)
+const spawnBuilders = (g: Game): void => {
+  for (const id in g.entities.entities) {
+    const e = g.entities.entities[id]
+    if (!e.transform || !e.builderCreator || !e.builderCreator.nextBuilder) {
+      continue
+    }
 
+    const playerTilePos = tileCoords(e.transform.position)
+    const [path, nodes] = pathfind(
+      g,
+      playerTilePos,
+      tileCoords(e.builderCreator.nextBuilder.dest),
+    )
+    if (!path) {
+      continue
+    }
+
+    const params = {
+      source: vec2.clone(g.player!.transform!.position),
+      destination: e.builderCreator.nextBuilder.dest,
+      host: g.player!.id,
+      path: path,
+    }
+
+    const newBuilder = make({
+      ...params,
+      mode: e.builderCreator.nextBuilder.mode,
+    })
+    debugPaths[newBuilder.id] = nodes
+    g.entities.register(newBuilder)
+  }
+}
+
+const debugPaths: { [key: string]: string[] } = {}
+
+const updateBuilders = (g: Game, dt: number): void => {
   const existingBuilders: string[] = []
 
   // destination system

@@ -1,6 +1,8 @@
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { MouseButton } from '~/Mouse'
+import { BuilderMode } from '~/systems/builder'
+import { PickupType } from '~/systems/pickups'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
@@ -26,9 +28,13 @@ export enum RightClickMode {
 }
 
 export const update = (game: Game, dt: number): void => {
-  const transform = game.player!.transform!
+  handleRightClickMode(game)
+  handleMoveInput(game, dt)
+  handleAttackInput(game)
+  handleBuilderInput(game)
+}
 
-  // Right click mode
+const handleRightClickMode = (game: Game): void => {
   if (game.keyboard.downKeys.has(keyMap.harvestMode)) {
     game.playerInputState.rightClickMode = RightClickMode.HARVEST
   } else if (game.keyboard.downKeys.has(keyMap.buildTurretMode)) {
@@ -40,10 +46,12 @@ export const update = (game: Game, dt: number): void => {
   } else {
     game.playerInputState.rightClickMode = RightClickMode.NONE
   }
+}
 
-  // Direction controls
+const handleMoveInput = (game: Game, dt: number): void => {
+  const transform = game.player!.transform!
+
   let angle
-
   if (game.keyboard.downKeys.has(keyMap.moveUp)) {
     if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
       angle = Math.PI / 4
@@ -80,8 +88,9 @@ export const update = (game: Game, dt: number): void => {
       PLAYER_SPEED * dt,
     )
   }
+}
 
-  // shooting
+const handleAttackInput = (game: Game): void => {
   let targetPos = null
   const mousePos = game.mouse.getPos()
   if (mousePos) {
@@ -91,5 +100,50 @@ export const update = (game: Game, dt: number): void => {
   game.player!.shooter!.input = {
     target: targetPos,
     fire: game.mouse.isDown(MouseButton.LEFT),
+  }
+}
+
+const handleBuilderInput = (game: Game): void => {
+  game.player!.builderCreator!.nextBuilder = null
+
+  const mousePos = game.mouse.getPos()
+  if (
+    !game.mouse.isUp(MouseButton.RIGHT) ||
+    !mousePos ||
+    game.playerInputState.rightClickMode === RightClickMode.NONE
+  ) {
+    return
+  }
+
+  const inventory = game.player!.inventory!
+  let mode
+  switch (game.playerInputState.rightClickMode) {
+    case RightClickMode.HARVEST:
+      mode = BuilderMode.HARVEST
+      break
+    case RightClickMode.BUILD_TURRET:
+      if (!inventory.includes(PickupType.Core)) {
+        return
+      }
+
+      inventory.splice(inventory.indexOf(PickupType.Core), 1)
+      mode = BuilderMode.BUILD_TURRET
+      break
+    case RightClickMode.BUILD_WALL:
+      if (!inventory.includes(PickupType.Wood)) {
+        return
+      }
+
+      inventory.splice(inventory.indexOf(PickupType.Wood), 1)
+      mode = BuilderMode.BUILD_WALL
+      break
+    case RightClickMode.MOVE_BUILDER:
+      mode = BuilderMode.MOVE
+      break
+  }
+
+  game.player!.builderCreator!.nextBuilder = {
+    mode,
+    dest: game.camera.viewToWorldspace(mousePos),
   }
 }

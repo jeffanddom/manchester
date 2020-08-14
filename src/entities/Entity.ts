@@ -7,7 +7,7 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
-import { BuilderComponent } from '~/systems/builder'
+import { BuilderComponent, BuilderCreator } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
@@ -28,6 +28,7 @@ export class Entity {
   wallCollider: boolean
 
   // components
+  builderCreator?: BuilderCreator
   builder?: BuilderComponent
   bullet?: Bullet
   damageable?: Damageable
