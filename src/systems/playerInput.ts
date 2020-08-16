@@ -24,10 +24,10 @@ export enum CursorMode {
 }
 
 export const update = (game: Game): void => {
-  handleCursorMode(game)
+  // handleCursorMode(game)
   handleMoveInput(game)
-  handleAttackInput(game)
-  handleBuilderInput(game)
+  // handleAttackInput(game)
+  // handleBuilderInput(game)
 }
 
 const handleCursorMode = (game: Game): void => {

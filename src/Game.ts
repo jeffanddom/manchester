@@ -148,7 +148,29 @@ export class Game implements Game {
     this.nextState = s
   }
 
-  update(dt: number): void {
+  clientUpdate(dt: number): void {
+    if (this.state === GameState.Running) {
+      systems.playerInput(this)
+    }
+
+    // Run client prediction simulation
+    // if (this.state === GameState.Running) {
+    //   systems.tankMover(this, dt)
+    // }
+
+    this.emitters = this.emitters.filter((e) => !e.dead)
+    this.emitters.forEach((e) => e.update(dt))
+
+    if (this.player) {
+      this.camera.setPosition(this.player.transform!.position)
+    }
+    this.camera.update(dt)
+
+    this.keyboard.update()
+    this.mouse.update()
+  }
+
+  serverUpdate(dt: number): void {
     if (this.nextState) {
       this.state = this.nextState
       this.nextState = null
@@ -169,21 +191,22 @@ export class Game implements Game {
     systems.transformInit(this)
 
     if (this.state === GameState.Running) {
-      systems.playerInput(this)
       systems.tankMover(this, dt)
-      systems.hiding(this)
-      systems.builder(this, dt)
-      systems.shooter(this, dt)
-      systems.turret(this, dt)
+      // systems.hiding(this)
+      // systems.builder(this, dt)
+      // systems.shooter(this, dt)
+      // systems.turret(this, dt)
     }
 
-    systems.bullet(this, dt)
-    systems.pickups(this)
-    systems.wallCollider(this)
-    systems.attack(this)
-    systems.damageable(this)
-    systems.playfieldClamping(this)
+    // systems.bullet(this, dt)
+    // systems.pickups(this)
+    // systems.wallCollider(this)
+    // systems.attack(this)
+    // systems.playfieldClamping(this)
 
+    // systems.damageable(this)
+
+    // FIXME: this should be a client event
     if (this.state === GameState.YouDied) {
       // 'r' for restart
       if (this.keyboard.upKeys.has(82)) {
@@ -202,17 +225,6 @@ export class Game implements Game {
     }
 
     this.entities.update() // entity cleanup
-
-    this.emitters = this.emitters.filter((e) => !e.dead)
-    this.emitters.forEach((e) => e.update(dt))
-
-    if (this.player) {
-      this.camera.setPosition(this.player.transform!.position)
-    }
-    this.camera.update(dt)
-
-    this.keyboard.update()
-    this.mouse.update()
   }
 
   render(): void {

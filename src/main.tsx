@@ -29,8 +29,6 @@ const game = new Game(canvas)
 game.setState(GameState.Running)
 window.g = window.game = game // expose game to console
 
-let prevFrameTime = time.current()
-
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
   canvas.width = size[0]
@@ -40,15 +38,34 @@ function syncViewportSize() {
 
 window.addEventListener('resize', syncViewportSize)
 
-function gameLoop() {
-  requestAnimationFrame(gameLoop)
-
-  const now = time.current()
-  const dt = now - prevFrameTime
-  prevFrameTime = now
-
-  game.update(dt)
+function clientRenderLoop() {
+  requestAnimationFrame(clientRenderLoop)
   game.render()
 }
 
-gameLoop()
+let clientPrevFrameTime = time.current()
+function clientSimulationLoop() {
+  setTimeout(clientSimulationLoop, 1000.0 / 60)
+
+  const now = time.current()
+  const dt = now - clientPrevFrameTime
+  clientPrevFrameTime = now
+
+  game.clientUpdate(dt)
+}
+
+// Server update
+let serverPrevFrameTime = time.current()
+const serverLoop = () => {
+  const now = time.current()
+  const dt = now - serverPrevFrameTime
+  serverPrevFrameTime = now
+
+  game.serverUpdate(dt)
+  setTimeout(serverLoop, 1000.0 / 10)
+}
+setTimeout(() => {
+  serverLoop()
+  clientSimulationLoop()
+  clientRenderLoop()
+}, 0)

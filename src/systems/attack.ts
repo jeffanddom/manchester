@@ -58,13 +58,18 @@ export const update = (g: Game): void => {
 
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
+
+    // TODO: change to hit event for damageable system
     damageable.health -= damager.damageValue
+
+    // TODO: client and server both delete their own bullets
     g.entities.markForDeletion(attackerId)
 
-    // Side effects:
+    // ---------------------
+
+    // Client only side-effects:
     // - explosion
     // - camera shake if player hit
-
     const explosion = new ParticleEmitter({
       spawnTtl: 0.2,
       position: radialTranslate2(
