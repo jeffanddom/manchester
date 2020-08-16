@@ -1,6 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { RightClickMode } from '../playerInput'
+import { CursorMode } from '../playerInput'
 
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
@@ -31,7 +31,7 @@ export const update = (g: Game): void => {
     })
 
     // tile indicator
-    if (g.playerInputState.rightClickMode !== RightClickMode.NONE) {
+    if (g.playerInputState.cursorMode !== CursorMode.NONE) {
       const tileWorldPos = tileToWorld(tileCoords(topLeft))
 
       g.renderer.render({
@@ -48,23 +48,23 @@ export const update = (g: Game): void => {
 
       g.renderer.setGlobalOpacity(0.5)
 
-      switch (g.playerInputState.rightClickMode) {
-        case RightClickMode.HARVEST:
+      switch (g.playerInputState.cursorMode) {
+        case CursorMode.HARVEST:
           toRenderables(models.harvestIcon, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
           }).forEach((r) => g.renderer.render(r))
           break
-        case RightClickMode.BUILD_TURRET:
+        case CursorMode.BUILD_TURRET:
           toRenderables(models.turret, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
           }).forEach((r) => g.renderer.render(r))
           break
-        case RightClickMode.BUILD_WALL:
+        case CursorMode.BUILD_WALL:
           toRenderables(models.wall, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
           }).forEach((r) => g.renderer.render(r))
           break
-        case RightClickMode.MOVE_BUILDER:
+        case CursorMode.MOVE_BUILDER:
           toRenderables(models.builder, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
           }).forEach((r) => g.renderer.render(r))

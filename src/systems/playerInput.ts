@@ -1,12 +1,8 @@
-import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
+import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
 import { BuilderMode } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
-import { radialTranslate2, rotateUntil } from '~/util/math'
-
-const PLAYER_SPEED = 60 * (TILE_SIZE / 8)
-const PLAYER_ROT_SPEED = Math.PI
 
 const keyMap = {
   moveUp: 87, // W
@@ -19,7 +15,7 @@ const keyMap = {
   moveBuilderMode: 52, // 4
 }
 
-export enum RightClickMode {
+export enum CursorMode {
   NONE,
   MOVE_BUILDER,
   HARVEST,
@@ -27,66 +23,55 @@ export enum RightClickMode {
   BUILD_WALL,
 }
 
-export const update = (game: Game, dt: number): void => {
-  handleRightClickMode(game)
-  handleMoveInput(game, dt)
+export const update = (game: Game): void => {
+  handleCursorMode(game)
+  handleMoveInput(game)
   handleAttackInput(game)
   handleBuilderInput(game)
 }
 
-const handleRightClickMode = (game: Game): void => {
+const handleCursorMode = (game: Game): void => {
   if (game.keyboard.downKeys.has(keyMap.harvestMode)) {
-    game.playerInputState.rightClickMode = RightClickMode.HARVEST
+    game.playerInputState.cursorMode = CursorMode.HARVEST
   } else if (game.keyboard.downKeys.has(keyMap.buildTurretMode)) {
-    game.playerInputState.rightClickMode = RightClickMode.BUILD_TURRET
+    game.playerInputState.cursorMode = CursorMode.BUILD_TURRET
   } else if (game.keyboard.downKeys.has(keyMap.buildWallMode)) {
-    game.playerInputState.rightClickMode = RightClickMode.BUILD_WALL
+    game.playerInputState.cursorMode = CursorMode.BUILD_WALL
   } else if (game.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
-    game.playerInputState.rightClickMode = RightClickMode.MOVE_BUILDER
+    game.playerInputState.cursorMode = CursorMode.MOVE_BUILDER
   } else {
-    game.playerInputState.rightClickMode = RightClickMode.NONE
+    game.playerInputState.cursorMode = CursorMode.NONE
   }
 }
 
-const handleMoveInput = (game: Game, dt: number): void => {
-  const transform = game.player!.transform!
-
-  let angle
+const handleMoveInput = (game: Game): void => {
+  let direction
   if (game.keyboard.downKeys.has(keyMap.moveUp)) {
     if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
-      angle = Math.PI / 4
+      direction = DirectionMove.NW
     } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
-      angle = -Math.PI / 4
+      direction = DirectionMove.NE
     } else {
-      angle = 0
+      direction = DirectionMove.N
     }
   } else if (game.keyboard.downKeys.has(keyMap.moveDown)) {
     if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
-      angle = Math.PI - Math.PI / 4
+      direction = DirectionMove.SW
     } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
-      angle = Math.PI + Math.PI / 4
+      direction = DirectionMove.SE
     } else {
-      angle = Math.PI
+      direction = DirectionMove.S
     }
   } else if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
-    angle = Math.PI / 2
+    direction = DirectionMove.W
   } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
-    angle = -Math.PI / 2
+    direction = DirectionMove.E
   }
 
-  if (angle !== undefined) {
-    transform.orientation = rotateUntil({
-      from: transform.orientation,
-      to: angle,
-      amount: PLAYER_ROT_SPEED * dt,
-    })
-
-    radialTranslate2(
-      transform.position,
-      transform.position,
-      angle,
-      PLAYER_SPEED * dt,
-    )
+  if (direction !== undefined) {
+    game.player!.tankMover!.nextInput = { requestedDirection: direction }
+  } else {
+    game.player!.tankMover!.nextInput = null
   }
 }
 
@@ -110,18 +95,18 @@ const handleBuilderInput = (game: Game): void => {
   if (
     !game.mouse.isUp(MouseButton.RIGHT) ||
     !mousePos ||
-    game.playerInputState.rightClickMode === RightClickMode.NONE
+    game.playerInputState.cursorMode === CursorMode.NONE
   ) {
     return
   }
 
   const inventory = game.player!.inventory!
   let mode
-  switch (game.playerInputState.rightClickMode) {
-    case RightClickMode.HARVEST:
+  switch (game.playerInputState.cursorMode) {
+    case CursorMode.HARVEST:
       mode = BuilderMode.HARVEST
       break
-    case RightClickMode.BUILD_TURRET:
+    case CursorMode.BUILD_TURRET:
       if (!inventory.includes(PickupType.Core)) {
         return
       }
@@ -129,7 +114,7 @@ const handleBuilderInput = (game: Game): void => {
       inventory.splice(inventory.indexOf(PickupType.Core), 1)
       mode = BuilderMode.BUILD_TURRET
       break
-    case RightClickMode.BUILD_WALL:
+    case CursorMode.BUILD_WALL:
       if (!inventory.includes(PickupType.Wood)) {
         return
       }
@@ -137,7 +122,7 @@ const handleBuilderInput = (game: Game): void => {
       inventory.splice(inventory.indexOf(PickupType.Wood), 1)
       mode = BuilderMode.BUILD_WALL
       break
-    case RightClickMode.MOVE_BUILDER:
+    case CursorMode.MOVE_BUILDER:
       mode = BuilderMode.MOVE
       break
   }

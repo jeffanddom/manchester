@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
-import { Direction } from '~/interfaces'
+import { DirectionCollision } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (g: Game): void => {
@@ -16,7 +16,7 @@ export const update = (g: Game): void => {
     // Get all walls colliding with this entity
     const myBox = tileBox(e.transform.position)
     const previousBox = tileBox(e.transform.previousPosition)
-    let collided: [Transform, Direction, number][] = []
+    let collided: [Transform, DirectionCollision, number][] = []
     for (const id in g.entities.entities) {
       const other = g.entities.entities[id]
       if (!other.wall || !other.transform) {
@@ -33,19 +33,35 @@ export const update = (g: Game): void => {
       ) {
         // North
         if (previousBox[1][1] < wallBox[0][1] && myBox[1][1] > wallBox[0][1]) {
-          collided.push([otherTransform, Direction.North, wallBox[0][1]])
+          collided.push([
+            otherTransform,
+            DirectionCollision.North,
+            wallBox[0][1],
+          ])
         }
         // South
         if (previousBox[0][1] > wallBox[1][1] && myBox[0][1] < wallBox[1][1]) {
-          collided.push([otherTransform, Direction.South, wallBox[1][1]])
+          collided.push([
+            otherTransform,
+            DirectionCollision.South,
+            wallBox[1][1],
+          ])
         }
         // East
         if (previousBox[0][0] > wallBox[1][0] && myBox[0][0] < wallBox[1][0]) {
-          collided.push([otherTransform, Direction.East, wallBox[1][0]])
+          collided.push([
+            otherTransform,
+            DirectionCollision.East,
+            wallBox[1][0],
+          ])
         }
         // West
         if (previousBox[1][0] < wallBox[0][0] && myBox[1][0] > wallBox[0][0]) {
-          collided.push([otherTransform, Direction.West, wallBox[0][0]])
+          collided.push([
+            otherTransform,
+            DirectionCollision.West,
+            wallBox[0][0],
+          ])
         }
       }
     }
@@ -56,7 +72,7 @@ export const update = (g: Game): void => {
       const coords = tileCoords(wallTransform.position)
 
       switch (direction) {
-        case Direction.North:
+        case DirectionCollision.North:
           return (
             collided.find((c) =>
               vec2.equals(
@@ -65,7 +81,7 @@ export const update = (g: Game): void => {
               ),
             ) === undefined
           )
-        case Direction.South:
+        case DirectionCollision.South:
           return (
             collided.find((c) =>
               vec2.equals(
@@ -74,7 +90,7 @@ export const update = (g: Game): void => {
               ),
             ) === undefined
           )
-        case Direction.East:
+        case DirectionCollision.East:
           return (
             collided.find((c) =>
               vec2.equals(
@@ -83,7 +99,7 @@ export const update = (g: Game): void => {
               ),
             ) === undefined
           )
-        case Direction.West:
+        case DirectionCollision.West:
           return (
             collided.find((c) =>
               vec2.equals(
@@ -104,25 +120,25 @@ export const update = (g: Game): void => {
       const value = collision[2]
       const offset = TILE_SIZE / 2 + 1 / 1000
       switch (direction) {
-        case Direction.North:
+        case DirectionCollision.North:
           transform.position = vec2.fromValues(
             transform.position[0],
             value - offset,
           )
           break
-        case Direction.South:
+        case DirectionCollision.South:
           transform.position = vec2.fromValues(
             transform.position[0],
             value + offset,
           )
           break
-        case Direction.East:
+        case DirectionCollision.East:
           transform.position = vec2.fromValues(
             value + offset,
             transform.position[1],
           )
           break
-        case Direction.West:
+        case DirectionCollision.West:
           transform.position = vec2.fromValues(
             value - offset,
             transform.position[1],

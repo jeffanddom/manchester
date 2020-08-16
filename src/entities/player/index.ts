@@ -9,6 +9,7 @@ import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Hitbox } from '~/Hitbox'
 import { BuilderCreator } from '~/systems/builder'
 import { ShooterComponent } from '~/systems/shooter'
+import { TankMoverComponent } from '~/systems/tankMover'
 
 export const makePlayer = (): Entity => {
   const shooter = new ShooterComponent()
@@ -16,6 +17,7 @@ export const makePlayer = (): Entity => {
 
   e.builderCreator = new BuilderCreator()
   e.transform = new Transform()
+  e.tankMover = new TankMoverComponent()
   e.shooter = shooter
   e.wallCollider = true
   e.targetable = true

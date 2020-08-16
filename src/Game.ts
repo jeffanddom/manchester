@@ -1,6 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { RightClickMode } from './systems/playerInput'
+import { CursorMode } from './systems/playerInput'
 
 import { maps } from '~/assets/maps'
 import { Camera } from '~/Camera'
@@ -52,7 +52,7 @@ export class Game implements Game {
 
   player: Entity | null
   playerInputState: {
-    rightClickMode: RightClickMode
+    cursorMode: CursorMode
   }
 
   camera: Camera
@@ -81,7 +81,7 @@ export class Game implements Game {
     })
 
     this.player = null
-    this.playerInputState = { rightClickMode: RightClickMode.NONE }
+    this.playerInputState = { cursorMode: CursorMode.NONE }
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -169,7 +169,8 @@ export class Game implements Game {
     systems.transformInit(this)
 
     if (this.state === GameState.Running) {
-      systems.playerInput(this, dt)
+      systems.playerInput(this)
+      systems.tankMover(this, dt)
       systems.hiding(this)
       systems.builder(this, dt)
       systems.shooter(this, dt)

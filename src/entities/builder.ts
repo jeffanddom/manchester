@@ -24,6 +24,8 @@ export const make = (params: {
 
   if (params.mode === BuilderMode.BUILD_TURRET) {
     e.dropType = PickupType.Core
+  } else if (params.mode === BuilderMode.BUILD_WALL) {
+    e.dropType = PickupType.Wood
   }
 
   e.builder = new BuilderComponent({

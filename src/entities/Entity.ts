@@ -10,6 +10,7 @@ import { Hitbox } from '~/Hitbox'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
+import { TankMoverComponent } from '~/systems/tankMover'
 import { TurretComponent } from '~/systems/turret'
 
 export class Entity {
@@ -37,6 +38,7 @@ export class Entity {
   inventory?: PickupType[]
   renderable?: IRenderable
   shooter?: ShooterComponent
+  tankMover?: TankMoverComponent
   transform?: Transform
   turret?: TurretComponent
 
