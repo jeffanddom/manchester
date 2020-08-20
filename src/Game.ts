@@ -161,11 +161,6 @@ export class Game implements Game {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    if (this.player) {
-      this.camera.setPosition(this.player.transform!.position)
-    }
-    this.camera.update(dt)
-
     this.keyboard.update()
     this.mouse.update()
   }
@@ -224,10 +219,19 @@ export class Game implements Game {
       }
     }
 
+    if (this.player) {
+      this.camera.setPosition(this.player.transform!.position)
+    }
+    this.camera.update(dt)
+
     this.entities.update() // entity cleanup
   }
 
   render(): void {
+    if (this.keyboard.downKeys.size > 0) {
+      console.log(this.player!.transform!.position)
+    }
+
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())

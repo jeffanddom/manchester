@@ -2,6 +2,8 @@ import { vec2 } from 'gl-matrix'
 // import * as React from 'react'
 // import * as ReactDOM from 'react-dom'
 
+import { render } from 'react-dom'
+
 import { Game, GameState } from '~/Game'
 // import { Controls } from '~/ui/Controls'
 import * as time from '~/util/time'
@@ -38,8 +40,16 @@ function syncViewportSize() {
 
 window.addEventListener('resize', syncViewportSize)
 
+let renderPrevFrame = time.current()
 function clientRenderLoop() {
   requestAnimationFrame(clientRenderLoop)
+
+  const now = time.current()
+  const dt = now - renderPrevFrame
+  renderPrevFrame = now
+
+  game.clientUpdate(dt)
+  game.serverUpdate(dt)
   game.render()
 }
 
@@ -52,6 +62,7 @@ function clientSimulationLoop() {
   clientPrevFrameTime = now
 
   game.clientUpdate(dt)
+  game.serverUpdate(dt)
 }
 
 // Server update
@@ -64,8 +75,8 @@ const serverLoop = () => {
   game.serverUpdate(dt)
   setTimeout(serverLoop, 1000.0 / 10)
 }
-setTimeout(() => {
-  serverLoop()
-  clientSimulationLoop()
-  clientRenderLoop()
-}, 0)
+
+// serverLoop()
+// clientSimulationLoop()
+
+clientRenderLoop()
