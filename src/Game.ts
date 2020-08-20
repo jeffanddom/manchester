@@ -1,9 +1,9 @@
 import { mat2d, vec2 } from 'gl-matrix'
-
-import { CursorMode } from './systems/playerInput'
+import * as _ from 'lodash'
 
 import { maps } from '~/assets/maps'
 import { Camera } from '~/Camera'
+import { ClientMessage } from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { Entity } from '~/entities/Entity'
@@ -20,6 +20,7 @@ import {
   TextAlign,
 } from '~/renderer/interfaces'
 import * as systems from '~/systems'
+import { CursorMode } from '~/systems/playerInput'
 import * as terrain from '~/terrain'
 
 export enum GameState {
@@ -32,6 +33,9 @@ export enum GameState {
 const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
+  clientMessageQueue: ClientMessage[]
+  clientEntityManager: EntityManager
+
   state: GameState
   nextState: GameState | null
 
@@ -58,6 +62,9 @@ export class Game implements Game {
   camera: Camera
 
   constructor(canvas: HTMLCanvasElement) {
+    this.clientMessageQueue = []
+    this.clientEntityManager = new EntityManager()
+
     this.state = GameState.None
     this.nextState = null
 
@@ -148,24 +155,29 @@ export class Game implements Game {
     this.nextState = s
   }
 
-  clientUpdate(dt: number): void {
+  clientUpdate(dt: number, frame: number): void {
     if (this.state === GameState.Running) {
-      systems.playerInput(this)
+      systems.playerInput(this, frame)
     }
-
-    // Run client prediction simulation
-    // if (this.state === GameState.Running) {
-    //   systems.tankMover(this, dt)
-    // }
 
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
+
+    // Apply server state
+    this.clientEntityManager.entities = _.cloneDeep(this.entities.entities)
+
+    if (this.player) {
+      this.camera.setPosition(
+        this.clientEntityManager.getPlayer()!.transform!.position,
+      )
+    }
+    this.camera.update(dt)
 
     this.keyboard.update()
     this.mouse.update()
   }
 
-  serverUpdate(dt: number): void {
+  serverUpdate(dt: number, frame: number): void {
     if (this.nextState) {
       this.state = this.nextState
       this.nextState = null
@@ -186,7 +198,7 @@ export class Game implements Game {
     systems.transformInit(this)
 
     if (this.state === GameState.Running) {
-      systems.tankMover(this, dt)
+      systems.tankMover(this, dt, frame)
       // systems.hiding(this)
       // systems.builder(this, dt)
       // systems.shooter(this, dt)
@@ -219,19 +231,15 @@ export class Game implements Game {
       }
     }
 
-    if (this.player) {
-      this.camera.setPosition(this.player.transform!.position)
-    }
-    this.camera.update(dt)
-
     this.entities.update() // entity cleanup
+
+    // client message cleanup
+    this.clientMessageQueue = this.clientMessageQueue.filter(
+      (m) => m.frame > frame,
+    )
   }
 
   render(): void {
-    if (this.keyboard.downKeys.size > 0) {
-      console.log(this.player!.transform!.position)
-    }
-
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())
@@ -239,7 +247,9 @@ export class Game implements Game {
     this.terrainLayer
       .getRenderables(this.camera.getVisibleExtents())
       .forEach((r) => this.renderer.render(r))
-    this.entities.getRenderables().forEach((r) => this.renderer.render(r))
+    this.clientEntityManager
+      .getRenderables()
+      .forEach((r) => this.renderer.render(r))
     this.emitters!.forEach((e) =>
       e.getRenderables().forEach((r) => this.renderer.render(r)),
     )

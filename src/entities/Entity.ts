@@ -10,7 +10,6 @@ import { Hitbox } from '~/Hitbox'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
-import { TankMoverComponent } from '~/systems/tankMover'
 import { TurretComponent } from '~/systems/turret'
 
 export class Entity {
@@ -22,6 +21,7 @@ export class Entity {
   enablePlayfieldClamping?: boolean
   obscured: boolean
   obscuring: boolean
+  player: boolean
   pickupType?: PickupType
   targetable: boolean
   team: Team
@@ -38,19 +38,19 @@ export class Entity {
   inventory?: PickupType[]
   renderable?: IRenderable
   shooter?: ShooterComponent
-  tankMover?: TankMoverComponent
   transform?: Transform
   turret?: TurretComponent
 
   constructor() {
     this.id = uuid.v4()
 
+    this.enablePlayfieldClamping = false
+    this.obscured = false
+    this.obscuring = false
+    this.player = false
+    this.targetable = false
+    this.team = Team.Neutral
     this.wall = false
     this.wallCollider = false
-    this.targetable = false
-    this.obscuring = false
-    this.obscured = false
-    this.enablePlayfieldClamping = false
-    this.team = Team.Neutral
   }
 }

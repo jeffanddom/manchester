@@ -27,6 +27,10 @@ export class EntityManager {
     return renderables
   }
 
+  getPlayer(): Entity | null {
+    return Object.values(this.entities).find((e) => e.player) || null
+  }
+
   register(e: Entity): void {
     this.entities[e.id] = e
   }

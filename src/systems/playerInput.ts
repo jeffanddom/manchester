@@ -1,3 +1,4 @@
+import { ClientMessageType } from '~/ClientMessage'
 import { Game } from '~/Game'
 import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
@@ -23,9 +24,9 @@ export enum CursorMode {
   BUILD_WALL,
 }
 
-export const update = (game: Game): void => {
+export const update = (game: Game, frame: number): void => {
   // handleCursorMode(game)
-  handleMoveInput(game)
+  handleMoveInput(game, frame)
   // handleAttackInput(game)
   // handleBuilderInput(game)
 }
@@ -44,7 +45,7 @@ const handleCursorMode = (game: Game): void => {
   }
 }
 
-const handleMoveInput = (game: Game): void => {
+const handleMoveInput = (game: Game, frame: number): void => {
   let direction
   if (game.keyboard.downKeys.has(keyMap.moveUp)) {
     if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
@@ -69,9 +70,11 @@ const handleMoveInput = (game: Game): void => {
   }
 
   if (direction !== undefined) {
-    game.player!.tankMover!.nextInput = { requestedDirection: direction }
-  } else {
-    game.player!.tankMover!.nextInput = null
+    game.clientMessageQueue.push({
+      frame,
+      type: ClientMessageType.MOVE_PLAYER,
+      direction,
+    })
   }
 }
 

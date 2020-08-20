@@ -9,22 +9,18 @@ import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Hitbox } from '~/Hitbox'
 import { BuilderCreator } from '~/systems/builder'
 import { ShooterComponent } from '~/systems/shooter'
-import { TankMoverComponent } from '~/systems/tankMover'
 
 export const makePlayer = (): Entity => {
-  const shooter = new ShooterComponent()
   const e = new Entity()
 
-  e.builderCreator = new BuilderCreator()
-  e.transform = new Transform()
-  e.tankMover = new TankMoverComponent()
-  e.shooter = shooter
-  e.wallCollider = true
+  e.enablePlayfieldClamping = true
+  e.player = true
   e.targetable = true
-  e.hitbox = new Hitbox(
-    vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
-    vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
-  )
+  e.team = Team.Friendly
+  e.wallCollider = true
+
+  const shooter = new ShooterComponent()
+  e.builderCreator = new BuilderCreator()
   e.damageable = new Damageable(
     10,
     new Hitbox(
@@ -32,10 +28,14 @@ export const makePlayer = (): Entity => {
       vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
     ),
   )
-  e.enablePlayfieldClamping = true
-  e.renderable = new PlayerRenderables(shooter)
-  e.team = Team.Friendly
   e.inventory = []
+  e.renderable = new PlayerRenderables(shooter)
+  e.hitbox = new Hitbox(
+    vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
+    vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
+  )
+  e.shooter = shooter
+  e.transform = new Transform()
 
   return e
 }
