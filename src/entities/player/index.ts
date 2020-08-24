@@ -2,16 +2,18 @@ import { vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { Team } from '~/components/team'
-import { Transform } from '~/components/Transform'
+import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
+import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { BuilderCreator } from '~/systems/builder'
 import { ShooterComponent } from '~/systems/shooter'
 
 export const makePlayer = (): Entity => {
   const e = new Entity()
+  e.type = Type.PLAYER
 
   e.enablePlayfieldClamping = true
   e.player = true
@@ -35,7 +37,8 @@ export const makePlayer = (): Entity => {
     vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
   )
   e.shooter = shooter
-  e.transform = new Transform()
+
+  e.transform = transform.make()
 
   return e
 }

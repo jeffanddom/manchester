@@ -1,5 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
-import * as _ from 'lodash'
+
+import { convertToServerMessage } from './util/entities'
 
 import { maps } from '~/assets/maps'
 import { Camera } from '~/Camera'
@@ -19,6 +20,7 @@ import {
   Renderable,
   TextAlign,
 } from '~/renderer/interfaces'
+import { ServerMessage } from '~/ServerMessage'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/playerInput'
 import * as terrain from '~/terrain'
@@ -33,37 +35,43 @@ export enum GameState {
 const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
-  clientMessageQueue: ClientMessage[]
+  // Client data
+  serverMessageQueue: ServerMessage[]
   clientEntityManager: EntityManager
+  emitters: ParticleEmitter[]
 
+  camera: Camera
+  keyboard: Keyboard
+  mouse: Mouse
+
+  playerInputState: {
+    cursorMode: CursorMode
+  }
+
+  renderer: IRenderer
+  enableDebugDraw: boolean
+
+  // Server data
+  clientMessageQueue: ClientMessage[]
+  serverEntityManager: EntityManager
+
+  // Shared data (should be nothing eventually...)
   state: GameState
   nextState: GameState | null
 
   currentLevel: number
 
-  renderer: IRenderer
-
-  enableDebugDraw: boolean
   debugDrawRenderables: Renderable[]
 
   map: Map
   terrainLayer: terrain.Layer
-  entities: EntityManager
-  emitters: ParticleEmitter[]
-
-  keyboard: Keyboard
-  mouse: Mouse
 
   player: Entity | null
-  playerInputState: {
-    cursorMode: CursorMode
-  }
-
-  camera: Camera
 
   constructor(canvas: HTMLCanvasElement) {
-    this.clientMessageQueue = []
+    this.serverMessageQueue = []
     this.clientEntityManager = new EntityManager()
+    this.emitters = []
 
     this.state = GameState.None
     this.nextState = null
@@ -74,8 +82,8 @@ export class Game implements Game {
     this.enableDebugDraw = false
     this.debugDrawRenderables = []
 
-    this.entities = new EntityManager()
-    this.emitters = []
+    this.clientMessageQueue = []
+    this.serverEntityManager = new EntityManager()
 
     this.keyboard = new Keyboard()
     this.mouse = new Mouse(canvas)
@@ -108,7 +116,7 @@ export class Game implements Game {
   }
 
   startPlay(): void {
-    this.entities = new EntityManager()
+    this.serverEntityManager = new EntityManager()
     this.emitters = []
     this.player = null
 
@@ -142,7 +150,7 @@ export class Game implements Game {
           )
         }
 
-        this.entities.register(entity)
+        this.serverEntityManager.register(entity)
 
         if (et === entities.types.Type.PLAYER) {
           this.player = entity
@@ -156,6 +164,12 @@ export class Game implements Game {
   }
 
   clientUpdate(dt: number, frame: number): void {
+    // get server messages up to now
+    systems.syncServerState(this, frame)
+    // apply previous predictions
+    // predict next input
+    // cache frame state
+
     if (this.state === GameState.Running) {
       systems.playerInput(this, frame)
     }
@@ -164,9 +178,12 @@ export class Game implements Game {
     this.emitters.forEach((e) => e.update(dt))
 
     // Apply server state
-    this.clientEntityManager.entities = _.cloneDeep(this.entities.entities)
+    // TODO: receive server message
+    // this.clientEntityManager.entities = _.cloneDeep(
+    //   this.serverEntityManager.entities,
+    // )
 
-    if (this.player) {
+    if (this.clientEntityManager.getPlayer()) {
       this.camera.setPosition(
         this.clientEntityManager.getPlayer()!.transform!.position,
       )
@@ -175,6 +192,11 @@ export class Game implements Game {
 
     this.keyboard.update()
     this.mouse.update()
+
+    // server message cleanup
+    this.serverMessageQueue = this.serverMessageQueue.filter(
+      (m) => m.frame > frame,
+    )
   }
 
   serverUpdate(dt: number, frame: number): void {
@@ -231,12 +253,19 @@ export class Game implements Game {
       }
     }
 
-    this.entities.update() // entity cleanup
+    this.serverEntityManager.update() // entity cleanup
 
     // client message cleanup
     this.clientMessageQueue = this.clientMessageQueue.filter(
       (m) => m.frame > frame,
     )
+
+    // Enqueue server state for the client
+    const serverMessage = {
+      frame,
+      entities: convertToServerMessage(this.serverEntityManager.entities),
+    }
+    this.serverMessageQueue.push(serverMessage)
   }
 
   render(): void {
@@ -267,8 +296,8 @@ export class Game implements Game {
 
     this.renderer.setTransform(mat2d.identity(mat2d.create()))
 
-    systems.playerHealthBar(this)
-    systems.inventoryDisplay(this)
+    // systems.playerHealthBar(this)
+    // systems.inventoryDisplay(this)
 
     if (this.state === GameState.YouDied) {
       this.renderer.render({

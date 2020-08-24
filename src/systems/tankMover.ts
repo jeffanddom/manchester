@@ -14,7 +14,7 @@ export const update = (game: Game, dt: number, frame: number): void => {
     return
   }
 
-  const player = game.entities.getPlayer()
+  const player = game.serverEntityManager.getPlayer()
   if (!player) {
     return
   }

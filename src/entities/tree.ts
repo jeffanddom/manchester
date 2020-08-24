@@ -3,9 +3,10 @@ import { sample } from 'lodash'
 
 import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
-import { Transform } from '~/components/Transform'
+import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
+import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
@@ -35,9 +36,11 @@ class TreeRenderable implements IRenderable {
 
 export const makeTree = (): Entity => {
   const e = new Entity()
+  e.type = Type.TREE
+
   e.obscuring = true
   e.harvestType = PickupType.Wood
-  e.transform = new Transform()
+  e.transform = transform.make()
   e.renderable = new TreeRenderable()
   e.hitbox = new Hitbox(
     vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),

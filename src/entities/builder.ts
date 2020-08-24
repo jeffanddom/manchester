@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Damageable } from '~/components/Damageable'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import { Team } from '~/components/team'
-import { Transform } from '~/components/Transform'
+import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { Hitbox } from '~/Hitbox'
@@ -19,7 +19,7 @@ export const make = (params: {
   path: vec2[]
 }): Entity => {
   const e = new Entity()
-  e.transform = new Transform()
+  e.transform = transform.make()
   e.transform.position = params.source
 
   if (params.mode === BuilderMode.BUILD_TURRET) {

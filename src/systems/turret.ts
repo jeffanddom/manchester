@@ -22,15 +22,15 @@ export class TurretComponent {
 }
 
 export const update = (g: Game, dt: number): void => {
-  for (const id in g.entities.entities) {
-    const e = g.entities.entities[id]
+  for (const id in g.serverEntityManager.entities) {
+    const e = g.serverEntityManager.entities[id]
     if (!e.turret) {
       continue
     }
 
     // I. Find a target
 
-    const shootables = Object.values(g.entities.entities)
+    const shootables = Object.values(g.serverEntityManager.entities)
       .filter(
         (other) =>
           !!other.transform &&
@@ -112,7 +112,7 @@ export const update = (g: Game, dt: number): void => {
       TILE_SIZE * 0.25,
     )
 
-    g.entities.register(
+    g.serverEntityManager.register(
       makeBullet({
         position: bulletPos,
         orientation: e.transform!.orientation,

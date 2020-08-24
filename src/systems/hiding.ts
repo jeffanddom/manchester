@@ -5,11 +5,11 @@ import { aabbOverlapArea } from '~/util/math'
 const REQUIRED_OVERLAP = 0.5
 
 export const update = (g: Game): void => {
-  const obscurings = Object.values(g.entities.entities).filter(
+  const obscurings = Object.values(g.serverEntityManager.entities).filter(
     (e) => e.hitbox && e.obscuring,
   )
 
-  const hideables = Object.values(g.entities.entities).filter(
+  const hideables = Object.values(g.serverEntityManager.entities).filter(
     (e) => !!e.transform && !!e.hitbox && e.team === Team.Friendly,
   )
 

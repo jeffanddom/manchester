@@ -24,8 +24,8 @@ export class ShooterComponent {
 }
 
 export const update = (g: Game, dt: number): void => {
-  for (const id in g.entities.entities) {
-    const e = g.entities.entities[id]
+  for (const id in g.serverEntityManager.entities) {
+    const e = g.serverEntityManager.entities[id]
     if (!e.transform || !e.shooter) {
       continue
     }
@@ -54,7 +54,7 @@ export const update = (g: Game, dt: number): void => {
         TILE_SIZE * 0.25,
       )
 
-      g.entities.register(
+      g.serverEntityManager.register(
         makeBullet({
           position: bulletPos,
           orientation: e.shooter.orientation,

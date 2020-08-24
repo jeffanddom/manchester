@@ -1,14 +1,14 @@
 import { vec2 } from 'gl-matrix'
 
-import { Transform } from '~/components/Transform'
+import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { DirectionCollision } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (g: Game): void => {
-  for (const id in g.entities.entities) {
-    const e = g.entities.entities[id]
+  for (const id in g.serverEntityManager.entities) {
+    const e = g.serverEntityManager.entities[id]
     if (!e.transform || !e.wallCollider) {
       continue
     }
@@ -16,9 +16,9 @@ export const update = (g: Game): void => {
     // Get all walls colliding with this entity
     const myBox = tileBox(e.transform.position)
     const previousBox = tileBox(e.transform.previousPosition)
-    let collided: [Transform, DirectionCollision, number][] = []
-    for (const id in g.entities.entities) {
-      const other = g.entities.entities[id]
+    let collided: [ITransform, DirectionCollision, number][] = []
+    for (const id in g.serverEntityManager.entities) {
+      const other = g.serverEntityManager.entities[id]
       if (!other.wall || !other.transform) {
         continue
       }

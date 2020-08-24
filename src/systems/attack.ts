@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
-import { Transform } from '~/components/Transform'
+import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -10,11 +10,11 @@ import { Primitive } from '~/renderer/interfaces'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 
 export const update = (g: Game): void => {
-  const damagers: [string, Damager, Transform][] = []
-  const damageables: [string, Damageable, Transform][] = []
+  const damagers: [string, Damager, ITransform][] = []
+  const damageables: [string, Damageable, ITransform][] = []
 
-  for (const id in g.entities.entities) {
-    const e = g.entities.entities[id]
+  for (const id in g.serverEntityManager.entities) {
+    const e = g.serverEntityManager.entities[id]
     if (!e.transform) {
       continue
     }
@@ -63,7 +63,7 @@ export const update = (g: Game): void => {
     damageable.health -= damager.damageValue
 
     // TODO: client and server both delete their own bullets
-    g.entities.markForDeletion(attackerId)
+    g.serverEntityManager.markForDeletion(attackerId)
 
     // ---------------------
 

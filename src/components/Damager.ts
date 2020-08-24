@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Transform } from '~/components/Transform'
+import { ITransform } from '~/components/transform'
 import { Hitbox } from '~/Hitbox'
 
 export class Damager {
@@ -22,7 +22,7 @@ export class Damager {
     this.immuneList = immuneList
   }
 
-  aabb(transform: Transform): [vec2, vec2] {
+  aabb(transform: ITransform): [vec2, vec2] {
     return this.hitbox.aabb(transform.position)
   }
 }

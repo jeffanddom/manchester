@@ -2,9 +2,10 @@ import { mat2d, vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
-import { Transform } from '~/components/Transform'
+import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
+import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
@@ -34,7 +35,9 @@ class WallRenderable implements IRenderable {
 
 export const makeWall = (): Entity => {
   const e = new Entity()
-  e.transform = new Transform()
+  e.type = Type.WALL
+
+  e.transform = transform.make()
   e.wall = true
   e.targetable = true
   e.renderable = new WallRenderable()

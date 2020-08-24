@@ -8,8 +8,8 @@ import { Primitive } from '~/renderer/interfaces'
 import { radialTranslate2 } from '~/util/math'
 
 export const update = (g: Game): void => {
-  for (const id in g.entities.entities) {
-    const e = g.entities.entities[id]
+  for (const id in g.serverEntityManager.entities) {
+    const e = g.serverEntityManager.entities[id]
     const transform = e.transform
     const damageable = e.damageable
     if (!transform || !damageable) {
@@ -34,9 +34,9 @@ export const update = (g: Game): void => {
         const core = PickupConstructors[e.dropType]()
         core.transform!.position = vec2.clone(e.transform!.position)
 
-        g.entities.register(core)
+        g.serverEntityManager.register(core)
       }
-      g.entities.markForDeletion(id)
+      g.serverEntityManager.markForDeletion(id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),

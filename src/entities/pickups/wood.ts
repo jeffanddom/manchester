@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
-import { Transform } from '~/components/Transform'
+import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { Hitbox } from '~/Hitbox'
@@ -10,7 +10,7 @@ import { PickupType } from '~/systems/pickups'
 
 export const makeWoodPickup = (): Entity => {
   const e = new Entity()
-  e.transform = new Transform()
+  e.transform = transform.make()
   e.pickupType = PickupType.Wood
   e.hitbox = new Hitbox(
     vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
