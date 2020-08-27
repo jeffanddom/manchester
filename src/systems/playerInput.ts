@@ -70,7 +70,7 @@ const handleMoveInput = (game: Game, frame: number): void => {
   }
 
   if (direction !== undefined) {
-    game.clientMessageQueue.push({
+    game.sendClientMessage({
       frame,
       type: ClientMessageType.MOVE_PLAYER,
       direction,

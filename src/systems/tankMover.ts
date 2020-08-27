@@ -1,20 +1,27 @@
-import { ClientMessageType } from '~/ClientMessage'
+import { ClientMessage, ClientMessageType } from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
+import { EntityManager } from '~/entities/EntityManager'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const TANK_SPEED = 60 * (TILE_SIZE / 8)
 const TANK_ROT_SPEED = Math.PI
 
-export const update = (game: Game, dt: number, frame: number): void => {
-  const message = game.clientMessageQueue.find(
+export const update = (
+  simState: {
+    entityManager: EntityManager
+    messages: ClientMessage[]
+  },
+  dt: number,
+  frame: number,
+): void => {
+  const message = simState.messages.find(
     (m) => m.frame === frame && m.type === ClientMessageType.MOVE_PLAYER,
   )
   if (!message) {
     return
   }
 
-  const player = game.serverEntityManager.getPlayer()
+  const player = simState.entityManager.getPlayer()
   if (!player) {
     return
   }

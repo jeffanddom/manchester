@@ -36,6 +36,13 @@ const gameProgression = [maps.collisionTest, maps.bigMap]
 
 export class Game implements Game {
   // Client data
+  client: {
+    messageBuffer: ClientMessage[]
+    serverSnapshot: {
+      frame: number
+      entities: { [key: string]: Entity }
+    }
+  }
   serverMessageQueue: ServerMessage[]
   clientEntityManager: EntityManager
   emitters: ParticleEmitter[]
@@ -69,6 +76,14 @@ export class Game implements Game {
   player: Entity | null
 
   constructor(canvas: HTMLCanvasElement) {
+    this.client = {
+      messageBuffer: [],
+      serverSnapshot: {
+        frame: -1,
+        entities: {},
+      },
+    }
+
     this.serverMessageQueue = []
     this.clientEntityManager = new EntityManager()
     this.emitters = []
@@ -163,25 +178,30 @@ export class Game implements Game {
     this.nextState = s
   }
 
+  sendClientMessage(m: ClientMessage): void {
+    this.client.messageBuffer.push(m)
+    this.clientMessageQueue.push(m)
+  }
+
   clientUpdate(dt: number, frame: number): void {
-    // get server messages up to now
     systems.syncServerState(this, frame)
-    // apply previous predictions
-    // predict next input
-    // cache frame state
 
     if (this.state === GameState.Running) {
       systems.playerInput(this, frame)
+
+      // predictive simulation
+      systems.tankMover(
+        {
+          entityManager: this.clientEntityManager,
+          messages: this.client.messageBuffer.filter((m) => m.frame === frame),
+        },
+        dt,
+        frame,
+      )
     }
 
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
-
-    // Apply server state
-    // TODO: receive server message
-    // this.clientEntityManager.entities = _.cloneDeep(
-    //   this.serverEntityManager.entities,
-    // )
 
     if (this.clientEntityManager.getPlayer()) {
       this.camera.setPosition(
@@ -195,7 +215,7 @@ export class Game implements Game {
 
     // server message cleanup
     this.serverMessageQueue = this.serverMessageQueue.filter(
-      (m) => m.frame > frame,
+      (m) => m.frame <= frame,
     )
   }
 
@@ -220,7 +240,14 @@ export class Game implements Game {
     systems.transformInit(this)
 
     if (this.state === GameState.Running) {
-      systems.tankMover(this, dt, frame)
+      systems.tankMover(
+        {
+          entityManager: this.serverEntityManager,
+          messages: this.clientMessageQueue,
+        },
+        dt,
+        frame,
+      )
       // systems.hiding(this)
       // systems.builder(this, dt)
       // systems.shooter(this, dt)

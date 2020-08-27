@@ -1,16 +1,18 @@
+import * as _ from 'lodash'
+
 import { Entity } from '~/entities/Entity'
 import { typeDefinitions } from '~/entities/types'
 import { Game } from '~/Game'
+import * as systems from '~/systems'
 
 export const update = (g: Game, frame: number): void => {
-  const messages = g.serverMessageQueue
-    .filter((m) => m.frame < frame)
-    .sort((a, b) => a.frame - b.frame)
+  // compile authoritative state from server messages
+  const messages = g.serverMessageQueue.sort((a, b) => a.frame - b.frame)
 
   messages.forEach((m) => {
     const nextFrameEntities: { [key: string]: Entity } = {}
     m.entities.forEach((serverEntity) => {
-      let entity = g.clientEntityManager.entities[serverEntity.id]
+      let entity = g.client.serverSnapshot.entities[serverEntity.id]
       if (!entity) {
         entity = typeDefinitions[serverEntity.type!].make()
         entity.id = serverEntity.id
@@ -23,6 +25,24 @@ export const update = (g: Game, frame: number): void => {
       }
       nextFrameEntities[entity.id] = entity
     })
-    g.clientEntityManager.entities = nextFrameEntities
+
+    g.client.serverSnapshot = {
+      frame: m.frame,
+      entities: nextFrameEntities,
+    }
   })
+
+  g.serverMessageQueue = []
+
+  // Run input reconciliation
+  g.clientEntityManager.entities = _.cloneDeep(g.client.serverSnapshot.entities)
+
+  for (let f = g.client.serverSnapshot.frame + 1; f <= frame; f++) {
+    const frameMessages = g.client.messageBuffer.filter((m) => m.frame === f)
+    systems.tankMover(
+      { entityManager: g.clientEntityManager, messages: frameMessages },
+      1.0 / 60,
+      f,
+    )
+  }
 }

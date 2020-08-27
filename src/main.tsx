@@ -40,7 +40,7 @@ function clientRenderLoop() {
   game.render()
 }
 
-let clientFrame = 5
+let clientFrame = 20
 let clientPrevFrameTime = time.current()
 function clientSimulationLoop() {
   setTimeout(clientSimulationLoop, 1000.0 / 60)
@@ -49,7 +49,7 @@ function clientSimulationLoop() {
   const dt = now - clientPrevFrameTime
   clientPrevFrameTime = now
 
-  game.clientUpdate(dt, clientFrame)
+  game.clientUpdate(1 / 60, clientFrame)
   clientFrame++
 }
 
@@ -63,7 +63,7 @@ const serverLoop = () => {
   const dt = now - serverPrevFrameTime
   serverPrevFrameTime = now
 
-  game.serverUpdate(dt, serverFrame)
+  game.serverUpdate(1 / 60, serverFrame)
   serverFrame++
 }
 
