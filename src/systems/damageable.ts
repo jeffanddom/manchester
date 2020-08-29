@@ -8,8 +8,8 @@ import { Primitive } from '~/renderer/interfaces'
 import { radialTranslate2 } from '~/util/math'
 
 export const update = (g: Game): void => {
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     const transform = e.transform
     const damageable = e.damageable
     if (!transform || !damageable) {
@@ -34,9 +34,9 @@ export const update = (g: Game): void => {
         const core = PickupConstructors[e.dropType]()
         core.transform!.position = vec2.clone(e.transform!.position)
 
-        g.serverEntityManager.register(core)
+        g.server.entityManager.register(core)
       }
-      g.serverEntityManager.markForDeletion(id)
+      g.server.entityManager.markForDeletion(id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),
@@ -55,7 +55,7 @@ export const update = (g: Game): void => {
         arc: Math.PI * 2,
         colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
       })
-      g.emitters.push(explosion)
+      g.client.emitters.push(explosion)
 
       if (g.player && g.player.id === id) {
         g.setState(GameState.YouDied)

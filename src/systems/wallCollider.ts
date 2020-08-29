@@ -7,8 +7,8 @@ import { DirectionCollision } from '~/interfaces'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (g: Game): void => {
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.transform || !e.wallCollider) {
       continue
     }
@@ -17,8 +17,8 @@ export const update = (g: Game): void => {
     const myBox = tileBox(e.transform.position)
     const previousBox = tileBox(e.transform.previousPosition)
     let collided: [ITransform, DirectionCollision, number][] = []
-    for (const id in g.serverEntityManager.entities) {
-      const other = g.serverEntityManager.entities[id]
+    for (const id in g.server.entityManager.entities) {
+      const other = g.server.entityManager.entities[id]
       if (!other.wall || !other.transform) {
         continue
       }

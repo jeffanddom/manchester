@@ -24,8 +24,8 @@ export class ShooterComponent {
 }
 
 export const update = (g: Game, dt: number): void => {
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.transform || !e.shooter) {
       continue
     }
@@ -54,7 +54,7 @@ export const update = (g: Game, dt: number): void => {
         TILE_SIZE * 0.25,
       )
 
-      g.serverEntityManager.register(
+      g.server.entityManager.register(
         makeBullet({
           position: bulletPos,
           orientation: e.shooter.orientation,
@@ -73,7 +73,7 @@ export const update = (g: Game, dt: number): void => {
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })
-      g.emitters.push(muzzleFlash)
+      g.client.emitters.push(muzzleFlash)
     }
   }
 }

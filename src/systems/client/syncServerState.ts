@@ -8,7 +8,7 @@ import * as systems from '~/systems'
 
 export const update = (g: Game, frame: number): void => {
   // compile authoritative state from server messages
-  const messages = g.serverMessageQueue.sort((a, b) => a.frame - b.frame)
+  const messages = g.client.serverMessages.sort((a, b) => a.frame - b.frame)
 
   messages.forEach((m) => {
     const nextFrameEntities: { [key: string]: Entity } = {}
@@ -33,15 +33,17 @@ export const update = (g: Game, frame: number): void => {
     }
   })
 
-  g.serverMessageQueue = []
+  g.client.serverMessages = []
 
   // Run input reconciliation
-  g.clientEntityManager.entities = _.cloneDeep(g.client.serverSnapshot.entities)
+  g.client.entityManager.entities = _.cloneDeep(
+    g.client.serverSnapshot.entities,
+  )
 
   for (let f = g.client.serverSnapshot.frame + 1; f <= frame; f++) {
     const frameMessages = g.client.messageBuffer.filter((m) => m.frame === f)
     systems.tankMover(
-      { entityManager: g.clientEntityManager, messages: frameMessages },
+      { entityManager: g.client.entityManager, messages: frameMessages },
       SIMULATION_PERIOD_S,
       f,
     )

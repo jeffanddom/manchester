@@ -37,38 +37,38 @@ const gameProgression = [maps.collisionTest, maps.bigMap]
 export class Game implements Game {
   // Client data
   client: {
+    entityManager: EntityManager
     messageBuffer: ClientMessage[]
+    playerInputState: {
+      cursorMode: CursorMode
+    }
+    serverMessages: ServerMessage[]
     serverSnapshot: {
       frame: number
       entities: { [key: string]: Entity }
     }
+
+    camera: Camera
+    debugDrawRenderables: Renderable[]
+    emitters: ParticleEmitter[]
+    enableDebugDraw: boolean
+    renderer: IRenderer
+
+    keyboard: Keyboard
+    mouse: Mouse
   }
-  serverMessageQueue: ServerMessage[]
-  clientEntityManager: EntityManager
-  emitters: ParticleEmitter[]
-
-  camera: Camera
-  keyboard: Keyboard
-  mouse: Mouse
-
-  playerInputState: {
-    cursorMode: CursorMode
-  }
-
-  renderer: IRenderer
-  enableDebugDraw: boolean
 
   // Server data
-  clientMessageQueue: ClientMessage[]
-  serverEntityManager: EntityManager
+  server: {
+    clientMessages: ClientMessage[]
+    entityManager: EntityManager
+  }
 
   // Shared data (should be nothing eventually...)
   state: GameState
   nextState: GameState | null
 
   currentLevel: number
-
-  debugDrawRenderables: Renderable[]
 
   map: Map
   terrainLayer: terrain.Layer
@@ -77,31 +77,38 @@ export class Game implements Game {
 
   constructor(canvas: HTMLCanvasElement) {
     this.client = {
+      entityManager: new EntityManager(),
       messageBuffer: [],
+      playerInputState: { cursorMode: CursorMode.NONE },
+      serverMessages: [],
       serverSnapshot: {
         frame: -1,
         entities: {},
       },
+
+      camera: new Camera(
+        vec2.fromValues(canvas.width, canvas.height),
+        vec2.create(),
+        vec2.create(),
+      ),
+      emitters: [],
+      debugDrawRenderables: [],
+      enableDebugDraw: false,
+      renderer: new Canvas2DRenderer(canvas.getContext('2d')!),
+
+      keyboard: new Keyboard(),
+      mouse: new Mouse(canvas),
     }
 
-    this.serverMessageQueue = []
-    this.clientEntityManager = new EntityManager()
-    this.emitters = []
+    this.server = {
+      clientMessages: [],
+      entityManager: new EntityManager(),
+    }
 
     this.state = GameState.None
     this.nextState = null
 
     this.currentLevel = 0
-    this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
-
-    this.enableDebugDraw = false
-    this.debugDrawRenderables = []
-
-    this.clientMessageQueue = []
-    this.serverEntityManager = new EntityManager()
-
-    this.keyboard = new Keyboard()
-    this.mouse = new Mouse(canvas)
 
     this.map = Map.empty()
     this.terrainLayer = new terrain.Layer({
@@ -111,28 +118,20 @@ export class Game implements Game {
     })
 
     this.player = null
-    this.playerInputState = { cursorMode: CursorMode.NONE }
-
-    this.camera = new Camera(
-      vec2.fromValues(canvas.width, canvas.height),
-      vec2.create(),
-      vec2.create(),
-    )
-
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
-        this.enableDebugDraw = !this.enableDebugDraw
+        this.client.enableDebugDraw = !this.client.enableDebugDraw
       }
     })
   }
 
   setViewportDimensions(d: vec2): void {
-    this.camera.setViewportDimensions(d)
+    this.client.camera.setViewportDimensions(d)
   }
 
   startPlay(): void {
-    this.serverEntityManager = new EntityManager()
-    this.emitters = []
+    this.server.entityManager = new EntityManager()
+    this.client.emitters = []
     this.player = null
 
     // Level setup
@@ -142,8 +141,8 @@ export class Game implements Game {
       tileDimensions: this.map.dimensions,
       terrain: this.map.terrain,
     })
-    this.camera.minWorldPos = this.terrainLayer.minWorldPos()
-    this.camera.worldDimensions = this.terrainLayer.dimensions()
+    this.client.camera.minWorldPos = this.terrainLayer.minWorldPos()
+    this.client.camera.worldDimensions = this.terrainLayer.dimensions()
 
     // Populate entities
     for (let i = 0; i < this.map.dimensions[1]; i++) {
@@ -165,7 +164,7 @@ export class Game implements Game {
           )
         }
 
-        this.serverEntityManager.register(entity)
+        this.server.entityManager.register(entity)
 
         if (et === entities.types.Type.PLAYER) {
           this.player = entity
@@ -180,7 +179,7 @@ export class Game implements Game {
 
   sendClientMessage(m: ClientMessage): void {
     this.client.messageBuffer.push(m)
-    this.clientMessageQueue.push(m)
+    this.server.clientMessages.push(m)
   }
 
   clientUpdate(dt: number, frame: number): void {
@@ -192,7 +191,7 @@ export class Game implements Game {
       // predictive simulation
       systems.tankMover(
         {
-          entityManager: this.clientEntityManager,
+          entityManager: this.client.entityManager,
           messages: this.client.messageBuffer.filter((m) => m.frame === frame),
         },
         dt,
@@ -200,21 +199,21 @@ export class Game implements Game {
       )
     }
 
-    this.emitters = this.emitters.filter((e) => !e.dead)
-    this.emitters.forEach((e) => e.update(dt))
+    this.client.emitters = this.client.emitters.filter((e) => !e.dead)
+    this.client.emitters.forEach((e) => e.update(dt))
 
-    if (this.clientEntityManager.getPlayer()) {
-      this.camera.setPosition(
-        this.clientEntityManager.getPlayer()!.transform!.position,
+    if (this.client.entityManager.getPlayer()) {
+      this.client.camera.setPosition(
+        this.client.entityManager.getPlayer()!.transform!.position,
       )
     }
-    this.camera.update(dt)
+    this.client.camera.update(dt)
 
-    this.keyboard.update()
-    this.mouse.update()
+    this.client.keyboard.update()
+    this.client.mouse.update()
 
     // server message cleanup
-    this.serverMessageQueue = this.serverMessageQueue.filter(
+    this.client.serverMessages = this.client.serverMessages.filter(
       (m) => m.frame <= frame,
     )
   }
@@ -242,8 +241,8 @@ export class Game implements Game {
     if (this.state === GameState.Running) {
       systems.tankMover(
         {
-          entityManager: this.serverEntityManager,
-          messages: this.clientMessageQueue,
+          entityManager: this.server.entityManager,
+          messages: this.server.clientMessages,
         },
         dt,
         frame,
@@ -265,7 +264,7 @@ export class Game implements Game {
     // FIXME: this should be a client event
     if (this.state === GameState.YouDied) {
       // 'r' for restart
-      if (this.keyboard.upKeys.has(82)) {
+      if (this.client.keyboard.upKeys.has(82)) {
         this.setState(GameState.Running)
       }
     }
@@ -275,62 +274,66 @@ export class Game implements Game {
     }
 
     if (this.state === GameState.LevelComplete) {
-      if (this.keyboard.upKeys.has(32)) {
+      if (this.client.keyboard.upKeys.has(32)) {
         this.setState(GameState.Running)
       }
     }
 
-    this.serverEntityManager.update() // entity cleanup
+    this.server.entityManager.update() // entity cleanup
 
     // client message cleanup
-    this.clientMessageQueue = this.clientMessageQueue.filter(
+    this.server.clientMessages = this.server.clientMessages.filter(
       (m) => m.frame > frame,
     )
 
     // Enqueue server state for the client
     const serverMessage = {
       frame,
-      entities: convertToServerMessage(this.serverEntityManager.entities),
+      entities: convertToServerMessage(this.server.entityManager.entities),
     }
-    this.serverMessageQueue.push(serverMessage)
+    this.client.serverMessages.push(serverMessage)
   }
 
   render(): void {
-    this.renderer.clear('magenta')
+    this.client.renderer.clear('magenta')
 
-    this.renderer.setTransform(this.camera.wvTransform())
+    this.client.renderer.setTransform(this.client.camera.wvTransform())
 
     this.terrainLayer
-      .getRenderables(this.camera.getVisibleExtents())
-      .forEach((r) => this.renderer.render(r))
-    this.clientEntityManager
+      .getRenderables(this.client.camera.getVisibleExtents())
+      .forEach((r) => this.client.renderer.render(r))
+    this.client.entityManager
       .getRenderables()
-      .forEach((r) => this.renderer.render(r))
-    this.emitters!.forEach((e) =>
-      e.getRenderables().forEach((r) => this.renderer.render(r)),
+      .forEach((r) => this.client.renderer.render(r))
+    this.client.emitters!.forEach((e) =>
+      e.getRenderables().forEach((r) => this.client.renderer.render(r)),
     )
 
     systems.crosshair(this)
 
-    if (this.enableDebugDraw) {
-      this.debugDrawRenderables.forEach((r) => {
-        this.renderer.render(r)
+    if (this.client.enableDebugDraw) {
+      this.client.debugDrawRenderables.forEach((r) => {
+        this.client.renderer.render(r)
       })
     }
-    this.debugDrawRenderables = []
+    this.client.debugDrawRenderables = []
 
     // Viewspace rendering
 
-    this.renderer.setTransform(mat2d.identity(mat2d.create()))
+    this.client.renderer.setTransform(mat2d.identity(mat2d.create()))
 
     // systems.playerHealthBar(this)
     // systems.inventoryDisplay(this)
 
     if (this.state === GameState.YouDied) {
-      this.renderer.render({
+      this.client.renderer.render({
         primitive: Primitive.TEXT,
         text: 'YOU DIED',
-        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+        pos: vec2.scale(
+          vec2.create(),
+          this.client.camera.viewportDimensions,
+          0.5,
+        ),
         hAlign: TextAlign.Center,
         vAlign: TextAlign.Center,
         font: '48px serif',
@@ -339,22 +342,26 @@ export class Game implements Game {
     }
 
     if (this.state === GameState.LevelComplete) {
-      this.renderer.render({
+      this.client.renderer.render({
         primitive: Primitive.TEXT,
         text: 'YOU WIN',
-        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+        pos: vec2.scale(
+          vec2.create(),
+          this.client.camera.viewportDimensions,
+          0.5,
+        ),
         hAlign: TextAlign.Center,
         vAlign: TextAlign.Center,
         font: '48px serif',
         style: 'black',
       })
 
-      this.renderer.render({
+      this.client.renderer.render({
         primitive: Primitive.TEXT,
         text: 'Press space to continue',
         pos: vec2.add(
           vec2.create(),
-          vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+          vec2.scale(vec2.create(), this.client.camera.viewportDimensions, 0.5),
           vec2.fromValues(0, 50),
         ),
         hAlign: TextAlign.Center,
@@ -366,11 +373,11 @@ export class Game implements Game {
   }
 
   debugDraw(makeRenderables: () => Renderable[]): void {
-    if (!this.enableDebugDraw) {
+    if (!this.client.enableDebugDraw) {
       return
     }
 
-    this.debugDrawRenderables = this.debugDrawRenderables.concat(
+    this.client.debugDrawRenderables = this.client.debugDrawRenderables.concat(
       makeRenderables(),
     )
   }

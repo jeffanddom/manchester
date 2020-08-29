@@ -13,8 +13,8 @@ export const update = (g: Game): void => {
   const damagers: [string, Damager, ITransform][] = []
   const damageables: [string, Damageable, ITransform][] = []
 
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.transform) {
       continue
     }
@@ -63,7 +63,7 @@ export const update = (g: Game): void => {
     damageable.health -= damager.damageValue
 
     // TODO: client and server both delete their own bullets
-    g.serverEntityManager.markForDeletion(attackerId)
+    g.server.entityManager.markForDeletion(attackerId)
 
     // ---------------------
 
@@ -86,10 +86,10 @@ export const update = (g: Game): void => {
       arc: Math.PI * 2,
       colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
     })
-    g.emitters.push(explosion)
+    g.client.emitters.push(explosion)
 
     if (g.player && g.player.id === targetId) {
-      g.camera.shake()
+      g.client.camera.shake()
     }
   }
 }

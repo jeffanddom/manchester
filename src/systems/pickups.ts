@@ -10,8 +10,8 @@ export const update = (g: Game): void => {
   const player = g.player!
   const playerAabb = player.damageable!.aabb(player.transform!)
 
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (e.pickupType === undefined) {
       continue
     }
@@ -20,7 +20,7 @@ export const update = (g: Game): void => {
 
     if (aabbOverlap(playerAabb, aabb)) {
       player.inventory!.push(e.pickupType)
-      g.serverEntityManager.markForDeletion(e.id)
+      g.server.entityManager.markForDeletion(e.id)
     }
   }
 }

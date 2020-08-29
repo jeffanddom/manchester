@@ -32,40 +32,40 @@ export const update = (game: Game, frame: number): void => {
 }
 
 const handleCursorMode = (game: Game): void => {
-  if (game.keyboard.downKeys.has(keyMap.harvestMode)) {
-    game.playerInputState.cursorMode = CursorMode.HARVEST
-  } else if (game.keyboard.downKeys.has(keyMap.buildTurretMode)) {
-    game.playerInputState.cursorMode = CursorMode.BUILD_TURRET
-  } else if (game.keyboard.downKeys.has(keyMap.buildWallMode)) {
-    game.playerInputState.cursorMode = CursorMode.BUILD_WALL
-  } else if (game.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
-    game.playerInputState.cursorMode = CursorMode.MOVE_BUILDER
+  if (game.client.keyboard.downKeys.has(keyMap.harvestMode)) {
+    game.client.playerInputState.cursorMode = CursorMode.HARVEST
+  } else if (game.client.keyboard.downKeys.has(keyMap.buildTurretMode)) {
+    game.client.playerInputState.cursorMode = CursorMode.BUILD_TURRET
+  } else if (game.client.keyboard.downKeys.has(keyMap.buildWallMode)) {
+    game.client.playerInputState.cursorMode = CursorMode.BUILD_WALL
+  } else if (game.client.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
+    game.client.playerInputState.cursorMode = CursorMode.MOVE_BUILDER
   } else {
-    game.playerInputState.cursorMode = CursorMode.NONE
+    game.client.playerInputState.cursorMode = CursorMode.NONE
   }
 }
 
 const handleMoveInput = (game: Game, frame: number): void => {
   let direction
-  if (game.keyboard.downKeys.has(keyMap.moveUp)) {
-    if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
+  if (game.client.keyboard.downKeys.has(keyMap.moveUp)) {
+    if (game.client.keyboard.downKeys.has(keyMap.moveLeft)) {
       direction = DirectionMove.NW
-    } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
+    } else if (game.client.keyboard.downKeys.has(keyMap.moveRight)) {
       direction = DirectionMove.NE
     } else {
       direction = DirectionMove.N
     }
-  } else if (game.keyboard.downKeys.has(keyMap.moveDown)) {
-    if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
+  } else if (game.client.keyboard.downKeys.has(keyMap.moveDown)) {
+    if (game.client.keyboard.downKeys.has(keyMap.moveLeft)) {
       direction = DirectionMove.SW
-    } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
+    } else if (game.client.keyboard.downKeys.has(keyMap.moveRight)) {
       direction = DirectionMove.SE
     } else {
       direction = DirectionMove.S
     }
-  } else if (game.keyboard.downKeys.has(keyMap.moveLeft)) {
+  } else if (game.client.keyboard.downKeys.has(keyMap.moveLeft)) {
     direction = DirectionMove.W
-  } else if (game.keyboard.downKeys.has(keyMap.moveRight)) {
+  } else if (game.client.keyboard.downKeys.has(keyMap.moveRight)) {
     direction = DirectionMove.E
   }
 
@@ -80,32 +80,32 @@ const handleMoveInput = (game: Game, frame: number): void => {
 
 const handleAttackInput = (game: Game): void => {
   let targetPos = null
-  const mousePos = game.mouse.getPos()
+  const mousePos = game.client.mouse.getPos()
   if (mousePos) {
-    targetPos = game.camera.viewToWorldspace(mousePos)
+    targetPos = game.client.camera.viewToWorldspace(mousePos)
   }
 
   game.player!.shooter!.input = {
     target: targetPos,
-    fire: game.mouse.isDown(MouseButton.LEFT),
+    fire: game.client.mouse.isDown(MouseButton.LEFT),
   }
 }
 
 const handleBuilderInput = (game: Game): void => {
   game.player!.builderCreator!.nextBuilder = null
 
-  const mousePos = game.mouse.getPos()
+  const mousePos = game.client.mouse.getPos()
   if (
-    !game.mouse.isUp(MouseButton.RIGHT) ||
+    !game.client.mouse.isUp(MouseButton.RIGHT) ||
     !mousePos ||
-    game.playerInputState.cursorMode === CursorMode.NONE
+    game.client.playerInputState.cursorMode === CursorMode.NONE
   ) {
     return
   }
 
   const inventory = game.player!.inventory!
   let mode
-  switch (game.playerInputState.cursorMode) {
+  switch (game.client.playerInputState.cursorMode) {
     case CursorMode.HARVEST:
       mode = BuilderMode.HARVEST
       break
@@ -132,6 +132,6 @@ const handleBuilderInput = (game: Game): void => {
 
   game.player!.builderCreator!.nextBuilder = {
     mode,
-    dest: game.camera.viewToWorldspace(mousePos),
+    dest: game.client.camera.viewToWorldspace(mousePos),
   }
 }

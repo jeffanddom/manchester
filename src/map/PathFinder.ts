@@ -24,7 +24,7 @@ export const pathfind = (
 ): [vec2[] | null, string[]] => {
   // Generate fresh node mapping
   const nodes: { [key: string]: Node } = {}
-  const walls = Object.values(g.serverEntityManager.entities)
+  const walls = Object.values(g.server.entityManager.entities)
     .filter((other) => other.wall)
     .filter(
       (other) =>

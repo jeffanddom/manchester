@@ -5,7 +5,7 @@ import { Game, GameState } from '~/Game'
 
 export const update = (g: Game): void => {
   const levelComplete = !some(
-    g.serverEntityManager.entities,
+    g.server.entityManager.entities,
     (e) => e.team === Team.Enemy,
   )
 

@@ -7,8 +7,8 @@ import { radialTranslate2 } from '~/util/math'
 const BULLET_SPEED = 60 * (TILE_SIZE / 6)
 
 export const update = (g: Game, dt: number): void => {
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.bullet) {
       continue
     }
@@ -23,7 +23,7 @@ export const update = (g: Game, dt: number): void => {
     if (
       vec2.distance(e.transform!.position, e.bullet.origin) >= e.bullet.range
     ) {
-      g.serverEntityManager.markForDeletion(id)
+      g.server.entityManager.markForDeletion(id)
       return
     }
   }

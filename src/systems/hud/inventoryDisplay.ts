@@ -17,7 +17,7 @@ export const update = (g: Game): void => {
   player.inventory!.forEach((pickup) => {
     const model = PickupModels[pickup][0]
 
-    g.renderer.render({
+    g.client.renderer.render({
       primitive: Primitive.PATH,
       mwTransform: mat2d.translate(
         mat2d.create(),

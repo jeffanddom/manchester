@@ -5,7 +5,7 @@ import { Primitive } from '~/renderer/interfaces'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (g: Game): void => {
-  const damageable = g.clientEntityManager.getPlayer()!.damageable!
+  const damageable = g.client.entityManager.getPlayer()!.damageable!
   const maxFill = 100
   const fill = lerp(
     0,
@@ -15,7 +15,7 @@ export const update = (g: Game): void => {
   const y = 15
 
   // background
-  g.renderer.render({
+  g.client.renderer.render({
     primitive: Primitive.RECT,
     pos: vec2.fromValues(15, y),
     dimensions: vec2.fromValues(15, maxFill),
@@ -24,7 +24,7 @@ export const update = (g: Game): void => {
   })
 
   // fill
-  g.renderer.render({
+  g.client.renderer.render({
     primitive: Primitive.RECT,
     pos: vec2.fromValues(15, y + maxFill - fill),
     dimensions: vec2.fromValues(15, fill),

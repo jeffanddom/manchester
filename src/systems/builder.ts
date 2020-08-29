@@ -62,8 +62,8 @@ export const update = (g: Game, dt: number): void => {
 }
 
 const spawnBuilders = (g: Game): void => {
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.transform || !e.builderCreator || !e.builderCreator.nextBuilder) {
       continue
     }
@@ -90,7 +90,7 @@ const spawnBuilders = (g: Game): void => {
       mode: e.builderCreator.nextBuilder.mode,
     })
     debugPaths[newBuilder.id] = nodes
-    g.serverEntityManager.register(newBuilder)
+    g.server.entityManager.register(newBuilder)
   }
 }
 
@@ -100,8 +100,8 @@ const updateBuilders = (g: Game, dt: number): void => {
   const existingBuilders: string[] = []
 
   // destination system
-  for (const id in g.serverEntityManager.entities) {
-    const e = g.serverEntityManager.entities[id]
+  for (const id in g.server.entityManager.entities) {
+    const e = g.server.entityManager.entities[id]
     if (!e.builder || !e.transform) {
       continue
     }
@@ -123,7 +123,7 @@ const updateBuilders = (g: Game, dt: number): void => {
       switch (e.builder.mode) {
         case BuilderMode.HARVEST:
           const harvestable = Object.values(
-            g.serverEntityManager.entities,
+            g.server.entityManager.entities,
           ).find((other: Entity) => {
             if (!other.harvestType || !other.transform) {
               return false
@@ -133,7 +133,7 @@ const updateBuilders = (g: Game, dt: number): void => {
             return vec2.equals(ourTilePos, otherTilePos)
           })
           if (harvestable) {
-            g.serverEntityManager.markForDeletion(harvestable.id)
+            g.server.entityManager.markForDeletion(harvestable.id)
             e.dropType = PickupType.Wood
           }
           break
@@ -144,7 +144,7 @@ const updateBuilders = (g: Game, dt: number): void => {
           const turret = makeTurret()
           turret.team = Team.Friendly
           turret.transform!.position = tileToWorld(ourTilePos)
-          g.serverEntityManager.register(turret)
+          g.server.entityManager.register(turret)
           break
 
         case BuilderMode.BUILD_WALL:
@@ -152,7 +152,7 @@ const updateBuilders = (g: Game, dt: number): void => {
 
           const wall = makeWall()
           wall.transform!.position = tileToWorld(ourTilePos)
-          g.serverEntityManager.register(wall)
+          g.server.entityManager.register(wall)
           break
 
         case BuilderMode.MOVE:
@@ -186,7 +186,7 @@ const updateBuilders = (g: Game, dt: number): void => {
       if (e.dropType) {
         g.player!.inventory!.push(e.dropType)
       }
-      g.serverEntityManager.markForDeletion(id)
+      g.server.entityManager.markForDeletion(id)
       continue
     }
 
