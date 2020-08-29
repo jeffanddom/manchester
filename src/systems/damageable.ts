@@ -1,15 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { EntityManager } from '~/entities/EntityManager'
 import { PickupConstructors } from '~/entities/pickups'
 import { Game, GameState } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
 import { radialTranslate2 } from '~/util/math'
 
-export const update = (g: Game): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+export const update = (g: Game, entityManager: EntityManager): void => {
+  for (const id in entityManager.entities) {
+    const e = entityManager.entities[id]
     const transform = e.transform
     const damageable = e.damageable
     if (!transform || !damageable) {
@@ -34,9 +35,9 @@ export const update = (g: Game): void => {
         const core = PickupConstructors[e.dropType]()
         core.transform!.position = vec2.clone(e.transform!.position)
 
-        g.server.entityManager.register(core)
+        entityManager.register(core)
       }
-      g.server.entityManager.markForDeletion(id)
+      entityManager.markForDeletion(id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),
@@ -57,7 +58,8 @@ export const update = (g: Game): void => {
       })
       g.client.emitters.push(explosion)
 
-      if (g.player && g.player.id === id) {
+      const player = entityManager.getPlayer()
+      if (player && player.id === id) {
         g.setState(GameState.YouDied)
       }
     }

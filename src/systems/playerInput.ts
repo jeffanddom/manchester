@@ -1,4 +1,5 @@
 import { ClientMessageType } from '~/ClientMessage'
+import { EntityManager } from '~/entities/EntityManager'
 import { Game } from '~/Game'
 import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
@@ -24,11 +25,15 @@ export enum CursorMode {
   BUILD_WALL,
 }
 
-export const update = (game: Game, frame: number): void => {
+export const update = (
+  game: Game,
+  entityManager: EntityManager,
+  frame: number,
+): void => {
   // handleCursorMode(game)
   handleMoveInput(game, frame)
-  // handleAttackInput(game)
-  // handleBuilderInput(game)
+  // handleAttackInput(game, entityManager)
+  // handleBuilderInput(game, entityManager)
 }
 
 const handleCursorMode = (game: Game): void => {
@@ -78,21 +83,22 @@ const handleMoveInput = (game: Game, frame: number): void => {
   }
 }
 
-const handleAttackInput = (game: Game): void => {
+const handleAttackInput = (game: Game, entityManager: EntityManager): void => {
   let targetPos = null
   const mousePos = game.client.mouse.getPos()
   if (mousePos) {
     targetPos = game.client.camera.viewToWorldspace(mousePos)
   }
 
-  game.player!.shooter!.input = {
+  entityManager.getPlayer()!.shooter!.input = {
     target: targetPos,
     fire: game.client.mouse.isDown(MouseButton.LEFT),
   }
 }
 
-const handleBuilderInput = (game: Game): void => {
-  game.player!.builderCreator!.nextBuilder = null
+const handleBuilderInput = (game: Game, entityManager: EntityManager): void => {
+  const player = entityManager.getPlayer()!
+  player.builderCreator!.nextBuilder = null
 
   const mousePos = game.client.mouse.getPos()
   if (
@@ -103,7 +109,7 @@ const handleBuilderInput = (game: Game): void => {
     return
   }
 
-  const inventory = game.player!.inventory!
+  const inventory = player.inventory!
   let mode
   switch (game.client.playerInputState.cursorMode) {
     case CursorMode.HARVEST:
@@ -130,7 +136,7 @@ const handleBuilderInput = (game: Game): void => {
       break
   }
 
-  game.player!.builderCreator!.nextBuilder = {
+  player.builderCreator!.nextBuilder = {
     mode,
     dest: game.client.camera.viewToWorldspace(mousePos),
   }

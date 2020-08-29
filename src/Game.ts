@@ -73,8 +73,6 @@ export class Game implements Game {
   map: Map
   terrainLayer: terrain.Layer
 
-  player: Entity | null
-
   constructor(canvas: HTMLCanvasElement) {
     this.client = {
       entityManager: new EntityManager(),
@@ -117,7 +115,6 @@ export class Game implements Game {
       terrain: this.map.terrain,
     })
 
-    this.player = null
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
         this.client.enableDebugDraw = !this.client.enableDebugDraw
@@ -132,7 +129,6 @@ export class Game implements Game {
   startPlay(): void {
     this.server.entityManager = new EntityManager()
     this.client.emitters = []
-    this.player = null
 
     // Level setup
     this.map = Map.fromRaw(gameProgression[this.currentLevel])
@@ -165,10 +161,6 @@ export class Game implements Game {
         }
 
         this.server.entityManager.register(entity)
-
-        if (et === entities.types.Type.PLAYER) {
-          this.player = entity
-        }
       }
     }
   }
@@ -186,7 +178,7 @@ export class Game implements Game {
     systems.syncServerState(this, frame)
 
     if (this.state === GameState.Running) {
-      systems.playerInput(this, frame)
+      systems.playerInput(this, this.client.entityManager, frame)
 
       // predictive simulation
       systems.tankMover(
@@ -248,18 +240,18 @@ export class Game implements Game {
         frame,
       )
       // systems.hiding(this)
-      // systems.builder(this, dt)
+      // systems.builder(this, this.server.entityManager, dt)
       // systems.shooter(this, dt)
       // systems.turret(this, dt)
     }
 
     // systems.bullet(this, dt)
-    // systems.pickups(this)
+    // systems.pickups(this, this.server.entityManager)
     // systems.wallCollider(this)
-    // systems.attack(this)
+    // systems.attack(this, this.server.entityManager)
     // systems.playfieldClamping(this)
 
-    // systems.damageable(this)
+    // systems.damageable(this, this.server.entityManager)
 
     // FIXME: this should be a client event
     if (this.state === GameState.YouDied) {
@@ -323,7 +315,7 @@ export class Game implements Game {
     this.client.renderer.setTransform(mat2d.identity(mat2d.create()))
 
     // systems.playerHealthBar(this)
-    // systems.inventoryDisplay(this)
+    // systems.inventoryDisplay(this, this.client.entityManager.getPlayer())
 
     if (this.state === GameState.YouDied) {
       this.client.renderer.render({

@@ -4,6 +4,7 @@ import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
 import { Entity } from '~/entities/Entity'
+import { EntityManager } from '~/entities/EntityManager'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
 import { Game } from '~/Game'
@@ -56,14 +57,18 @@ export class BuilderComponent {
   }
 }
 
-export const update = (g: Game, dt: number): void => {
-  spawnBuilders(g)
-  updateBuilders(g, dt)
+export const update = (
+  g: Game,
+  entityManager: EntityManager,
+  dt: number,
+): void => {
+  spawnBuilders(g, entityManager)
+  updateBuilders(g, entityManager, dt)
 }
 
-const spawnBuilders = (g: Game): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+const spawnBuilders = (g: Game, entityManager: EntityManager): void => {
+  for (const id in entityManager.entities) {
+    const e = entityManager.entities[id]
     if (!e.transform || !e.builderCreator || !e.builderCreator.nextBuilder) {
       continue
     }
@@ -78,10 +83,11 @@ const spawnBuilders = (g: Game): void => {
       continue
     }
 
+    const player = entityManager.getPlayer()!
     const params = {
-      source: vec2.clone(g.player!.transform!.position),
+      source: vec2.clone(player.transform!.position),
       destination: e.builderCreator.nextBuilder.dest,
-      host: g.player!.id,
+      host: player.id,
       path: path,
     }
 
@@ -90,18 +96,22 @@ const spawnBuilders = (g: Game): void => {
       mode: e.builderCreator.nextBuilder.mode,
     })
     debugPaths[newBuilder.id] = nodes
-    g.server.entityManager.register(newBuilder)
+    entityManager.register(newBuilder)
   }
 }
 
 const debugPaths: { [key: string]: string[] } = {}
 
-const updateBuilders = (g: Game, dt: number): void => {
+const updateBuilders = (
+  g: Game,
+  entityManager: EntityManager,
+  dt: number,
+): void => {
   const existingBuilders: string[] = []
 
   // destination system
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+  for (const id in entityManager.entities) {
+    const e = entityManager.entities[id]
     if (!e.builder || !e.transform) {
       continue
     }
@@ -122,18 +132,18 @@ const updateBuilders = (g: Game, dt: number): void => {
       const ourTilePos = tileCoords(e.transform!.position)
       switch (e.builder.mode) {
         case BuilderMode.HARVEST:
-          const harvestable = Object.values(
-            g.server.entityManager.entities,
-          ).find((other: Entity) => {
-            if (!other.harvestType || !other.transform) {
-              return false
-            }
+          const harvestable = Object.values(entityManager.entities).find(
+            (other: Entity) => {
+              if (!other.harvestType || !other.transform) {
+                return false
+              }
 
-            const otherTilePos = tileCoords(other.transform!.position)
-            return vec2.equals(ourTilePos, otherTilePos)
-          })
+              const otherTilePos = tileCoords(other.transform!.position)
+              return vec2.equals(ourTilePos, otherTilePos)
+            },
+          )
           if (harvestable) {
-            g.server.entityManager.markForDeletion(harvestable.id)
+            entityManager.markForDeletion(harvestable.id)
             e.dropType = PickupType.Wood
           }
           break
@@ -144,7 +154,7 @@ const updateBuilders = (g: Game, dt: number): void => {
           const turret = makeTurret()
           turret.team = Team.Friendly
           turret.transform!.position = tileToWorld(ourTilePos)
-          g.server.entityManager.register(turret)
+          entityManager.register(turret)
           break
 
         case BuilderMode.BUILD_WALL:
@@ -152,7 +162,7 @@ const updateBuilders = (g: Game, dt: number): void => {
 
           const wall = makeWall()
           wall.transform!.position = tileToWorld(ourTilePos)
-          g.server.entityManager.register(wall)
+          entityManager.register(wall)
           break
 
         case BuilderMode.MOVE:
@@ -163,11 +173,12 @@ const updateBuilders = (g: Game, dt: number): void => {
       e.builder.state = BuilderState.returnToHost
     }
 
+    const player = entityManager.getPlayer()!
     if (
       e.builder.state == BuilderState.returnToHost &&
-      !vec2.equals(e.builder.target, g.player!.transform!.position)
+      !vec2.equals(e.builder.target, player.transform!.position)
     ) {
-      e.builder.target = vec2.clone(g.player!.transform!.position)
+      e.builder.target = vec2.clone(player.transform!.position)
       const [newPath, newNodes] = pathfind(
         g,
         tileCoords(e.transform.position),
@@ -184,9 +195,9 @@ const updateBuilders = (g: Game, dt: number): void => {
       e.builder.path.length == 0
     ) {
       if (e.dropType) {
-        g.player!.inventory!.push(e.dropType)
+        player.inventory!.push(e.dropType)
       }
-      g.server.entityManager.markForDeletion(id)
+      entityManager.markForDeletion(id)
       continue
     }
 

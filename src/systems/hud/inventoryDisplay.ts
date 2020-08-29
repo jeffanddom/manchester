@@ -1,12 +1,12 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { Entity } from '~/entities/Entity'
 import { PickupModels } from '~/entities/pickup'
 import { Game } from '~/Game'
 import { Primitive } from '~/renderer/interfaces'
 
-export const update = (g: Game): void => {
-  const player = g.player
+export const update = (g: Game, player: Entity): void => {
   if (!player) {
     return
   }

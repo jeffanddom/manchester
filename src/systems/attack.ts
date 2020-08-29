@@ -4,17 +4,18 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
+import { EntityManager } from '~/entities/EntityManager'
 import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Primitive } from '~/renderer/interfaces'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 
-export const update = (g: Game): void => {
+export const update = (g: Game, entityManager: EntityManager): void => {
   const damagers: [string, Damager, ITransform][] = []
   const damageables: [string, Damageable, ITransform][] = []
 
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+  for (const id in entityManager.entities) {
+    const e = entityManager.entities[id]
     if (!e.transform) {
       continue
     }
@@ -63,7 +64,7 @@ export const update = (g: Game): void => {
     damageable.health -= damager.damageValue
 
     // TODO: client and server both delete their own bullets
-    g.server.entityManager.markForDeletion(attackerId)
+    entityManager.markForDeletion(attackerId)
 
     // ---------------------
 
@@ -88,7 +89,8 @@ export const update = (g: Game): void => {
     })
     g.client.emitters.push(explosion)
 
-    if (g.player && g.player.id === targetId) {
+    const player = entityManager.getPlayer()
+    if (player && player.id === targetId) {
       g.client.camera.shake()
     }
   }
