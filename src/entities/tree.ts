@@ -5,7 +5,7 @@ import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
+import { Entity, makeDefaultEntity } from '~/entities/Entity'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
@@ -35,7 +35,7 @@ class TreeRenderable implements IRenderable {
 }
 
 export const makeTree = (): Entity => {
-  const e = new Entity()
+  const e = makeDefaultEntity()
   e.type = Type.TREE
 
   e.obscuring = true

@@ -4,7 +4,7 @@ import { Damageable } from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
+import { Entity, makeDefaultEntity } from '~/entities/Entity'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
@@ -12,7 +12,7 @@ import { PickupType } from '~/systems/pickups'
 import { TurretComponent } from '~/systems/turret'
 
 export const makeTurret = (): Entity => {
-  const e = new Entity()
+  const e = makeDefaultEntity()
   e.type = Type.TURRET
 
   e.wall = true

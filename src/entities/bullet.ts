@@ -4,7 +4,7 @@ import { Bullet } from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/transform'
-import { Entity } from '~/entities/Entity'
+import { Entity, makeDefaultEntity } from '~/entities/Entity'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 
@@ -17,7 +17,7 @@ export const makeBullet = ({
   owner: string
   orientation: number
 }): Entity => {
-  const e = new Entity()
+  const e = makeDefaultEntity()
 
   e.transform = transform.make()
   e.transform.position = vec2.clone(position)

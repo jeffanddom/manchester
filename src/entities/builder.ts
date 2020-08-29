@@ -5,7 +5,7 @@ import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
+import { Entity, makeDefaultEntity } from '~/entities/Entity'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { BuilderComponent, BuilderMode } from '~/systems/builder'
@@ -18,7 +18,7 @@ export const make = (params: {
   host: string
   path: vec2[]
 }): Entity => {
-  const e = new Entity()
+  const e = makeDefaultEntity()
   e.transform = transform.make()
   e.transform.position = params.source
 

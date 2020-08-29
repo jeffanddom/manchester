@@ -13,7 +13,7 @@ import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
-export class Entity {
+export interface Entity {
   id: string
   type?: Type
 
@@ -44,17 +44,18 @@ export class Entity {
   renderable?: IRenderable
   shooter?: ShooterComponent
   turret?: TurretComponent
+}
 
-  constructor() {
-    this.id = uuid.v4()
-
-    this.enablePlayfieldClamping = false
-    this.obscured = false
-    this.obscuring = false
-    this.player = false
-    this.targetable = false
-    this.team = Team.Neutral
-    this.wall = false
-    this.wallCollider = false
+export const makeDefaultEntity = (): Entity => {
+  return {
+    id: uuid.v4(),
+    enablePlayfieldClamping: false,
+    obscured: false,
+    obscuring: false,
+    player: false,
+    targetable: false,
+    team: Team.Neutral,
+    wall: false,
+    wallCollider: false,
   }
 }
