@@ -1,7 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
+import { SIMULATION_PERIOD_S } from './constants'
+
 import { Game, GameState } from '~/Game'
-import * as time from '~/util/time'
 
 declare global {
   interface Window {
@@ -41,29 +42,17 @@ function clientRenderLoop() {
 }
 
 let clientFrame = 20
-let clientPrevFrameTime = time.current()
 function clientSimulationLoop() {
-  setTimeout(clientSimulationLoop, 1000.0 / 60)
-
-  const now = time.current()
-  const dt = now - clientPrevFrameTime
-  clientPrevFrameTime = now
-
-  game.clientUpdate(1 / 60, clientFrame)
+  setTimeout(clientSimulationLoop, 1000 * SIMULATION_PERIOD_S)
+  game.clientUpdate(SIMULATION_PERIOD_S, clientFrame)
   clientFrame++
 }
 
 // Server update
 let serverFrame = 0
-let serverPrevFrameTime = time.current()
 const serverLoop = () => {
-  setTimeout(serverLoop, 1000.0 / 60)
-
-  const now = time.current()
-  const dt = now - serverPrevFrameTime
-  serverPrevFrameTime = now
-
-  game.serverUpdate(1 / 60, serverFrame)
+  setTimeout(serverLoop, 1000 * SIMULATION_PERIOD_S)
+  game.serverUpdate(SIMULATION_PERIOD_S, serverFrame)
   serverFrame++
 }
 

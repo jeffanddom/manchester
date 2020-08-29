@@ -1,5 +1,6 @@
 import * as _ from 'lodash'
 
+import { SIMULATION_PERIOD_S } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { typeDefinitions } from '~/entities/types'
 import { Game } from '~/Game'
@@ -41,7 +42,7 @@ export const update = (g: Game, frame: number): void => {
     const frameMessages = g.client.messageBuffer.filter((m) => m.frame === f)
     systems.tankMover(
       { entityManager: g.clientEntityManager, messages: frameMessages },
-      1.0 / 60,
+      SIMULATION_PERIOD_S,
       f,
     )
   }
