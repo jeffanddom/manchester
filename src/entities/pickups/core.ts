@@ -9,9 +9,9 @@ import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { PickupType } from '~/systems/pickups'
 
-export const makeNadaPickup = (): Entity => {
+export const makeCorePickup = (): Entity => {
   const e = makeDefaultEntity()
-  e.type = Type.NADA
+  e.type = Type.CORE
 
   e.transform = transform.make()
   e.pickupType = PickupType.Core

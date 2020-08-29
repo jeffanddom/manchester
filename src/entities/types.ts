@@ -1,5 +1,5 @@
 import { Entity } from '~/entities/Entity'
-import { makeNadaPickup } from '~/entities/pickups/nada'
+import { makeCorePickup } from '~/entities/pickups/core'
 import { makePlayer } from '~/entities/player'
 import { makeTree } from '~/entities/tree'
 import { makeTurret } from '~/entities/turret'
@@ -10,7 +10,7 @@ export enum Type {
   PLAYER = 'PLAYER',
   TURRET = 'TURRET',
   WALL = 'WALL',
-  NADA = 'NADA',
+  CORE = 'CORE',
   TREE = 'TREE',
 }
 
@@ -27,8 +27,8 @@ export const typeDefinitions = {
     make: makeWall,
     editorModel: models.wall,
   },
-  [Type.NADA]: {
-    make: makeNadaPickup,
+  [Type.CORE]: {
+    make: makeCorePickup,
     editorModel: models.pickup,
   },
   [Type.TREE]: {
