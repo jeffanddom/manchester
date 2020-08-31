@@ -1,18 +1,17 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { CursorMode } from '../playerInput'
-
 import { TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
+import { Client } from '~/Game'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Primitive } from '~/renderer/interfaces'
+import { CursorMode } from '~/systems/client/playerInput'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
-export const update = (g: Game): void => {
-  const mousePos = g.client.mouse.getPos()
+export const update = (c: Client): void => {
+  const mousePos = c.mouse.getPos()
   if (mousePos) {
-    const mouseWorldPos = g.client.camera.viewToWorldspace(mousePos)
+    const mouseWorldPos = c.camera.viewToWorldspace(mousePos)
 
     // crosshair (TODO: this could probably be moved to HUD rendering, which
     // uses viewspace)
@@ -22,7 +21,7 @@ export const update = (g: Game): void => {
       vec2.fromValues(3, 3),
     )
     const d = vec2.fromValues(6, 6)
-    g.client.renderer.render({
+    c.renderer.render({
       primitive: Primitive.RECT,
       strokeStyle: 'black',
       fillStyle: 'white',
@@ -31,10 +30,10 @@ export const update = (g: Game): void => {
     })
 
     // tile indicator
-    if (g.client.playerInputState.cursorMode !== CursorMode.NONE) {
+    if (c.playerInputState.cursorMode !== CursorMode.NONE) {
       const tileWorldPos = tileToWorld(tileCoords(topLeft))
 
-      g.client.renderer.render({
+      c.renderer.render({
         primitive: Primitive.RECT,
         strokeStyle: 'rgba(255, 255, 0, 0.7)',
         fillStyle: 'rgba(0, 0, 0, 0)',
@@ -46,32 +45,32 @@ export const update = (g: Game): void => {
         dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
       })
 
-      g.client.renderer.setGlobalOpacity(0.5)
+      c.renderer.setGlobalOpacity(0.5)
 
-      switch (g.client.playerInputState.cursorMode) {
+      switch (c.playerInputState.cursorMode) {
         case CursorMode.HARVEST:
           toRenderables(models.harvestIcon, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
-          }).forEach((r) => g.client.renderer.render(r))
+          }).forEach((r) => c.renderer.render(r))
           break
         case CursorMode.BUILD_TURRET:
           toRenderables(models.turret, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
-          }).forEach((r) => g.client.renderer.render(r))
+          }).forEach((r) => c.renderer.render(r))
           break
         case CursorMode.BUILD_WALL:
           toRenderables(models.wall, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
-          }).forEach((r) => g.client.renderer.render(r))
+          }).forEach((r) => c.renderer.render(r))
           break
         case CursorMode.MOVE_BUILDER:
           toRenderables(models.builder, {
             worldTransform: mat2d.fromTranslation(mat2d.create(), tileWorldPos),
-          }).forEach((r) => g.client.renderer.render(r))
+          }).forEach((r) => c.renderer.render(r))
           break
       }
 
-      g.client.renderer.setGlobalOpacity(1)
+      c.renderer.setGlobalOpacity(1)
     }
   }
 }

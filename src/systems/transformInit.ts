@@ -1,10 +1,10 @@
 import { vec2 } from 'gl-matrix'
 
-import { Game } from '~/Game'
+import { Server } from '~/Game'
 
-export const update = (g: Game): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+export const update = (s: Server): void => {
+  for (const id in s.entityManager.entities) {
+    const e = s.entityManager.entities[id]
     if (!e.transform) {
       continue
     }

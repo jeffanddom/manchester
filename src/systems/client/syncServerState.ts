@@ -1,19 +1,19 @@
 import * as _ from 'lodash'
 
+import { Client } from '~/Client'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { typeDefinitions } from '~/entities/types'
-import { Game } from '~/Game'
 import * as systems from '~/systems'
 
-export const update = (g: Game, frame: number): void => {
+export const update = (c: Client, frame: number): void => {
   // compile authoritative state from server messages
-  const messages = g.client.serverMessages.sort((a, b) => a.frame - b.frame)
+  const messages = c.serverMessages.sort((a, b) => a.frame - b.frame)
 
   messages.forEach((m) => {
     const nextFrameEntities: { [key: string]: Entity } = {}
     m.entities.forEach((serverEntity) => {
-      let entity = g.client.serverSnapshot.entities[serverEntity.id]
+      let entity = c.serverSnapshot.entities[serverEntity.id]
       if (!entity) {
         entity = typeDefinitions[serverEntity.type!].make()
         entity.id = serverEntity.id
@@ -27,23 +27,21 @@ export const update = (g: Game, frame: number): void => {
       nextFrameEntities[entity.id] = entity
     })
 
-    g.client.serverSnapshot = {
+    c.serverSnapshot = {
       frame: m.frame,
       entities: nextFrameEntities,
     }
   })
 
-  g.client.serverMessages = []
+  c.serverMessages = []
 
   // Run input reconciliation
-  g.client.entityManager.entities = _.cloneDeep(
-    g.client.serverSnapshot.entities,
-  )
+  c.entityManager.entities = _.cloneDeep(c.serverSnapshot.entities)
 
-  for (let f = g.client.serverSnapshot.frame + 1; f <= frame; f++) {
-    const frameMessages = g.client.messageBuffer.filter((m) => m.frame === f)
+  for (let f = c.serverSnapshot.frame + 1; f <= frame; f++) {
+    const frameMessages = c.messageBuffer.filter((m) => m.frame === f)
     systems.tankMover(
-      { entityManager: g.client.entityManager, messages: frameMessages },
+      { entityManager: c.entityManager, messages: frameMessages },
       SIMULATION_PERIOD_S,
       f,
     )
