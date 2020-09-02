@@ -1,5 +1,5 @@
 {
-  "name": "yolorts",
+  "name": "manchester",
   "description": "It's another game!",
   "scripts": {
     "start": "parcel src/index.html",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jeffanddom/yolorts.git"
+    "url": "git+https://github.com/jeffanddom/manchester.git"
   },
   "dependencies": {
     "@types/events": "^3.0.0",
