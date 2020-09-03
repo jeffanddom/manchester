@@ -3,14 +3,11 @@ import { vec2 } from 'gl-matrix'
 import { maps } from '~/assets/maps'
 import { Client } from '~/Client'
 import { ClientMessage } from '~/ClientMessage'
-import { TILE_SIZE } from '~/constants'
-import * as entities from '~/entities'
 import { EntityManager } from '~/entities/EntityManager'
-import { GameState, gameProgression } from '~/Game'
+import { GameState, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
-import { convertToServerMessage } from '~/util/entities'
 
 export class Server {
   clientMessages: ClientMessage[]
@@ -48,37 +45,9 @@ export class Server {
   startPlay(): void {
     this.entityManager = new EntityManager()
 
-    // Level setup
-    this.map = Map.fromRaw(gameProgression[this.currentLevel])
-    this.terrainLayer = new terrain.Layer({
-      tileOrigin: this.map.origin,
-      tileDimensions: this.map.dimensions,
-      terrain: this.map.terrain,
-    })
-
-    // Populate entities
-    for (let i = 0; i < this.map.dimensions[1]; i++) {
-      for (let j = 0; j < this.map.dimensions[0]; j++) {
-        const et = this.map.entities[i * this.map.dimensions[0] + j]
-        if (et === null) {
-          continue
-        }
-
-        const entity = entities.types.make(et)
-        if (entity.transform !== undefined) {
-          entity.transform.position = vec2.add(
-            vec2.create(),
-            this.terrainLayer.minWorldPos(),
-            vec2.fromValues(
-              j * TILE_SIZE + TILE_SIZE * 0.5,
-              i * TILE_SIZE + TILE_SIZE * 0.5,
-            ),
-          )
-        }
-
-        this.entityManager.register(entity)
-      }
-    }
+    const mapData = initMap(this.entityManager, this.currentLevel)
+    this.map = mapData.map
+    this.terrainLayer = mapData.terrainLayer
 
     this.clients.forEach((client) => {
       // TODO: convert to client message
@@ -154,18 +123,17 @@ export class Server {
 
     this.entityManager.update() // entity cleanup
 
-    // client message cleanup
-    this.clientMessages = this.clientMessages.filter((m) => m.frame > frame)
-
-    // Enqueue server state for the client
+    // send authoritative updates to clients
     const serverMessage = {
       frame,
-      entities: convertToServerMessage(this.entityManager.entities),
+      inputs: this.clientMessages.filter((m) => m.frame === frame),
     }
 
-    /////// FIXME
     this.clients.forEach((client) => {
       client.serverMessages.push(serverMessage)
     })
+
+    // client message cleanup
+    this.clientMessages = this.clientMessages.filter((m) => m.frame > frame)
   }
 }

@@ -1,10 +1,12 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { RunningAverage } from './util/RunningAverage'
+
 import { Camera } from '~/Camera'
 import { ClientMessage } from '~/ClientMessage'
 import { Entity } from '~/entities/Entity'
 import { EntityManager } from '~/entities/EntityManager'
-import { GameState, gameProgression } from '~/Game'
+import { GameState, initMap } from '~/Game'
 import { Keyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
@@ -21,6 +23,7 @@ import { ServerMessage } from '~/ServerMessage'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
+import * as time from '~/util/time'
 
 export class Client {
   entityManager: EntityManager
@@ -36,9 +39,14 @@ export class Client {
 
   camera: Camera
   debugDrawRenderables: Renderable[]
+  debugDrawViewspace: Renderable[]
   emitters: ParticleEmitter[]
   enableDebugDraw: boolean
   renderer: IRenderer
+  lastUpdateAt: number
+  lastRenderAt: number
+  updateFrameDurations: RunningAverage
+  renderFrameDurations: RunningAverage
 
   keyboard?: Keyboard
   mouse?: Mouse
@@ -70,8 +78,13 @@ export class Client {
     )
     this.emitters = []
     this.debugDrawRenderables = []
+    this.debugDrawViewspace = []
     this.enableDebugDraw = false
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
+    this.lastUpdateAt = time.current()
+    this.lastRenderAt = time.current()
+    this.updateFrameDurations = new RunningAverage(3 * 60)
+    this.renderFrameDurations = new RunningAverage(3 * 60)
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
@@ -98,15 +111,14 @@ export class Client {
   }
 
   startPlay(): void {
+    this.entityManager = new EntityManager()
     this.emitters = []
 
     // Level setup
-    this.map = Map.fromRaw(gameProgression[this.currentLevel])
-    this.terrainLayer = new terrain.Layer({
-      tileOrigin: this.map.origin,
-      tileDimensions: this.map.dimensions,
-      terrain: this.map.terrain,
-    })
+    const mapData = initMap(this.entityManager, this.currentLevel)
+    this.map = mapData.map
+    this.terrainLayer = mapData.terrainLayer
+
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
   }
@@ -121,6 +133,10 @@ export class Client {
   }
 
   update(dt: number, frame: number): void {
+    const now = time.current()
+    this.updateFrameDurations.sample(now - this.lastUpdateAt)
+    this.lastUpdateAt = now
+
     if (this.nextState) {
       this.state = this.nextState
       this.nextState = null
@@ -133,12 +149,12 @@ export class Client {
           this.currentLevel = 0
           break
         case GameState.LevelComplete:
-          this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
+          // this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
           break
       }
     }
 
-    systems.syncServerState(this, frame)
+    systems.syncServerState(this, dt, frame)
 
     if (this.state === GameState.Running) {
       systems.playerInput(this, this.entityManager, frame)
@@ -172,6 +188,10 @@ export class Client {
   }
 
   render(): void {
+    const now = time.current()
+    this.renderFrameDurations.sample(now - this.lastRenderAt)
+    this.lastRenderAt = now
+
     this.renderer.clear('magenta')
 
     this.renderer.setTransform(this.camera.wvTransform())
@@ -237,16 +257,60 @@ export class Client {
         style: 'black',
       })
     }
+
+    if (this.enableDebugDraw) {
+      this.debugDraw(
+        () => [
+          {
+            primitive: Primitive.TEXT,
+            text: `Render FPS: ${(
+              1 / this.renderFrameDurations.average()
+            ).toFixed(2)}\n`,
+            pos: vec2.fromValues(10, 10),
+            hAlign: TextAlign.Min,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `Update FPS: ${(
+              1 / this.updateFrameDurations.average()
+            ).toFixed(2)}`,
+            pos: vec2.fromValues(10, 30),
+            hAlign: TextAlign.Min,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+        ],
+        { viewspace: true },
+      )
+
+      this.debugDrawViewspace.forEach((r) => {
+        this.renderer.render(r)
+      })
+    }
+    this.debugDrawViewspace = []
   }
 
-  debugDraw(makeRenderables: () => Renderable[]): void {
+  debugDraw(
+    makeRenderables: () => Renderable[],
+    options: { viewspace?: boolean } = {},
+  ): void {
     if (!this.enableDebugDraw) {
       return
     }
 
-    this.debugDrawRenderables = this.debugDrawRenderables.concat(
-      makeRenderables(),
-    )
+    if (options.viewspace) {
+      this.debugDrawViewspace = this.debugDrawViewspace.concat(
+        makeRenderables(),
+      )
+    } else {
+      this.debugDrawRenderables = this.debugDrawRenderables.concat(
+        makeRenderables(),
+      )
+    }
   }
 
   sendClientMessage(m: ClientMessage): void {

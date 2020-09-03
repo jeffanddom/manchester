@@ -17,9 +17,6 @@ declare global {
 // disable right clicks
 document.addEventListener('contextmenu', (e) => e.preventDefault())
 
-// const htmlNode = document.getElementById('controls')
-// ReactDOM.render(<Controls />, htmlNode)
-
 const canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
 
@@ -55,24 +52,27 @@ function clientRenderLoop() {
 
 let clientFrame = 1
 function clientSimulationLoop() {
-  setTimeout(clientSimulationLoop, 1000 * SIMULATION_PERIOD_S)
-  client.update(SIMULATION_PERIOD_S, clientFrame)
-  clientFrame++
+  setInterval(() => {
+    client.update(SIMULATION_PERIOD_S, clientFrame)
+    clientFrame++
+  }, 1000 * SIMULATION_PERIOD_S)
 }
 
 let simulatedClientFrame = 1
 function simulatedClientSimulationLoop() {
-  setTimeout(simulatedClientSimulationLoop, 1000 * SIMULATION_PERIOD_S)
-  simulatedClient.update(SIMULATION_PERIOD_S, simulatedClientFrame)
-  simulatedClientFrame++
+  setInterval(() => {
+    simulatedClient.update(SIMULATION_PERIOD_S, simulatedClientFrame)
+    simulatedClientFrame++
+  }, 1000 * SIMULATION_PERIOD_S)
 }
 
 // Server update
 let serverFrame = 0
 const serverLoop = () => {
-  setTimeout(serverLoop, 1000 * SIMULATION_PERIOD_S)
-  server.update(SIMULATION_PERIOD_S, serverFrame)
-  serverFrame++
+  setInterval(() => {
+    server.update(SIMULATION_PERIOD_S, serverFrame)
+    serverFrame++
+  }, 1000 * SIMULATION_PERIOD_S)
 }
 
 server.setState(GameState.Running)
