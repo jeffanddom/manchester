@@ -16,7 +16,6 @@ export const makePlayer = (): Entity => {
   e.type = Type.PLAYER
 
   e.enablePlayfieldClamping = true
-  e.player = true
   e.targetable = true
   e.team = Team.Friendly
   e.wallCollider = true

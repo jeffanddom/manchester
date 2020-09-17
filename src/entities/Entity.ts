@@ -14,7 +14,7 @@ import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
 export interface Entity {
-  id: string
+  id: number
   type?: Type
 
   // flags
@@ -23,7 +23,7 @@ export interface Entity {
   enablePlayfieldClamping?: boolean
   obscured: boolean
   obscuring: boolean
-  player: boolean
+  playerNumber?: number
   pickupType?: PickupType
   targetable: boolean
   team: Team
@@ -48,11 +48,10 @@ export interface Entity {
 
 export const makeDefaultEntity = (): Entity => {
   return {
-    id: uuid.v4(),
+    id: -1,
     enablePlayfieldClamping: false,
     obscured: false,
     obscuring: false,
-    player: false,
     targetable: false,
     team: Team.Neutral,
     wall: false,

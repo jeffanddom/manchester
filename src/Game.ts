@@ -4,6 +4,7 @@ import { maps } from '~/assets/maps'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { EntityManager } from '~/entities/EntityManager'
+import { Type } from '~/entities/types'
 import { Map } from '~/map/interfaces'
 import * as terrain from '~/terrain'
 
@@ -32,6 +33,7 @@ export const initMap = (
   })
 
   // Populate entities
+  let playerCounter = 0
   for (let i = 0; i < map.dimensions[1]; i++) {
     for (let j = 0; j < map.dimensions[0]; j++) {
       const et = map.entities[i * map.dimensions[0] + j]
@@ -40,6 +42,11 @@ export const initMap = (
       }
 
       const entity = entities.types.make(et)
+      if (et === Type.PLAYER) {
+        playerCounter++
+        entity.playerNumber = playerCounter
+      }
+
       if (entity.transform !== undefined) {
         entity.transform.position = vec2.add(
           vec2.create(),

@@ -1,4 +1,5 @@
 import { mat2d, vec2 } from 'gl-matrix'
+import * as _ from 'lodash'
 
 import { RunningAverage } from './util/RunningAverage'
 
@@ -7,7 +8,7 @@ import { ClientMessage } from '~/ClientMessage'
 import { Entity } from '~/entities/Entity'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
-import { Keyboard } from '~/Keyboard'
+import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -31,6 +32,7 @@ export class Client {
   playerInputState: {
     cursorMode: CursorMode
   }
+  playerNumber: number
   serverMessages: ServerMessage[]
   serverSnapshot: {
     frame: number
@@ -48,7 +50,7 @@ export class Client {
   updateFrameDurations: RunningAverage
   renderFrameDurations: RunningAverage
 
-  keyboard?: Keyboard
+  keyboard?: IKeyboard
   mouse?: Mouse
   server?: Server
 
@@ -65,6 +67,7 @@ export class Client {
     this.entityManager = new EntityManager()
     this.messageBuffer = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
+    this.playerNumber = -1
     this.serverMessages = []
     this.serverSnapshot = {
       frame: -1,
@@ -79,7 +82,7 @@ export class Client {
     this.emitters = []
     this.debugDrawRenderables = []
     this.debugDrawViewspace = []
-    this.enableDebugDraw = false
+    this.enableDebugDraw = true
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
     this.lastUpdateAt = time.current()
     this.lastRenderAt = time.current()
@@ -121,6 +124,7 @@ export class Client {
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
+    this.serverSnapshot.entities = _.cloneDeep(this.entityManager.entities)
   }
 
   setState(s: GameState): void {
@@ -129,7 +133,7 @@ export class Client {
 
   connect(server: Server): void {
     this.server = server
-    this.server.clients.push(this)
+    this.playerNumber = this.server.clients.push(this)
   }
 
   update(dt: number, frame: number): void {
@@ -173,10 +177,9 @@ export class Client {
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
 
-    if (this.entityManager.getPlayer()) {
-      this.camera.setPosition(
-        this.entityManager.getPlayer()!.transform!.position,
-      )
+    const player = this.entityManager.getPlayer(this.playerNumber)
+    if (player) {
+      this.camera.setPosition(player.transform!.position)
     }
     this.camera.update(dt)
 

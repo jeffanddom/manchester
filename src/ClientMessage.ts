@@ -6,6 +6,7 @@ export enum ClientMessageType {
 
 interface MovePlayerClientMessage {
   frame: number
+  playerNumber: number
   type: ClientMessageType.MOVE_PLAYER
   direction: DirectionMove
 }

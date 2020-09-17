@@ -6,7 +6,7 @@ import { MouseButton } from '~/Mouse'
 import { BuilderMode } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 
-const keyMap = {
+export const keyMap = {
   moveUp: 87, // W
   moveDown: 83, // S
   moveLeft: 68, // A
@@ -81,6 +81,7 @@ const handleMoveInput = (client: Client, frame: number): void => {
   if (direction !== undefined) {
     client.sendClientMessage({
       frame,
+      playerNumber: client.playerNumber,
       type: ClientMessageType.MOVE_PLAYER,
       direction,
     })

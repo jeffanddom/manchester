@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Client } from '~/Client'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { GameState } from '~/Game'
-import { Keyboard } from '~/Keyboard'
+import { Keyboard, SimulatedKeyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
 import { Server } from '~/Server'
 
@@ -34,6 +34,9 @@ simulatedClient.connect(server)
 client.keyboard = new Keyboard()
 client.mouse = new Mouse(canvas)
 
+// Simulate input
+simulatedClient.keyboard = new SimulatedKeyboard()
+
 window.g = window.game = client // expose game to console
 
 function syncViewportSize() {
@@ -50,7 +53,7 @@ function clientRenderLoop() {
   client.render()
 }
 
-let clientFrame = 1
+let clientFrame = 5
 function clientSimulationLoop() {
   setInterval(() => {
     client.update(SIMULATION_PERIOD_S, clientFrame)
@@ -58,7 +61,7 @@ function clientSimulationLoop() {
   }, 1000 * SIMULATION_PERIOD_S)
 }
 
-let simulatedClientFrame = 1
+let simulatedClientFrame = 5
 function simulatedClientSimulationLoop() {
   setInterval(() => {
     simulatedClient.update(SIMULATION_PERIOD_S, simulatedClientFrame)

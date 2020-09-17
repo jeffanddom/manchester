@@ -2,10 +2,12 @@ import { Entity } from '~/entities/Entity'
 import { Renderable } from '~/renderer/interfaces'
 
 export class EntityManager {
+  nextEntityId: number
   entities: { [key: string]: Entity }
   toDelete: string[]
 
   constructor() {
+    this.nextEntityId = 0
     this.entities = {}
     this.toDelete = []
   }
@@ -27,11 +29,17 @@ export class EntityManager {
     return renderables
   }
 
-  getPlayer(): Entity | null {
-    return Object.values(this.entities).find((e) => e.player) || null
+  getPlayer(playerNumber: number): Entity | null {
+    return (
+      Object.values(this.entities).find(
+        (e) => e.playerNumber === playerNumber,
+      ) || null
+    )
   }
 
   register(e: Entity): void {
+    e.id = this.nextEntityId
+    this.nextEntityId++
     this.entities[e.id] = e
   }
 

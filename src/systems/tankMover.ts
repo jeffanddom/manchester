@@ -1,3 +1,4 @@
+import { Client } from '~/Client'
 import { ClientMessage, ClientMessageType } from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
@@ -10,31 +11,31 @@ export const update = (
   simState: {
     entityManager: EntityManager
     messages: ClientMessage[]
+    client?: Client
   },
   dt: number,
   frame: number,
 ): void => {
-  const message = simState.messages.find(
+  const messages = simState.messages.filter(
     (m) => m.frame === frame && m.type === ClientMessageType.MOVE_PLAYER,
   )
-  if (!message) {
-    return
-  }
 
-  const player = simState.entityManager.getPlayer()
-  if (!player) {
-    return
-  }
+  messages.forEach((message) => {
+    const player = simState.entityManager.getPlayer(message.playerNumber)
+    if (!player) {
+      return
+    }
 
-  player.transform!.orientation = rotateUntil({
-    from: player.transform!.orientation,
-    to: message.direction,
-    amount: TANK_ROT_SPEED * dt,
+    player.transform!.orientation = rotateUntil({
+      from: player.transform!.orientation,
+      to: message.direction,
+      amount: TANK_ROT_SPEED * dt,
+    })
+    radialTranslate2(
+      player.transform!.position,
+      player.transform!.position,
+      message.direction,
+      TANK_SPEED * dt,
+    )
   })
-  radialTranslate2(
-    player.transform!.position,
-    player.transform!.position,
-    message.direction,
-    TANK_SPEED * dt,
-  )
 }
