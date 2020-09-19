@@ -1,11 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
-import * as _ from 'lodash'
-
-import { RunningAverage } from './util/RunningAverage'
 
 import { Camera } from '~/Camera'
 import { ClientMessage } from '~/ClientMessage'
-import { Entity } from '~/entities/Entity'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
@@ -21,23 +17,22 @@ import {
 } from '~/renderer/interfaces'
 import { Server } from '~/Server'
 import { ServerMessage } from '~/ServerMessage'
+import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
+import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export class Client {
   entityManager: EntityManager
-  messageBuffer: ClientMessage[]
+  localMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
   }
   playerNumber: number
   serverMessages: ServerMessage[]
-  serverSnapshot: {
-    frame: number
-    entities: { [key: string]: Entity }
-  }
+  serverFrame: number
 
   camera: Camera
   debugDrawRenderables: Renderable[]
@@ -65,14 +60,11 @@ export class Client {
 
   constructor(canvas: HTMLCanvasElement) {
     this.entityManager = new EntityManager()
-    this.messageBuffer = []
+    this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.playerNumber = -1
     this.serverMessages = []
-    this.serverSnapshot = {
-      frame: -1,
-      entities: {},
-    }
+    this.serverFrame = -1
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -124,7 +116,6 @@ export class Client {
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
-    this.serverSnapshot.entities = _.cloneDeep(this.entityManager.entities)
   }
 
   setState(s: GameState): void {
@@ -161,18 +152,17 @@ export class Client {
     systems.syncServerState(this, dt, frame)
 
     if (this.state === GameState.Running) {
-      systems.playerInput(this, this.entityManager, frame)
-
-      // predictive simulation
-      systems.tankMover(
-        {
-          entityManager: this.entityManager,
-          messages: this.messageBuffer.filter((m) => m.frame === frame),
-        },
-        dt,
-        frame,
-      )
+      systems.playerInput(this, frame)
     }
+
+    simulate(
+      {
+        entityManager: this.entityManager,
+        messages: this.localMessageHistory.filter((m) => m.frame === frame),
+      },
+      this.state,
+      dt,
+    )
 
     this.emitters = this.emitters.filter((e) => !e.dead)
     this.emitters.forEach((e) => e.update(dt))
@@ -317,7 +307,7 @@ export class Client {
   }
 
   sendClientMessage(m: ClientMessage): void {
-    this.messageBuffer.push(m)
+    this.localMessageHistory.push(m)
     this.server!.clientMessages.push(m)
   }
 }

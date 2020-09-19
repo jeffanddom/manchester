@@ -1,5 +1,3 @@
-import * as uuid from 'uuid'
-
 import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
@@ -14,7 +12,7 @@ import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
 export interface Entity {
-  id: number
+  id: string
   type?: Type
 
   // flags
@@ -48,7 +46,7 @@ export interface Entity {
 
 export const makeDefaultEntity = (): Entity => {
   return {
-    id: -1,
+    id: '',
     enablePlayfieldClamping: false,
     obscured: false,
     obscuring: false,

@@ -62,5 +62,7 @@ export const initMap = (
     }
   }
 
+  entityManager.clearCheckpoint()
+
   return { map, terrainLayer }
 }

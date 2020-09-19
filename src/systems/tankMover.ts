@@ -1,5 +1,8 @@
-import { Client } from '~/Client'
-import { ClientMessage, ClientMessageType } from '~/ClientMessage'
+import {
+  ClientMessage,
+  ClientMessageType,
+  MovePlayerClientMessage,
+} from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { radialTranslate2, rotateUntil } from '~/util/math'
@@ -11,20 +14,23 @@ export const update = (
   simState: {
     entityManager: EntityManager
     messages: ClientMessage[]
-    client?: Client
   },
   dt: number,
-  frame: number,
 ): void => {
-  const messages = simState.messages.filter(
-    (m) => m.frame === frame && m.type === ClientMessageType.MOVE_PLAYER,
-  )
+  const messages: Array<MovePlayerClientMessage> = []
+  simState.messages.forEach((m) => {
+    if (m.type === ClientMessageType.MOVE_PLAYER) {
+      messages.push(m)
+    }
+  })
 
   messages.forEach((message) => {
     const player = simState.entityManager.getPlayer(message.playerNumber)
     if (!player) {
       return
     }
+
+    simState.entityManager.checkpointEntity(player.id)
 
     player.transform!.orientation = rotateUntil({
       from: player.transform!.orientation,

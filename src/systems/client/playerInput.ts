@@ -1,6 +1,6 @@
+import { Client } from '~/Client'
 import { ClientMessageType } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
-import { Client, Game } from '~/Game'
 import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
 import { BuilderMode } from '~/systems/builder'
@@ -25,14 +25,10 @@ export enum CursorMode {
   BUILD_WALL,
 }
 
-export const update = (
-  client: Client,
-  entityManager: EntityManager,
-  frame: number,
-): void => {
+export const update = (client: Client, frame: number): void => {
   // handleCursorMode(game)
   handleMoveInput(client, frame)
-  // handleAttackInput(game, entityManager)
+  handleAttackInput(client, frame)
   // handleBuilderInput(game, entityManager)
 }
 
@@ -88,18 +84,28 @@ const handleMoveInput = (client: Client, frame: number): void => {
   }
 }
 
-// const handleAttackInput = (game: Game, entityManager: EntityManager): void => {
-//   let targetPos = null
-//   const mousePos = game.client.mouse.getPos()
-//   if (mousePos) {
-//     targetPos = game.client.camera.viewToWorldspace(mousePos)
-//   }
+const handleAttackInput = (client: Client, frame: number): void => {
+  // FIXME
+  if (!client.mouse) {
+    return
+  }
 
-//   entityManager.getPlayer()!.shooter!.input = {
-//     target: targetPos,
-//     fire: game.client.mouse.isDown(MouseButton.LEFT),
-//   }
-// }
+  if (!client.mouse.isDown(MouseButton.LEFT)) {
+    return
+  }
+
+  const mousePos = client.mouse.getPos()
+  if (!mousePos) {
+    return
+  }
+
+  client.sendClientMessage({
+    frame,
+    playerNumber: client.playerNumber,
+    type: ClientMessageType.TANK_SHOOT,
+    targetPos: client.camera.viewToWorldspace(mousePos),
+  })
+}
 
 // const handleBuilderInput = (game: Game, entityManager: EntityManager): void => {
 //   const player = entityManager.getPlayer()!
