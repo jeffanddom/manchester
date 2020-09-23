@@ -85,6 +85,7 @@ export class Server {
       {
         entityManager: this.entityManager,
         messages: this.clientMessages.filter((m) => m.frame === frame),
+        terrainLayer: this.terrainLayer,
       },
       this.state,
       dt,

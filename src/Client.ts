@@ -159,6 +159,7 @@ export class Client {
       {
         entityManager: this.entityManager,
         messages: this.localMessageHistory.filter((m) => m.frame === frame),
+        terrainLayer: this.terrainLayer,
       },
       this.state,
       dt,

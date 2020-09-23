@@ -22,6 +22,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
       {
         entityManager: c.entityManager,
         messages: frameMessage.inputs,
+        terrainLayer: c.terrainLayer,
       },
       c.state,
       dt,
@@ -37,6 +38,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
       {
         entityManager: c.entityManager,
         messages: c.localMessageHistory.filter((m) => m.frame === f),
+        terrainLayer: c.terrainLayer,
       },
       c.state,
       dt,

@@ -1,23 +1,29 @@
 import { vec2 } from 'gl-matrix'
 
-import { Game } from '~/Game'
+import { EntityManager } from '~/entities/EntityManager'
+import * as terrain from '~/terrain'
 
-export const update = (g: Game): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+export const update = (simState: {
+  entityManager: EntityManager
+  terrainLayer: terrain.Layer
+}): void => {
+  for (const id in simState.entityManager.entities) {
+    const e = simState.entityManager.entities[id]
     if (!e.transform || !e.enablePlayfieldClamping) {
       continue
     }
 
+    simState.entityManager.checkpointEntity(e.id)
+
     vec2.max(
       e.transform.position,
       e.transform.position,
-      g.terrainLayer.minWorldPos(),
+      simState.terrainLayer.minWorldPos(),
     )
     vec2.min(
       e.transform.position,
       e.transform.position,
-      g.terrainLayer.maxWorldPos(),
+      simState.terrainLayer.maxWorldPos(),
     )
   }
 }

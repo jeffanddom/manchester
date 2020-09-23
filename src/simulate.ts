@@ -2,11 +2,13 @@ import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
 import * as systems from '~/systems'
+import * as terrain from '~/terrain'
 
 export const simulate = (
   simState: {
     entityManager: EntityManager
     messages: Array<ClientMessage>
+    terrainLayer: terrain.Layer
   },
   gameState: GameState,
   dt: number,
@@ -24,7 +26,7 @@ export const simulate = (
   // systems.pickups(this, this.entityManager)
   // systems.wallCollider(this)
   // systems.attack(this, this.entityManager)
-  // systems.playfieldClamping(this)
+  systems.playfieldClamping(simState)
 
   // systems.damageable(this, this.entityManager)
 
