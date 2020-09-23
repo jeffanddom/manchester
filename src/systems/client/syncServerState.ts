@@ -23,6 +23,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
         entityManager: c.entityManager,
         messages: frameMessage.inputs,
         terrainLayer: c.terrainLayer,
+        registerParticleEmitter: c.registerParticleEmitter,
       },
       c.state,
       dt,
@@ -32,13 +33,19 @@ export const update = (c: Client, dt: number, frame: number): void => {
 
   c.entityManager.clearCheckpoint()
 
+  c.localMessageHistory = c.localMessageHistory.filter(
+    (m) => m.frame > c.serverFrame,
+  )
+
   // Re-application of prediction
+  // !! Linear slowdown dependent on the # of frames ahead of the server
   for (let f = c.serverFrame + 1; f <= frame; f++) {
     simulate(
       {
         entityManager: c.entityManager,
         messages: c.localMessageHistory.filter((m) => m.frame === f),
         terrainLayer: c.terrainLayer,
+        registerParticleEmitter: c.registerParticleEmitter,
       },
       c.state,
       dt,

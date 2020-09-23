@@ -1,14 +1,17 @@
 import { vec2 } from 'gl-matrix'
 
-import { Server } from '~/Game'
+import { SimState } from '~/simulate'
 
-export const update = (s: Server): void => {
-  for (const id in s.entityManager.entities) {
-    const e = s.entityManager.entities[id]
+export const update = (simState: Pick<SimState, 'entityManager'>): void => {
+  for (const id in simState.entityManager.entities) {
+    const e = simState.entityManager.entities[id]
     if (!e.transform) {
       continue
     }
 
-    e.transform.previousPosition = vec2.clone(e.transform.position)
+    if (!vec2.equals(e.transform.position, e.transform.previousPosition)) {
+      simState.entityManager.checkpointEntity(id)
+      e.transform.previousPosition = vec2.clone(e.transform.position)
+    }
   }
 }

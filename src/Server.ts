@@ -8,7 +8,6 @@ import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
-import * as systems from '~/systems'
 import * as terrain from '~/terrain'
 
 export class Server {
@@ -78,8 +77,6 @@ export class Server {
           break
       }
     }
-
-    systems.transformInit(this)
 
     simulate(
       {

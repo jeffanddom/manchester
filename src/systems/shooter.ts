@@ -1,17 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
-import {
-  ClientMessage,
-  ClientMessageType,
-  TankShootClientMessage,
-} from '~/ClientMessage'
+import { ClientMessageType, TankShootClientMessage } from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { EntityManager } from '~/entities/EntityManager'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { SimState } from '~/simulate'
 import { getAngle, radialTranslate2 } from '~/util/math'
-
-const COOLDOWN_PERIOD = 0.25
 
 export class ShooterComponent {
   cooldownTtl: number
@@ -30,10 +24,12 @@ export class ShooterComponent {
   }
 }
 
-export const update = (simState: {
-  entityManager: EntityManager
-  messages: ClientMessage[]
-}): void => {
+export const update = (
+  simState: Pick<
+    SimState,
+    'entityManager' | 'messages' | 'registerParticleEmitter'
+  >,
+): void => {
   const messages: Array<TankShootClientMessage> = []
   simState.messages.forEach((m) => {
     if (m.type === ClientMessageType.TANK_SHOOT) {
@@ -70,18 +66,24 @@ export const update = (simState: {
       }),
     )
 
-    // const muzzleFlash = new ParticleEmitter({
-    //   spawnTtl: 0.1,
-    //   position: bulletPos,
-    //   particleTtl: 0.065,
-    //   particleRadius: 3,
-    //   particleRate: 240,
-    //   particleSpeedRange: [120, 280],
-    //   orientation: e.shooter!.orientation,
-    //   arc: Math.PI / 4,
-    //   colors: ['#FF9933', '#CCC', '#FFF'],
-    // })
+    if (simState.registerParticleEmitter) {
+      const muzzleFlash = new ParticleEmitter({
+        spawnTtl: 0.1,
+        position: bulletPos,
+        particleTtl: 0.065,
+        particleRadius: 3,
+        particleRate: 240,
+        particleSpeedRange: [120, 280],
+        orientation: e.shooter!.orientation,
+        arc: Math.PI / 4,
+        colors: ['#FF9933', '#CCC', '#FFF'],
+      })
 
-    // client.emitters.push(muzzleFlash)
+      simState.registerParticleEmitter({
+        emitter: muzzleFlash,
+        frame: message.frame,
+        entity: e.id,
+      })
+    }
   })
 }

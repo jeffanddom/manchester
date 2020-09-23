@@ -13,7 +13,7 @@ export const update = (simState: {
       continue
     }
 
-    simState.entityManager.checkpointEntity(e.id)
+    // simState.entityManager.checkpointEntity(e.id)
 
     vec2.max(
       e.transform.position,

@@ -1,18 +1,29 @@
+import { ParticleEmitter } from './particles/ParticleEmitter'
+
 import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
 
+export type SimState = {
+  entityManager: EntityManager
+  messages: Array<ClientMessage>
+  terrainLayer: terrain.Layer
+  registerParticleEmitter?: (params: {
+    emitter: ParticleEmitter
+    frame: number
+    entity: string
+  }) => void
+}
+
 export const simulate = (
-  simState: {
-    entityManager: EntityManager
-    messages: Array<ClientMessage>
-    terrainLayer: terrain.Layer
-  },
+  simState: SimState,
   gameState: GameState,
   dt: number,
 ): void => {
+  systems.transformInit(simState)
+
   if (gameState === GameState.Running) {
     systems.tankMover(simState, dt)
 
@@ -22,9 +33,9 @@ export const simulate = (
     // systems.turret(this, dt)
   }
 
-  // systems.bullet(this, dt)
+  systems.bullet(simState, dt)
   // systems.pickups(this, this.entityManager)
-  // systems.wallCollider(this)
+  systems.wallCollider(simState)
   // systems.attack(this, this.entityManager)
   systems.playfieldClamping(simState)
 

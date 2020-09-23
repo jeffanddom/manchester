@@ -1,17 +1,22 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
+import { EntityManager } from '~/entities/EntityManager'
 import { radialTranslate2 } from '~/util/math'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 6)
 
-export const update = (g: Game, dt: number): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+export const update = (
+  simState: { entityManager: EntityManager },
+  dt: number,
+): void => {
+  for (const id in simState.entityManager.entities) {
+    const e = simState.entityManager.entities[id]
     if (!e.bullet) {
       continue
     }
+
+    simState.entityManager.checkpointEntity(e.id)
 
     radialTranslate2(
       e.transform!.position,
@@ -23,7 +28,7 @@ export const update = (g: Game, dt: number): void => {
     if (
       vec2.distance(e.transform!.position, e.bullet.origin) >= e.bullet.range
     ) {
-      g.server.entityManager.markForDeletion(id)
+      simState.entityManager.markForDeletion(id)
       return
     }
   }

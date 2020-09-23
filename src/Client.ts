@@ -1,5 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { TILE_SIZE } from './constants'
+
 import { Camera } from '~/Camera'
 import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
@@ -38,6 +40,7 @@ export class Client {
   debugDrawRenderables: Renderable[]
   debugDrawViewspace: Renderable[]
   emitters: ParticleEmitter[]
+  emitterHistory: Set<string>
   enableDebugDraw: boolean
   renderer: IRenderer
   lastUpdateAt: number
@@ -72,6 +75,7 @@ export class Client {
       vec2.create(),
     )
     this.emitters = []
+    this.emitterHistory = new Set()
     this.debugDrawRenderables = []
     this.debugDrawViewspace = []
     this.enableDebugDraw = true
@@ -99,6 +103,9 @@ export class Client {
       tileDimensions: vec2.create(),
       terrain: this.map.terrain,
     })
+
+    // Depedency-injection binding
+    this.registerParticleEmitter = this.registerParticleEmitter.bind(this)
   }
 
   setViewportDimensions(d: vec2): void {
@@ -160,6 +167,7 @@ export class Client {
         entityManager: this.entityManager,
         messages: this.localMessageHistory.filter((m) => m.frame === frame),
         terrainLayer: this.terrainLayer,
+        registerParticleEmitter: this.registerParticleEmitter,
       },
       this.state,
       dt,
@@ -253,6 +261,20 @@ export class Client {
     }
 
     if (this.enableDebugDraw) {
+      this.debugDraw(() => {
+        return Object.values(this.entityManager.entities)
+          .filter((e) => e.wall)
+          .map((e) => ({
+            primitive: Primitive.RECT,
+            strokeStyle: 'cyan',
+            pos: vec2.subtract(vec2.create(), e.transform!.position, [
+              TILE_SIZE / 2,
+              TILE_SIZE / 2,
+            ]),
+            dimensions: [TILE_SIZE, TILE_SIZE],
+          }))
+      })
+
       this.debugDraw(
         () => [
           {
@@ -285,7 +307,19 @@ export class Client {
         this.renderer.render(r)
       })
     }
+
     this.debugDrawViewspace = []
+  }
+
+  registerParticleEmitter(params: {
+    emitter: ParticleEmitter
+    frame: number
+    entity: string
+  }): void {
+    if (!this.emitterHistory.has(`${params.frame}:${params.entity}`)) {
+      this.emitterHistory.add(`${params.frame}:${params.entity}`)
+      this.emitters.push(params.emitter)
+    }
   }
 
   debugDraw(
