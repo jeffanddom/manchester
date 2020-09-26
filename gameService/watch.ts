@@ -1,9 +1,17 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import * as fs from 'fs'
+import * as path from 'path'
 
 import { buildClient } from './buildClient'
 
 let server: ChildProcessWithoutNullStreams
+
+const trimNewlineSuffix = (data: Buffer): Buffer => {
+  if (data[data.length - 1] === 10) {
+    return data.subarray(0, data.length - 1)
+  }
+  return data
+}
 
 const startServer = async () => {
   await buildClient()
@@ -13,15 +21,27 @@ const startServer = async () => {
   }
 
   server = spawn('yarn', ['devServe'])
-  server.stdout.on('data', (data) => console.log(data.toString()))
-  server.stderr.on('data', (data) => console.log(data.toString()))
+  server.stdout.on('data', (data) =>
+    console.log(trimNewlineSuffix(data).toString()),
+  )
+  server.stderr.on('data', (data) =>
+    console.log(trimNewlineSuffix(data).toString()),
+  )
 }
 
+let debounce = false
 fs.watch(
-  __dirname + '/../src',
+  path.normalize(path.join(__dirname, '..', 'src')),
   { recursive: true },
-  async (_eventType, _filename) => {
-    startServer()
+  async () => {
+    if (debounce) {
+      return
+    }
+
+    setTimeout(() => {
+      startServer()
+      debounce = false
+    }, 1000)
   },
 )
 

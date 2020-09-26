@@ -7,8 +7,6 @@ import * as WebSocket from 'ws'
 
 import { buildkeyPath, clientEntrypointPath } from './common'
 
-const websocket = require('koa-easy-ws')
-
 const app = new Koa()
 const port = 3000
 
@@ -21,8 +19,10 @@ const entrypointWithHotReload = entrypointPage.replace(
   `<script>window.initHotReload('${buildkey}')</script>`,
 )
 
+const wsServer = new WebSocket.Server({ noServer: true })
+
 const router = new KoaRouter()
-let playerNumber = 1
+let nextPlayerNumber = 1
 router
   .get('/', async (ctx, next) => {
     ctx.body = entrypointWithHotReload
@@ -32,30 +32,33 @@ router
     ctx.body = buildkey
     return await next()
   })
-  .get('/clientBuild/(.*)', async (ctx) => {
-    console.log(ctx.path)
-    return koaSend(ctx, ctx.path, { root: __dirname })
-  })
+  .get('/clientBuild/(.*)', async (ctx) =>
+    koaSend(ctx, ctx.path, { root: __dirname }),
+  )
   .get('/api/connect', async (ctx) => {
-    const ctx2 = ctx as any
-
-    if (ctx2.ws) {
-      const ws: WebSocket = await ctx2.ws()
-
-      ws.on('open', () => {
-        ws.send(playerNumber.toString())
-      })
-      ws.on('message', (data) => {
-        console.log(data)
-      })
-      playerNumber++
+    if (ctx.get('Upgrade') !== 'websocket') {
+      ctx.throw(400, 'invalid websocket connection request')
     }
-  })
 
-// .post('/api/connect', async (ctx) => {})
-// .post('/api/connect', async (ctx) => {})
+    ctx.respond = false
+    const socket = await new Promise((resolve: (ws: WebSocket) => void) => {
+      wsServer.handleUpgrade(
+        ctx.req,
+        ctx.request.socket,
+        Buffer.alloc(0),
+        resolve,
+      )
+    })
+
+    console.log(
+      `websocket connection established with ${ctx.req.socket.remoteAddress}, assigning player number ${nextPlayerNumber}`,
+    )
+
+    socket.send(nextPlayerNumber.toString())
+    nextPlayerNumber++
+  })
 
 console.log(`Starting dev server on port ${port}`)
-app.use(websocket()).use(router.routes()).use(router.allowedMethods())
+app.use(router.routes()).use(router.allowedMethods())
 
 app.listen(port)
