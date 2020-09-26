@@ -6,6 +6,7 @@
       "dom"
     ],
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true, // required for using Koa
     "alwaysStrict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
@@ -23,5 +24,10 @@
     },
     "skipLibCheck": true,
     "resolveJsonModule": true
-  }
+  },
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules"
+  ]
 }

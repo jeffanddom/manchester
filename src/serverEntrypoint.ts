@@ -1,17 +1,26 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import * as Koa from 'koa'
-import * as KoaRouter from 'koa-router'
-import * as koaSend from 'koa-send'
+import Koa from 'koa'
+import KoaRouter from 'koa-router'
+import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
-import { buildkeyPath, clientBuildPath } from './common'
+import { SIMULATION_PERIOD_S } from '~/constants'
+import { buildkey } from '~/gameService/buildkey'
+import { clientBuildPath } from '~/gameService/common'
+import { Server as GameServer } from '~/Server'
 
-const app = new Koa()
+const gameServer = new GameServer()
+let serverFrame = 0
+setInterval(() => {
+  gameServer.update(SIMULATION_PERIOD_S, serverFrame)
+  serverFrame++
+}, 1000 * SIMULATION_PERIOD_S)
+
+const httpServer = new Koa()
 const port = 3000
 
-const buildkey = fs.readFileSync(buildkeyPath).toString('utf8')
 const entrypointPage = fs
   .readFileSync(path.join(clientBuildPath, 'index.html'))
   .toString('utf8')
@@ -38,9 +47,7 @@ router
   .get('/client/(.*)', async (ctx) =>
     koaSend(ctx, ctx.path.substr('/client/'.length), { root: clientBuildPath }),
   )
-  .get('/api/buildkey', async (ctx) =>
-    koaSend(ctx, buildkeyPath, { root: '/' }),
-  )
+  .get('/api/buildkey', async (ctx) => (ctx.body = buildkey))
   .get('/api/connect', async (ctx) => {
     if (ctx.get('Upgrade') !== 'websocket') {
       ctx.throw(400, 'invalid websocket connection request')
@@ -65,5 +72,5 @@ router
   })
 
 console.log(`Starting dev server on port ${port}, buildkey ${buildkey}`)
-app.use(router.routes()).use(router.allowedMethods())
-app.listen(port)
+httpServer.use(router.routes()).use(router.allowedMethods())
+httpServer.listen(port)

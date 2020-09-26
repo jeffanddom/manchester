@@ -2,8 +2,9 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { gameSrcPath } from './common'
+import { gameSrcPath, serverBuildPath } from './common'
 
+// Removes a newline from the end of a buffer, if it exists.
 const trimNewlineSuffix = (data: Buffer): Buffer => {
   if (data[data.length - 1] === 10) {
     return data.subarray(0, data.length - 1)
@@ -26,29 +27,42 @@ const rebuild = async () => {
   building = true
 
   // Rebuild client artifacts
-  await new Promise((resolve) => {
+  const clientBuild = new Promise((resolve) => {
     const build = spawn('npx', [
       'ts-node',
       path.join(gameSrcPath, 'gameService', 'buildClient.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
-      console.log(trimNewlineSuffix(data).toString()),
+      console.log('client build: ' + trimNewlineSuffix(data).toString()),
     )
     build.stderr.on('data', (data) =>
-      console.log(trimNewlineSuffix(data).toString()),
+      console.log('client build err: ' + trimNewlineSuffix(data).toString()),
     )
   })
+
+  const serverBuild = new Promise((resolve) => {
+    const build = spawn('npx', [
+      'ts-node',
+      path.join(gameSrcPath, 'gameService', 'buildServer.ts'),
+    ])
+    build.on('close', resolve)
+    build.stdout.on('data', (data) =>
+      console.log('server build: ' + trimNewlineSuffix(data).toString()),
+    )
+    build.stderr.on('data', (data) =>
+      console.log('server build err: ' + trimNewlineSuffix(data).toString()),
+    )
+  })
+
+  await Promise.all([clientBuild, serverBuild])
 
   // Restart server
   if (server) {
     server.kill()
   }
 
-  server = spawn('npx', [
-    'ts-node',
-    path.join(gameSrcPath, 'gameService', 'serve.ts'),
-  ])
+  server = spawn('npx', ['node', path.join(serverBuildPath, 'server.js')])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
@@ -67,7 +81,14 @@ const rebuild = async () => {
 }
 
 let debounce = false
-fs.watch(gameSrcPath, { recursive: true }, () => {
+const ignore = new Set([
+  'gameService/buildkey.ts', // this file is modified by the build process itself
+])
+fs.watch(gameSrcPath, { recursive: true }, (_event, filename) => {
+  if (ignore.has(filename)) {
+    return
+  }
+
   if (debounce) {
     return
   }
