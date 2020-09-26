@@ -21,7 +21,7 @@ export const buildClient = async (): Promise<void> => {
   const bundler = new Bundler(path.join(gameSrcPath, 'index.html'), {
     outDir: clientBuildPath,
     outFile: 'index.html', // The name of the outputFile
-    publicUrl: '/clientBuild',
+    publicUrl: '/client',
     watch: false, // explicitly disable watching...we want the supervisor to control this
     cache: true,
     cacheDir: '.cache',

@@ -1,11 +1,12 @@
 import * as fs from 'fs'
+import * as path from 'path'
 
 import * as Koa from 'koa'
 import * as KoaRouter from 'koa-router'
 import * as koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
-import { buildkeyPath, clientEntrypointPath } from './common'
+import { buildkeyPath, clientBuildPath } from './common'
 
 const app = new Koa()
 const port = 3000
@@ -13,10 +14,12 @@ const port = 3000
 const buildkey = fs.readFileSync(buildkeyPath).toString('utf8')
 console.log(`initial buildkey is ${buildkey}`)
 
-const entrypointPage = fs.readFileSync(clientEntrypointPath).toString('utf8')
+const entrypointPage = fs
+  .readFileSync(path.join(clientBuildPath, 'index.html'))
+  .toString('utf8')
 const entrypointWithHotReload = entrypointPage.replace(
   '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
-  `<script>window.initHotReload('${buildkey}')</script>`,
+  `<script>window.hotReload.poll('${buildkey}')</script>`,
 )
 
 const wsServer = new WebSocket.Server({ noServer: true })
@@ -28,12 +31,8 @@ router
     ctx.body = entrypointWithHotReload
     return await next()
   })
-  .get('/buildkey', async (ctx, next) => {
-    ctx.body = buildkey
-    return await next()
-  })
-  .get('/clientBuild/(.*)', async (ctx) =>
-    koaSend(ctx, ctx.path, { root: __dirname }),
+  .get('/client/(.*)', async (ctx) =>
+    koaSend(ctx, ctx.path.substr('/client/'.length), { root: clientBuildPath }),
   )
   .get('/api/connect', async (ctx) => {
     if (ctx.get('Upgrade') !== 'websocket') {

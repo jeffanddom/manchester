@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { buildClient } from './buildClient'
+import { gameSrcPath } from './common'
 
 let server: ChildProcessWithoutNullStreams
 
@@ -20,7 +21,10 @@ const startServer = async () => {
     server.kill()
   }
 
-  server = spawn('yarn', ['devServe'])
+  server = spawn('npx', [
+    'ts-node',
+    path.join(gameSrcPath, 'gameService', 'serve.ts'),
+  ])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
@@ -30,19 +34,15 @@ const startServer = async () => {
 }
 
 let debounce = false
-fs.watch(
-  path.normalize(path.join(__dirname, '..', 'src')),
-  { recursive: true },
-  async () => {
-    if (debounce) {
-      return
-    }
+fs.watch(gameSrcPath, { recursive: true }, async () => {
+  if (debounce) {
+    return
+  }
 
-    setTimeout(() => {
-      startServer()
-      debounce = false
-    }, 1000)
-  },
-)
+  setTimeout(() => {
+    startServer()
+    debounce = false
+  }, 1000)
+})
 
 startServer()
