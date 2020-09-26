@@ -16,7 +16,7 @@ function getMtimeMs(filepath: string): number {
   return stats.mtimeMs
 }
 
-export const buildClient = async (): Promise<void> => {
+const main = async (): Promise<void> => {
   // Initializes a bundler using the entrypoint location and options provided
   const bundler = new Bundler(path.join(gameSrcPath, 'index.html'), {
     outDir: clientBuildPath,
@@ -39,3 +39,7 @@ export const buildClient = async (): Promise<void> => {
   const fd = fs.openSync(buildkeyPath, 'w')
   fs.writeSync(fd, Buffer.from(buildkey.toString()))
 }
+
+main().then(() => {
+  // do nothing
+})

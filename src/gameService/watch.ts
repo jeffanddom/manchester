@@ -2,10 +2,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { buildClient } from './buildClient'
 import { gameSrcPath } from './common'
-
-let server: ChildProcessWithoutNullStreams
 
 const trimNewlineSuffix = (data: Buffer): Buffer => {
   if (data[data.length - 1] === 10) {
@@ -14,9 +11,36 @@ const trimNewlineSuffix = (data: Buffer): Buffer => {
   return data
 }
 
-const startServer = async () => {
-  await buildClient()
+// global watch state
+let building = false // a single-thread mutex around rebuild()
+let buildQueued = false
+let server: ChildProcessWithoutNullStreams
 
+const rebuild = async () => {
+  // don't allow rebuild() to be called more than once
+  if (building) {
+    buildQueued = true
+    return
+  }
+
+  building = true
+
+  // Rebuild client artifacts
+  await new Promise((resolve) => {
+    const build = spawn('npx', [
+      'ts-node',
+      path.join(gameSrcPath, 'gameService', 'buildClient.ts'),
+    ])
+    build.on('close', resolve)
+    build.stdout.on('data', (data) =>
+      console.log(trimNewlineSuffix(data).toString()),
+    )
+    build.stderr.on('data', (data) =>
+      console.log(trimNewlineSuffix(data).toString()),
+    )
+  })
+
+  // Restart server
   if (server) {
     server.kill()
   }
@@ -31,18 +55,29 @@ const startServer = async () => {
   server.stderr.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
+
+  // allow rebuild() to be called again
+  building = false
+
+  // Immediately trigger a rebuild if one was requested during this build.
+  if (buildQueued) {
+    buildQueued = false
+    rebuild()
+  }
 }
 
 let debounce = false
-fs.watch(gameSrcPath, { recursive: true }, async () => {
+fs.watch(gameSrcPath, { recursive: true }, () => {
   if (debounce) {
     return
   }
 
+  debounce = true
+
   setTimeout(() => {
-    startServer()
     debounce = false
-  }, 1000)
+    rebuild()
+  }, 500)
 })
 
-startServer()
+rebuild()

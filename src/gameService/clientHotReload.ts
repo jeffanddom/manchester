@@ -45,5 +45,5 @@ export const poll = (initialBuildkey: string): void => {
       .catch((err) => {
         console.log('buildkey fetch: error:', err)
       })
-  }, 2000)
+  }, 1000)
 }

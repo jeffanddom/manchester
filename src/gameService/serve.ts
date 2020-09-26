@@ -12,8 +12,6 @@ const app = new Koa()
 const port = 3000
 
 const buildkey = fs.readFileSync(buildkeyPath).toString('utf8')
-console.log(`initial buildkey is ${buildkey}`)
-
 const entrypointPage = fs
   .readFileSync(path.join(clientBuildPath, 'index.html'))
   .toString('utf8')
@@ -23,9 +21,9 @@ const entrypointWithHotReload = entrypointPage.replace(
 )
 
 const wsServer = new WebSocket.Server({ noServer: true })
-
 const router = new KoaRouter()
 let nextPlayerNumber = 1
+
 router
   .get('/', async (ctx, next) => {
     ctx.body = entrypointWithHotReload
@@ -57,7 +55,6 @@ router
     nextPlayerNumber++
   })
 
-console.log(`Starting dev server on port ${port}`)
+console.log(`Starting dev server on port ${port}, buildkey ${buildkey}`)
 app.use(router.routes()).use(router.allowedMethods())
-
 app.listen(port)
