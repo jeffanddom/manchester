@@ -8,6 +8,8 @@ import { Keyboard, SimulatedKeyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
 import { Server } from '~/Server'
 
+const WebSocket = require('ws')
+
 declare global {
   interface Window {
     g: Client
@@ -89,3 +91,14 @@ serverLoop()
 clientSimulationLoop()
 simulatedClientSimulationLoop() // lol
 clientRenderLoop()
+
+const ws = new WebSocket(`ws://${location.host}/api/connect`)
+
+ws.onmessage = function (event) {
+  const data = JSON.parse(event.data)
+
+  rss.textContent = data.rss
+  heapTotal.textContent = data.heapTotal
+  heapUsed.textContent = data.heapUsed
+  external.textContent = data.external
+}

@@ -3,8 +3,11 @@ import * as fs from 'fs'
 import * as Koa from 'koa'
 import * as KoaRouter from 'koa-router'
 import * as koaSend from 'koa-send'
+import * as WebSocket from 'ws'
 
-import { buildkeyPath, clientBuildPath, clientEntrypointPath } from './common'
+import { buildkeyPath, clientEntrypointPath } from './common'
+
+const websocket = require('koa-easy-ws')
 
 const app = new Koa()
 const port = 3000
@@ -19,6 +22,7 @@ const entrypointWithHotReload = entrypointPage.replace(
 )
 
 const router = new KoaRouter()
+let playerNumber = 1
 router
   .get('/', async (ctx, next) => {
     ctx.body = entrypointWithHotReload
@@ -28,10 +32,30 @@ router
     ctx.body = buildkey
     return await next()
   })
-  .get('/clientBuild/(.*)', async (ctx) =>
-    koaSend(ctx, ctx.path, { root: clientBuildPath }),
-  )
+  .get('/clientBuild/(.*)', async (ctx) => {
+    console.log(ctx.path)
+    return koaSend(ctx, ctx.path, { root: __dirname })
+  })
+  .get('/api/connect', async (ctx) => {
+    const ctx2 = ctx as any
+
+    if (ctx2.ws) {
+      const ws: WebSocket = await ctx2.ws()
+
+      ws.on('open', () => {
+        ws.send(playerNumber.toString())
+      })
+      ws.on('message', (data) => {
+        console.log(data)
+      })
+      playerNumber++
+    }
+  })
+
+// .post('/api/connect', async (ctx) => {})
+// .post('/api/connect', async (ctx) => {})
 
 console.log(`Starting dev server on port ${port}`)
-app.use(router.routes()).use(router.allowedMethods())
+app.use(websocket()).use(router.routes()).use(router.allowedMethods())
+
 app.listen(port)
