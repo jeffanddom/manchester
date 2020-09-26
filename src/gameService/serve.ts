@@ -17,7 +17,13 @@ const entrypointPage = fs
   .toString('utf8')
 const entrypointWithHotReload = entrypointPage.replace(
   '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
-  `<script>window.hotReload.poll('${buildkey}')</script>`,
+  `
+<script>
+  window.buildkey = '${buildkey}'
+  console.log('buildkey: ' + window.buildkey)
+  window.hotReload.poll(window.buildkey)
+</script>
+`,
 )
 
 const wsServer = new WebSocket.Server({ noServer: true })
@@ -31,6 +37,9 @@ router
   })
   .get('/client/(.*)', async (ctx) =>
     koaSend(ctx, ctx.path.substr('/client/'.length), { root: clientBuildPath }),
+  )
+  .get('/api/buildkey', async (ctx) =>
+    koaSend(ctx, buildkeyPath, { root: '/' }),
   )
   .get('/api/connect', async (ctx) => {
     if (ctx.get('Upgrade') !== 'websocket') {

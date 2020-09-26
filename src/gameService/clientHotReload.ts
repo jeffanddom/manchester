@@ -20,7 +20,7 @@ export const poll = (initialBuildkey: string): void => {
   }
 
   window.hotReload.interval = setInterval(() => {
-    fetch('/client/buildkey')
+    fetch('/api/buildkey')
       .then((response) => {
         if (response.status != 200) {
           throw new Error(
