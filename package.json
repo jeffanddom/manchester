@@ -6,12 +6,10 @@
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
     "dev": "npx ts-node src/gameService/watch.ts",
-    "devServe": "npx ts-node src/gameService/serve.ts",
-    "devBuildClient": "npx ts-node gameService/buildClient.ts",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",
-    "clean": "rm -rf build .cache dist"
+    "clean": "rm -rf out .cache dist"
   },
   "repository": {
     "type": "git",

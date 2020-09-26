@@ -8,7 +8,7 @@ import * as WebSocket from 'ws'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { buildkey } from '~/gameService/buildkey'
-import { clientBuildPath } from '~/gameService/common'
+import { clientBuildOutputPath } from '~/gameService/common'
 import { Server as GameServer } from '~/Server'
 
 const gameServer = new GameServer()
@@ -22,7 +22,7 @@ const httpServer = new Koa()
 const port = 3000
 
 const entrypointPage = fs
-  .readFileSync(path.join(clientBuildPath, 'index.html'))
+  .readFileSync(path.join(clientBuildOutputPath, 'index.html'))
   .toString('utf8')
 const entrypointWithHotReload = entrypointPage.replace(
   '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
@@ -45,7 +45,9 @@ router
     return await next()
   })
   .get('/client/(.*)', async (ctx) =>
-    koaSend(ctx, ctx.path.substr('/client/'.length), { root: clientBuildPath }),
+    koaSend(ctx, ctx.path.substr('/client/'.length), {
+      root: clientBuildOutputPath,
+    }),
   )
   .get('/api/buildkey', async (ctx) => (ctx.body = buildkey))
   .get('/api/connect', async (ctx) => {

@@ -14,7 +14,7 @@ const findProjectRoot = (): string => {
 
 export const projectRootPath = findProjectRoot()
 export const gameSrcPath = path.join(projectRootPath, 'src')
-export const buildPath = path.join(projectRootPath, 'build')
-export const clientBuildPath = path.join(buildPath, 'client')
-export const serverBuildPath = path.join(buildPath, 'server')
+export const buildOutputPath = path.join(projectRootPath, 'out')
+export const clientBuildOutputPath = path.join(buildOutputPath, 'client')
+export const serverBuildOutputPath = path.join(buildOutputPath, 'server')
 export const buildkeyPath = path.join(gameSrcPath, 'gameService', 'buildkey.ts')

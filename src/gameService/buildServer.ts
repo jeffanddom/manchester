@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import * as Bundler from 'parcel-bundler'
 
-import { buildkeyPath, gameSrcPath, serverBuildPath } from './common'
+import { buildkeyPath, gameSrcPath, serverBuildOutputPath } from './common'
 
 function getMtimeMs(filepath: string): number {
   const stats = fs.statSync(filepath)
@@ -29,7 +29,7 @@ fs.writeFileSync(
 const bundler = new Bundler(path.join(gameSrcPath, 'serverEntrypoint.ts'), {
   target: 'node',
   // bundleNodeModules: true,
-  outDir: serverBuildPath,
+  outDir: serverBuildOutputPath,
   outFile: 'server.js', // The name of the outputFile
   watch: false, // explicitly disable watching...we want the supervisor to control this
   cache: true,

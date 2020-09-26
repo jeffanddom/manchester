@@ -2,7 +2,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { gameSrcPath, serverBuildPath } from './common'
+import { gameSrcPath, serverBuildOutputPath } from './common'
 
 // Removes a newline from the end of a buffer, if it exists.
 const trimNewlineSuffix = (data: Buffer): Buffer => {
@@ -62,7 +62,7 @@ const rebuild = async () => {
     server.kill()
   }
 
-  server = spawn('npx', ['node', path.join(serverBuildPath, 'server.js')])
+  server = spawn('npx', ['node', path.join(serverBuildOutputPath, 'server.js')])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
