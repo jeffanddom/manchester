@@ -4,10 +4,10 @@ import { simulate } from './simulate'
 
 import { maps } from '~/assets/maps'
 import { Client } from '~/Client'
-import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
+import { ClientMessage } from '~/network/ClientMessage'
 import * as terrain from '~/terrain'
 
 export class Server {
@@ -89,13 +89,13 @@ export class Server {
     )
 
     // send authoritative updates to clients
-    const serverMessage = {
+    const frameUpdate = {
       frame,
       inputs: this.clientMessages.filter((m) => m.frame === frame),
     }
 
     this.clients.forEach((client) => {
-      client.serverMessages.push(serverMessage)
+      client.serverFrameUpdates.push(frameUpdate)
     })
 
     // client message cleanup

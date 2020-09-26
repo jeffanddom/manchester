@@ -1,10 +1,10 @@
+import { TILE_SIZE } from '~/constants'
+import { EntityManager } from '~/entities/EntityManager'
 import {
   ClientMessage,
   ClientMessageType,
   MovePlayerClientMessage,
-} from '~/ClientMessage'
-import { TILE_SIZE } from '~/constants'
-import { EntityManager } from '~/entities/EntityManager'
+} from '~/network/ClientMessage'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const TANK_SPEED = 60 * (TILE_SIZE / 8)

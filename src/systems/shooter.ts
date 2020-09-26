@@ -1,8 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
-import { ClientMessageType, TankShootClientMessage } from '~/ClientMessage'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
+import {
+  ClientMessageType,
+  TankShootClientMessage,
+} from '~/network/ClientMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { getAngle, radialTranslate2 } from '~/util/math'

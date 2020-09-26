@@ -3,12 +3,12 @@ import { mat2d, vec2 } from 'gl-matrix'
 import { TILE_SIZE } from './constants'
 
 import { Camera } from '~/Camera'
-import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
+import { ClientMessage } from '~/network/ClientMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import {
@@ -18,7 +18,6 @@ import {
   TextAlign,
 } from '~/renderer/interfaces'
 import { Server } from '~/Server'
-import { ServerMessage } from '~/ServerMessage'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -33,8 +32,11 @@ export class Client {
     cursorMode: CursorMode
   }
   playerNumber: number
-  serverMessages: ServerMessage[]
-  serverFrame: number
+  serverFrameUpdates: {
+    frame: number
+    inputs: ClientMessage[]
+  }[]
+  committedFrame: number
 
   camera: Camera
   debugDrawRenderables: Renderable[]
@@ -66,8 +68,8 @@ export class Client {
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.playerNumber = -1
-    this.serverMessages = []
-    this.serverFrame = -1
+    this.serverFrameUpdates = []
+    this.committedFrame = -1
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -186,7 +188,9 @@ export class Client {
     this.mouse?.update()
 
     // server message cleanup
-    this.serverMessages = this.serverMessages.filter((m) => m.frame <= frame)
+    this.serverFrameUpdates = this.serverFrameUpdates.filter(
+      (m) => m.frame <= frame,
+    )
   }
 
   render(): void {

@@ -1,8 +1,8 @@
 import { ParticleEmitter } from './particles/ParticleEmitter'
 
-import { ClientMessage } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
+import { ClientMessage } from '~/network/ClientMessage'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
 

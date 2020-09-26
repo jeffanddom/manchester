@@ -2,22 +2,22 @@ import { Client } from '~/Client'
 import { simulate } from '~/simulate'
 
 export const update = (c: Client, dt: number, frame: number): void => {
-  c.serverMessages = c.serverMessages
-    .filter((m) => m.frame > c.serverFrame)
+  c.serverFrameUpdates = c.serverFrameUpdates
+    .filter((m) => m.frame > c.committedFrame)
     .sort((a, b) => a.frame - b.frame)
 
   // Early-out if we haven't gotten server data to advance beyond our
   // authoritative snapshot.
   if (
-    c.serverMessages.length === 0 ||
-    c.serverMessages[0].frame !== c.serverFrame + 1
+    c.serverFrameUpdates.length === 0 ||
+    c.serverFrameUpdates[0].frame !== c.committedFrame + 1
   ) {
     return
   }
 
   c.entityManager.restoreCheckpoints()
 
-  c.serverMessages.forEach((frameMessage) => {
+  c.serverFrameUpdates.forEach((frameMessage) => {
     simulate(
       {
         entityManager: c.entityManager,
@@ -28,18 +28,18 @@ export const update = (c: Client, dt: number, frame: number): void => {
       c.state,
       dt,
     )
-    c.serverFrame = frameMessage.frame
+    c.committedFrame = frameMessage.frame
   })
 
   c.entityManager.clearCheckpoint()
 
   c.localMessageHistory = c.localMessageHistory.filter(
-    (m) => m.frame > c.serverFrame,
+    (m) => m.frame > c.committedFrame,
   )
 
   // Re-application of prediction
   // !! Linear slowdown dependent on the # of frames ahead of the server
-  for (let f = c.serverFrame + 1; f <= frame; f++) {
+  for (let f = c.committedFrame + 1; f <= frame; f++) {
     simulate(
       {
         entityManager: c.entityManager,

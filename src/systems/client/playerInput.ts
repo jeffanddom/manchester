@@ -1,8 +1,8 @@
 import { Client } from '~/Client'
-import { ClientMessageType } from '~/ClientMessage'
 import { EntityManager } from '~/entities/EntityManager'
 import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
+import { ClientMessageType } from '~/network/ClientMessage'
 import { BuilderMode } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 
