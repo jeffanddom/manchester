@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Client } from '~/Client'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { GameState } from '~/Game'
+import { initHotReload } from '~/hotReload'
 import { Keyboard, SimulatedKeyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
 import { Server } from '~/Server'
@@ -11,6 +12,9 @@ declare global {
   interface Window {
     g: Client
     game: Client
+
+    // For client/server hot reload (not Parcel-driven)
+    initHotReload: (buildkey: string) => void
   }
 }
 
@@ -37,7 +41,9 @@ client.mouse = new Mouse(canvas)
 // Simulate input
 simulatedClient.keyboard = new SimulatedKeyboard()
 
+// Development-related globals
 window.g = window.game = client // expose game to console
+window.initHotReload = initHotReload
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)

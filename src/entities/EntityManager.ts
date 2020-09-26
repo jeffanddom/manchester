@@ -28,7 +28,6 @@ export class EntityManager {
     if (this.checkpoint[id]) {
       return
     }
-    console.log('checkpointing ', id)
     this.checkpoint[id] = _.cloneDeep(this.entities[id])
   }
 
