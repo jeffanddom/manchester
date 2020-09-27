@@ -6,9 +6,9 @@ import KoaRouter from 'koa-router'
 import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
+import { buildkey } from '~/build/buildkey'
+import { clientBuildOutputPath } from '~/build/common'
 import { SIMULATION_PERIOD_S } from '~/constants'
-import { buildkey } from '~/gameService/buildkey'
-import { clientBuildOutputPath } from '~/gameService/common'
 import { Server as GameServer } from '~/Server'
 
 const gameServer = new GameServer()

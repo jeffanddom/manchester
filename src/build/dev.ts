@@ -30,7 +30,7 @@ const rebuild = async () => {
   const clientBuild = new Promise((resolve) => {
     const build = spawn('npx', [
       'ts-node',
-      path.join(gameSrcPath, 'gameService', 'buildClient.ts'),
+      path.join(gameSrcPath, 'build', 'buildClient.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -44,7 +44,7 @@ const rebuild = async () => {
   const serverBuild = new Promise((resolve) => {
     const build = spawn('npx', [
       'ts-node',
-      path.join(gameSrcPath, 'gameService', 'buildServer.ts'),
+      path.join(gameSrcPath, 'build', 'buildServer.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -62,7 +62,7 @@ const rebuild = async () => {
     server.kill()
   }
 
-  server = spawn('npx', ['node', path.join(serverBuildOutputPath, 'server.js')])
+  server = spawn('node', [path.join(serverBuildOutputPath, 'server.js')])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
@@ -82,7 +82,7 @@ const rebuild = async () => {
 
 let debounce = false
 const ignore = new Set([
-  'gameService/buildkey.ts', // this file is modified by the build process itself
+  'build/buildkey.ts', // this file is modified by the build process itself
 ])
 fs.watch(gameSrcPath, { recursive: true }, (_event, filename) => {
   if (ignore.has(filename)) {

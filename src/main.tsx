@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import * as clientHotReload from './gameService/clientHotReload'
+import * as clientHotReload from './build/clientHotReload'
 
 import { Client } from '~/Client'
 import { SIMULATION_PERIOD_S } from '~/constants'

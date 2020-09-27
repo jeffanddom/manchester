@@ -5,7 +5,7 @@
   "scripts": {
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
-    "dev": "npx ts-node src/gameService/watch.ts",
+    "dev": "npx ts-node src/build/dev.ts",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",
