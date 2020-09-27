@@ -1,12 +1,12 @@
 import { ClientMessage } from './ClientMessage'
 
-enum ServerMessageType {
-  PLAYER_NUMBER,
+export enum ServerMessageType {
+  START_GAME,
   FRAME_UPDATE,
 }
 
-export type ServerPlayerNumberMessage = {
-  type: ServerMessageType.PLAYER_NUMBER
+export type ServerStartGameMessage = {
+  type: ServerMessageType.START_GAME
   playerNumber: number
 }
 
@@ -16,4 +16,4 @@ export type ServerFrameUpdateMessage = {
   inputs: ClientMessage[]
 }
 
-export type ServerMessage = ServerPlayerNumberMessage | ServerFrameUpdateMessage
+export type ServerMessage = ServerStartGameMessage | ServerFrameUpdateMessage

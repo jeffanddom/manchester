@@ -1,14 +1,16 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { TILE_SIZE } from './constants'
+import { ServerMessageType } from './network/ServerMessage'
 
 import { Camera } from '~/Camera'
+import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
 import { ClientMessage } from '~/network/ClientMessage'
+import { IServerConnection } from '~/network/ServerConnection'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import {
@@ -17,7 +19,6 @@ import {
   Renderable,
   TextAlign,
 } from '~/renderer/interfaces'
-import { Server } from '~/Server'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -31,6 +32,7 @@ export class Client {
   playerInputState: {
     cursorMode: CursorMode
   }
+  serverConnection: IServerConnection | null
   playerNumber: number
   serverFrameUpdates: {
     frame: number
@@ -47,12 +49,14 @@ export class Client {
   renderer: IRenderer
   lastUpdateAt: number
   lastRenderAt: number
+
   updateFrameDurations: RunningAverage
   renderFrameDurations: RunningAverage
+  framesAheadOfServer: RunningAverage
+  serverInputsPerFrame: RunningAverage
 
   keyboard?: IKeyboard
   mouse?: Mouse
-  server?: Server
 
   // Common game state
   state: GameState
@@ -67,6 +71,7 @@ export class Client {
     this.entityManager = new EntityManager()
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
+    this.serverConnection = null
     this.playerNumber = -1
     this.serverFrameUpdates = []
     this.committedFrame = -1
@@ -84,8 +89,11 @@ export class Client {
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
     this.lastUpdateAt = time.current()
     this.lastRenderAt = time.current()
+
     this.updateFrameDurations = new RunningAverage(3 * 60)
     this.renderFrameDurations = new RunningAverage(3 * 60)
+    this.framesAheadOfServer = new RunningAverage(3 * 60)
+    this.serverInputsPerFrame = new RunningAverage(3 * 60)
 
     document.addEventListener('keyup', (event) => {
       if (event.which === 192) {
@@ -94,7 +102,7 @@ export class Client {
     })
 
     // Common
-    this.state = GameState.None
+    this.state = GameState.Connecting
     this.nextState = null
 
     this.currentLevel = 0
@@ -131,9 +139,8 @@ export class Client {
     this.nextState = s
   }
 
-  connect(server: Server): void {
-    this.server = server
-    this.playerNumber = this.server.clients.push(this)
+  connectServer(conn: IServerConnection): void {
+    this.serverConnection = conn
   }
 
   update(dt: number, frame: number): void {
@@ -158,39 +165,76 @@ export class Client {
       }
     }
 
-    systems.syncServerState(this, dt, frame)
+    switch (this.state) {
+      case GameState.Connecting:
+        {
+          if (this.serverConnection) {
+            for (const msg of this.serverConnection.received()) {
+              if (msg.type === ServerMessageType.START_GAME) {
+                this.playerNumber = msg.playerNumber
+                this.setState(GameState.Running)
+                break
+              }
+            }
+          }
+        }
+        break
+      default:
+        {
+          // push frame updates from server into list
+          for (const msg of this.serverConnection!.received()) {
+            if (msg.type === ServerMessageType.FRAME_UPDATE) {
+              this.serverFrameUpdates.push({
+                frame: msg.frame,
+                inputs: msg.inputs,
+              })
 
-    if (this.state === GameState.Running) {
-      systems.playerInput(this, frame)
+              this.serverInputsPerFrame.sample(msg.inputs.length)
+            }
+          }
+
+          systems.syncServerState(this, dt, frame)
+          this.framesAheadOfServer.sample(frame - this.committedFrame)
+
+          if (this.state === GameState.Running) {
+            systems.playerInput(this, frame)
+          }
+
+          simulate(
+            {
+              entityManager: this.entityManager,
+              messages: this.localMessageHistory.filter(
+                (m) => m.frame === frame,
+              ),
+              terrainLayer: this.terrainLayer,
+              registerParticleEmitter: this.registerParticleEmitter,
+            },
+            this.state,
+            dt,
+          )
+
+          this.emitters = this.emitters.filter((e) => !e.dead)
+          this.emitters.forEach((e) => e.update(dt))
+
+          const player = this.entityManager.getPlayer(this.playerNumber)
+          if (player) {
+            this.camera.setPosition(player.transform!.position)
+          }
+          this.camera.update(dt)
+
+          this.keyboard?.update()
+          this.mouse?.update()
+
+          // server message cleanup
+          this.serverFrameUpdates = this.serverFrameUpdates.filter(
+            (m) => m.frame <= frame,
+          )
+        }
+        break
     }
 
-    simulate(
-      {
-        entityManager: this.entityManager,
-        messages: this.localMessageHistory.filter((m) => m.frame === frame),
-        terrainLayer: this.terrainLayer,
-        registerParticleEmitter: this.registerParticleEmitter,
-      },
-      this.state,
-      dt,
-    )
-
-    this.emitters = this.emitters.filter((e) => !e.dead)
-    this.emitters.forEach((e) => e.update(dt))
-
-    const player = this.entityManager.getPlayer(this.playerNumber)
-    if (player) {
-      this.camera.setPosition(player.transform!.position)
-    }
-    this.camera.update(dt)
-
-    this.keyboard?.update()
-    this.mouse?.update()
-
-    // server message cleanup
-    this.serverFrameUpdates = this.serverFrameUpdates.filter(
-      (m) => m.frame <= frame,
-    )
+    // All messages from server should have been processed by now
+    this.serverConnection?.clear()
   }
 
   render(): void {
@@ -264,49 +308,76 @@ export class Client {
       })
     }
 
+    this.debugDraw(() => {
+      return Object.values(this.entityManager.entities)
+        .filter((e) => e.wall)
+        .map((e) => ({
+          primitive: Primitive.RECT,
+          strokeStyle: 'cyan',
+          pos: vec2.subtract(vec2.create(), e.transform!.position, [
+            TILE_SIZE / 2,
+            TILE_SIZE / 2,
+          ]),
+          dimensions: [TILE_SIZE, TILE_SIZE],
+        }))
+    })
+
+    this.debugDraw(
+      () => [
+        {
+          primitive: Primitive.TEXT,
+          text: `Player ${this.playerNumber}`,
+          pos: vec2.fromValues(10, 10),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+        {
+          primitive: Primitive.TEXT,
+          text: `Render FPS: ${(
+            1 / this.renderFrameDurations.average()
+          ).toFixed(2)}`,
+          pos: vec2.fromValues(10, 30),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+        {
+          primitive: Primitive.TEXT,
+          text: `Update FPS: ${(
+            1 / this.updateFrameDurations.average()
+          ).toFixed(2)}`,
+          pos: vec2.fromValues(10, 50),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+        {
+          primitive: Primitive.TEXT,
+          text: `FAOS: ${(1 / this.framesAheadOfServer.average()).toFixed(2)}`,
+          pos: vec2.fromValues(10, 70),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+        {
+          primitive: Primitive.TEXT,
+          text: `SIPF: ${(1 / this.serverInputsPerFrame.average()).toFixed(2)}`,
+          pos: vec2.fromValues(10, 90),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+      ],
+      { viewspace: true },
+    )
+
     if (this.enableDebugDraw) {
-      this.debugDraw(() => {
-        return Object.values(this.entityManager.entities)
-          .filter((e) => e.wall)
-          .map((e) => ({
-            primitive: Primitive.RECT,
-            strokeStyle: 'cyan',
-            pos: vec2.subtract(vec2.create(), e.transform!.position, [
-              TILE_SIZE / 2,
-              TILE_SIZE / 2,
-            ]),
-            dimensions: [TILE_SIZE, TILE_SIZE],
-          }))
-      })
-
-      this.debugDraw(
-        () => [
-          {
-            primitive: Primitive.TEXT,
-            text: `Render FPS: ${(
-              1 / this.renderFrameDurations.average()
-            ).toFixed(2)}\n`,
-            pos: vec2.fromValues(10, 10),
-            hAlign: TextAlign.Min,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `Update FPS: ${(
-              1 / this.updateFrameDurations.average()
-            ).toFixed(2)}`,
-            pos: vec2.fromValues(10, 30),
-            hAlign: TextAlign.Min,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-        ],
-        { viewspace: true },
-      )
-
       this.debugDrawViewspace.forEach((r) => {
         this.renderer.render(r)
       })
@@ -347,6 +418,6 @@ export class Client {
 
   sendClientMessage(m: ClientMessage): void {
     this.localMessageHistory.push(m)
-    this.server!.clientMessages.push(m)
+    this.serverConnection!.send(m)
   }
 }

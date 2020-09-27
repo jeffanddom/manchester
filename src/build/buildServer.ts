@@ -20,10 +20,17 @@ console.log('Creating bundle...')
 
 // Write build key
 const buildkey = getMtimeMs(gameSrcPath).toString()
+console.log(`buildkey: ${buildkey}`)
+
 const buildkeySrc = fs.readFileSync(buildkeyPath).toString('utf8')
 fs.writeFileSync(
   buildkeyPath,
-  Buffer.from(buildkeySrc.replace('BUILDKEY', buildkey)),
+  Buffer.from(
+    buildkeySrc.replace(
+      /buildkey\s+=\s+["'][^"']+["']/,
+      `buildkey = '${buildkey}'`,
+    ),
+  ),
 )
 
 const bundler = new Bundler(path.join(gameSrcPath, 'serverEntrypoint.ts'), {

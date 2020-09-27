@@ -6,17 +6,22 @@ import KoaRouter from 'koa-router'
 import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
+import { ClientConnectionWs } from './network/ClientConnection'
+
 import { buildkey } from '~/build/buildkey'
 import { clientBuildOutputPath } from '~/build/common'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { Server as GameServer } from '~/Server'
 
-const gameServer = new GameServer()
-let serverFrame = 0
-setInterval(() => {
-  gameServer.update(SIMULATION_PERIOD_S, serverFrame)
-  serverFrame++
-}, 1000 * SIMULATION_PERIOD_S)
+// TODO: read from envvar
+const playerCount = 2
+const clientBufferSize = 10
+
+const gameServer = new GameServer({ playerCount, clientBufferSize })
+setInterval(
+  () => gameServer.update(SIMULATION_PERIOD_S),
+  1000 * SIMULATION_PERIOD_S,
+)
 
 const httpServer = new Koa()
 const port = 3000
@@ -37,7 +42,6 @@ const entrypointWithHotReload = entrypointPage.replace(
 
 const wsServer = new WebSocket.Server({ noServer: true })
 const router = new KoaRouter()
-let nextPlayerNumber = 1
 
 router
   .get('/', async (ctx, next) => {
@@ -56,6 +60,7 @@ router
     }
 
     ctx.respond = false
+
     const socket = await new Promise((resolve: (ws: WebSocket) => void) => {
       wsServer.handleUpgrade(
         ctx.req,
@@ -66,11 +71,10 @@ router
     })
 
     console.log(
-      `websocket connection established with ${ctx.req.socket.remoteAddress}, assigning player number ${nextPlayerNumber}`,
+      `websocket connection established with ${ctx.req.socket.remoteAddress}`,
     )
 
-    socket.send(nextPlayerNumber.toString())
-    nextPlayerNumber++
+    gameServer.connectClient(new ClientConnectionWs(socket))
   })
 
 console.log(`Starting dev server on port ${port}, buildkey ${buildkey}`)

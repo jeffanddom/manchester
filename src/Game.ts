@@ -9,7 +9,8 @@ import { Map } from '~/map/interfaces'
 import * as terrain from '~/terrain'
 
 export enum GameState {
-  None,
+  Connecting,
+  Buffering,
   Running,
   YouDied,
   LevelComplete,
