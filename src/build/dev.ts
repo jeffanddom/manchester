@@ -26,6 +26,8 @@ const rebuild = async () => {
 
   building = true
 
+  console.log('Spawning build jobs...')
+
   // Rebuild client artifacts
   const clientBuild = new Promise((resolve) => {
     const build = spawn('npx', [
