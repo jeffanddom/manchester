@@ -10,7 +10,6 @@ import * as terrain from '~/terrain'
 
 export enum GameState {
   Connecting,
-  Buffering,
   Running,
   YouDied,
   LevelComplete,

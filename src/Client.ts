@@ -1,6 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { ServerMessageType } from './network/ServerMessage'
+import { ServerMessage, ServerMessageType } from './network/ServerMessage'
 
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
@@ -9,7 +9,7 @@ import { GameState, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
-import { ClientMessage } from '~/network/ClientMessage'
+import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
@@ -148,6 +148,12 @@ export class Client {
     this.updateFrameDurations.sample(now - this.lastUpdateAt)
     this.lastUpdateAt = now
 
+    let serverMessages: ServerMessage[] = []
+    if (this.serverConnection) {
+      serverMessages = this.serverConnection.received()
+      this.serverConnection.clear()
+    }
+
     if (this.nextState) {
       this.state = this.nextState
       this.nextState = null
@@ -168,13 +174,11 @@ export class Client {
     switch (this.state) {
       case GameState.Connecting:
         {
-          if (this.serverConnection) {
-            for (const msg of this.serverConnection.received()) {
-              if (msg.type === ServerMessageType.START_GAME) {
-                this.playerNumber = msg.playerNumber
-                this.setState(GameState.Running)
-                break
-              }
+          for (const msg of serverMessages) {
+            if (msg.type === ServerMessageType.START_GAME) {
+              this.playerNumber = msg.playerNumber
+              this.setState(GameState.Running)
+              break
             }
           }
         }
@@ -182,7 +186,7 @@ export class Client {
       default:
         {
           // push frame updates from server into list
-          for (const msg of this.serverConnection!.received()) {
+          for (const msg of serverMessages) {
             if (msg.type === ServerMessageType.FRAME_UPDATE) {
               this.serverFrameUpdates.push({
                 frame: msg.frame,
@@ -233,8 +237,12 @@ export class Client {
         break
     }
 
-    // All messages from server should have been processed by now
-    this.serverConnection?.clear()
+    if (this.serverConnection) {
+      this.serverConnection.send({
+        type: ClientMessageType.FRAME_END,
+        frame,
+      })
+    }
   }
 
   render(): void {
