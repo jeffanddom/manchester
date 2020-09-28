@@ -33,7 +33,7 @@ fs.writeFileSync(
   ),
 )
 
-const bundler = new Bundler(path.join(gameSrcPath, 'serverEntrypoint.ts'), {
+const bundler = new Bundler(path.join(gameSrcPath, 'serverMain.ts'), {
   target: 'node',
   // bundleNodeModules: true,
   outDir: serverBuildOutputPath,
