@@ -6,21 +6,20 @@ import { ServerMessage } from '~/network/ServerMessage'
  */
 export interface IServerConnection {
   send(msg: ClientMessage): void
-  received(): ServerMessage[]
-  clear(): void
+  consume(): ServerMessage[]
 }
 
 export class ServerConnectionWs implements IServerConnection {
   private socket: WebSocket
-  private recvq: ServerMessage[]
+  private received: ServerMessage[]
 
   constructor(socket: WebSocket) {
     this.socket = socket
-    this.recvq = []
+    this.received = []
 
     this.socket.addEventListener('message', (ev) => {
       // TODO: validate, find a way to convey parse/validation errs
-      this.recvq.push(JSON.parse(ev.data) as ServerMessage)
+      this.received.push(JSON.parse(ev.data) as ServerMessage)
     })
   }
 
@@ -28,12 +27,10 @@ export class ServerConnectionWs implements IServerConnection {
     this.socket.send(JSON.stringify(msg))
   }
 
-  received(): ServerMessage[] {
-    return this.recvq // we may need to copy to prevent mutation?
-  }
-
-  clear(): void {
-    this.recvq = []
+  consume(): ServerMessage[] {
+    const msgs = this.received // we may need to copy to prevent mutation?
+    this.received = []
+    return msgs
   }
 }
 

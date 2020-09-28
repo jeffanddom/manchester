@@ -8,21 +8,20 @@ import { ServerMessage } from '~/network/ServerMessage'
  */
 export interface IClientConnection {
   send(msg: ServerMessage): void
-  received(): ClientMessage[]
-  clear(): void
+  consume(): ClientMessage[]
 }
 
 export class ClientConnectionWs implements IClientConnection {
   private socket: WebSocket
-  private recvq: ClientMessage[]
+  private received: ClientMessage[]
 
   constructor(socket: WebSocket) {
     this.socket = socket
-    this.recvq = []
+    this.received = []
 
     this.socket.addEventListener('message', (ev) => {
       // TODO: validate, find a way to convey parse/validation errs
-      this.recvq.push(JSON.parse(ev.data) as ClientMessage)
+      this.received.push(JSON.parse(ev.data) as ClientMessage)
     })
   }
 
@@ -30,11 +29,9 @@ export class ClientConnectionWs implements IClientConnection {
     this.socket.send(JSON.stringify(msg))
   }
 
-  received(): ClientMessage[] {
-    return this.recvq // we may need to copy to prevent mutation?
-  }
-
-  clear(): void {
-    this.recvq = []
+  consume(): ClientMessage[] {
+    const msgs = this.received
+    this.received = []
+    return msgs
   }
 }

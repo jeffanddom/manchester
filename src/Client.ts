@@ -150,8 +150,7 @@ export class Client {
 
     let serverMessages: ServerMessage[] = []
     if (this.serverConnection) {
-      serverMessages = this.serverConnection.received()
-      this.serverConnection.clear()
+      serverMessages = this.serverConnection.consume()
     }
 
     if (this.nextState) {

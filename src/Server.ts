@@ -1,7 +1,5 @@
 import { vec2 } from 'gl-matrix'
 
-import { Client } from './Client'
-
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
@@ -75,7 +73,7 @@ export class Server {
   update(dt: number): void {
     // process incoming client messages
     for (const conn of this.clientConnections) {
-      for (const msg of conn.received()) {
+      for (const msg of conn.consume()) {
         // Discard client messages for frames older than the server simulation.
         // This will happen if one client is lagging significantly behind the
         // fastest client. Discarded client messages means that the client will
@@ -103,9 +101,6 @@ export class Server {
           this.clientMessagesByFrame[index].push(msg)
         }
       }
-
-      // Remove messages from connection's internal buffer
-      conn.clear()
     }
 
     if (this.nextState) {
