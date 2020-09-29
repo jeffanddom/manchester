@@ -6,11 +6,10 @@ import KoaRouter from 'koa-router'
 import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
-import { ClientConnectionWs } from './network/ClientConnection'
-
 import { buildkey } from '~/build/buildkey'
 import { clientBuildOutputPath } from '~/build/common'
 import { SIMULATION_PERIOD_S } from '~/constants'
+import { ClientConnectionWs } from '~/network/ClientConnection'
 import { Server as GameServer } from '~/Server'
 
 // TODO: read from envvar
@@ -23,7 +22,7 @@ const gameServer = new GameServer({
 })
 setInterval(
   () => gameServer.update(SIMULATION_PERIOD_S),
-  1000 * SIMULATION_PERIOD_S,
+  (1000 * SIMULATION_PERIOD_S) / 2,
 )
 
 const httpServer = new Koa()

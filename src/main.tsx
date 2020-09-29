@@ -32,7 +32,7 @@ client.mouse = new Mouse(canvas)
 
 // Development-related globals
 window.g = window.game = client // expose game to console
-clientHotReload.init()
+// clientHotReload.init()
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
@@ -48,15 +48,7 @@ function clientRenderLoop() {
   client.render()
 }
 
-let clientFrame = 0
-function clientSimulationLoop() {
-  setInterval(() => {
-    client.update(SIMULATION_PERIOD_S, clientFrame)
-    clientFrame++
-  }, 1000 * SIMULATION_PERIOD_S)
-}
-
-clientSimulationLoop()
+client.update()
 clientRenderLoop()
 
 // Connect to server

@@ -1,9 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { ServerMessage, ServerMessageType } from './network/ServerMessage'
-
 import { Camera } from '~/Camera'
-import { TILE_SIZE } from '~/constants'
+import { SIMULATION_PERIOD_S, TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
@@ -11,6 +9,7 @@ import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
+import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import {
@@ -39,6 +38,9 @@ export class Client {
     inputs: ClientMessage[]
   }[]
   committedFrame: number
+  simulationFrame: number
+  ticksPerUpdate: number
+  updatePeriod: number
 
   camera: Camera
   debugDrawRenderables: Renderable[]
@@ -48,9 +50,11 @@ export class Client {
   enableDebugDraw: boolean
   renderer: IRenderer
   lastUpdateAt: number
+  lastTickAt: number
   lastRenderAt: number
 
-  updateFrameDurations: RunningAverage
+  tickDurations: RunningAverage
+  updateDurations: RunningAverage
   renderFrameDurations: RunningAverage
   framesAheadOfServer: RunningAverage
   serverInputsPerFrame: RunningAverage
@@ -75,6 +79,9 @@ export class Client {
     this.playerNumber = -1
     this.serverFrameUpdates = []
     this.committedFrame = -1
+    this.simulationFrame = 0
+    this.ticksPerUpdate = 1
+    this.updatePeriod = SIMULATION_PERIOD_S * 1000
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -88,9 +95,11 @@ export class Client {
     this.enableDebugDraw = true
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
     this.lastUpdateAt = time.current()
+    this.lastTickAt = time.current()
     this.lastRenderAt = time.current()
 
-    this.updateFrameDurations = new RunningAverage(3 * 60)
+    this.tickDurations = new RunningAverage(3 * 60)
+    this.updateDurations = new RunningAverage(3 * 60)
     this.renderFrameDurations = new RunningAverage(3 * 60)
     this.framesAheadOfServer = new RunningAverage(3 * 60)
     this.serverInputsPerFrame = new RunningAverage(3 * 60)
@@ -143,10 +152,23 @@ export class Client {
     this.serverConnection = conn
   }
 
-  update(dt: number, frame: number): void {
+  update(): void {
     const now = time.current()
-    this.updateFrameDurations.sample(now - this.lastUpdateAt)
+    this.updateDurations.sample(now - this.lastUpdateAt)
     this.lastUpdateAt = now
+
+    // schedule next update before we run potentially expensive game sim
+    setTimeout(() => this.update(), this.updatePeriod)
+
+    for (let i = 0; i < this.ticksPerUpdate; i++) {
+      this.tick(SIMULATION_PERIOD_S)
+    }
+  }
+
+  tick(dt: number): void {
+    const now = time.current()
+    this.tickDurations.sample(now - this.lastTickAt)
+    this.lastTickAt = now
 
     let serverMessages: ServerMessage[] = []
     if (this.serverConnection) {
@@ -182,32 +204,42 @@ export class Client {
           }
         }
         break
-      default:
+      case GameState.Running:
         {
           // push frame updates from server into list
           for (const msg of serverMessages) {
-            if (msg.type === ServerMessageType.FRAME_UPDATE) {
-              this.serverFrameUpdates.push({
-                frame: msg.frame,
-                inputs: msg.inputs,
-              })
+            switch (msg.type) {
+              case ServerMessageType.FRAME_UPDATE:
+                {
+                  this.serverFrameUpdates.push({
+                    frame: msg.frame,
+                    inputs: msg.inputs,
+                  })
 
-              this.serverInputsPerFrame.sample(msg.inputs.length)
+                  this.serverInputsPerFrame.sample(msg.inputs.length)
+                }
+                break
+              case ServerMessageType.SPEED_UP:
+                this.ticksPerUpdate = 3
+                this.updatePeriod = (1000 * SIMULATION_PERIOD_S) / 2
+                break
             }
           }
 
-          systems.syncServerState(this, dt, frame)
-          this.framesAheadOfServer.sample(frame - this.committedFrame)
+          systems.syncServerState(this, dt, this.simulationFrame)
+          this.framesAheadOfServer.sample(
+            this.simulationFrame - this.committedFrame,
+          )
 
           if (this.state === GameState.Running) {
-            systems.playerInput(this, frame)
+            systems.playerInput(this, this.simulationFrame)
           }
 
           simulate(
             {
               entityManager: this.entityManager,
               messages: this.localMessageHistory.filter(
-                (m) => m.frame === frame,
+                (m) => m.frame === this.simulationFrame,
               ),
               terrainLayer: this.terrainLayer,
               registerParticleEmitter: this.registerParticleEmitter,
@@ -230,8 +262,10 @@ export class Client {
 
           // server message cleanup
           this.serverFrameUpdates = this.serverFrameUpdates.filter(
-            (m) => m.frame <= frame,
+            (m) => m.frame <= this.simulationFrame,
           )
+
+          this.simulationFrame++
         }
         break
     }
@@ -239,7 +273,7 @@ export class Client {
     if (this.serverConnection) {
       this.serverConnection.send({
         type: ClientMessageType.FRAME_END,
-        frame,
+        frame: this.simulationFrame,
       })
     }
   }
@@ -353,9 +387,7 @@ export class Client {
         },
         {
           primitive: Primitive.TEXT,
-          text: `Update FPS: ${(
-            1 / this.updateFrameDurations.average()
-          ).toFixed(2)}`,
+          text: `Tick FPS: ${(1 / this.tickDurations.average()).toFixed(2)}`,
           pos: vec2.fromValues(10, 50),
           hAlign: TextAlign.Min,
           vAlign: TextAlign.Center,
@@ -364,7 +396,9 @@ export class Client {
         },
         {
           primitive: Primitive.TEXT,
-          text: `FAOS: ${(1 / this.framesAheadOfServer.average()).toFixed(2)}`,
+          text: `Update FPS: ${(1 / this.updateDurations.average()).toFixed(
+            2,
+          )}`,
           pos: vec2.fromValues(10, 70),
           hAlign: TextAlign.Min,
           vAlign: TextAlign.Center,
@@ -373,8 +407,17 @@ export class Client {
         },
         {
           primitive: Primitive.TEXT,
-          text: `SIPF: ${(1 / this.serverInputsPerFrame.average()).toFixed(2)}`,
+          text: `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
           pos: vec2.fromValues(10, 90),
+          hAlign: TextAlign.Min,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        },
+        {
+          primitive: Primitive.TEXT,
+          text: `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+          pos: vec2.fromValues(10, 110),
           hAlign: TextAlign.Min,
           vAlign: TextAlign.Center,
           font: '16px monospace',

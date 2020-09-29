@@ -16,7 +16,10 @@ export class Server {
   // are grouped by frame, and the groups are indexed by the number of frames
   // ahead of the server's current frame.
   clientMessagesByFrame: ClientMessage[][]
-  clientConnections: IClientConnection[]
+  clients: {
+    frame: number
+    conn: IClientConnection
+  }[]
   playerCount: number
   minFramesBehindClient: number
   simulationFrame: number
@@ -35,7 +38,7 @@ export class Server {
   constructor(config: { playerCount: number; minFramesBehindClient: number }) {
     this.clientMessagesByFrame = []
     this.entityManager = new EntityManager()
-    this.clientConnections = []
+    this.clients = []
     this.playerCount = config.playerCount
     this.minFramesBehindClient = config.minFramesBehindClient
     this.simulationFrame = 0
@@ -57,13 +60,16 @@ export class Server {
   }
 
   connectClient(conn: IClientConnection): void {
-    if (this.clientConnections.length === this.playerCount) {
+    if (this.clients.length === this.playerCount) {
       console.log('already reached maximum player count') // TODO: close connection
       return
     }
 
-    this.clientConnections.push(conn)
-    console.log(`connected player: ${this.clientConnections.length}`)
+    this.clients.push({
+      frame: -1,
+      conn,
+    })
+    console.log(`connected player: ${this.clients.length}`)
   }
 
   setState(s: GameState): void {
@@ -72,8 +78,25 @@ export class Server {
 
   update(dt: number): void {
     // process incoming client messages
-    for (const conn of this.clientConnections) {
-      for (const msg of conn.consume()) {
+    for (const client of this.clients) {
+      for (const msg of client.conn.consume()) {
+        if (msg.type === ClientMessageType.FRAME_END) {
+          client.frame = msg.frame
+
+          // Set a high-water mark for the fastest client.
+          this.maxReceivedClientFrame = Math.max(
+            this.maxReceivedClientFrame,
+            client.frame,
+          )
+
+          const framesBehindLeader = this.maxReceivedClientFrame - client.frame
+
+          if (framesBehindLeader > this.minFramesBehindClient) {
+            // TODO: remember to also send SLOW_DOWN
+            client.conn.send({ type: ServerMessageType.SPEED_UP })
+          }
+        }
+
         // Discard client messages for frames older than the server simulation.
         // This will happen if one client is lagging significantly behind the
         // fastest client. Discarded client messages means that the client will
@@ -90,14 +113,9 @@ export class Server {
           this.clientMessagesByFrame.push([])
         }
 
-        if (msg.type === ClientMessageType.FRAME_END) {
-          // Set a high-water mark for the fastest client.
-          this.maxReceivedClientFrame = Math.max(
-            this.maxReceivedClientFrame,
-            msg.frame,
-          )
-        } else {
-          // Don't bother storing FRAME_END messages.
+        // Store message grouped by frame, but don't worry about FRAME_END
+        // messages.
+        if (msg.type !== ClientMessageType.FRAME_END) {
           this.clientMessagesByFrame[index].push(msg)
         }
       }
@@ -115,8 +133,8 @@ export class Server {
           this.map = mapData.map
           this.terrainLayer = mapData.terrainLayer
 
-          this.clientConnections.forEach((conn, index) => {
-            conn.send({
+          this.clients.forEach((client, index) => {
+            client.conn.send({
               type: ServerMessageType.START_GAME,
               playerNumber: index + 1,
             })
@@ -128,7 +146,7 @@ export class Server {
     switch (this.state) {
       case GameState.Connecting:
         {
-          if (this.clientConnections.length === this.playerCount) {
+          if (this.clients.length === this.playerCount) {
             this.setState(GameState.Running)
           }
         }
@@ -180,8 +198,8 @@ export class Server {
           )
 
           // send authoritative updates to clients
-          this.clientConnections.forEach((conn) => {
-            conn.send({
+          this.clients.forEach((client) => {
+            client.conn.send({
               type: ServerMessageType.FRAME_UPDATE,
               frame: this.simulationFrame,
               inputs: frameMessages,
