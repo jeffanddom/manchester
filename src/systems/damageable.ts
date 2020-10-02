@@ -1,43 +1,30 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { EntityManager } from '~/entities/EntityManager'
 import { PickupConstructors } from '~/entities/pickups'
-import { Game, GameState } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Primitive } from '~/renderer/interfaces'
+import { SimState } from '~/simulate'
 import { radialTranslate2 } from '~/util/math'
 
-export const update = (g: Game, entityManager: EntityManager): void => {
-  for (const id in entityManager.entities) {
-    const e = entityManager.entities[id]
+export const update = (
+  simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
+): void => {
+  for (const id in simState.entityManager.entities) {
+    const e = simState.entityManager.entities[id]
     const transform = e.transform
     const damageable = e.damageable
     if (!transform || !damageable) {
       continue
     }
 
-    g.debugDraw(() => {
-      const aabb = damageable.aabb(transform)
-      const d = vec2.sub(vec2.create(), aabb[1], aabb[0])
-      return [
-        {
-          primitive: Primitive.RECT,
-          strokeStyle: 'cyan',
-          pos: aabb[0],
-          dimensions: d,
-        },
-      ]
-    })
-
     if (damageable.health <= 0) {
       if (e.dropType) {
         const core = PickupConstructors[e.dropType]()
         core.transform!.position = vec2.clone(e.transform!.position)
 
-        entityManager.register(core)
+        simState.entityManager.register(core)
       }
-      entityManager.markForDeletion(id)
+      simState.entityManager.markForDeletion(id)
 
       const emitterPos = radialTranslate2(
         vec2.create(),
@@ -45,23 +32,28 @@ export const update = (g: Game, entityManager: EntityManager): void => {
         transform.orientation,
         TILE_SIZE / 2,
       )
-      const explosion = new ParticleEmitter({
-        spawnTtl: 0.5,
-        position: emitterPos,
-        particleTtl: 0.2,
-        particleRadius: 30,
-        particleSpeedRange: [40, 300],
-        particleRate: 120,
-        orientation: 0,
-        arc: Math.PI * 2,
-        colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
-      })
-      g.client.emitters.push(explosion)
 
-      const player = entityManager.getPlayer()
-      if (player && player.id === id) {
-        g.setState(GameState.YouDied)
+      if (simState.registerParticleEmitter) {
+        const explosion = new ParticleEmitter({
+          spawnTtl: 0.5,
+          position: emitterPos,
+          particleTtl: 0.2,
+          particleRadius: 30,
+          particleSpeedRange: [40, 300],
+          particleRate: 120,
+          orientation: 0,
+          arc: Math.PI * 2,
+          colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
+        })
+        simState.registerParticleEmitter({
+          emitter: explosion,
+          entity: id,
+        })
       }
+      // const player = simState.entityManager.getPlayer()
+      // if (player && player.id === id) {
+      //   g.setState(GameState.YouDied)
+      // }
     }
   }
 }

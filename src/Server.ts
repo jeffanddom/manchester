@@ -90,10 +90,13 @@ export class Server {
           )
 
           const framesBehindLeader = this.maxReceivedClientFrame - client.frame
-
           if (framesBehindLeader > this.minFramesBehindClient) {
-            // TODO: remember to also send SLOW_DOWN
             client.conn.send({ type: ServerMessageType.SPEED_UP })
+          } else if (
+            this.minFramesBehindClient / 2 >= framesBehindLeader ||
+            client.frame === this.maxReceivedClientFrame
+          ) {
+            client.conn.send({ type: ServerMessageType.SLOW_DOWN })
           }
         }
 
@@ -181,12 +184,6 @@ export class Server {
 
           // Remove this frame's client messages from the history, then process.
           const frameMessages = this.clientMessagesByFrame.shift() || []
-          if (frameMessages.length > 0) {
-            console.log(
-              `server: processing frame ${this.simulationFrame}, ${frameMessages.length} client messages`,
-            )
-          }
-
           simulate(
             {
               entityManager: this.entityManager,

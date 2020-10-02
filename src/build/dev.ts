@@ -32,6 +32,7 @@ const rebuild = async () => {
   const clientBuild = new Promise((resolve) => {
     const build = spawn('npx', [
       'ts-node',
+      '--transpile-only',
       path.join(gameSrcPath, 'build', 'buildClient.ts'),
     ])
     build.on('close', resolve)
@@ -46,6 +47,7 @@ const rebuild = async () => {
   const serverBuild = new Promise((resolve) => {
     const build = spawn('npx', [
       'ts-node',
+      '--transpile-only',
       path.join(gameSrcPath, 'build', 'buildServer.ts'),
     ])
     build.on('close', resolve)

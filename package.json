@@ -5,8 +5,8 @@
   "scripts": {
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
-    "dev": "npx ts-node src/build/dev.ts",
-    "devServer": "npx ts-node out/server/server.js",
+    "dev": "npx ts-node --transpile-only src/build/dev.ts",
+    "devServer": "npx ts-node --transpile-only out/server/server.js",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",

@@ -10,7 +10,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     }
 
     if (!vec2.equals(e.transform.position, e.transform.previousPosition)) {
-      simState.entityManager.checkpointEntity(id)
+      simState.entityManager.checkpoint(id)
       e.transform.previousPosition = vec2.clone(e.transform.position)
     }
   }

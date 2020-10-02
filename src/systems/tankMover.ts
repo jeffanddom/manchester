@@ -30,7 +30,7 @@ export const update = (
       return
     }
 
-    simState.entityManager.checkpointEntity(player.id)
+    simState.entityManager.checkpoint(player.id)
 
     player.transform!.orientation = rotateUntil({
       from: player.transform!.orientation,

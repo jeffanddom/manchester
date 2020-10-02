@@ -112,7 +112,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     })
 
     if (collided.length > 0) {
-      simState.entityManager.checkpointEntity(e.id)
+      simState.entityManager.checkpoint(e.id)
 
       // TypeScript issues a "possibly-undefined" error without this binding. Why?
       const transform = e.transform

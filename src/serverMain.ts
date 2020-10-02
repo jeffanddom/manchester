@@ -14,12 +14,13 @@ import { Server as GameServer } from '~/Server'
 
 // TODO: read from envvar
 const playerCount = 2
-const clientBufferSize = 10
+const clientBufferSize = 15
 
 const gameServer = new GameServer({
   playerCount,
   minFramesBehindClient: clientBufferSize,
 })
+
 setInterval(
   () => gameServer.update(SIMULATION_PERIOD_S),
   (1000 * SIMULATION_PERIOD_S) / 2,

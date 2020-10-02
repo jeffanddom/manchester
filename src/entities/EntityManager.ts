@@ -8,14 +8,14 @@ export class EntityManager {
   entities: { [key: string]: Entity } // array of structures -> structure of arrays
 
   toDelete: string[]
-  checkpoint: { [key: string]: Entity }
+  checkpointedEntities: { [key: string]: Entity }
   uncommitted: Set<string>
 
   constructor() {
     this.nextEntityId = 0
     this.entities = {}
     this.toDelete = []
-    this.checkpoint = {}
+    this.checkpointedEntities = {}
     this.uncommitted = new Set()
   }
 
@@ -24,28 +24,28 @@ export class EntityManager {
     this.toDelete = []
   }
 
-  checkpointEntity(id: string): void {
-    if (this.checkpoint[id]) {
+  checkpoint(id: string): void {
+    if (this.checkpointedEntities[id]) {
       return
     }
-    this.checkpoint[id] = _.cloneDeep(this.entities[id])
+    this.checkpointedEntities[id] = _.cloneDeep(this.entities[id])
   }
 
   restoreCheckpoints(): void {
-    for (const id of Object.keys(this.checkpoint)) {
-      this.entities[id] = this.checkpoint[id]
+    for (const id of Object.keys(this.checkpointedEntities)) {
+      this.entities[id] = this.checkpointedEntities[id]
     }
 
     this.nextEntityId -= this.uncommitted.size
     this.uncommitted.forEach((id) => delete this.entities[id])
 
     this.uncommitted = new Set()
-    this.checkpoint = {}
+    this.checkpointedEntities = {}
   }
 
   clearCheckpoint(): void {
     this.uncommitted = new Set()
-    this.checkpoint = {}
+    this.checkpointedEntities = {}
   }
 
   getRenderables(): Renderable[] {
@@ -76,6 +76,7 @@ export class EntityManager {
   }
 
   markForDeletion(id: string): void {
+    this.checkpoint(id)
     this.toDelete.push(id)
   }
 }

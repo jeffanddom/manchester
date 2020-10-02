@@ -16,7 +16,7 @@ export const update = (
       continue
     }
 
-    simState.entityManager.checkpointEntity(e.id)
+    simState.entityManager.checkpoint(e.id)
 
     radialTranslate2(
       e.transform!.position,

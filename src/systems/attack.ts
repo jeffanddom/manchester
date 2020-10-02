@@ -4,18 +4,18 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { EntityManager } from '~/entities/EntityManager'
-import { Game } from '~/Game'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Primitive } from '~/renderer/interfaces'
+import { SimState } from '~/simulate'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 
-export const update = (g: Game, entityManager: EntityManager): void => {
+export const update = (
+  simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
+): void => {
   const damagers: [string, Damager, ITransform][] = []
   const damageables: [string, Damageable, ITransform][] = []
 
-  for (const id in entityManager.entities) {
-    const e = entityManager.entities[id]
+  for (const id in simState.entityManager.entities) {
+    const e = simState.entityManager.entities[id]
     if (!e.transform) {
       continue
     }
@@ -33,18 +33,6 @@ export const update = (g: Game, entityManager: EntityManager): void => {
     const [attackerId, damager, attackerTransform] = damagers[i]
     const attackerAabb = damager.aabb(attackerTransform)
 
-    g.debugDraw(() => {
-      const d = vec2.sub(vec2.create(), attackerAabb[1], attackerAabb[0])
-      return [
-        {
-          primitive: Primitive.RECT,
-          strokeStyle: 'black',
-          pos: attackerAabb[0],
-          dimensions: d,
-        },
-      ]
-    })
-
     const hit = damageables.find(
       ([targetId, damageable, targetTransform]) =>
         attackerId !== targetId &&
@@ -57,6 +45,8 @@ export const update = (g: Game, entityManager: EntityManager): void => {
 
     const [targetId, damageable] = hit
 
+    simState.entityManager.checkpoint(targetId)
+
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
 
@@ -64,34 +54,39 @@ export const update = (g: Game, entityManager: EntityManager): void => {
     damageable.health -= damager.damageValue
 
     // TODO: client and server both delete their own bullets
-    entityManager.markForDeletion(attackerId)
+    simState.entityManager.markForDeletion(attackerId)
 
     // ---------------------
 
     // Client only side-effects:
     // - explosion
     // - camera shake if player hit
-    const explosion = new ParticleEmitter({
-      spawnTtl: 0.2,
-      position: radialTranslate2(
-        vec2.create(),
-        attackerTransform.position,
-        attackerTransform.orientation,
-        TILE_SIZE / 2,
-      ),
-      particleTtl: 0.1,
-      particleRadius: 10,
-      particleSpeedRange: [90, 125],
-      particleRate: 270,
-      orientation: 0,
-      arc: Math.PI * 2,
-      colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
-    })
-    g.client.emitters.push(explosion)
-
-    const player = entityManager.getPlayer()
-    if (player && player.id === targetId) {
-      g.client.camera.shake()
+    if (simState.registerParticleEmitter) {
+      const explosion = new ParticleEmitter({
+        spawnTtl: 0.2,
+        position: radialTranslate2(
+          vec2.create(),
+          attackerTransform.position,
+          attackerTransform.orientation,
+          TILE_SIZE / 2,
+        ),
+        particleTtl: 0.1,
+        particleRadius: 10,
+        particleSpeedRange: [90, 125],
+        particleRate: 270,
+        orientation: 0,
+        arc: Math.PI * 2,
+        colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
+      })
+      simState.registerParticleEmitter({
+        emitter: explosion,
+        entity: targetId,
+      })
     }
+
+    // const player = simState.entityManager.getPlayer()
+    // if (player && player.id === targetId) {
+    //   g.client.camera.shake()
+    // }
   }
 }

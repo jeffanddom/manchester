@@ -12,7 +12,6 @@ export type SimState = {
   terrainLayer: terrain.Layer
   registerParticleEmitter?: (params: {
     emitter: ParticleEmitter
-    frame: number
     entity: string
   }) => void
 }
@@ -36,10 +35,10 @@ export const simulate = (
   systems.bullet(simState, dt)
   // systems.pickups(this, this.entityManager)
   systems.wallCollider(simState)
-  // systems.attack(this, this.entityManager)
+  systems.attack(simState)
   systems.playfieldClamping(simState)
 
-  // systems.damageable(this, this.entityManager)
+  systems.damageable(simState)
 
   // TODO: need mechanism to sync state with client
   // if (this.state === GameState.YouDied) {

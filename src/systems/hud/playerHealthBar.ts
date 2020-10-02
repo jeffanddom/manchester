@@ -1,11 +1,22 @@
 import { vec2 } from 'gl-matrix'
 
-import { Game } from '~/Game'
-import { Primitive } from '~/renderer/interfaces'
+import { EntityManager } from '~/entities/EntityManager'
+import { IRenderer, Primitive } from '~/renderer/interfaces'
 import { inverseLerp, lerp } from '~/util/math'
 
-export const update = (g: Game): void => {
-  const damageable = g.client.entityManager.getPlayer()!.damageable!
+export const update = (
+  simState: {
+    entityManager: EntityManager
+    playerNumber: number
+  },
+  renderer: IRenderer,
+): void => {
+  const player = simState.entityManager.getPlayer(simState.playerNumber)
+  if (!player) {
+    return
+  }
+
+  const damageable = player.damageable!
   const maxFill = 100
   const fill = lerp(
     0,
@@ -15,7 +26,7 @@ export const update = (g: Game): void => {
   const y = 15
 
   // background
-  g.client.renderer.render({
+  renderer.render({
     primitive: Primitive.RECT,
     pos: vec2.fromValues(15, y),
     dimensions: vec2.fromValues(15, maxFill),
@@ -24,7 +35,7 @@ export const update = (g: Game): void => {
   })
 
   // fill
-  g.client.renderer.render({
+  renderer.render({
     primitive: Primitive.RECT,
     pos: vec2.fromValues(15, y + maxFill - fill),
     dimensions: vec2.fromValues(15, fill),

@@ -220,8 +220,12 @@ export class Client {
                 }
                 break
               case ServerMessageType.SPEED_UP:
-                this.ticksPerUpdate = 3
+                this.ticksPerUpdate = 2
                 this.updatePeriod = (1000 * SIMULATION_PERIOD_S) / 2
+                break
+              case ServerMessageType.SLOW_DOWN:
+                this.ticksPerUpdate = 1
+                this.updatePeriod = 1000 * SIMULATION_PERIOD_S
                 break
             }
           }
@@ -308,7 +312,13 @@ export class Client {
 
     this.renderer.setTransform(mat2d.identity(mat2d.create()))
 
-    // systems.playerHealthBar(this)
+    systems.playerHealthBar(
+      {
+        entityManager: this.entityManager,
+        playerNumber: this.playerNumber,
+      },
+      this.renderer,
+    )
     // systems.inventoryDisplay(this, this.entityManager.getPlayer())
 
     if (this.state === GameState.YouDied) {
@@ -364,66 +374,78 @@ export class Client {
     })
 
     this.debugDraw(
-      () => [
-        {
-          primitive: Primitive.TEXT,
-          text: `Player ${this.playerNumber}`,
-          pos: vec2.fromValues(10, 10),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-        {
-          primitive: Primitive.TEXT,
-          text: `Render FPS: ${(
-            1 / this.renderFrameDurations.average()
-          ).toFixed(2)}`,
-          pos: vec2.fromValues(10, 30),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-        {
-          primitive: Primitive.TEXT,
-          text: `Tick FPS: ${(1 / this.tickDurations.average()).toFixed(2)}`,
-          pos: vec2.fromValues(10, 50),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-        {
-          primitive: Primitive.TEXT,
-          text: `Update FPS: ${(1 / this.updateDurations.average()).toFixed(
-            2,
-          )}`,
-          pos: vec2.fromValues(10, 70),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-        {
-          primitive: Primitive.TEXT,
-          text: `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-          pos: vec2.fromValues(10, 90),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-        {
-          primitive: Primitive.TEXT,
-          text: `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
-          pos: vec2.fromValues(10, 110),
-          hAlign: TextAlign.Min,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        },
-      ],
+      () => {
+        const rightEdge = this.camera.viewportDimensions[0]
+        return [
+          {
+            primitive: Primitive.TEXT,
+            text: `Player ${this.playerNumber}`,
+            pos: vec2.fromValues(rightEdge - 10, 10),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `Render FPS: ${(
+              1 / this.renderFrameDurations.average()
+            ).toFixed(2)}`,
+            pos: vec2.fromValues(rightEdge - 10, 30),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `Update FPS: ${(1 / this.updateDurations.average()).toFixed(
+              2,
+            )}`,
+            pos: vec2.fromValues(rightEdge - 10, 50),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `Tick FPS: ${(1 / this.tickDurations.average()).toFixed(2)}`,
+            pos: vec2.fromValues(rightEdge - 10, 70),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
+            pos: vec2.fromValues(rightEdge - 10, 90),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+            pos: vec2.fromValues(rightEdge - 10, 110),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          },
+          {
+            primitive: Primitive.TEXT,
+            text: this.ticksPerUpdate > 1 ? `OVERDRIVE` : '',
+            pos: vec2.fromValues(rightEdge - 10, 150),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '36px monospace',
+            style: 'red',
+          },
+        ]
+      },
       { viewspace: true },
     )
 
@@ -438,11 +460,10 @@ export class Client {
 
   registerParticleEmitter(params: {
     emitter: ParticleEmitter
-    frame: number
     entity: string
   }): void {
-    if (!this.emitterHistory.has(`${params.frame}:${params.entity}`)) {
-      this.emitterHistory.add(`${params.frame}:${params.entity}`)
+    if (!this.emitterHistory.has(`${this.simulationFrame}:${params.entity}`)) {
+      this.emitterHistory.add(`${this.simulationFrame}:${params.entity}`)
       this.emitters.push(params.emitter)
     }
   }

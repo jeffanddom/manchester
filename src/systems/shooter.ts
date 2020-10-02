@@ -49,7 +49,7 @@ export const update = (
       return
     }
 
-    simState.entityManager.checkpointEntity(e.id)
+    simState.entityManager.checkpoint(e.id)
 
     e.shooter!.lastFiredFrame = message.frame
     e.shooter!.orientation = getAngle(e.transform!.position, message.targetPos)
@@ -84,7 +84,6 @@ export const update = (
 
       simState.registerParticleEmitter({
         emitter: muzzleFlash,
-        frame: message.frame,
         entity: e.id,
       })
     }
