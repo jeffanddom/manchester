@@ -24,7 +24,6 @@ export class Server {
   minFramesBehindClient: number
   simulationFrame: number
   maxReceivedClientFrame: number
-  idleCounter: number // number of frames the server has idled to ensure minFramesBehindClient buffer
 
   // Common game state
   state: GameState
@@ -43,7 +42,6 @@ export class Server {
     this.minFramesBehindClient = config.minFramesBehindClient
     this.simulationFrame = 0
     this.maxReceivedClientFrame = -1
-    this.idleCounter = 0
 
     // Common
     this.state = GameState.Connecting
@@ -167,19 +165,7 @@ export class Server {
             this.maxReceivedClientFrame - this.simulationFrame <
             this.minFramesBehindClient
           ) {
-            if (this.idleCounter === 0) {
-              console.log(
-                `server: idling at frame ${this.simulationFrame}; fastest client at frame ${this.maxReceivedClientFrame}`,
-              )
-            }
-
-            this.idleCounter++
             break
-          } else if (this.idleCounter > 0) {
-            console.log(
-              `server: resuming simulation at frame ${this.simulationFrame} after ${this.idleCounter} frames of idle`,
-            )
-            this.idleCounter = 0
           }
 
           // Remove this frame's client messages from the history, then process.
