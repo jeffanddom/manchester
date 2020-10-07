@@ -1,6 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
-interface TItem {
+import { aabbOverlap } from '../math'
+
+export interface TItem {
   pos(): vec2
 }
 
@@ -27,13 +29,39 @@ export const emptyNode = <T extends TItem>(): TNode<T> => {
   return { items: [] }
 }
 
-const aabbContains = (aabb: [vec2, vec2], p: vec2): boolean => {
+/**
+ * Tests whether a point falls within an AABB, specified by the NW and SE
+ * extrema. Points along the north and west edges are considered to be within
+ * the AABB, whereas points along the south and east edges are not.
+ */
+export const minBiasAabbContains = (aabb: [vec2, vec2], p: vec2): boolean => {
   return (
     aabb[0][0] <= p[0] &&
     p[0] < aabb[1][0] &&
     aabb[0][1] <= p[1] &&
     p[1] < aabb[1][1]
   )
+}
+
+/**
+ * Tests whether two AABBs, specified by their NW/SE extrema, are overlapping.
+ * The south and east edges of an AABB are not considered to be inside of the
+ * AABB.
+ */
+export const minBiasAabbOverlap = (
+  a: [vec2, vec2],
+  b: [vec2, vec2],
+): boolean => {
+  if (!aabbOverlap(a, b)) {
+    return false
+  }
+
+  // Ensure that south/west edges are not counted.
+  const leftmost = a[0][0] <= b[0][0] ? a : b
+  const rightmost = a[0][0] <= b[0][0] ? b : a
+  const upper = a[0][1] <= b[0][1] ? a : b
+  const lower = a[0][1] <= b[0][1] ? b : a
+  return leftmost[1][0] !== rightmost[0][0] && upper[1][1] !== lower[0][1]
 }
 
 export const quadrantOfAabb = (
@@ -67,7 +95,7 @@ export const nodeInsert = <T extends TItem>(
   maxItems: number,
   item: T,
 ): void => {
-  if (!aabbContains(aabb, item.pos())) {
+  if (!minBiasAabbContains(aabb, item.pos())) {
     return
   }
 
@@ -115,26 +143,31 @@ export const nodeInsert = <T extends TItem>(
   nodeInsert(node, aabb, maxItems, item)
 }
 
-export class Quadtree<T extends TItem> {
-  maxItems: number
-  root: TNode<T>
-
-  constructor(config: { maxItems: number }) {
-    this.maxItems = config.maxItems
-    this.root = { items: [] }
+export const nodeQuery = <T extends TItem>(
+  node: TNode<T>,
+  nodeAabb: [vec2, vec2],
+  queryAabb: [vec2, vec2],
+): T[] => {
+  if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
+    return []
   }
 
-  insert(item: T): void {
-    this.root.items!.push(item)
+  if (node.items) {
+    return node.items.filter((i) => minBiasAabbContains(queryAabb, i.pos()))
   }
 
-  query(aabb: [vec2, vec2]): T[] {
-    const res: T[] = []
-    for (const i of this.root.items!) {
-      if (aabbContains(aabb, i.pos())) {
-        res.push(i)
-      }
+  const children = node.children!
+  const res: T[] = []
+
+  for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
+    for (const i of nodeQuery(
+      children[q],
+      quadrantOfAabb(nodeAabb, q),
+      queryAabb,
+    )) {
+      res.push(i)
     }
-    return res
   }
+
+  return res
 }
