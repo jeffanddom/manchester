@@ -58,26 +58,26 @@ export const minBiasAabbOverlap = (
 }
 
 export const quadrantOfAabb = (
-  _aabb: [vec2, vec2],
+  parentAabb: [vec2, vec2],
   q: Quadrant,
 ): [vec2, vec2] => {
-  const aabb = [vec2.clone(_aabb[0]), vec2.clone(_aabb[1])]
+  const aabb = [vec2.clone(parentAabb[0]), vec2.clone(parentAabb[1])]
   const halfW = (aabb[1][0] - aabb[0][0]) / 2
   const halfH = (aabb[1][1] - aabb[0][1]) / 2
 
   switch (q) {
     case Quadrant.NW:
-      return [aabb[0], vec2.fromValues(aabb[0][0] + halfW, aabb[0][0] + halfH)]
+      return [aabb[0], vec2.fromValues(aabb[0][0] + halfW, aabb[0][1] + halfH)]
     case Quadrant.NE:
       return [
-        vec2.fromValues(aabb[0][0] + halfW, aabb[0][0]),
-        vec2.fromValues(aabb[1][0], aabb[0][0] + halfH),
+        vec2.fromValues(aabb[0][0] + halfW, aabb[0][1]),
+        vec2.fromValues(aabb[1][0], aabb[0][1] + halfH),
       ]
     case Quadrant.SE:
-      return [vec2.fromValues(aabb[0][0] + halfW, aabb[0][0] + halfH), aabb[1]]
+      return [vec2.fromValues(aabb[0][0] + halfW, aabb[0][1] + halfH), aabb[1]]
     case Quadrant.SW:
       return [
-        vec2.fromValues(aabb[0][0], aabb[0][0] + halfH),
+        vec2.fromValues(aabb[0][0], aabb[0][1] + halfH),
         vec2.fromValues(aabb[0][0] + halfW, aabb[1][1]),
       ]
   }
@@ -94,17 +94,6 @@ export const nodeInsert = <T>(
   if (!comparator(aabb, item)) {
     return
   }
-
-  console.log(
-    '-> Inserting into ',
-    aabb,
-    '# items',
-    node.items?.length,
-    'ID',
-    item,
-    'Depth',
-    depth,
-  )
 
   if (node.children) {
     nodeInsert(
@@ -152,7 +141,6 @@ export const nodeInsert = <T>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    console.log('Splitting -> Inserting items into child nodes', i)
     nodeInsert(node, aabb, maxItems, comparator, i, depth)
   }
 }
