@@ -14,17 +14,17 @@ import {
   quadrantOfAabb,
 } from './helpers'
 
-class TestItem {
-  _pos: vec2
+// class TestItem {
+//   _pos: vec2
 
-  constructor(pos: vec2) {
-    this._pos = pos
-  }
+//   constructor(pos: vec2) {
+//     this._pos = pos
+//   }
 
-  pos(): vec2 {
-    return vec2.clone(this._pos)
-  }
-}
+//   pos(): vec2 {
+//     return vec2.clone(this._pos)
+//   }
+// }
 
 test('quadrantOfAabb', () => {
   const aabb: [vec2, vec2] = [vec2.fromValues(0, 0), vec2.fromValues(2, 2)]
@@ -44,6 +44,29 @@ test('quadrantOfAabb', () => {
   const sw = quadrantOfAabb(aabb, Quadrant.SW)
   expect(vec2.equals(sw[0], vec2.fromValues(0, 1))).toBe(true)
   expect(vec2.equals(sw[1], vec2.fromValues(1, 2))).toBe(true)
+})
+
+test('quadrantOfAabb2', () => {
+  const aabb: [vec2, vec2] = [
+    vec2.fromValues(-10, -10),
+    vec2.fromValues(10, 10),
+  ]
+
+  const nw = quadrantOfAabb(aabb, Quadrant.NW)
+  expect(vec2.equals(nw[0], vec2.fromValues(-10, -10))).toBe(true)
+  expect(vec2.equals(nw[1], vec2.fromValues(0, 0))).toBe(true)
+
+  const ne = quadrantOfAabb(aabb, Quadrant.NE)
+  expect(vec2.equals(ne[0], vec2.fromValues(0, -10))).toBe(true)
+  expect(vec2.equals(ne[1], vec2.fromValues(10, 0))).toBe(true)
+
+  const se = quadrantOfAabb(aabb, Quadrant.SE)
+  expect(vec2.equals(se[0], vec2.fromValues(0, 0))).toBe(true)
+  expect(vec2.equals(se[1], vec2.fromValues(10, 10))).toBe(true)
+
+  const sw = quadrantOfAabb(aabb, Quadrant.SW)
+  expect(vec2.equals(sw[0], vec2.fromValues(-10, 0))).toBe(true)
+  expect(vec2.equals(sw[1], vec2.fromValues(0, 10))).toBe(true)
 })
 
 test('minBiasAabbContains', () => {
@@ -157,7 +180,7 @@ describe('minBiasAabbOverlap', () => {
 
 describe('nodeInsert', () => {
   test('insert attempt into non-enclosing node', () => {
-    const node = emptyNode()
+    const node = emptyNode<vec2>()
     nodeInsert(
       node,
       [
@@ -165,14 +188,15 @@ describe('nodeInsert', () => {
         [1, 1],
       ],
       1,
-      new TestItem([-1, -1]),
+      minBiasAabbContains,
+      [-1, -1],
     )
     expect(node.items!.length).toBe(0)
   })
 
   test('insert into node with spare capacity', () => {
-    const node = emptyNode()
-    const item = new TestItem([0, 0])
+    const node = emptyNode<vec2>()
+    const item = vec2.fromValues(0, 0)
     nodeInsert(
       node,
       [
@@ -180,6 +204,7 @@ describe('nodeInsert', () => {
         [1, 1],
       ],
       1,
+      minBiasAabbContains,
       item,
     )
     expect(node.items!.length).toBe(1)
@@ -187,20 +212,20 @@ describe('nodeInsert', () => {
   })
 
   test('insert into intermediate node', () => {
-    const children: ChildList<TestItem> = [
+    const children: ChildList<vec2> = [
       emptyNode(),
       emptyNode(),
       emptyNode(),
       emptyNode(),
     ]
 
-    const node: TNode<TestItem> = { children }
+    const node: TNode<vec2> = { children }
 
-    const items = [
-      new TestItem([0, 0]),
-      new TestItem([1, 0]),
-      new TestItem([1, 1]),
-      new TestItem([0, 1]),
+    const items: vec2[] = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
     ]
 
     for (const i of items) {
@@ -211,6 +236,7 @@ describe('nodeInsert', () => {
           [2, 2],
         ],
         1,
+        minBiasAabbContains,
         i,
       )
     }
@@ -227,14 +253,14 @@ describe('nodeInsert', () => {
   })
 
   test('insert into node at capacity', () => {
-    const items = [
-      new TestItem([0.5, 0.5]),
-      new TestItem([1.5, 0.5]),
-      new TestItem([1.5, 1.5]),
-      new TestItem([0.5, 1.5]),
+    const items: vec2[] = [
+      [0.5, 0.5],
+      [1.5, 0.5],
+      [1.5, 1.5],
+      [0.5, 1.5],
     ]
 
-    const node: TNode<TestItem> = { items: [items[0], items[1], items[2]] }
+    const node: TNode<vec2> = { items: [items[0], items[1], items[2]] }
 
     nodeInsert(
       node,
@@ -243,6 +269,7 @@ describe('nodeInsert', () => {
         [2, 2],
       ],
       3,
+      minBiasAabbContains,
       items[3],
     )
 
@@ -261,11 +288,11 @@ describe('nodeInsert', () => {
 })
 
 describe('nodeQuery', () => {
-  const items = [
-    new TestItem([-0.5, -0.5]),
-    new TestItem([0.5, -0.5]),
-    new TestItem([0.5, 0.5]),
-    new TestItem([-0.5, 0.5]),
+  const items: vec2[] = [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.5, 0.5],
+    [-0.5, 0.5],
   ]
 
   test('no overlap with node AABB', () => {
@@ -276,6 +303,7 @@ describe('nodeQuery', () => {
           [-1, -1],
           [1, 1],
         ],
+        minBiasAabbContains,
         [
           [2, 2],
           [3, 3],
@@ -292,6 +320,7 @@ describe('nodeQuery', () => {
           [-1, -1],
           [1, 1],
         ],
+        minBiasAabbContains,
         [
           [-0.25, -0.25],
           [0.25, 0.25],
@@ -308,6 +337,7 @@ describe('nodeQuery', () => {
         [-1, -1],
         [1, 1],
       ],
+      minBiasAabbContains,
       [
         [-0.75, -0.75],
         [0, 1],

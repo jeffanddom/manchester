@@ -2,9 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '../math'
 
-export interface TItem {
-  pos(): vec2
-}
+export type Comparator<T> = (aabb: [vec2, vec2], item: T) => boolean
 
 export enum Quadrant {
   NW,
@@ -13,19 +11,14 @@ export enum Quadrant {
   SW,
 }
 
-export type ChildList<T extends TItem> = [
-  TNode<T>,
-  TNode<T>,
-  TNode<T>,
-  TNode<T>,
-]
+export type ChildList<T> = [TNode<T>, TNode<T>, TNode<T>, TNode<T>]
 
-export type TNode<T extends TItem> = {
+export type TNode<T> = {
   children?: ChildList<T>
   items?: T[]
 }
 
-export const emptyNode = <T extends TItem>(): TNode<T> => {
+export const emptyNode = <T>(): TNode<T> => {
   return { items: [] }
 }
 
@@ -65,9 +58,10 @@ export const minBiasAabbOverlap = (
 }
 
 export const quadrantOfAabb = (
-  aabb: [vec2, vec2],
+  _aabb: [vec2, vec2],
   q: Quadrant,
 ): [vec2, vec2] => {
+  const aabb = [vec2.clone(_aabb[0]), vec2.clone(_aabb[1])]
   const halfW = (aabb[1][0] - aabb[0][0]) / 2
   const halfH = (aabb[1][1] - aabb[0][1]) / 2
 
@@ -89,47 +83,68 @@ export const quadrantOfAabb = (
   }
 }
 
-export const nodeInsert = <T extends TItem>(
+export const nodeInsert = <T>(
   node: TNode<T>,
   aabb: [vec2, vec2],
   maxItems: number,
+  comparator: Comparator<T>,
   item: T,
+  depth = 0,
 ): void => {
-  if (!minBiasAabbContains(aabb, item.pos())) {
+  if (!comparator(aabb, item)) {
     return
   }
+
+  console.log(
+    '-> Inserting into ',
+    aabb,
+    '# items',
+    node.items?.length,
+    'ID',
+    item,
+    'Depth',
+    depth,
+  )
 
   if (node.children) {
     nodeInsert(
       node.children[Quadrant.NW],
       quadrantOfAabb(aabb, Quadrant.NW),
       maxItems,
+      comparator,
       item,
+      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.NE],
       quadrantOfAabb(aabb, Quadrant.NE),
       maxItems,
+      comparator,
       item,
+      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.SE],
       quadrantOfAabb(aabb, Quadrant.SE),
       maxItems,
+      comparator,
       item,
+      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.SW],
       quadrantOfAabb(aabb, Quadrant.SW),
       maxItems,
+      comparator,
       item,
+      depth + 1,
     )
     return
   }
 
   const items = node.items!
-  if (items.length < maxItems) {
-    items.push(item)
+  items.push(item)
+  if (items.length <= maxItems) {
     return
   }
 
@@ -137,15 +152,15 @@ export const nodeInsert = <T extends TItem>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    nodeInsert(node, aabb, maxItems, i)
+    console.log('Splitting -> Inserting items into child nodes', i)
+    nodeInsert(node, aabb, maxItems, comparator, i, depth)
   }
-
-  nodeInsert(node, aabb, maxItems, item)
 }
 
-export const nodeQuery = <T extends TItem>(
+export const nodeQuery = <T>(
   node: TNode<T>,
   nodeAabb: [vec2, vec2],
+  comparator: Comparator<T>,
   queryAabb: [vec2, vec2],
 ): T[] => {
   if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
@@ -153,7 +168,7 @@ export const nodeQuery = <T extends TItem>(
   }
 
   if (node.items) {
-    return node.items.filter((i) => minBiasAabbContains(queryAabb, i.pos()))
+    return node.items.filter((i) => comparator(queryAabb, i))
   }
 
   const children = node.children!
@@ -163,6 +178,7 @@ export const nodeQuery = <T extends TItem>(
     for (const i of nodeQuery(
       children[q],
       quadrantOfAabb(nodeAabb, q),
+      comparator,
       queryAabb,
     )) {
       res.push(i)

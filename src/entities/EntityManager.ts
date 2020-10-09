@@ -1,7 +1,13 @@
+import { vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
+
+import { Type } from './types'
 
 import { Entity } from '~/entities/Entity'
 import { Renderable } from '~/renderer/interfaces'
+import { Quadtree } from '~/util/quadtree'
+import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
+import { tileBox } from '~/util/tileMath'
 
 export class EntityManager {
   nextEntityId: number
@@ -11,12 +17,29 @@ export class EntityManager {
   checkpointedEntities: { [key: string]: Entity }
   uncommitted: Set<string>
 
-  constructor() {
+  // To include: walls, trees, turrets
+  quadtree: Quadtree<string>
+
+  constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
     this.entities = {}
     this.toDelete = []
     this.checkpointedEntities = {}
     this.uncommitted = new Set()
+
+    this.quadtree = new Quadtree<string>({
+      maxItems: 4,
+      aabb: playfieldAabb,
+      comparator: (aabb: [vec2, vec2], entityId: string) => {
+        const entity = this.entities[entityId]
+        if (!entity || !entity.transform) {
+          return false
+        }
+
+        const entityAabb = tileBox(entity.transform.position)
+        return minBiasAabbOverlap(aabb, entityAabb)
+      },
+    })
   }
 
   update(): void {
@@ -73,6 +96,15 @@ export class EntityManager {
     this.nextEntityId++
     this.entities[e.id] = e
     this.uncommitted.add(e.id)
+
+    // Add to quadtree
+    // FIXME: if these items are added during a prediction phase (i.e. a player
+    // builds a wall) entities will be added to the quadtree multiple times
+    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
+      console.log('\n\n----> NEW ENTITY', e.id)
+      console.log(tileBox(e.transform!.position))
+      this.quadtree.insert(e.id)
+    }
   }
 
   markForDeletion(id: string): void {

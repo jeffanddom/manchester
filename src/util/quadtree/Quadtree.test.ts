@@ -1,38 +1,28 @@
 import { vec2 } from 'gl-matrix'
 
+import { minBiasAabbContains } from './helpers'
 import { Quadtree } from './Quadtree'
-
-class TestItem {
-  _pos: vec2
-
-  constructor(pos: vec2) {
-    this._pos = pos
-  }
-
-  pos(): vec2 {
-    return vec2.clone(this._pos)
-  }
-}
 
 describe('Quadtree', () => {
   test('basic usage', () => {
-    const items = [
-      new TestItem([0.5, 0.5]),
-      new TestItem([1.5, 0.5]),
-      new TestItem([0.5, 1.5]),
-      new TestItem([1.5, 1.5]),
-      new TestItem([3.5, 0.5]),
-      new TestItem([3.5, 1.5]),
-      new TestItem([1, 3]),
-      new TestItem([3, 3]),
+    const items: vec2[] = [
+      [0.5, 0.5],
+      [1.5, 0.5],
+      [0.5, 1.5],
+      [1.5, 1.5],
+      [3.5, 0.5],
+      [3.5, 1.5],
+      [1, 3],
+      [3, 3],
     ]
 
-    const qt = new Quadtree<TestItem>({
+    const qt = new Quadtree<vec2>({
       maxItems: 2,
       aabb: [
         [0, 0],
         [4, 4],
       ],
+      comparator: minBiasAabbContains,
     })
 
     for (const i of items) {

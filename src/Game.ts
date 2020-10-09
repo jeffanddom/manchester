@@ -19,13 +19,9 @@ export const gameProgression = [maps.bigMap, maps.collisionTest]
 
 export const initMap = (
   entityManager: EntityManager,
-  level: number,
-): {
-  map: Map
-  terrainLayer: terrain.Layer
-} => {
+  map: Map,
+): terrain.Layer => {
   // Level setup
-  const map = Map.fromRaw(gameProgression[level])
   const terrainLayer = new terrain.Layer({
     tileOrigin: map.origin,
     tileDimensions: map.dimensions,
@@ -64,5 +60,5 @@ export const initMap = (
 
   entityManager.clearCheckpoint()
 
-  return { map, terrainLayer }
+  return terrainLayer
 }

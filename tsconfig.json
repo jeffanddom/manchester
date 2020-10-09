@@ -23,11 +23,12 @@
       ]
     },
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "exclude": [
     "dist",
     "out",
+    "outdebug",
     "node_modules"
   ]
 }

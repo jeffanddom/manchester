@@ -13,7 +13,7 @@ import { ClientConnectionWs } from '~/network/ClientConnection'
 import { Server as GameServer } from '~/Server'
 
 // TODO: read from envvar
-const playerCount = 2
+const playerCount = 1
 const clientBufferSize = 15
 
 const gameServer = new GameServer({

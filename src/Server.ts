@@ -1,7 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
+import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
-import { GameState, initMap } from '~/Game'
+import { GameState, gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
@@ -36,7 +37,10 @@ export class Server {
 
   constructor(config: { playerCount: number; minFramesBehindClient: number }) {
     this.clientMessagesByFrame = []
-    this.entityManager = new EntityManager()
+    this.entityManager = new EntityManager([
+      [0, 0],
+      [0, 0],
+    ])
     this.clients = []
     this.playerCount = config.playerCount
     this.minFramesBehindClient = config.minFramesBehindClient
@@ -128,11 +132,23 @@ export class Server {
 
       switch (this.state) {
         case GameState.Running:
-          this.entityManager = new EntityManager()
+          // Level setup
+          this.map = Map.fromRaw(gameProgression[this.currentLevel])
+          const worldOrigin = vec2.scale(
+            vec2.create(),
+            this.map.origin,
+            TILE_SIZE,
+          )
 
-          const mapData = initMap(this.entityManager, this.currentLevel)
-          this.map = mapData.map
-          this.terrainLayer = mapData.terrainLayer
+          this.entityManager = new EntityManager([
+            worldOrigin,
+            vec2.add(
+              vec2.create(),
+              worldOrigin,
+              vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
+            ),
+          ])
+          this.terrainLayer = initMap(this.entityManager, this.map)
 
           this.clients.forEach((client, index) => {
             client.conn.send({

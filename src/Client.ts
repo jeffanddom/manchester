@@ -3,7 +3,7 @@ import { mat2d, vec2 } from 'gl-matrix'
 import { Camera } from '~/Camera'
 import { SIMULATION_PERIOD_S, TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
-import { GameState, initMap } from '~/Game'
+import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse } from '~/Mouse'
@@ -72,7 +72,10 @@ export class Client {
   terrainLayer: terrain.Layer
 
   constructor(canvas: HTMLCanvasElement) {
-    this.entityManager = new EntityManager()
+    this.entityManager = new EntityManager([
+      [0, 0],
+      [0, 0],
+    ])
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = null
@@ -132,13 +135,21 @@ export class Client {
   }
 
   startPlay(): void {
-    this.entityManager = new EntityManager()
     this.emitters = []
 
     // Level setup
-    const mapData = initMap(this.entityManager, this.currentLevel)
-    this.map = mapData.map
-    this.terrainLayer = mapData.terrainLayer
+    this.map = Map.fromRaw(gameProgression[this.currentLevel])
+    const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
+
+    this.entityManager = new EntityManager([
+      worldOrigin,
+      vec2.add(
+        vec2.create(),
+        worldOrigin,
+        vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
+      ),
+    ])
+    this.terrainLayer = initMap(this.entityManager, this.map)
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()

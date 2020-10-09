@@ -2,5 +2,6 @@
 .vscode/
 dist/
 out/
+outdebug/
 node_modules/
 yarn-error.log
