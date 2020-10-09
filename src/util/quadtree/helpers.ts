@@ -89,7 +89,6 @@ export const nodeInsert = <T>(
   maxItems: number,
   comparator: Comparator<T>,
   item: T,
-  depth = 0,
 ): void => {
   if (!comparator(aabb, item)) {
     return
@@ -102,7 +101,6 @@ export const nodeInsert = <T>(
       maxItems,
       comparator,
       item,
-      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.NE],
@@ -110,7 +108,6 @@ export const nodeInsert = <T>(
       maxItems,
       comparator,
       item,
-      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.SE],
@@ -118,7 +115,6 @@ export const nodeInsert = <T>(
       maxItems,
       comparator,
       item,
-      depth + 1,
     )
     nodeInsert(
       node.children[Quadrant.SW],
@@ -126,7 +122,6 @@ export const nodeInsert = <T>(
       maxItems,
       comparator,
       item,
-      depth + 1,
     )
     return
   }
@@ -141,7 +136,7 @@ export const nodeInsert = <T>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    nodeInsert(node, aabb, maxItems, comparator, i, depth)
+    nodeInsert(node, aabb, maxItems, comparator, i)
   }
 }
 
