@@ -1,7 +1,12 @@
 import { vec2 } from 'gl-matrix'
 
-import { minBiasAabbContains } from './helpers'
-import { Quadtree } from './Quadtree'
+import { TILE_SIZE } from '~/constants'
+import { Quadtree } from '~/util/quadtree'
+import {
+  minBiasAabbContains,
+  minBiasAabbOverlap,
+} from '~/util/quadtree/helpers'
+import { tileBox } from '~/util/tileMath'
 
 describe('Quadtree', () => {
   test('basic usage', () => {
@@ -101,5 +106,82 @@ describe('Quadtree', () => {
       [6, 7],
     ])
     expect(q8.length).toBe(0)
+  })
+
+  test('complex usage', () => {
+    const entities: { [key: string]: vec2 } = {}
+    const squareDimension = 16
+
+    // Set up QT
+    const origin = vec2.fromValues(
+      -TILE_SIZE * (squareDimension / 2),
+      -TILE_SIZE * (squareDimension / 2),
+    )
+    const qt = new Quadtree<string>({
+      maxItems: 4,
+      aabb: [
+        origin,
+        [TILE_SIZE * (squareDimension / 2), TILE_SIZE * (squareDimension / 2)],
+      ],
+      comparator: (aabb: [vec2, vec2], entityId: string) => {
+        const entityPos = entities[entityId]
+
+        const entityAabb = tileBox(entityPos)
+        return minBiasAabbOverlap(aabb, entityAabb)
+      },
+    })
+
+    // Register one entity per square
+    let id = 0
+    for (let i = 0; i < squareDimension; i++) {
+      for (let j = 0; j < squareDimension; j++) {
+        entities[id.toString()] = vec2.add(
+          vec2.create(),
+          vec2.fromValues(
+            j * TILE_SIZE + TILE_SIZE * 0.5,
+            i * TILE_SIZE + TILE_SIZE * 0.5,
+          ),
+          origin,
+        )
+        qt.insert(id.toString())
+        id++
+      }
+    }
+
+    // Look up tests
+
+    // [0,0] => [3, 1]
+    const res1 = qt.query([
+      origin,
+      vec2.add(
+        vec2.create(),
+        origin,
+        vec2.fromValues(TILE_SIZE * 3, TILE_SIZE),
+      ),
+    ])
+    expect(res1).toEqual(['0', '1', '2'])
+
+    // [1,1] => [4, 4]
+    const res2 = qt.query([
+      vec2.add(vec2.create(), origin, vec2.fromValues(TILE_SIZE, TILE_SIZE)),
+      vec2.add(
+        vec2.create(),
+        origin,
+        vec2.fromValues(TILE_SIZE * 4, TILE_SIZE * 4),
+      ),
+    ])
+    expect(res2).toEqual(
+      expect.arrayContaining([
+        '17',
+        '18',
+        '19',
+        '33',
+        '34',
+        '35',
+        '49',
+        '50',
+        '51',
+      ]),
+    )
   })
 })
