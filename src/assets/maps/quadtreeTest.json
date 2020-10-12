@@ -1,0 +1,30 @@
+{
+  "dimensions": {
+    "0": 8,
+    "1": 8
+  },
+  "origin": {
+    "0": -4,
+    "1": -4
+  },
+  "terrain": [
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2
+  ],
+  "entities": [
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,"PLAYER",null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,"WALL"  ,"WALL"  ,"WALL"  ,"WALL"  ,null    ,null    ,
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    ,
+    null    ,null    ,null    ,null    ,null    ,null    ,null    ,null    
+  ]
+}

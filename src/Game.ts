@@ -15,7 +15,11 @@ export enum GameState {
   LevelComplete,
 }
 
-export const gameProgression = [maps.bigMap, maps.collisionTest]
+export const gameProgression = [
+  maps.quadtreeTest,
+  maps.collisionTest,
+  maps.bigMap,
+]
 
 export const initMap = (
   entityManager: EntityManager,
