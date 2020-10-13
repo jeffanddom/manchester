@@ -4,106 +4,129 @@ import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { DirectionCollision } from '~/interfaces'
 import { SimState } from '~/simulate'
+import { aabbOverlap } from '~/util/math'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
-  for (const id in simState.entityManager.entities) {
-    const e = simState.entityManager.entities[id]
-    if (!e.transform || !e.wallCollider) {
+  for (const playerNumber in simState.entityManager.players) {
+    const playerEntityId = simState.entityManager.players[playerNumber]
+    const player = simState.entityManager.entities[playerEntityId]
+
+    if (!player || !player.transform) {
       continue
     }
 
-    // Get all walls colliding with this entity
-    const myBox = tileBox(e.transform.position)
-    const previousBox = tileBox(e.transform.previousPosition)
-    let collided: [ITransform, DirectionCollision, number][] = []
-    for (const id in simState.entityManager.entities) {
-      const other = simState.entityManager.entities[id]
+    const position = player.transform.position
+    const checkAabb: [vec2, vec2] = [
+      vec2.fromValues(position[0] - TILE_SIZE, position[1] - TILE_SIZE),
+      vec2.fromValues(position[0] + TILE_SIZE, position[1] + TILE_SIZE),
+    ]
+    const queried = simState.entityManager.quadtree.query(checkAabb)
+    const playerBox = tileBox(player.transform.position)
+    const previousPlayerBox = tileBox(player.transform.previousPosition)
+
+    let collisions: {
+      direction: DirectionCollision
+      transform: ITransform
+      value: number
+    }[] = []
+
+    for (const index in queried) {
+      const queriedId = queried[index]
+      const other = simState.entityManager.entities[queriedId]
       if (!other.wall || !other.transform) {
         continue
       }
+
       const otherTransform = other.transform
       const wallBox = tileBox(otherTransform.position)
 
-      if (
-        myBox[0][0] < wallBox[1][0] &&
-        myBox[1][0] > wallBox[0][0] &&
-        myBox[0][1] < wallBox[1][1] &&
-        myBox[1][1] > wallBox[0][1]
-      ) {
+      if (aabbOverlap(playerBox, wallBox)) {
         // North
-        if (previousBox[1][1] < wallBox[0][1] && myBox[1][1] > wallBox[0][1]) {
-          collided.push([
-            otherTransform,
-            DirectionCollision.North,
-            wallBox[0][1],
-          ])
+        if (
+          previousPlayerBox[1][1] <= wallBox[0][1] &&
+          playerBox[1][1] > wallBox[0][1]
+        ) {
+          collisions.push({
+            transform: otherTransform,
+            direction: DirectionCollision.North,
+            value: wallBox[0][1],
+          })
         }
         // South
-        if (previousBox[0][1] > wallBox[1][1] && myBox[0][1] < wallBox[1][1]) {
-          collided.push([
-            otherTransform,
-            DirectionCollision.South,
-            wallBox[1][1],
-          ])
+        if (
+          previousPlayerBox[0][1] >= wallBox[1][1] &&
+          playerBox[0][1] < wallBox[1][1]
+        ) {
+          collisions.push({
+            transform: otherTransform,
+            direction: DirectionCollision.South,
+            value: wallBox[1][1],
+          })
         }
         // East
-        if (previousBox[0][0] > wallBox[1][0] && myBox[0][0] < wallBox[1][0]) {
-          collided.push([
-            otherTransform,
-            DirectionCollision.East,
-            wallBox[1][0],
-          ])
+        if (
+          previousPlayerBox[0][0] >= wallBox[1][0] &&
+          playerBox[0][0] < wallBox[1][0]
+        ) {
+          collisions.push({
+            transform: otherTransform,
+            direction: DirectionCollision.East,
+            value: wallBox[1][0],
+          })
         }
         // West
-        if (previousBox[1][0] < wallBox[0][0] && myBox[1][0] > wallBox[0][0]) {
-          collided.push([
-            otherTransform,
-            DirectionCollision.West,
-            wallBox[0][0],
-          ])
+        if (
+          previousPlayerBox[1][0] <= wallBox[0][0] &&
+          playerBox[1][0] > wallBox[0][0]
+        ) {
+          collisions.push({
+            transform: otherTransform,
+            direction: DirectionCollision.West,
+            value: wallBox[0][0],
+          })
         }
       }
     }
 
-    collided = collided.filter((collision) => {
-      const wallTransform = collision[0]
-      const direction = collision[1]
+    collisions = collisions.filter((collision) => {
+      const wallTransform = collision.transform
+      const direction = collision.direction
       const coords = tileCoords(wallTransform.position)
 
       switch (direction) {
         case DirectionCollision.North:
           return (
-            collided.find((c) =>
+            collisions.find((c) =>
               vec2.equals(
-                tileCoords(c[0].position),
+                tileCoords(c.transform.position),
                 vec2.fromValues(coords[0], coords[1] - 1),
               ),
             ) === undefined
           )
         case DirectionCollision.South:
           return (
-            collided.find((c) =>
+            collisions.find((c) =>
               vec2.equals(
-                tileCoords(c[0].position),
+                tileCoords(c.transform.position),
                 vec2.fromValues(coords[0], coords[1] + 1),
               ),
             ) === undefined
           )
         case DirectionCollision.East:
           return (
-            collided.find((c) =>
+            collisions.find((c) =>
               vec2.equals(
-                tileCoords(c[0].position),
+                tileCoords(c.transform.position),
                 vec2.fromValues(coords[0] + 1, coords[1]),
               ),
             ) === undefined
           )
         case DirectionCollision.West:
           return (
-            collided.find((c) =>
+            collisions.find((c) =>
               vec2.equals(
-                tileCoords(c[0].position),
+                tileCoords(c.transform.position),
                 vec2.fromValues(coords[0] - 1, coords[1]),
               ),
             ) === undefined
@@ -111,16 +134,16 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
       }
     })
 
-    if (collided.length > 0) {
-      simState.entityManager.checkpoint(e.id)
+    if (collisions.length > 0) {
+      simState.entityManager.checkpoint(player.id)
 
       // TypeScript issues a "possibly-undefined" error without this binding. Why?
-      const transform = e.transform
+      const transform = player.transform
 
       // Halt motion for collided edges
-      collided.forEach((collision) => {
-        const direction = collision[1]
-        const value = collision[2]
+      collisions.forEach((collision) => {
+        const direction = collision.direction
+        const value = collision.value
         const offset = TILE_SIZE / 2 + 1 / 1000
         switch (direction) {
           case DirectionCollision.North:
@@ -149,6 +172,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
             break
         }
       })
+      player.transform = transform
     }
   }
 }

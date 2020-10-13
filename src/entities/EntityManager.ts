@@ -16,6 +16,7 @@ export class EntityManager {
   toDelete: string[]
   checkpointedEntities: { [key: string]: Entity }
   uncommitted: Set<string>
+  players: string[]
 
   // To include: walls, trees, turrets
   quadtree: Quadtree<string>
@@ -26,6 +27,7 @@ export class EntityManager {
     this.toDelete = []
     this.checkpointedEntities = {}
     this.uncommitted = new Set()
+    this.players = []
 
     this.quadtree = new Quadtree<string>({
       maxItems: 4,
@@ -84,11 +86,12 @@ export class EntityManager {
   }
 
   getPlayer(playerNumber: number): Entity | null {
-    return (
-      Object.values(this.entities).find(
-        (e) => e.playerNumber === playerNumber,
-      ) || null
-    )
+    return this.entities[this.players[playerNumber]]
+    // return (
+    //   Object.values(this.entities).find(
+    //     (e) => e.playerNumber === playerNumber,
+    //   ) || null
+    // )
   }
 
   register(e: Entity): void {
@@ -101,9 +104,11 @@ export class EntityManager {
     // FIXME: if these items are added during a prediction phase (i.e. a player
     // builds a wall) entities will be added to the quadtree multiple times
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
-      console.log('\n\n----> NEW ENTITY', e.id)
-      console.log(tileBox(e.transform!.position))
       this.quadtree.insert(e.id)
+    }
+
+    if (e.type && e.type === Type.PLAYER) {
+      this.players[e.playerNumber!] = e.id
     }
   }
 

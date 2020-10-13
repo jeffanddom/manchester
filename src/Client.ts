@@ -149,6 +149,7 @@ export class Client {
         vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
       ),
     ])
+
     this.terrainLayer = initMap(this.entityManager, this.map)
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
