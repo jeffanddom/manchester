@@ -25,20 +25,19 @@ export const simulate = (
 
   if (gameState === GameState.Running) {
     systems.tankMover(simState, dt)
-
     // systems.hiding(this)
     // systems.builder(this, this.entityManager, dt)
-    // systems.shooter(simState)
+    systems.shooter(simState)
     // systems.turret(this, dt)
   }
 
-  // systems.bullet(simState, dt)
+  systems.bullet(simState, dt)
   // systems.pickups(this, this.entityManager)
   systems.wallCollider(simState)
-  // systems.attack(simState)
+  systems.attack(simState)
   systems.playfieldClamping(simState)
 
-  // systems.damageable(simState)
+  systems.damageable(simState)
 
   // TODO: need mechanism to sync state with client
   // if (this.state === GameState.YouDied) {
