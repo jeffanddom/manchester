@@ -7,9 +7,7 @@ import { Entity } from '~/entities/Entity'
 import { EntityManager } from '~/entities/EntityManager'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
-import { Game } from '~/Game'
 import { pathfind } from '~/map/PathFinder'
-import { Primitive, Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
@@ -57,16 +55,12 @@ export class BuilderComponent {
   }
 }
 
-export const update = (
-  g: Game,
-  entityManager: EntityManager,
-  dt: number,
-): void => {
-  spawnBuilders(g, entityManager)
-  updateBuilders(g, entityManager, dt)
+export const update = (entityManager: EntityManager, dt: number): void => {
+  spawnBuilders(entityManager)
+  updateBuilders(entityManager, dt)
 }
 
-const spawnBuilders = (g: Game, entityManager: EntityManager): void => {
+const spawnBuilders = (entityManager: EntityManager): void => {
   for (const id in entityManager.entities) {
     const e = entityManager.entities[id]
     if (!e.transform || !e.builderCreator || !e.builderCreator.nextBuilder) {
@@ -75,7 +69,7 @@ const spawnBuilders = (g: Game, entityManager: EntityManager): void => {
 
     const playerTilePos = tileCoords(e.transform.position)
     const [path, nodes] = pathfind(
-      g,
+      entityManager,
       playerTilePos,
       tileCoords(e.builderCreator.nextBuilder.dest),
     )
@@ -83,11 +77,10 @@ const spawnBuilders = (g: Game, entityManager: EntityManager): void => {
       continue
     }
 
-    const player = entityManager.getPlayer()!
     const params = {
-      source: vec2.clone(player.transform!.position),
+      source: vec2.clone(e.transform!.position),
       destination: e.builderCreator.nextBuilder.dest,
-      host: player.id,
+      host: id,
       path: path,
     }
 
@@ -102,11 +95,7 @@ const spawnBuilders = (g: Game, entityManager: EntityManager): void => {
 
 const debugPaths: { [key: string]: string[] } = {}
 
-const updateBuilders = (
-  g: Game,
-  entityManager: EntityManager,
-  dt: number,
-): void => {
+const updateBuilders = (entityManager: EntityManager, dt: number): void => {
   const existingBuilders: string[] = []
 
   // destination system
@@ -173,14 +162,14 @@ const updateBuilders = (
       e.builder.state = BuilderState.returnToHost
     }
 
-    const player = entityManager.getPlayer()!
+    const host = entityManager.entities[e.builder.host]
     if (
       e.builder.state == BuilderState.returnToHost &&
-      !vec2.equals(e.builder.target, player.transform!.position)
+      !vec2.equals(e.builder.target, host.transform!.position)
     ) {
-      e.builder.target = vec2.clone(player.transform!.position)
+      e.builder.target = vec2.clone(host.transform!.position)
       const [newPath, newNodes] = pathfind(
-        g,
+        entityManager,
         tileCoords(e.transform.position),
         tileCoords(e.builder.target),
       )
@@ -195,7 +184,7 @@ const updateBuilders = (
       e.builder.path.length == 0
     ) {
       if (e.dropType) {
-        player.inventory!.push(e.dropType)
+        host.inventory!.push(e.dropType)
       }
       entityManager.markForDeletion(id)
       continue
@@ -217,30 +206,30 @@ const updateBuilders = (
     vec2.add(e.transform.position, e.transform.position, disp)
   }
 
-  g.debugDraw(() => {
-    const renderables: Renderable[] = []
-    for (const builderId in debugPaths) {
-      if (!existingBuilders.includes(builderId)) {
-        delete debugPaths[builderId]
-        continue
-      }
+  // g.debugDraw(() => {
+  //   const renderables: Renderable[] = []
+  //   for (const builderId in debugPaths) {
+  //     if (!existingBuilders.includes(builderId)) {
+  //       delete debugPaths[builderId]
+  //       continue
+  //     }
 
-      const builderNodes = debugPaths[builderId]
+  //     const builderNodes = debugPaths[builderId]
 
-      for (const key of builderNodes) {
-        const [x, y] = key
-          .split(':')
-          .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
+  //     for (const key of builderNodes) {
+  //       const [x, y] = key
+  //         .split(':')
+  //         .map((v) => parseFloat(v) * TILE_SIZE + TILE_SIZE / 2)
 
-        renderables.push({
-          primitive: Primitive.CIRCLE,
-          fillStyle: 'rgba(128,128,128,0.45)',
-          pos: vec2.fromValues(x, y),
-          radius: TILE_SIZE / 8,
-        })
-      }
-    }
+  //       renderables.push({
+  //         primitive: Primitive.CIRCLE,
+  //         fillStyle: 'rgba(128,128,128,0.45)',
+  //         pos: vec2.fromValues(x, y),
+  //         radius: TILE_SIZE / 8,
+  //       })
+  //     }
+  //   }
 
-    return renderables
-  })
+  //   return renderables
+  // })
 }

@@ -1,15 +1,15 @@
 import { Team } from '~/components/team'
-import { Game } from '~/Game'
+import { EntityManager } from '~/entities/EntityManager'
 import { aabbOverlapArea } from '~/util/math'
 
 const REQUIRED_OVERLAP = 0.5
 
-export const update = (g: Game): void => {
-  const obscurings = Object.values(g.server.entityManager.entities).filter(
+export const update = (entityManager: EntityManager): void => {
+  const obscurings = Object.values(entityManager.entities).filter(
     (e) => e.hitbox && e.obscuring,
   )
 
-  const hideables = Object.values(g.server.entityManager.entities).filter(
+  const hideables = Object.values(entityManager.entities).filter(
     (e) => !!e.transform && !!e.hitbox && e.team === Team.Friendly,
   )
 

@@ -1,7 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { Client } from '~/Client'
 import { TILE_SIZE } from '~/constants'
-import { Client } from '~/Game'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Primitive } from '~/renderer/interfaces'
@@ -9,7 +9,7 @@ import { CursorMode } from '~/systems/client/playerInput'
 import { tileCoords, tileToWorld } from '~/util/tileMath'
 
 export const update = (c: Client): void => {
-  const mousePos = c.mouse.getPos()
+  const mousePos = c.mouse!.getPos()
   if (mousePos) {
     const mouseWorldPos = c.camera.viewToWorldspace(mousePos)
 

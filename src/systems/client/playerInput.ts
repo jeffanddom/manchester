@@ -1,10 +1,7 @@
 import { Client } from '~/Client'
-import { EntityManager } from '~/entities/EntityManager'
 import { DirectionMove } from '~/interfaces'
 import { MouseButton } from '~/Mouse'
 import { ClientMessageType } from '~/network/ClientMessage'
-import { BuilderMode } from '~/systems/builder'
-import { PickupType } from '~/systems/pickups'
 
 export const keyMap = {
   moveUp: 87, // W

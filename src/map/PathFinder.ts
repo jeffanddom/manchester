@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Game } from '~/Game'
+import { EntityManager } from '~/entities/EntityManager'
 import { PriorityQueue } from '~/util/PriorityQueue'
 import { tileCoords } from '~/util/tileMath'
 
@@ -18,13 +18,13 @@ const vecToPos = (v: vec2): string => {
 const MAX_PATH_LENGTH = 100
 
 export const pathfind = (
-  g: Game,
+  entityManager: EntityManager,
   from: vec2,
   to: vec2,
 ): [vec2[] | null, string[]] => {
   // Generate fresh node mapping
   const nodes: { [key: string]: Node } = {}
-  const walls = Object.values(g.server.entityManager.entities)
+  const walls = Object.values(entityManager.entities)
     .filter((other) => other.wall)
     .filter(
       (other) =>

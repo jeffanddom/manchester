@@ -1,12 +1,12 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { Client } from '~/Client'
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
 import { PickupModels } from '~/entities/pickup'
-import { Game } from '~/Game'
 import { Primitive } from '~/renderer/interfaces'
 
-export const update = (g: Game, player: Entity): void => {
+export const update = (c: Client, player: Entity): void => {
   if (!player) {
     return
   }
@@ -17,7 +17,7 @@ export const update = (g: Game, player: Entity): void => {
   player.inventory!.forEach((pickup) => {
     const model = PickupModels[pickup][0]
 
-    g.client.renderer.render({
+    c.renderer.render({
       primitive: Primitive.PATH,
       mwTransform: mat2d.translate(
         mat2d.create(),

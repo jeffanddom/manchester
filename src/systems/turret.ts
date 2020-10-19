@@ -3,9 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { Game } from '~/Game'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Primitive } from '~/renderer/interfaces'
+import { EntityManager } from '~/entities/EntityManager'
 import { segmentToAabb } from '~/util/collision'
 import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 
@@ -21,16 +19,16 @@ export class TurretComponent {
   }
 }
 
-export const update = (g: Game, dt: number): void => {
-  for (const id in g.server.entityManager.entities) {
-    const e = g.server.entityManager.entities[id]
+export const update = (entityManager: EntityManager, dt: number): void => {
+  for (const id in entityManager.entities) {
+    const e = entityManager.entities[id]
     if (!e.turret) {
       continue
     }
 
     // I. Find a target
 
-    const shootables = Object.values(g.server.entityManager.entities)
+    const shootables = Object.values(entityManager.entities)
       .filter(
         (other) =>
           !!other.transform &&
@@ -78,15 +76,15 @@ export const update = (g: Game, dt: number): void => {
       continue
     }
 
-    g.debugDraw(() => [
-      {
-        primitive: Primitive.LINE,
-        width: 1,
-        style: 'purple',
-        from: e.transform!.position,
-        to: target.transform!.position,
-      },
-    ])
+    // g.debugDraw(() => [
+    //   {
+    //     primitive: Primitive.LINE,
+    //     width: 1,
+    //     style: 'purple',
+    //     from: e.transform!.position,
+    //     to: target.transform!.position,
+    //   },
+    // ])
 
     // II. Move toward target
 
@@ -112,7 +110,7 @@ export const update = (g: Game, dt: number): void => {
       TILE_SIZE * 0.25,
     )
 
-    g.server.entityManager.register(
+    entityManager.register(
       makeBullet({
         position: bulletPos,
         orientation: e.transform!.orientation,
@@ -120,17 +118,17 @@ export const update = (g: Game, dt: number): void => {
       }),
     )
 
-    const muzzleFlash = new ParticleEmitter({
-      spawnTtl: 0.1,
-      position: bulletPos,
-      particleTtl: 0.065,
-      particleRadius: 3,
-      particleRate: 240,
-      particleSpeedRange: [120, 280],
-      orientation: e.transform!.orientation,
-      arc: Math.PI / 4,
-      colors: ['#FF9933', '#CCC', '#FFF'],
-    })
-    g.client.emitters.push(muzzleFlash)
+    // const muzzleFlash = new ParticleEmitter({
+    //   spawnTtl: 0.1,
+    //   position: bulletPos,
+    //   particleTtl: 0.065,
+    //   particleRadius: 3,
+    //   particleRate: 240,
+    //   particleSpeedRange: [120, 280],
+    //   orientation: e.transform!.orientation,
+    //   arc: Math.PI / 4,
+    //   colors: ['#FF9933', '#CCC', '#FFF'],
+    // })
+    // g.client.emitters.push(muzzleFlash)
   }
 }
