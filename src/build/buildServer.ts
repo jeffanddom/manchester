@@ -20,9 +20,9 @@ console.log('Creating bundle...')
 
 // Write build key
 const buildkey = getMtimeMs(gameSrcPath).toString()
-console.log(`buildkey: ${buildkey}`)
-
-fs.writeFileSync(buildkeyPath, `export const buildkey = '${buildkey}'\n`)
+fs.mkdirSync(path.normalize(path.join(buildkeyPath, '..')), { recursive: true })
+fs.writeFileSync(buildkeyPath, buildkey)
+console.log(`buildkey '${buildkey}' written to ${buildkeyPath}`)
 
 const bundler = new Bundler(path.join(gameSrcPath, 'serverMain.ts'), {
   target: 'node',

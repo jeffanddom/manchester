@@ -86,7 +86,7 @@ const rebuild = async () => {
 
 let debounce = false
 const ignore = new Set([
-  'build/buildkey.ts', // this file is modified by the build process itself
+  'build/buildkey', // this file is modified by the build process itself
 ])
 fs.watch(gameSrcPath, { recursive: true }, (_event, filename) => {
   if (ignore.has(filename)) {
