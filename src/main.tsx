@@ -1,12 +1,9 @@
 import { vec2 } from 'gl-matrix'
 
-import * as clientHotReload from './build/clientHotReload'
-import { createServerConnectionWs } from './network/ServerConnection'
-
 import { Client } from '~/Client'
-import { SIMULATION_PERIOD_S } from '~/constants'
 import { Keyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
+import { createServerConnectionWs } from '~/network/ServerConnection'
 
 declare global {
   interface Window {
