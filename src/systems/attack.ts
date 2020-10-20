@@ -18,7 +18,7 @@ export const update = (
   for (const index in damagers) {
     const d = damagers[index]
     const attackerAabb = d.damager!.aabb(d.transform!)
-    const damageableIds = simState.entityManager.quadtree.query(attackerAabb)
+    const damageableIds = simState.entityManager.query(attackerAabb)
 
     let hit: Entity | null = null
     if (damageableIds) {
@@ -28,7 +28,10 @@ export const update = (
         return (
           d.id !== damageableId &&
           !d.damager!.immuneList.includes(damageableId) &&
-          aabbOverlap(damageable.damageable!.aabb(d.transform!), attackerAabb)
+          aabbOverlap(
+            damageable.damageable!.aabb(damageable.transform!),
+            attackerAabb,
+          )
         )
       })
 

@@ -9,6 +9,11 @@ import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { tileBox } from '~/util/tileMath'
 
+type QuadtreeEntity = {
+  id: string
+  aabb: [vec2, vec2]
+}
+
 export class EntityManager {
   nextEntityId: number
   entities: { [key: string]: Entity } // array of structures -> structure of arrays
@@ -19,7 +24,7 @@ export class EntityManager {
   players: string[]
 
   // To include: walls, trees, turrets
-  quadtree: Quadtree<string>
+  quadtree: Quadtree<QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
@@ -29,17 +34,11 @@ export class EntityManager {
     this.uncommitted = new Set()
     this.players = []
 
-    this.quadtree = new Quadtree<string>({
+    this.quadtree = new Quadtree<QuadtreeEntity>({
       maxItems: 4,
       aabb: playfieldAabb,
-      comparator: (aabb: [vec2, vec2], entityId: string) => {
-        const entity = this.entities[entityId]
-        if (!entity || !entity.transform) {
-          return false
-        }
-
-        const entityAabb = tileBox(entity.transform.position)
-        return minBiasAabbOverlap(aabb, entityAabb)
+      comparator: (aabb: [vec2, vec2], e: QuadtreeEntity) => {
+        return minBiasAabbOverlap(aabb, e.aabb)
       },
     })
   }
@@ -69,6 +68,13 @@ export class EntityManager {
   }
 
   clearCheckpoint(): void {
+    this.uncommitted.forEach((u) => this.commitToSpatialIndex(u))
+    for (const maybeDeletedId in Object.keys(this.checkpointedEntities)) {
+      if (this.entities[maybeDeletedId] === undefined) {
+        this.removeFromSpatialIndex(this.checkpointedEntities[maybeDeletedId])
+      }
+    }
+
     this.uncommitted = new Set()
     this.checkpointedEntities = {}
   }
@@ -87,11 +93,6 @@ export class EntityManager {
 
   getPlayer(playerNumber: number): Entity | null {
     return this.entities[this.players[playerNumber]]
-    // return (
-    //   Object.values(this.entities).find(
-    //     (e) => e.playerNumber === playerNumber,
-    //   ) || null
-    // )
   }
 
   register(e: Entity): void {
@@ -99,13 +100,6 @@ export class EntityManager {
     this.nextEntityId++
     this.entities[e.id] = e
     this.uncommitted.add(e.id)
-
-    // Add to quadtree
-    // FIXME: if these items are added during a prediction phase (i.e. a player
-    // builds a wall) entities will be added to the quadtree multiple times
-    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
-      this.quadtree.insert(e.id)
-    }
 
     if (e.type && e.type === Type.PLAYER) {
       this.players[e.playerNumber!] = e.id
@@ -115,5 +109,40 @@ export class EntityManager {
   markForDeletion(id: string): void {
     this.checkpoint(id)
     this.toDelete.push(id)
+  }
+
+  // Broadphase Collision Detection
+  // add
+  //   if it's committed, put in quadtree
+  //   if it's predicted, put in prediction bucket
+  // remove
+  //   remove committed from quadtree
+  //   keep track of upcoming deletions as prediction
+
+  query(aabb: [vec2, vec2]): string[] {
+    // Return known tile-aligned entities
+    const quadtreeResults = this.quadtree.query(aabb).map((r) => r.id)
+
+    // Add all players
+    quadtreeResults.push(...Object.values(this.players))
+
+    return quadtreeResults.sort()
+  }
+
+  commitToSpatialIndex(id: string): void {
+    const e = this.entities[id]
+    if (!e || !e.transform) {
+      return
+    }
+
+    const entityAabb = tileBox(e.transform.position)
+
+    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
+      this.quadtree.insert({ aabb: entityAabb, id: e.id })
+    }
+  }
+
+  removeFromSpatialIndex(e: Entity): void {
+    this.quadtree.remove(e.id)
   }
 }

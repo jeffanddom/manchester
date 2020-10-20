@@ -21,7 +21,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
       vec2.fromValues(position[0] - TILE_SIZE, position[1] - TILE_SIZE),
       vec2.fromValues(position[0] + TILE_SIZE, position[1] + TILE_SIZE),
     ]
-    const queried = simState.entityManager.quadtree.query(checkAabb)
+    const queried = simState.entityManager.query(checkAabb)
     const playerBox = tileBox(player.transform.position)
     const previousPlayerBox = tileBox(player.transform.previousPosition)
 

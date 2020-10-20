@@ -2,6 +2,10 @@ import { vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '../math'
 
+export interface QuadtreeItem {
+  id: string
+}
+
 export type Comparator<T> = (aabb: [vec2, vec2], item: T) => boolean
 
 export enum Quadrant {
@@ -14,6 +18,7 @@ export enum Quadrant {
 export type ChildList<T> = [TNode<T>, TNode<T>, TNode<T>, TNode<T>]
 
 export type TNode<T> = {
+  // parent?: TNode<T>
   children?: ChildList<T>
   items?: T[]
 }
@@ -83,8 +88,9 @@ export const quadrantOfAabb = (
   }
 }
 
-export const nodeInsert = <T>(
+export const nodeInsert = <T extends QuadtreeItem>(
   node: TNode<T>,
+  idMap: { [key: string]: TNode<T>[] },
   aabb: [vec2, vec2],
   maxItems: number,
   comparator: Comparator<T>,
@@ -95,39 +101,24 @@ export const nodeInsert = <T>(
   }
 
   if (node.children) {
-    nodeInsert(
-      node.children[Quadrant.NW],
-      quadrantOfAabb(aabb, Quadrant.NW),
-      maxItems,
-      comparator,
-      item,
-    )
-    nodeInsert(
-      node.children[Quadrant.NE],
-      quadrantOfAabb(aabb, Quadrant.NE),
-      maxItems,
-      comparator,
-      item,
-    )
-    nodeInsert(
-      node.children[Quadrant.SE],
-      quadrantOfAabb(aabb, Quadrant.SE),
-      maxItems,
-      comparator,
-      item,
-    )
-    nodeInsert(
-      node.children[Quadrant.SW],
-      quadrantOfAabb(aabb, Quadrant.SW),
-      maxItems,
-      comparator,
-      item,
-    )
+    for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
+      nodeInsert(
+        node.children[q],
+        idMap,
+        quadrantOfAabb(aabb, q),
+        maxItems,
+        comparator,
+        item,
+      )
+    }
     return
   }
 
   const items = node.items!
   items.push(item)
+  idMap[item.id] = idMap[item.id] || []
+  idMap[item.id].push(node)
+
   if (items.length <= maxItems) {
     return
   }
@@ -136,7 +127,10 @@ export const nodeInsert = <T>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    nodeInsert(node, aabb, maxItems, comparator, i)
+    const toRemove = idMap[item.id].indexOf(node)
+    idMap[item.id].splice(toRemove, 1)
+
+    nodeInsert(node, idMap, aabb, maxItems, comparator, i)
   }
 }
 
