@@ -34,7 +34,11 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     for (const index in queried) {
       const queriedId = queried[index]
       const other = simState.entityManager.entities[queriedId]
-      if (!other.wall || !other.transform) {
+      if (
+        !other || // query includes deleted entities
+        !other.wall || // query includes non-walls
+        !other.transform
+      ) {
         continue
       }
 

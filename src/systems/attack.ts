@@ -23,15 +23,14 @@ export const update = (
     let hit: Entity | null = null
     if (damageableIds) {
       const hitId = damageableIds.find((damageableId: string) => {
-        const damageable = simState.entityManager.entities[damageableId]
+        const other = simState.entityManager.entities[damageableId]
 
         return (
           d.id !== damageableId &&
           !d.damager!.immuneList.includes(damageableId) &&
-          aabbOverlap(
-            damageable.damageable!.aabb(damageable.transform!),
-            attackerAabb,
-          )
+          other && // query includes deleted entities
+          other.damageable && // query includes non-damageables
+          aabbOverlap(other.damageable.aabb(other.transform!), attackerAabb)
         )
       })
 
