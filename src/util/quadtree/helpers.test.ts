@@ -14,6 +14,15 @@ import {
   quadrantOfAabb,
 } from './helpers'
 
+type TestItem = {
+  id: string
+  pos: vec2
+}
+
+const testComparator = (aabb: [vec2, vec2], item: TestItem): boolean => {
+  return minBiasAabbContains(aabb, item.pos)
+}
+
 test('quadrantOfAabb', () => {
   const aabb: [vec2, vec2] = [vec2.fromValues(0, 0), vec2.fromValues(2, 2)]
 
@@ -165,63 +174,78 @@ describe('minBiasAabbOverlap', () => {
 
 describe('nodeInsert', () => {
   test('insert attempt into non-enclosing node', () => {
-    const node = emptyNode<vec2>()
+    const node = emptyNode<TestItem>()
+    const idMap: Record<string, TNode<TestItem>[]> = {}
     nodeInsert(
       node,
+      idMap,
       [
         [0, 1],
         [1, 2],
       ],
       1,
-      minBiasAabbContains,
-      [-1, 0],
+      testComparator,
+      {
+        id: 'a',
+        pos: [-1, 0],
+      },
     )
+
     expect(node.items!.length).toBe(0)
+
+    expect(idMap).not.toHaveProperty('a')
   })
 
   test('insert into node with spare capacity', () => {
-    const node = emptyNode<vec2>()
-    const item = vec2.fromValues(0, 1)
+    const node = emptyNode<TestItem>()
+    const idMap: Record<string, TNode<TestItem>[]> = {}
+    const item = { id: 'a', pos: vec2.fromValues(0, 1) }
     nodeInsert(
       node,
+      idMap,
       [
         [0, 1],
         [1, 2],
       ],
       1,
-      minBiasAabbContains,
+      testComparator,
       item,
     )
+
     expect(node.items!.length).toBe(1)
     expect(node.items![0]).toBe(item)
+
+    expect(idMap).toHaveProperty('a')
   })
 
   test('insert into intermediate node', () => {
-    const children: ChildList<vec2> = [
+    const children: ChildList<TestItem> = [
       emptyNode(),
       emptyNode(),
       emptyNode(),
       emptyNode(),
     ]
 
-    const node: TNode<vec2> = { children }
+    const node: TNode<TestItem> = { children }
+    const idMap: Record<string, TNode<TestItem>[]> = {}
 
-    const items: vec2[] = [
-      [0, 1],
-      [1, 1],
-      [1, 2],
-      [0, 2],
+    const items: TestItem[] = [
+      { id: 'a', pos: vec2.fromValues(0, 1) },
+      { id: 'b', pos: vec2.fromValues(1, 1) },
+      { id: 'c', pos: vec2.fromValues(1, 2) },
+      { id: 'd', pos: vec2.fromValues(0, 2) },
     ]
 
     for (const i of items) {
       nodeInsert(
         node,
+        idMap,
         [
           [0, 1],
           [2, 3],
         ],
         1,
-        minBiasAabbContains,
+        testComparator,
         i,
       )
     }
@@ -235,26 +259,33 @@ describe('nodeInsert', () => {
     expect(node.children![Quadrant.SE].items![0]).toBe(items[Quadrant.SE])
     expect(node.children![Quadrant.SW].items!.length).toBe(1)
     expect(node.children![Quadrant.SW].items![0]).toBe(items[Quadrant.SW])
+
+    expect(idMap).toHaveProperty('a')
+    expect(idMap).toHaveProperty('b')
+    expect(idMap).toHaveProperty('c')
+    expect(idMap).toHaveProperty('d')
   })
 
   test('insert into node at capacity', () => {
-    const items: vec2[] = [
-      [0.5, 1.5],
-      [1.5, 1.5],
-      [1.5, 2.5],
-      [0.5, 2.5],
+    const items: TestItem[] = [
+      { id: 'a', pos: vec2.fromValues(0.5, 1.5) },
+      { id: 'b', pos: vec2.fromValues(1.5, 1.5) },
+      { id: 'c', pos: vec2.fromValues(1.5, 2.5) },
+      { id: 'd', pos: vec2.fromValues(0.5, 2.5) },
     ]
 
-    const node: TNode<vec2> = { items: [items[0], items[1], items[2]] }
+    const node: TNode<TestItem> = { items: [items[0], items[1], items[2]] }
+    const idMap: Record<string, TNode<TestItem>[]> = {}
 
     nodeInsert(
       node,
+      idMap,
       [
         [0, 1],
         [2, 3],
       ],
       3,
-      minBiasAabbContains,
+      testComparator,
       items[3],
     )
 
@@ -269,6 +300,11 @@ describe('nodeInsert', () => {
     expect(node.children![Quadrant.SE].items![0]).toBe(items[2])
     expect(node.children![Quadrant.SW].items!.length).toBe(1)
     expect(node.children![Quadrant.SW].items![0]).toBe(items[3])
+
+    expect(idMap).toHaveProperty('a')
+    expect(idMap).toHaveProperty('b')
+    expect(idMap).toHaveProperty('c')
+    expect(idMap).toHaveProperty('d')
   })
 })
 

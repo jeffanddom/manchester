@@ -8,26 +8,35 @@ import {
 } from '~/util/quadtree/helpers'
 import { tileBox } from '~/util/tileMath'
 
+type TestItem = {
+  id: string
+  pos: vec2
+}
+
+const testComparator = (aabb: [vec2, vec2], item: TestItem): boolean => {
+  return minBiasAabbContains(aabb, item.pos)
+}
+
 describe('Quadtree', () => {
   test('basic usage', () => {
-    const items: vec2[] = [
-      [0.5, 1.5],
-      [1.5, 1.5],
-      [0.5, 2.5],
-      [1.5, 2.5],
-      [3.5, 1.5],
-      [3.5, 2.5],
-      [1, 4],
-      [3, 4],
+    const items: TestItem[] = [
+      { id: 'a', pos: vec2.fromValues(0.5, 1.5) },
+      { id: 'a', pos: vec2.fromValues(1.5, 1.5) },
+      { id: 'a', pos: vec2.fromValues(0.5, 2.5) },
+      { id: 'a', pos: vec2.fromValues(1.5, 2.5) },
+      { id: 'a', pos: vec2.fromValues(3.5, 1.5) },
+      { id: 'a', pos: vec2.fromValues(3.5, 2.5) },
+      { id: 'a', pos: vec2.fromValues(1, 4) },
+      { id: 'a', pos: vec2.fromValues(3, 4) },
     ]
 
-    const qt = new Quadtree<vec2>({
+    const qt = new Quadtree<TestItem>({
       maxItems: 2,
       aabb: [
         [0, 1],
         [4, 5],
       ],
-      comparator: minBiasAabbContains,
+      comparator: testComparator,
     })
 
     for (const i of items) {
@@ -117,15 +126,14 @@ describe('Quadtree', () => {
       -TILE_SIZE * (squareDimension / 2),
       -TILE_SIZE * (squareDimension / 2),
     )
-    const qt = new Quadtree<string>({
+    const qt = new Quadtree<{ id: string }>({
       maxItems: 4,
       aabb: [
         origin,
         [TILE_SIZE * (squareDimension / 2), TILE_SIZE * (squareDimension / 2)],
       ],
-      comparator: (aabb: [vec2, vec2], entityId: string) => {
-        const entityPos = entities[entityId]
-
+      comparator: (aabb: [vec2, vec2], item: { id: string }) => {
+        const entityPos = entities[item.id]
         const entityAabb = tileBox(entityPos)
         return minBiasAabbOverlap(aabb, entityAabb)
       },
@@ -143,7 +151,7 @@ describe('Quadtree', () => {
           ),
           origin,
         )
-        qt.insert(id.toString())
+        qt.insert({ id: id.toString() })
         id++
       }
     }
@@ -159,7 +167,7 @@ describe('Quadtree', () => {
         vec2.fromValues(TILE_SIZE * 3, TILE_SIZE),
       ),
     ])
-    expect(res1).toEqual(['0', '1', '2'])
+    expect(res1).toEqual([{ id: '0' }, { id: '1' }, { id: '2' }])
 
     // [1,1] => [4, 4]
     const res2 = qt.query([
@@ -172,15 +180,15 @@ describe('Quadtree', () => {
     ])
     expect(res2).toEqual(
       expect.arrayContaining([
-        '17',
-        '18',
-        '19',
-        '33',
-        '34',
-        '35',
-        '49',
-        '50',
-        '51',
+        { id: '17' },
+        { id: '18' },
+        { id: '19' },
+        { id: '33' },
+        { id: '34' },
+        { id: '35' },
+        { id: '49' },
+        { id: '50' },
+        { id: '51' },
       ]),
     )
   })
