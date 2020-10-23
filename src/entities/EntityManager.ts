@@ -20,7 +20,8 @@ export class EntityManager {
 
   toDelete: string[]
   checkpointedEntities: { [key: string]: Entity }
-  uncommitted: Set<string>
+  predictedRegistrations: Set<string>
+  predictedDeletes: Set<string>
   players: string[]
 
   // To include: walls, trees, turrets
@@ -31,7 +32,8 @@ export class EntityManager {
     this.entities = {}
     this.toDelete = []
     this.checkpointedEntities = {}
-    this.uncommitted = new Set()
+    this.predictedRegistrations = new Set()
+    this.predictedDeletes = new Set()
     this.players = []
 
     this.quadtree = new Quadtree<QuadtreeEntity>({
@@ -44,8 +46,13 @@ export class EntityManager {
   }
 
   update(): void {
-    this.toDelete.forEach((id) => delete this.entities[id])
+    this.toDelete.forEach((id) => {
+      this.predictedDeletes.add(id)
+      delete this.entities[id]
+    })
     this.toDelete = []
+
+    // TODO: clean up this.players
   }
 
   checkpoint(id: string): void {
@@ -59,31 +66,30 @@ export class EntityManager {
     for (const id of Object.keys(this.checkpointedEntities)) {
       this.entities[id] = this.checkpointedEntities[id]
     }
+    this.predictedDeletes = new Set()
+    this.checkpointedEntities = {}
 
-    this.nextEntityId -= this.uncommitted.size
-    this.uncommitted.forEach((id) => delete this.entities[id])
+    this.predictedRegistrations.forEach((id) => delete this.entities[id])
+    this.nextEntityId -= this.predictedRegistrations.size
+    this.predictedRegistrations = new Set()
+  }
 
-    this.uncommitted = new Set()
+  commitState(): void {
+    this.predictedRegistrations.forEach((id) => this.commitToSpatialIndex(id))
+    this.predictedRegistrations = new Set()
+
+    this.predictedDeletes.forEach((id) => this.removeFromSpatialIndex(id))
+    this.predictedDeletes = new Set()
+
     this.checkpointedEntities = {}
   }
 
-  clearCheckpoint(): void {
-    this.uncommitted.forEach((u) => this.commitToSpatialIndex(u))
-    for (const maybeDeletedId in Object.keys(this.checkpointedEntities)) {
-      if (this.entities[maybeDeletedId] === undefined) {
-        this.removeFromSpatialIndex(this.checkpointedEntities[maybeDeletedId])
-      }
-    }
-
-    this.uncommitted = new Set()
-    this.checkpointedEntities = {}
-  }
-
-  getRenderables(): Renderable[] {
+  getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
-    for (const id in this.entities) {
+    console.log(Object.keys(this.entities).length)
+    for (const id of this.query(aabb)) {
       const e = this.entities[id]
-      if (e.renderable === undefined) {
+      if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
         continue
       }
       renderables.push(...e.renderable.getRenderables(e))
@@ -91,7 +97,7 @@ export class EntityManager {
     return renderables
   }
 
-  getPlayer(playerNumber: number): Entity | null {
+  getPlayer(playerNumber: number): Entity | undefined {
     return this.entities[this.players[playerNumber]]
   }
 
@@ -99,7 +105,7 @@ export class EntityManager {
     e.id = this.nextEntityId.toString()
     this.nextEntityId++
     this.entities[e.id] = e
-    this.uncommitted.add(e.id)
+    this.predictedRegistrations.add(e.id)
 
     if (e.type && e.type === Type.PLAYER) {
       this.players[e.playerNumber!] = e.id
@@ -120,13 +126,23 @@ export class EntityManager {
   //   keep track of upcoming deletions as prediction
 
   query(aabb: [vec2, vec2]): string[] {
-    // Return known tile-aligned entities
-    const quadtreeResults = this.quadtree.query(aabb).map((r) => r.id)
+    // Start with known non-moving entities
+    const results = new Set(this.quadtree.query(aabb).map((r) => r.id))
 
-    // Add all players
-    quadtreeResults.push(...Object.values(this.players))
+    // Add all known moving entities
+    // TODO - for now, it's just players
+    for (const id of this.players) {
+      results.add(id)
+    }
 
-    return quadtreeResults.sort()
+    // TODO: maybe add predicted registrations
+
+    // Remove predicted deletions
+    for (const id of this.predictedDeletes) {
+      results.delete(id)
+    }
+
+    return Array.from(results).sort()
   }
 
   commitToSpatialIndex(id: string): void {
@@ -142,7 +158,7 @@ export class EntityManager {
     }
   }
 
-  removeFromSpatialIndex(e: Entity): void {
-    this.quadtree.remove(e.id)
+  removeFromSpatialIndex(id: string): void {
+    this.quadtree.remove(id)
   }
 }

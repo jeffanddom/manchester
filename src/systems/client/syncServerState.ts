@@ -31,7 +31,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
     c.committedFrame = frameMessage.frame
   })
 
-  c.entityManager.clearCheckpoint()
+  c.entityManager.commitState()
 
   c.localMessageHistory = c.localMessageHistory.filter(
     (m) => m.frame > c.committedFrame,

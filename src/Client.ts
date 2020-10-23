@@ -306,7 +306,9 @@ export class Client {
     this.terrainLayer
       .getRenderables(this.camera.getVisibleExtents())
       .forEach((r) => this.renderer.render(r))
-    this.entityManager.getRenderables().forEach((r) => this.renderer.render(r))
+    this.entityManager
+      .getRenderables(this.camera.getVisibleExtents())
+      .forEach((r) => this.renderer.render(r))
     this.emitters!.forEach((e) =>
       e.getRenderables().forEach((r) => this.renderer.render(r)),
     )
