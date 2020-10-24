@@ -20,8 +20,7 @@ export class TurretComponent {
 }
 
 export const update = (entityManager: EntityManager, dt: number): void => {
-  for (const id in entityManager.entities) {
-    const e = entityManager.entities[id]
+  for (const [id, e] of entityManager.entities) {
     if (!e.turret) {
       continue
     }

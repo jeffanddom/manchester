@@ -4,6 +4,7 @@ import { Team } from '~/components/team'
 import { TILE_SIZE } from '~/constants'
 import { make } from '~/entities/builder'
 import { Entity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
@@ -38,13 +39,13 @@ export class BuilderComponent {
   mode: BuilderMode
   state: BuilderState
   target: vec2
-  host: string // Entity ID
+  host: EntityId
   path: vec2[]
 
   constructor(params: {
     mode: BuilderMode
     target: vec2
-    host: string
+    host: EntityId
     path: vec2[]
   }) {
     this.mode = params.mode
@@ -61,8 +62,7 @@ export const update = (entityManager: EntityManager, dt: number): void => {
 }
 
 const spawnBuilders = (entityManager: EntityManager): void => {
-  for (const id in entityManager.entities) {
-    const e = entityManager.entities[id]
+  for (const [id, e] of entityManager.entities) {
     if (!e.transform || !e.builderCreator || !e.builderCreator.nextBuilder) {
       continue
     }
@@ -99,8 +99,7 @@ const updateBuilders = (entityManager: EntityManager, dt: number): void => {
   const existingBuilders: string[] = []
 
   // destination system
-  for (const id in entityManager.entities) {
-    const e = entityManager.entities[id]
+  for (const [id, e] of entityManager.entities) {
     if (!e.builder || !e.transform) {
       continue
     }
@@ -162,7 +161,7 @@ const updateBuilders = (entityManager: EntityManager, dt: number): void => {
       e.builder.state = BuilderState.returnToHost
     }
 
-    const host = entityManager.entities[e.builder.host]
+    const host = entityManager.entities.get(e.builder.host)!
     if (
       e.builder.state == BuilderState.returnToHost &&
       !vec2.equals(e.builder.target, host.transform!.position)

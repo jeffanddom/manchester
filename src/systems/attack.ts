@@ -1,5 +1,4 @@
 import { vec2 } from 'gl-matrix'
-import _ from 'lodash'
 
 import { TILE_SIZE } from '~/constants'
 import { Entity } from '~/entities/Entity'
@@ -10,20 +9,22 @@ import { aabbOverlap, radialTranslate2 } from '~/util/math'
 export const update = (
   simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
 ): void => {
-  const damagers: Entity[] = _.filter(
-    simState.entityManager.entities,
-    (e) => e.damager !== undefined,
-  )
+  const damagers: Entity[] = []
+  for (const [, e] of simState.entityManager.entities) {
+    if (e.damager) {
+      damagers.push(e)
+    }
+  }
 
   for (const index in damagers) {
     const d = damagers[index]
     const attackerAabb = d.damager!.aabb(d.transform!)
     const damageableIds = simState.entityManager.query(attackerAabb)
 
-    let hit: Entity | null = null
+    let hit: Entity | undefined
     if (damageableIds) {
-      const hitId = damageableIds.find((damageableId: string) => {
-        const other = simState.entityManager.entities[damageableId]
+      const hitId = damageableIds.find((damageableId) => {
+        const other = simState.entityManager.entities.get(damageableId)
 
         return (
           d.id !== damageableId &&
@@ -35,7 +36,7 @@ export const update = (
       })
 
       if (hitId) {
-        hit = simState.entityManager.entities[hitId]
+        hit = simState.entityManager.entities.get(hitId)
       }
     }
 

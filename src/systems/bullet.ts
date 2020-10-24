@@ -10,13 +10,12 @@ export const update = (
   simState: { entityManager: EntityManager },
   dt: number,
 ): void => {
-  for (const id in simState.entityManager.entities) {
-    const e = simState.entityManager.entities[id]
+  for (const [id, e] of simState.entityManager.entities) {
     if (!e.bullet) {
       continue
     }
 
-    simState.entityManager.checkpoint(e.id)
+    simState.entityManager.checkpoint(id)
 
     radialTranslate2(
       e.transform!.position,

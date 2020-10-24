@@ -4,34 +4,35 @@ import * as _ from 'lodash'
 import { Type } from './types'
 
 import { Entity } from '~/entities/Entity'
+import { EntityId, castToEntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { tileBox } from '~/util/tileMath'
 
 type QuadtreeEntity = {
-  id: string
+  id: EntityId
   aabb: [vec2, vec2]
 }
 
 export class EntityManager {
   nextEntityId: number
-  entities: { [key: string]: Entity } // array of structures -> structure of arrays
+  entities: Map<EntityId, Entity> // array of structures -> structure of arrays
 
-  toDelete: string[]
-  checkpointedEntities: { [key: string]: Entity }
-  predictedRegistrations: Set<string>
-  predictedDeletes: Set<string>
-  players: string[]
+  toDelete: Set<EntityId>
+  checkpointedEntities: Map<EntityId, Entity>
+  predictedRegistrations: Set<EntityId>
+  predictedDeletes: Set<EntityId>
+  players: EntityId[]
 
   // To include: walls, trees, turrets
   quadtree: Quadtree<QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
-    this.entities = {}
-    this.toDelete = []
-    this.checkpointedEntities = {}
+    this.entities = new Map()
+    this.toDelete = new Set()
+    this.checkpointedEntities = new Map()
     this.predictedRegistrations = new Set()
     this.predictedDeletes = new Set()
     this.players = []
@@ -48,28 +49,28 @@ export class EntityManager {
   update(): void {
     this.toDelete.forEach((id) => {
       this.predictedDeletes.add(id)
-      delete this.entities[id]
+      this.entities.delete(id)
     })
-    this.toDelete = []
+    this.toDelete = new Set()
 
     // TODO: clean up this.players
   }
 
-  checkpoint(id: string): void {
-    if (this.checkpointedEntities[id]) {
+  checkpoint(id: EntityId): void {
+    if (this.checkpointedEntities.has(id)) {
       return
     }
-    this.checkpointedEntities[id] = _.cloneDeep(this.entities[id])
+    this.checkpointedEntities.set(id, _.cloneDeep(this.entities.get(id)!))
   }
 
   restoreCheckpoints(): void {
-    for (const id of Object.keys(this.checkpointedEntities)) {
-      this.entities[id] = this.checkpointedEntities[id]
+    for (const [id, entity] of this.checkpointedEntities) {
+      this.entities.set(id, entity)
     }
     this.predictedDeletes = new Set()
-    this.checkpointedEntities = {}
+    this.checkpointedEntities = new Map()
 
-    this.predictedRegistrations.forEach((id) => delete this.entities[id])
+    this.predictedRegistrations.forEach((id) => this.entities.delete(id))
     this.nextEntityId -= this.predictedRegistrations.size
     this.predictedRegistrations = new Set()
   }
@@ -81,14 +82,14 @@ export class EntityManager {
     this.predictedDeletes.forEach((id) => this.removeFromSpatialIndex(id))
     this.predictedDeletes = new Set()
 
-    this.checkpointedEntities = {}
+    this.checkpointedEntities = new Map()
   }
 
   getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
     console.log(Object.keys(this.entities).length)
     for (const id of this.query(aabb)) {
-      const e = this.entities[id]
+      const e = this.entities.get(id)
       if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
         continue
       }
@@ -98,13 +99,13 @@ export class EntityManager {
   }
 
   getPlayer(playerNumber: number): Entity | undefined {
-    return this.entities[this.players[playerNumber]]
+    return this.entities.get(this.players[playerNumber])
   }
 
   register(e: Entity): void {
-    e.id = this.nextEntityId.toString()
+    e.id = castToEntityId(this.nextEntityId.toString())
     this.nextEntityId++
-    this.entities[e.id] = e
+    this.entities.set(e.id, e)
     this.predictedRegistrations.add(e.id)
 
     if (e.type && e.type === Type.PLAYER) {
@@ -112,9 +113,9 @@ export class EntityManager {
     }
   }
 
-  markForDeletion(id: string): void {
+  markForDeletion(id: EntityId): void {
     this.checkpoint(id)
-    this.toDelete.push(id)
+    this.toDelete.add(id)
   }
 
   // Broadphase Collision Detection
@@ -125,9 +126,11 @@ export class EntityManager {
   //   remove committed from quadtree
   //   keep track of upcoming deletions as prediction
 
-  query(aabb: [vec2, vec2]): string[] {
+  query(aabb: [vec2, vec2]): EntityId[] {
     // Start with known non-moving entities
-    const results = new Set(this.quadtree.query(aabb).map((r) => r.id))
+    const results = new Set<EntityId>(
+      this.quadtree.query(aabb).map((r) => r.id),
+    )
 
     // Add all known moving entities
     // TODO - for now, it's just players
@@ -145,8 +148,8 @@ export class EntityManager {
     return Array.from(results).sort()
   }
 
-  commitToSpatialIndex(id: string): void {
-    const e = this.entities[id]
+  commitToSpatialIndex(id: EntityId): void {
+    const e = this.entities.get(id)
     if (!e || !e.transform) {
       return
     }

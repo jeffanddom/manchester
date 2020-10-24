@@ -8,8 +8,7 @@ export enum PickupType {
 export const update = (_entityManager: EntityManager): void => {
   // const player = entityManager.getPlayer()!
   // const playerAabb = player.damageable!.aabb(player.transform!)
-  // for (const id in entityManager.entities) {
-  //   const e = entityManager.entities[id]
+  // for (const [id, e] of entityManager.entities) {
   //   if (e.pickupType === undefined) {
   //     continue
   //   }

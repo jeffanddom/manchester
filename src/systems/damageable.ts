@@ -9,8 +9,7 @@ import { radialTranslate2 } from '~/util/math'
 export const update = (
   simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
 ): void => {
-  for (const id in simState.entityManager.entities) {
-    const e = simState.entityManager.entities[id]
+  for (const [id, e] of simState.entityManager.entities) {
     const transform = e.transform
     const damageable = e.damageable
     if (!transform || !damageable) {

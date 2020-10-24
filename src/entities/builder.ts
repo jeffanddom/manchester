@@ -6,6 +6,7 @@ import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { BuilderComponent, BuilderMode } from '~/systems/builder'
@@ -15,7 +16,7 @@ export const make = (params: {
   source: vec2
   destination: vec2
   mode: BuilderMode
-  host: string
+  host: EntityId
   path: vec2[]
 }): Entity => {
   const e = makeDefaultEntity()

@@ -7,8 +7,7 @@ export const update = (simState: {
   entityManager: EntityManager
   terrainLayer: terrain.Layer
 }): void => {
-  for (const id in simState.entityManager.entities) {
-    const e = simState.entityManager.entities[id]
+  for (const [, e] of simState.entityManager.entities) {
     if (!e.transform || !e.enablePlayfieldClamping) {
       continue
     }

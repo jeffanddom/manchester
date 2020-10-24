@@ -3,8 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { SimState } from '~/simulate'
 
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
-  for (const id in simState.entityManager.entities) {
-    const e = simState.entityManager.entities[id]
+  for (const [id, e] of simState.entityManager.entities) {
     if (!e.transform) {
       continue
     }

@@ -10,9 +10,9 @@ import { tileBox, tileCoords } from '~/util/tileMath'
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
   for (const playerNumber in simState.entityManager.players) {
     const playerEntityId = simState.entityManager.players[playerNumber]
-    const player = simState.entityManager.entities[playerEntityId]
+    const player = simState.entityManager.entities.get(playerEntityId)
 
-    if (!player || !player.transform) {
+    if (!player /* should not be necessary */ || !player.transform) {
       continue
     }
 
@@ -33,9 +33,9 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
 
     for (const index in queried) {
       const queriedId = queried[index]
-      const other = simState.entityManager.entities[queriedId]
+      const other = simState.entityManager.entities.get(queriedId)
       if (
-        !other || // query includes deleted entities
+        !other || // query includes deleted entities (TODO: it shouldn't!)
         !other.wall || // query includes non-walls
         !other.transform
       ) {
