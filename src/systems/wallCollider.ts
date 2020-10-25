@@ -8,11 +8,9 @@ import { aabbOverlap } from '~/util/math'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
-  for (const playerNumber in simState.entityManager.players) {
-    const playerEntityId = simState.entityManager.players[playerNumber]
-    const player = simState.entityManager.entities.get(playerEntityId)
-
-    if (!player /* should not be necessary */ || !player.transform) {
+  for (const [id] of simState.entityManager.players) {
+    const player = simState.entityManager.entities.get(id)
+    if (!player /* TODO: should not be necessary */ || !player.transform) {
       continue
     }
 

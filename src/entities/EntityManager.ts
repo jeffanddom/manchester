@@ -23,7 +23,7 @@ export class EntityManager {
   checkpointedEntities: Map<EntityId, Entity>
   predictedRegistrations: Set<EntityId>
   predictedDeletes: Set<EntityId>
-  players: EntityId[]
+  players: Map<EntityId, number>
 
   // To include: walls, trees, turrets
   quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -35,7 +35,7 @@ export class EntityManager {
     this.checkpointedEntities = new Map()
     this.predictedRegistrations = new Set()
     this.predictedDeletes = new Set()
-    this.players = []
+    this.players = new Map()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -98,7 +98,13 @@ export class EntityManager {
   }
 
   getPlayer(playerNumber: number): Entity | undefined {
-    return this.entities.get(this.players[playerNumber])
+    for (const [id, n] of this.players) {
+      if (n === playerNumber) {
+        return this.entities.get(id)
+      }
+    }
+
+    return undefined
   }
 
   register(e: Entity): void {
@@ -108,7 +114,7 @@ export class EntityManager {
     this.predictedRegistrations.add(e.id)
 
     if (e.type && e.type === Type.PLAYER) {
-      this.players[e.playerNumber!] = e.id
+      this.players.set(e.id, e.playerNumber!)
     }
   }
 
@@ -132,7 +138,7 @@ export class EntityManager {
     )
 
     // Add all known moving entities (which are not yet added to the quadtree)
-    for (const id of this.players) {
+    for (const [id] of this.players) {
       results.add(id)
     }
 
