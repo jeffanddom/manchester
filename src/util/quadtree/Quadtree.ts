@@ -8,17 +8,17 @@ import {
   nodeQuery,
 } from './helpers'
 
-export class Quadtree<TId extends string, T extends QuadtreeItem<TId>> {
+export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   private maxItems: number
   private aabb: [vec2, vec2] // NW and SE extrema
-  private root: TNode<T>
-  private idMap: Map<TId, TNode<T>[]>
-  private comparator: Comparator<T>
+  private root: TNode<TItem>
+  private idMap: Map<TId, TNode<TItem>[]>
+  private comparator: Comparator<TItem>
 
   constructor(config: {
     maxItems: number
     aabb: [vec2, vec2]
-    comparator: Comparator<T>
+    comparator: Comparator<TItem>
   }) {
     this.maxItems = config.maxItems
     this.aabb = config.aabb
@@ -27,7 +27,7 @@ export class Quadtree<TId extends string, T extends QuadtreeItem<TId>> {
     this.comparator = config.comparator
   }
 
-  public insert(item: T): void {
+  public insert(item: TItem): void {
     nodeInsert(
       this.root,
       this.idMap,
@@ -49,7 +49,7 @@ export class Quadtree<TId extends string, T extends QuadtreeItem<TId>> {
     this.idMap.delete(id)
   }
 
-  public query(aabb: [vec2, vec2]): T[] {
+  public query(aabb: [vec2, vec2]): TItem[] {
     return nodeQuery(this.root, this.aabb, this.comparator, aabb)
   }
 }

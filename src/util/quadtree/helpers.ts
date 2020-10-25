@@ -2,11 +2,11 @@ import { vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '../math'
 
-export interface QuadtreeItem<TId extends string> {
+export interface QuadtreeItem<TId> {
   id: TId
 }
 
-export type Comparator<T> = (aabb: [vec2, vec2], item: T) => boolean
+export type Comparator<TItem> = (aabb: [vec2, vec2], item: TItem) => boolean
 
 export enum Quadrant {
   NW,
@@ -15,15 +15,20 @@ export enum Quadrant {
   SW,
 }
 
-export type ChildList<T> = [TNode<T>, TNode<T>, TNode<T>, TNode<T>]
+export type ChildList<TItem> = [
+  TNode<TItem>,
+  TNode<TItem>,
+  TNode<TItem>,
+  TNode<TItem>,
+]
 
-export type TNode<T> = {
+export type TNode<TItem> = {
   // parent?: TNode<T>
-  children?: ChildList<T>
-  items?: T[]
+  children?: ChildList<TItem>
+  items?: TItem[]
 }
 
-export const emptyNode = <T>(): TNode<T> => {
+export const emptyNode = <TItem>(): TNode<TItem> => {
   return { items: [] }
 }
 
@@ -88,13 +93,13 @@ export const quadrantOfAabb = (
   }
 }
 
-export const nodeInsert = <TId extends string, T extends QuadtreeItem<TId>>(
-  node: TNode<T>,
-  idMap: Map<TId, TNode<T>[]>,
+export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
+  node: TNode<TItem>,
+  idMap: Map<TId, TNode<TItem>[]>,
   aabb: [vec2, vec2],
   maxItems: number,
-  comparator: Comparator<T>,
-  item: T,
+  comparator: Comparator<TItem>,
+  item: TItem,
 ): void => {
   if (!comparator(aabb, item)) {
     return
@@ -141,12 +146,12 @@ export const nodeInsert = <TId extends string, T extends QuadtreeItem<TId>>(
   }
 }
 
-export const nodeQuery = <T>(
-  node: TNode<T>,
+export const nodeQuery = <TItem>(
+  node: TNode<TItem>,
   nodeAabb: [vec2, vec2],
-  comparator: Comparator<T>,
+  comparator: Comparator<TItem>,
   queryAabb: [vec2, vec2],
-): T[] => {
+): TItem[] => {
   if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
     return []
   }
@@ -156,7 +161,7 @@ export const nodeQuery = <T>(
   }
 
   const children = node.children!
-  const res: T[] = []
+  const res: TItem[] = []
 
   for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
     for (const i of nodeQuery(
