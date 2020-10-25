@@ -87,7 +87,7 @@ export class EntityManager {
 
   getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
-    for (const id of this.query(aabb)) {
+    for (const id of this.querySpatialIndex(aabb)) {
       const e = this.entities.get(id)
       if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
         continue
@@ -125,7 +125,7 @@ export class EntityManager {
   //   remove committed from quadtree
   //   keep track of upcoming deletions as prediction
 
-  query(aabb: [vec2, vec2]): EntityId[] {
+  querySpatialIndex(aabb: [vec2, vec2]): EntityId[] {
     // Start with known non-moving entities
     const results = new Set<EntityId>(
       this.quadtree.query(aabb).map((r) => r.id),

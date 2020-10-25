@@ -19,7 +19,7 @@ export const update = (
   for (const index in damagers) {
     const d = damagers[index]
     const attackerAabb = d.damager!.aabb(d.transform!)
-    const damageableIds = simState.entityManager.query(attackerAabb)
+    const damageableIds = simState.entityManager.querySpatialIndex(attackerAabb)
 
     let hit: Entity | undefined
     if (damageableIds) {
