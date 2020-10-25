@@ -127,9 +127,9 @@ export const nodeInsert = <T extends QuadtreeItem>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    const toRemove = idMap[item.id].indexOf(node)
-    idMap[item.id].splice(toRemove, 1)
-
+    const parentNodes = idMap[i.id]
+    const toRemove = parentNodes.indexOf(node)
+    parentNodes.splice(toRemove, 1)
     nodeInsert(node, idMap, aabb, maxItems, comparator, i)
   }
 }
