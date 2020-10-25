@@ -30,7 +30,7 @@ describe('Quadtree', () => {
       { id: 'a', pos: vec2.fromValues(3, 4) },
     ]
 
-    const qt = new Quadtree<TestItem>({
+    const qt = new Quadtree<string, TestItem>({
       maxItems: 2,
       aabb: [
         [0, 1],
@@ -126,7 +126,7 @@ describe('Quadtree', () => {
       -TILE_SIZE * (squareDimension / 2),
       -TILE_SIZE * (squareDimension / 2),
     )
-    const qt = new Quadtree<{ id: string }>({
+    const qt = new Quadtree<string, { id: string }>({
       maxItems: 4,
       aabb: [
         origin,

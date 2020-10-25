@@ -8,11 +8,11 @@ import {
   nodeQuery,
 } from './helpers'
 
-export class Quadtree<T extends QuadtreeItem> {
+export class Quadtree<TId extends string, T extends QuadtreeItem<TId>> {
   private maxItems: number
   private aabb: [vec2, vec2] // NW and SE extrema
   private root: TNode<T>
-  private idMap: { [key: string]: TNode<T>[] }
+  private idMap: Map<TId, TNode<T>[]>
   private comparator: Comparator<T>
 
   constructor(config: {
@@ -23,7 +23,7 @@ export class Quadtree<T extends QuadtreeItem> {
     this.maxItems = config.maxItems
     this.aabb = config.aabb
     this.root = { items: [] }
-    this.idMap = {}
+    this.idMap = new Map()
     this.comparator = config.comparator
   }
 
@@ -38,15 +38,15 @@ export class Quadtree<T extends QuadtreeItem> {
     )
   }
 
-  public remove(id: string): void {
-    const nodes = this.idMap[id] ?? []
+  public remove(id: TId): void {
+    const parentNodes = this.idMap.get(id) ?? []
 
-    nodes.forEach((n) => {
+    parentNodes.forEach((n) => {
       const indexToRemove = n.items!.findIndex((item) => item.id === id)
       n.items!.splice(indexToRemove, 1)
     })
 
-    delete this.idMap[id]
+    this.idMap.delete(id)
   }
 
   public query(aabb: [vec2, vec2]): T[] {

@@ -175,7 +175,7 @@ describe('minBiasAabbOverlap', () => {
 describe('nodeInsert', () => {
   test('insert attempt into non-enclosing node', () => {
     const node = emptyNode<TestItem>()
-    const idMap: Record<string, TNode<TestItem>[]> = {}
+    const idMap: Map<string, TNode<TestItem>[]> = new Map()
     nodeInsert(
       node,
       idMap,
@@ -198,7 +198,7 @@ describe('nodeInsert', () => {
 
   test('insert into node with spare capacity', () => {
     const node = emptyNode<TestItem>()
-    const idMap: Record<string, TNode<TestItem>[]> = {}
+    const idMap: Map<string, TNode<TestItem>[]> = new Map()
     const item = { id: 'a', pos: vec2.fromValues(0, 1) }
     nodeInsert(
       node,
@@ -215,7 +215,7 @@ describe('nodeInsert', () => {
     expect(node.items!.length).toBe(1)
     expect(node.items![0]).toBe(item)
 
-    expect(idMap).toHaveProperty('a')
+    expect(idMap.has('a')).toBe(true)
   })
 
   test('insert into intermediate node', () => {
@@ -227,7 +227,7 @@ describe('nodeInsert', () => {
     ]
 
     const node: TNode<TestItem> = { children }
-    const idMap: Record<string, TNode<TestItem>[]> = {}
+    const idMap: Map<string, TNode<TestItem>[]> = new Map()
 
     const items: TestItem[] = [
       { id: 'a', pos: vec2.fromValues(0, 1) },
@@ -260,10 +260,10 @@ describe('nodeInsert', () => {
     expect(node.children![Quadrant.SW].items!.length).toBe(1)
     expect(node.children![Quadrant.SW].items![0]).toBe(items[Quadrant.SW])
 
-    expect(idMap).toHaveProperty('a')
-    expect(idMap).toHaveProperty('b')
-    expect(idMap).toHaveProperty('c')
-    expect(idMap).toHaveProperty('d')
+    expect(idMap.has('a')).toBe(true)
+    expect(idMap.has('b')).toBe(true)
+    expect(idMap.has('c')).toBe(true)
+    expect(idMap.has('d')).toBe(true)
   })
 
   test('insert into node at capacity', () => {
@@ -274,20 +274,22 @@ describe('nodeInsert', () => {
       { id: 'd', pos: vec2.fromValues(0.5, 2.5) },
     ]
 
-    const node: TNode<TestItem> = { items: [items[0], items[1], items[2]] }
-    const idMap: Record<string, TNode<TestItem>[]> = {}
+    const node: TNode<TestItem> = { items: [] }
+    const idMap: Map<string, TNode<TestItem>[]> = new Map()
 
-    nodeInsert(
-      node,
-      idMap,
-      [
-        [0, 1],
-        [2, 3],
-      ],
-      3,
-      testComparator,
-      items[3],
-    )
+    for (const i of items) {
+      nodeInsert(
+        node,
+        idMap,
+        [
+          [0, 1],
+          [2, 3],
+        ],
+        3,
+        testComparator,
+        i,
+      )
+    }
 
     expect(node.items).toBeUndefined()
 
@@ -301,10 +303,10 @@ describe('nodeInsert', () => {
     expect(node.children![Quadrant.SW].items!.length).toBe(1)
     expect(node.children![Quadrant.SW].items![0]).toBe(items[3])
 
-    expect(idMap).toHaveProperty('a')
-    expect(idMap).toHaveProperty('b')
-    expect(idMap).toHaveProperty('c')
-    expect(idMap).toHaveProperty('d')
+    expect(idMap.has('a')).toBe(true)
+    expect(idMap.has('b')).toBe(true)
+    expect(idMap.has('c')).toBe(true)
+    expect(idMap.has('d')).toBe(true)
   })
 })
 

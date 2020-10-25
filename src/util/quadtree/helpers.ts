@@ -2,8 +2,8 @@ import { vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '../math'
 
-export interface QuadtreeItem {
-  id: string
+export interface QuadtreeItem<TId extends string> {
+  id: TId
 }
 
 export type Comparator<T> = (aabb: [vec2, vec2], item: T) => boolean
@@ -88,9 +88,9 @@ export const quadrantOfAabb = (
   }
 }
 
-export const nodeInsert = <T extends QuadtreeItem>(
+export const nodeInsert = <TId extends string, T extends QuadtreeItem<TId>>(
   node: TNode<T>,
-  idMap: { [key: string]: TNode<T>[] },
+  idMap: Map<TId, TNode<T>[]>,
   aabb: [vec2, vec2],
   maxItems: number,
   comparator: Comparator<T>,
@@ -116,8 +116,14 @@ export const nodeInsert = <T extends QuadtreeItem>(
 
   const items = node.items!
   items.push(item)
-  idMap[item.id] = idMap[item.id] || []
-  idMap[item.id].push(node)
+
+  let parentNodes = idMap.get(item.id)
+  if (!parentNodes) {
+    parentNodes = []
+    idMap.set(item.id, parentNodes)
+  }
+
+  parentNodes.push(node)
 
   if (items.length <= maxItems) {
     return
@@ -127,9 +133,10 @@ export const nodeInsert = <T extends QuadtreeItem>(
   delete node.items
   node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
   for (const i of items) {
-    const parentNodes = idMap[i.id]
+    const parentNodes = idMap.get(i.id)!
     const toRemove = parentNodes.indexOf(node)
     parentNodes.splice(toRemove, 1)
+
     nodeInsert(node, idMap, aabb, maxItems, comparator, i)
   }
 }

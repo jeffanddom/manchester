@@ -26,7 +26,7 @@ export class EntityManager {
   players: EntityId[]
 
   // To include: walls, trees, turrets
-  quadtree: Quadtree<QuadtreeEntity>
+  quadtree: Quadtree<EntityId, QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
@@ -37,7 +37,7 @@ export class EntityManager {
     this.predictedDeletes = new Set()
     this.players = []
 
-    this.quadtree = new Quadtree<QuadtreeEntity>({
+    this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
       aabb: playfieldAabb,
       comparator: (aabb: [vec2, vec2], e: QuadtreeEntity) => {
@@ -168,7 +168,7 @@ export class EntityManager {
     }
   }
 
-  removeFromSpatialIndex(id: string): void {
+  removeFromSpatialIndex(id: EntityId): void {
     this.quadtree.remove(id)
   }
 }
