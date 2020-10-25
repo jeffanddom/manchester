@@ -131,13 +131,21 @@ export class EntityManager {
       this.quadtree.query(aabb).map((r) => r.id),
     )
 
-    // Add all known moving entities
-    // TODO - for now, it's just players
+    // Add all known moving entities (which are not yet added to the quadtree)
     for (const id of this.players) {
       results.add(id)
     }
 
-    // TODO: maybe add predicted registrations
+    for (const [id, e] of this.entities) {
+      if (e.bullet) {
+        results.add(id)
+      }
+    }
+
+    // Include predicted registrations, which are not added to the quadtree (yet)
+    for (const id of this.predictedRegistrations) {
+      results.add(id)
+    }
 
     // Remove predicted deletions
     for (const id of this.predictedDeletes) {
