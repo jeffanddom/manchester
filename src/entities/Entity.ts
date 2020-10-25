@@ -4,7 +4,7 @@ import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import { ITransform } from '~/components/transform'
-import { EntityId, castToEntityId } from '~/entities/EntityId'
+import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
@@ -47,7 +47,7 @@ export interface Entity {
 
 export const makeDefaultEntity = (): Entity => {
   return {
-    id: castToEntityId(''),
+    id: '' as EntityId,
     enablePlayfieldClamping: false,
     obscured: false,
     obscuring: false,

@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import { Type } from './types'
 
 import { Entity } from '~/entities/Entity'
-import { EntityId, castToEntityId } from '~/entities/EntityId'
+import { EntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
@@ -102,7 +102,7 @@ export class EntityManager {
   }
 
   register(e: Entity): void {
-    e.id = castToEntityId(this.nextEntityId.toString())
+    e.id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++
     this.entities.set(e.id, e)
     this.predictedRegistrations.add(e.id)
