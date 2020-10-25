@@ -87,7 +87,6 @@ export class EntityManager {
 
   getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
-    console.log(Object.keys(this.entities).length)
     for (const id of this.query(aabb)) {
       const e = this.entities.get(id)
       if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
