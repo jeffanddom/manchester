@@ -15,7 +15,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
     return
   }
 
-  c.entityManager.restoreCheckpoints()
+  c.entityManager.undoPrediction()
 
   c.serverFrameUpdates.forEach((frameMessage) => {
     simulate(
@@ -31,7 +31,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
     c.committedFrame = frameMessage.frame
   })
 
-  c.entityManager.commitState()
+  c.entityManager.commitPrediction()
 
   c.localMessageHistory = c.localMessageHistory.filter(
     (m) => m.frame > c.committedFrame,

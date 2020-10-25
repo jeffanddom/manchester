@@ -62,7 +62,7 @@ export const initMap = (
     }
   }
 
-  entityManager.commitState()
+  entityManager.commitPrediction()
 
   return terrainLayer
 }

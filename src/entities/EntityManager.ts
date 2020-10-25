@@ -16,17 +16,19 @@ type QuadtreeEntity = {
 }
 
 export class EntityManager {
-  nextEntityId: number
-  entities: Map<EntityId, Entity> // array of structures -> structure of arrays
+  private nextEntityId: number
 
-  toDelete: Set<EntityId>
-  checkpointedEntities: Map<EntityId, Entity>
-  predictedRegistrations: Set<EntityId>
-  predictedDeletes: Set<EntityId>
+  // TODO: make these private
+  entities: Map<EntityId, Entity> // array of structures -> structure of arrays
   players: Map<EntityId, number>
 
+  private toDelete: Set<EntityId>
+  private checkpointedEntities: Map<EntityId, Entity>
+  private predictedRegistrations: Set<EntityId>
+  private predictedDeletes: Set<EntityId>
+
   // To include: walls, trees, turrets
-  quadtree: Quadtree<EntityId, QuadtreeEntity>
+  private quadtree: Quadtree<EntityId, QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
@@ -46,46 +48,46 @@ export class EntityManager {
     })
   }
 
-  update(): void {
-    this.toDelete.forEach((id) => {
+  public update(): void {
+    for (const id of this.toDelete) {
+      this.unindexEntity(id)
       this.predictedDeletes.add(id)
-      this.entities.delete(id)
-    })
+    }
     this.toDelete = new Set()
-
-    // TODO: clean up this.players
   }
 
-  checkpoint(id: EntityId): void {
+  /**
+   * Before modifying entity state, we need to to checkpoint it. Internally,
+   * this will snapshot the entity state before any updates occur. The snapshot
+   * allows us to restore the state of the entity if we need to rewind changes
+   * due to predicted simulation.
+   */
+  public checkpoint(id: EntityId): void {
     if (this.checkpointedEntities.has(id)) {
       return
     }
     this.checkpointedEntities.set(id, _.cloneDeep(this.entities.get(id)!))
   }
 
-  restoreCheckpoints(): void {
-    for (const [id, entity] of this.checkpointedEntities) {
-      this.entities.set(id, entity)
+  public undoPrediction(): void {
+    for (const [, entity] of this.checkpointedEntities) {
+      this.indexEntity(entity)
     }
-    this.predictedDeletes = new Set()
     this.checkpointedEntities = new Map()
+    this.predictedDeletes = new Set()
 
     this.predictedRegistrations.forEach((id) => this.entities.delete(id))
     this.nextEntityId -= this.predictedRegistrations.size
     this.predictedRegistrations = new Set()
   }
 
-  commitState(): void {
-    this.predictedRegistrations.forEach((id) => this.commitToSpatialIndex(id))
+  public commitPrediction(): void {
     this.predictedRegistrations = new Set()
-
-    this.predictedDeletes.forEach((id) => this.removeFromSpatialIndex(id))
     this.predictedDeletes = new Set()
-
     this.checkpointedEntities = new Map()
   }
 
-  getRenderables(aabb: [vec2, vec2]): Renderable[] {
+  public getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
     for (const id of this.queryByWorldPos(aabb)) {
       const e = this.entities.get(id)
@@ -97,7 +99,7 @@ export class EntityManager {
     return renderables
   }
 
-  getPlayer(playerNumber: number): Entity | undefined {
+  public getPlayer(playerNumber: number): Entity | undefined {
     for (const [id, n] of this.players) {
       if (n === playerNumber) {
         return this.entities.get(id)
@@ -107,31 +109,40 @@ export class EntityManager {
     return undefined
   }
 
-  register(e: Entity): void {
+  public register(e: Entity): void {
     e.id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++
-    this.entities.set(e.id, e)
     this.predictedRegistrations.add(e.id)
 
-    if (e.type && e.type === Type.PLAYER) {
-      this.players.set(e.id, e.playerNumber!)
-    }
+    this.indexEntity(e)
   }
 
-  markForDeletion(id: EntityId): void {
+  public markForDeletion(id: EntityId): void {
     this.checkpoint(id)
     this.toDelete.add(id)
   }
 
-  // Broadphase Collision Detection
-  // add
-  //   if it's committed, put in quadtree
-  //   if it's predicted, put in prediction bucket
-  // remove
-  //   remove committed from quadtree
-  //   keep track of upcoming deletions as prediction
+  private indexEntity(e: Entity): void {
+    this.entities.set(e.id, e)
 
-  queryByWorldPos(aabb: [vec2, vec2]): EntityId[] {
+    if (e.type && e.type === Type.PLAYER) {
+      this.players.set(e.id, e.playerNumber!)
+    }
+
+    // Quadtree: for now, only add non-moving objects.
+    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
+      const entityAabb = tileBox(e.transform!.position)
+      this.quadtree.insert({ aabb: entityAabb, id: e.id })
+    }
+  }
+
+  private unindexEntity(id: EntityId): void {
+    this.entities.delete(id)
+    this.players.delete(id)
+    this.quadtree.remove(id)
+  }
+
+  public queryByWorldPos(aabb: [vec2, vec2]): EntityId[] {
     // Start with known non-moving entities
     const results = new Set<EntityId>(
       this.quadtree.query(aabb).map((r) => r.id),
@@ -148,33 +159,6 @@ export class EntityManager {
       }
     }
 
-    // Include predicted registrations, which are not added to the quadtree (yet)
-    for (const id of this.predictedRegistrations) {
-      results.add(id)
-    }
-
-    // Remove predicted deletions
-    for (const id of this.predictedDeletes) {
-      results.delete(id)
-    }
-
     return Array.from(results).sort()
-  }
-
-  commitToSpatialIndex(id: EntityId): void {
-    const e = this.entities.get(id)
-    if (!e || !e.transform) {
-      return
-    }
-
-    const entityAabb = tileBox(e.transform.position)
-
-    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
-      this.quadtree.insert({ aabb: entityAabb, id: e.id })
-    }
-  }
-
-  removeFromSpatialIndex(id: EntityId): void {
-    this.quadtree.remove(id)
   }
 }

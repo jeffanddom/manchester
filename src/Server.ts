@@ -209,5 +209,9 @@ export class Server {
         }
         break
     }
+
+    // On the server, there is no reason to accumulate prediction state, because
+    // the server simulation is authoritative.
+    this.entityManager.commitPrediction()
   }
 }
