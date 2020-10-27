@@ -9,16 +9,9 @@ import { aabbOverlap, radialTranslate2 } from '~/util/math'
 export const update = (
   simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
 ): void => {
-  const damagers: Entity[] = []
-  for (const [, e] of simState.entityManager.entities) {
-    if (e.damager) {
-      damagers.push(e)
-    }
-  }
-
-  for (const index in damagers) {
-    const d = damagers[index]
-    const attackerAabb = d.damager!.aabb(d.transform!)
+  for (const id of simState.entityManager.damagers) {
+    const e = simState.entityManager.entities.get(id)!
+    const attackerAabb = e.damager!.aabb(e.transform!)
     const damageableIds = simState.entityManager.queryByWorldPos(attackerAabb)
 
     let hit: Entity | undefined
@@ -27,8 +20,8 @@ export const update = (
         const other = simState.entityManager.entities.get(damageableId)
 
         return (
-          d.id !== damageableId &&
-          !d.damager!.immuneList.includes(damageableId) &&
+          e.id !== damageableId &&
+          !e.damager!.immuneList.includes(damageableId) &&
           other && // query includes deleted entities
           other.damageable && // query includes non-damageables
           aabbOverlap(other.damageable.aabb(other.transform!), attackerAabb)
@@ -52,10 +45,10 @@ export const update = (
     // damage to the damageable, and then remove self from simulation.
 
     // TODO: change to hit event for damageable system
-    damageable.health -= d.damager!.damageValue
+    damageable.health -= e.damager!.damageValue
 
     // TODO: client and server both delete their own bullets
-    simState.entityManager.markForDeletion(d.id)
+    simState.entityManager.markForDeletion(e.id)
 
     // ---------------------
 
@@ -67,8 +60,8 @@ export const update = (
         spawnTtl: 0.2,
         position: radialTranslate2(
           vec2.create(),
-          d.transform!.position,
-          d.transform!.orientation,
+          e.transform!.position,
+          e.transform!.orientation,
           TILE_SIZE / 2,
         ),
         particleTtl: 0.1,

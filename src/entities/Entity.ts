@@ -28,6 +28,7 @@ export interface Entity {
   team: Team
   wall: boolean
   wallCollider: boolean
+  moveable: boolean
 
   // data types
   transform?: ITransform
@@ -49,6 +50,7 @@ export const makeDefaultEntity = (): Entity => {
   return {
     id: '' as EntityId,
     enablePlayfieldClamping: false,
+    moveable: false,
     obscured: false,
     obscuring: false,
     targetable: false,

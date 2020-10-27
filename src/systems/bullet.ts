@@ -10,10 +10,8 @@ export const update = (
   simState: { entityManager: EntityManager },
   dt: number,
 ): void => {
-  for (const [id, e] of simState.entityManager.entities) {
-    if (!e.bullet) {
-      continue
-    }
+  for (const id of simState.entityManager.bullets) {
+    const e = simState.entityManager.entities.get(id)!
 
     simState.entityManager.checkpoint(id)
 
@@ -25,7 +23,7 @@ export const update = (
     )
 
     if (
-      vec2.distance(e.transform!.position, e.bullet.origin) >= e.bullet.range
+      vec2.distance(e.transform!.position, e.bullet!.origin) >= e.bullet!.range
     ) {
       simState.entityManager.markForDeletion(id)
       return

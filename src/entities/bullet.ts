@@ -19,6 +19,8 @@ export const makeBullet = ({
 }): Entity => {
   const e = makeDefaultEntity()
 
+  e.moveable = true
+
   e.transform = transform.make()
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation

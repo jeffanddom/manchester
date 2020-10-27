@@ -19,6 +19,7 @@ export const makePlayer = (): Entity => {
   e.targetable = true
   e.team = Team.Friendly
   e.wallCollider = true
+  e.moveable = true
 
   const shooter = new ShooterComponent()
   e.builderCreator = new BuilderCreator()

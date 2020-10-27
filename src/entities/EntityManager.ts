@@ -21,6 +21,11 @@ export class EntityManager {
   // TODO: make these private
   entities: Map<EntityId, Entity> // array of structures -> structure of arrays
   players: Map<EntityId, number>
+  moveables: Set<EntityId>
+  bullets: Set<EntityId>
+  damagers: Set<EntityId>
+  damageables: Set<EntityId>
+  playfieldClamped: Set<EntityId>
 
   private toDelete: Set<EntityId>
   private checkpointedEntities: Map<EntityId, Entity>
@@ -38,6 +43,11 @@ export class EntityManager {
     this.predictedRegistrations = new Set()
     this.predictedDeletes = new Set()
     this.players = new Map()
+    this.moveables = new Set()
+    this.bullets = new Set()
+    this.damagers = new Set()
+    this.damageables = new Set()
+    this.playfieldClamped = new Set()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -129,6 +139,22 @@ export class EntityManager {
       this.players.set(e.id, e.playerNumber!)
     }
 
+    if (e.moveable) {
+      this.moveables.add(e.id)
+    }
+    if (e.bullet) {
+      this.bullets.add(e.id)
+    }
+    if (e.damager) {
+      this.damagers.add(e.id)
+    }
+    if (e.damageable) {
+      this.damageables.add(e.id)
+    }
+    if (e.enablePlayfieldClamping) {
+      this.playfieldClamped.add(e.id)
+    }
+
     // Quadtree: for now, only add non-moving objects.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
@@ -138,7 +164,14 @@ export class EntityManager {
 
   private unindexEntity(id: EntityId): void {
     this.entities.delete(id)
+
     this.players.delete(id)
+    this.moveables.delete(id)
+    this.bullets.delete(id)
+    this.damagers.delete(id)
+    this.damageables.delete(id)
+    this.playfieldClamped.delete(id)
+
     this.quadtree.remove(id)
   }
 

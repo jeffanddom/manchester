@@ -7,21 +7,17 @@ export const update = (simState: {
   entityManager: EntityManager
   terrainLayer: terrain.Layer
 }): void => {
-  for (const [, e] of simState.entityManager.entities) {
-    if (!e.transform || !e.enablePlayfieldClamping) {
-      continue
-    }
-
-    // simState.entityManager.checkpointEntity(e.id)
+  for (const id of simState.entityManager.playfieldClamped) {
+    const e = simState.entityManager.entities.get(id)!
 
     vec2.max(
-      e.transform.position,
-      e.transform.position,
+      e.transform!.position,
+      e.transform!.position,
       simState.terrainLayer.minWorldPos(),
     )
     vec2.min(
-      e.transform.position,
-      e.transform.position,
+      e.transform!.position,
+      e.transform!.position,
       simState.terrainLayer.maxWorldPos(),
     )
   }
