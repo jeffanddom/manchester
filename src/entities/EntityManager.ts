@@ -76,7 +76,7 @@ export class EntityManager {
     this.checkpointedEntities = new Map()
     this.predictedDeletes = new Set()
 
-    this.predictedRegistrations.forEach((id) => this.entities.delete(id))
+    this.predictedRegistrations.forEach((id) => this.unindexEntity(id))
     this.nextEntityId -= this.predictedRegistrations.size
     this.predictedRegistrations = new Set()
   }

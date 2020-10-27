@@ -28,6 +28,10 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   }
 
   public insert(item: TItem): void {
+    if (this.idMap.has(item.id)) {
+      this.remove(item.id)
+    }
+
     nodeInsert(
       this.root,
       this.idMap,
