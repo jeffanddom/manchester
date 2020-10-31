@@ -7,7 +7,10 @@ import { SimState } from '~/simulate'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 
 export const update = (
-  simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
+  simState: Pick<
+    SimState,
+    'entityManager' | 'registerParticleEmitter' | 'frame'
+  >,
 ): void => {
   for (const id of simState.entityManager.damagers) {
     const e = simState.entityManager.entities.get(id)!
@@ -75,6 +78,7 @@ export const update = (
       simState.registerParticleEmitter({
         emitter: explosion,
         entity: targetId,
+        frame: simState.frame,
       })
     }
 

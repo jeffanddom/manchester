@@ -191,6 +191,7 @@ export class Server {
               entityManager: this.entityManager,
               messages: frameMessages,
               terrainLayer: this.terrainLayer,
+              frame: this.simulationFrame,
             },
             this.state,
             dt,

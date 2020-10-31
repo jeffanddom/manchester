@@ -7,7 +7,10 @@ import { SimState } from '~/simulate'
 import { radialTranslate2 } from '~/util/math'
 
 export const update = (
-  simState: Pick<SimState, 'entityManager' | 'registerParticleEmitter'>,
+  simState: Pick<
+    SimState,
+    'entityManager' | 'registerParticleEmitter' | 'frame'
+  >,
 ): void => {
   for (const id of simState.entityManager.damageables) {
     const e = simState.entityManager.entities.get(id)!
@@ -48,6 +51,7 @@ export const update = (
         simState.registerParticleEmitter({
           emitter: explosion,
           entity: id,
+          frame: simState.frame,
         })
       }
       // const player = simState.entityManager.getPlayer()

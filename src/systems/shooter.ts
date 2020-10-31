@@ -30,7 +30,7 @@ export class ShooterComponent {
 export const update = (
   simState: Pick<
     SimState,
-    'entityManager' | 'messages' | 'registerParticleEmitter'
+    'entityManager' | 'messages' | 'registerParticleEmitter' | 'frame'
   >,
 ): void => {
   const messages: Array<TankShootClientMessage> = []
@@ -85,6 +85,7 @@ export const update = (
       simState.registerParticleEmitter({
         emitter: muzzleFlash,
         entity: e.id,
+        frame: simState.frame,
       })
     }
   })

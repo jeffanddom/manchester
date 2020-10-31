@@ -1,5 +1,6 @@
 import { ParticleEmitter } from './particles/ParticleEmitter'
 
+import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
 import { ClientMessage } from '~/network/ClientMessage'
@@ -10,9 +11,11 @@ export type SimState = {
   entityManager: EntityManager
   messages: Array<ClientMessage>
   terrainLayer: terrain.Layer
+  frame: number
   registerParticleEmitter?: (params: {
     emitter: ParticleEmitter
-    entity: string
+    entity: EntityId
+    frame: number
   }) => void
 }
 

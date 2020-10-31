@@ -1,5 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { EntityId } from './entities/EntityId'
+
 import { Camera } from '~/Camera'
 import { SIMULATION_PERIOD_S, TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
@@ -258,6 +260,7 @@ export class Client {
                 (m) => m.frame === this.simulationFrame,
               ),
               terrainLayer: this.terrainLayer,
+              frame: this.simulationFrame,
               registerParticleEmitter: this.registerParticleEmitter,
             },
             this.state,
@@ -474,10 +477,11 @@ export class Client {
 
   registerParticleEmitter(params: {
     emitter: ParticleEmitter
-    entity: string
+    entity: EntityId
+    frame: number
   }): void {
-    if (!this.emitterHistory.has(`${this.simulationFrame}:${params.entity}`)) {
-      this.emitterHistory.add(`${this.simulationFrame}:${params.entity}`)
+    if (!this.emitterHistory.has(`${params.frame}:${params.entity}`)) {
+      this.emitterHistory.add(`${params.frame}:${params.entity}`)
       this.emitters.push(params.emitter)
     }
   }

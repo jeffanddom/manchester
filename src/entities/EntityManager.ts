@@ -8,6 +8,8 @@ import { EntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
+import { SortedMap } from '~/util/SortedMap'
+import { SortedSet } from '~/util/SortedSet'
 import { tileBox } from '~/util/tileMath'
 
 type QuadtreeEntity = {
@@ -20,12 +22,12 @@ export class EntityManager {
 
   // TODO: make these private
   entities: Map<EntityId, Entity> // array of structures -> structure of arrays
-  players: Map<EntityId, number>
-  moveables: Set<EntityId>
-  bullets: Set<EntityId>
-  damagers: Set<EntityId>
-  damageables: Set<EntityId>
-  playfieldClamped: Set<EntityId>
+  players: SortedMap<EntityId, number>
+  moveables: SortedSet<EntityId>
+  bullets: SortedSet<EntityId>
+  damagers: SortedSet<EntityId>
+  damageables: SortedSet<EntityId>
+  playfieldClamped: SortedSet<EntityId>
 
   private toDelete: Set<EntityId>
   private checkpointedEntities: Map<EntityId, Entity>
@@ -42,12 +44,12 @@ export class EntityManager {
     this.checkpointedEntities = new Map()
     this.predictedRegistrations = new Set()
     this.predictedDeletes = new Set()
-    this.players = new Map()
-    this.moveables = new Set()
-    this.bullets = new Set()
-    this.damagers = new Set()
-    this.damageables = new Set()
-    this.playfieldClamped = new Set()
+    this.players = new SortedMap()
+    this.moveables = new SortedSet()
+    this.bullets = new SortedSet()
+    this.damagers = new SortedSet()
+    this.damageables = new SortedSet()
+    this.playfieldClamped = new SortedSet()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,

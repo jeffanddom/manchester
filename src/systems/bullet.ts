@@ -4,7 +4,7 @@ import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { radialTranslate2 } from '~/util/math'
 
-const BULLET_SPEED = 60 * (TILE_SIZE / 6)
+const BULLET_SPEED = 60 * (TILE_SIZE / 3)
 
 export const update = (
   simState: { entityManager: EntityManager },
