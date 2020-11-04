@@ -25,21 +25,18 @@ export const update = (
   })
 
   messages.forEach((message) => {
-    const player = simState.entityManager.getPlayer(message.playerNumber)
-    if (!player) {
-      return
-    }
+    const id = simState.entityManager.getPlayerId(message.playerNumber)!
+    simState.entityManager.checkpoint(id)
 
-    simState.entityManager.checkpoint(player.id)
-
-    player.transform!.orientation = rotateUntil({
-      from: player.transform!.orientation,
+    const transform = simState.entityManager.transforms.get(id)!
+    transform.orientation = rotateUntil({
+      from: transform.orientation,
       to: message.direction,
       amount: TANK_ROT_SPEED * dt,
     })
     radialTranslate2(
-      player.transform!.position,
-      player.transform!.position,
+      transform.position,
+      transform.position,
       message.direction,
       TANK_SPEED * dt,
     )
