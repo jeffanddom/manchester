@@ -5,11 +5,13 @@ import { Type } from './types'
 
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
+import { Team } from '~/components/team'
 import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
 import { ShooterComponent } from '~/systems/shooter'
+import { TurretComponent } from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedMap } from '~/util/SortedMap'
@@ -35,9 +37,13 @@ export class EntityManager {
   moveables: SortedSet<EntityId>
   shooters: SortedMap<EntityId, ShooterComponent>
   bullets: SortedSet<EntityId>
+  turrets: SortedMap<EntityId, TurretComponent>
   damagers: SortedMap<EntityId, Damager>
   damageables: SortedMap<EntityId, Damageable>
   playfieldClamped: SortedSet<EntityId>
+  teams: SortedMap<EntityId, Team>
+  targetables: SortedSet<EntityId>
+  obscureds: SortedSet<EntityId>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -55,9 +61,13 @@ export class EntityManager {
     this.moveables = new SortedSet()
     this.shooters = new SortedMap()
     this.bullets = new SortedSet()
+    this.turrets = new SortedMap()
     this.damagers = new SortedMap()
     this.damageables = new SortedMap()
     this.playfieldClamped = new SortedSet()
+    this.teams = new SortedMap()
+    this.targetables = new SortedSet()
+    this.obscureds = new SortedSet()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -175,6 +185,10 @@ export class EntityManager {
       this.bullets.add(e.id)
     }
 
+    if (e.turret) {
+      this.turrets.set(e.id, e.turret)
+    }
+
     if (e.damager) {
       this.damagers.set(e.id, e.damager)
     }
@@ -185,6 +199,16 @@ export class EntityManager {
 
     if (e.enablePlayfieldClamping) {
       this.playfieldClamped.add(e.id)
+    }
+
+    this.teams.set(e.id, e.team)
+
+    if (e.targetable) {
+      this.targetables.add(e.id)
+    }
+
+    if (e.obscured) {
+      this.obscureds.add(e.id)
     }
 
     // Quadtree: for now, only add non-moving objects.
@@ -202,9 +226,13 @@ export class EntityManager {
     this.moveables.delete(id)
     this.shooters.delete(id)
     this.bullets.delete(id)
+    this.turrets.delete(id)
     this.damagers.delete(id)
     this.damageables.delete(id)
     this.playfieldClamped.delete(id)
+    this.teams.delete(id)
+    this.targetables.delete(id)
+    this.obscureds.delete(id)
 
     this.quadtree.remove(id)
   }

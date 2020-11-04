@@ -1,8 +1,10 @@
 import { vec2 } from 'gl-matrix'
 
 import { Team } from '~/components/team'
+import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
+import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { segmentToAabb } from '~/util/collision'
 import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
@@ -20,49 +22,54 @@ export class TurretComponent {
 }
 
 export const update = (entityManager: EntityManager, dt: number): void => {
-  for (const [id, e] of entityManager.entities) {
-    if (!e.turret) {
-      continue
-    }
+  for (const [id, turret] of entityManager.turrets) {
+    const transform = entityManager.transforms.get(id)!
+    const team = entityManager.teams.get(id)!
 
     // I. Find a target
 
-    const shootables = Object.values(entityManager.entities)
-      .filter(
-        (other) =>
-          !!other.transform &&
-          !!other.damageable &&
-          other.targetable &&
-          !other.obscured &&
-          other.id !== e.id,
-      )
-      .filter(
-        (other) =>
-          vec2.distance(other.transform!.position, e.transform!.position) <=
-          RANGE,
-      )
-      .sort(
-        (a, b) =>
-          vec2.distance(a.transform!.position, e.transform!.position) -
-          vec2.distance(b.transform!.position, e.transform!.position),
-      )
+    const shootables: { id: EntityId; transform: ITransform }[] = []
+    for (const targetId of entityManager.targetables) {
+      if (targetId === id || entityManager.obscureds.has(targetId)) {
+        continue
+      }
+
+      const targetTransform = entityManager.transforms.get(targetId)!
+      if (vec2.distance(targetTransform.position, transform.position) > RANGE) {
+        continue
+      }
+
+      shootables.push({
+        id: targetId,
+        transform: targetTransform,
+      })
+    }
+
+    shootables.sort(
+      (a, b) =>
+        vec2.distance(a.transform!.position, transform.position) -
+        vec2.distance(b.transform!.position, transform.position),
+    )
 
     const target = shootables.find((candidate, n) => {
-      if (candidate.team === Team.Neutral || candidate.team === e.team) {
+      const candidateTeam = entityManager.teams.get(candidate.id)
+      if (candidateTeam === Team.Neutral || candidateTeam === team) {
         return false
       }
 
       const lineOfSight: [vec2, vec2] = [
-        e.transform!.position,
+        transform.position,
         candidate.transform!.position,
       ]
 
       for (let i = 0; i < n; i++) {
+        const closerDamageable = entityManager.damageables.get(
+          shootables[i].id,
+        )!
+        const closerTransform = entityManager.transforms.get(shootables[i].id)!
+
         if (
-          segmentToAabb(
-            lineOfSight,
-            shootables[i].damageable!.aabb(shootables[i].transform!),
-          )
+          segmentToAabb(lineOfSight, closerDamageable.aabb(closerTransform))
         ) {
           return false
         }
@@ -87,32 +94,32 @@ export const update = (entityManager: EntityManager, dt: number): void => {
 
     // II. Move toward target
 
-    e.transform!.orientation = rotateUntil({
-      from: e.transform!.orientation,
-      to: getAngle(e.transform!.position, target.transform!.position),
+    transform.orientation = rotateUntil({
+      from: transform.orientation,
+      to: getAngle(transform.position, target.transform!.position),
       amount: TURRET_ROT_SPEED * dt,
     })
 
     // III. Shoot at target
 
-    if (e.turret!.cooldownTtl > 0) {
-      e.turret!.cooldownTtl -= dt
+    if (turret.cooldownTtl > 0) {
+      turret.cooldownTtl -= dt
       continue
     }
 
-    e.turret!.cooldownTtl = COOLDOWN_PERIOD
+    turret.cooldownTtl = COOLDOWN_PERIOD
 
     const bulletPos = radialTranslate2(
       vec2.create(),
-      e.transform!.position,
-      e.transform!.orientation,
+      transform.position,
+      transform.orientation,
       TILE_SIZE * 0.25,
     )
 
     entityManager.register(
       makeBullet({
         position: bulletPos,
-        orientation: e.transform!.orientation,
+        orientation: transform.orientation,
         owner: id,
       }),
     )
