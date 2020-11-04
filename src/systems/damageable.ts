@@ -12,19 +12,14 @@ export const update = (
     'entityManager' | 'registerParticleEmitter' | 'frame'
   >,
 ): void => {
-  for (const id of simState.entityManager.damageables) {
-    const e = simState.entityManager.entities.get(id)!
-    const transform = e.transform
-    const damageable = e.damageable
-    if (!transform || !damageable) {
-      continue
-    }
+  for (const [id, damageable] of simState.entityManager.damageables) {
+    const transform = simState.entityManager.transforms.get(id)!
 
     if (damageable.health <= 0) {
-      if (e.dropType) {
-        const core = PickupConstructors[e.dropType]()
-        core.transform!.position = vec2.clone(e.transform!.position)
-
+      const dropType = simState.entityManager.entities.get(id)?.dropType
+      if (dropType) {
+        const core = PickupConstructors[dropType]()
+        core.transform!.position = vec2.clone(transform.position)
         simState.entityManager.register(core)
       }
       simState.entityManager.markForDeletion(id)

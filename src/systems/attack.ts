@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Entity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
@@ -12,46 +12,46 @@ export const update = (
     'entityManager' | 'registerParticleEmitter' | 'frame'
   >,
 ): void => {
-  for (const id of simState.entityManager.damagers) {
-    const e = simState.entityManager.entities.get(id)!
-    const attackerAabb = e.damager!.aabb(e.transform!)
-    const damageableIds = simState.entityManager.queryByWorldPos(attackerAabb)
+  for (const [id, damager] of simState.entityManager.damagers) {
+    const transform = simState.entityManager.transforms.get(id)!
+    const attackerAabb = damager.aabb(transform)
+    const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
 
-    let hit: Entity | undefined
-    if (damageableIds) {
-      const hitId = damageableIds.find((damageableId) => {
-        const other = simState.entityManager.entities.get(damageableId)
+    let targetId: EntityId | undefined
+    if (targetIds) {
+      targetId = targetIds.find((damageableId) => {
+        if (id === damageableId || damager.immuneList.includes(damageableId)) {
+          return false
+        }
 
-        return (
-          e.id !== damageableId &&
-          !e.damager!.immuneList.includes(damageableId) &&
-          other && // query includes deleted entities
-          other.damageable && // query includes non-damageables
-          aabbOverlap(other.damageable.aabb(other.transform!), attackerAabb)
-        )
+        const damageable = simState.entityManager.damageables.get(damageableId)
+        if (!damageable) {
+          return false
+        }
+
+        const targetTransform = simState.entityManager.transforms.get(
+          damageableId,
+        )!
+
+        return aabbOverlap(damageable.aabb(targetTransform), attackerAabb)
       })
-
-      if (hitId) {
-        hit = simState.entityManager.entities.get(hitId)
-      }
     }
 
-    if (!hit) {
+    if (!targetId) {
       continue
     }
 
-    const targetId = hit.id
-    const damageable = hit.damageable!
+    const damageable = simState.entityManager.damageables.get(targetId)!
     simState.entityManager.checkpoint(targetId)
 
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
 
     // TODO: change to hit event for damageable system
-    damageable.health -= e.damager!.damageValue
+    damageable.health -= damager.damageValue
 
     // TODO: client and server both delete their own bullets
-    simState.entityManager.markForDeletion(e.id)
+    simState.entityManager.markForDeletion(id)
 
     // ---------------------
 
@@ -63,8 +63,8 @@ export const update = (
         spawnTtl: 0.2,
         position: radialTranslate2(
           vec2.create(),
-          e.transform!.position,
-          e.transform!.orientation,
+          transform.position,
+          transform.orientation,
           TILE_SIZE / 2,
         ),
         particleTtl: 0.1,

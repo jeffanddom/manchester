@@ -3,6 +3,9 @@ import * as _ from 'lodash'
 
 import { Type } from './types'
 
+import { Damageable } from '~/components/Damageable'
+import { Damager } from '~/components/Damager'
+import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
@@ -19,20 +22,20 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   private nextEntityId: number
-
-  // TODO: make these private
-  entities: Map<EntityId, Entity> // array of structures -> structure of arrays
-  players: SortedMap<EntityId, number>
-  moveables: SortedSet<EntityId>
-  bullets: SortedSet<EntityId>
-  damagers: SortedSet<EntityId>
-  damageables: SortedSet<EntityId>
-  playfieldClamped: SortedSet<EntityId>
-
+  entities: Map<EntityId, Entity> // TODO: make this private
   private toDelete: Set<EntityId>
   private checkpointedEntities: Map<EntityId, Entity>
   private predictedRegistrations: Set<EntityId>
   private predictedDeletes: Set<EntityId>
+
+  // TODO: make these private
+  transforms: SortedMap<EntityId, ITransform>
+  players: SortedMap<EntityId, number>
+  moveables: SortedSet<EntityId>
+  bullets: SortedSet<EntityId>
+  damagers: SortedMap<EntityId, Damager>
+  damageables: SortedMap<EntityId, Damageable>
+  playfieldClamped: SortedSet<EntityId>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -44,11 +47,13 @@ export class EntityManager {
     this.checkpointedEntities = new Map()
     this.predictedRegistrations = new Set()
     this.predictedDeletes = new Set()
+
+    this.transforms = new SortedMap()
     this.players = new SortedMap()
     this.moveables = new SortedSet()
     this.bullets = new SortedSet()
-    this.damagers = new SortedSet()
-    this.damageables = new SortedSet()
+    this.damagers = new SortedMap()
+    this.damageables = new SortedMap()
     this.playfieldClamped = new SortedSet()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
@@ -137,6 +142,10 @@ export class EntityManager {
   private indexEntity(e: Entity): void {
     this.entities.set(e.id, e)
 
+    if (e.transform) {
+      this.transforms.set(e.id, e.transform)
+    }
+
     if (e.type && e.type === Type.PLAYER) {
       this.players.set(e.id, e.playerNumber!)
     }
@@ -144,15 +153,19 @@ export class EntityManager {
     if (e.moveable) {
       this.moveables.add(e.id)
     }
+
     if (e.bullet) {
       this.bullets.add(e.id)
     }
+
     if (e.damager) {
-      this.damagers.add(e.id)
+      this.damagers.set(e.id, e.damager)
     }
+
     if (e.damageable) {
-      this.damageables.add(e.id)
+      this.damageables.set(e.id, e.damageable)
     }
+
     if (e.enablePlayfieldClamping) {
       this.playfieldClamped.add(e.id)
     }
@@ -167,6 +180,7 @@ export class EntityManager {
   private unindexEntity(id: EntityId): void {
     this.entities.delete(id)
 
+    this.transforms.delete(id)
     this.players.delete(id)
     this.moveables.delete(id)
     this.bullets.delete(id)
