@@ -9,6 +9,7 @@ import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
 import { Renderable } from '~/renderer/interfaces'
+import { ShooterComponent } from '~/systems/shooter'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedMap } from '~/util/SortedMap'
@@ -32,6 +33,7 @@ export class EntityManager {
   transforms: SortedMap<EntityId, ITransform>
   players: SortedMap<EntityId, number>
   moveables: SortedSet<EntityId>
+  shooters: SortedMap<EntityId, ShooterComponent>
   bullets: SortedSet<EntityId>
   damagers: SortedMap<EntityId, Damager>
   damageables: SortedMap<EntityId, Damageable>
@@ -51,6 +53,7 @@ export class EntityManager {
     this.transforms = new SortedMap()
     this.players = new SortedMap()
     this.moveables = new SortedSet()
+    this.shooters = new SortedMap()
     this.bullets = new SortedSet()
     this.damagers = new SortedMap()
     this.damageables = new SortedMap()
@@ -116,6 +119,16 @@ export class EntityManager {
     return renderables
   }
 
+  public getPlayerId(playerNumber: number): EntityId | undefined {
+    for (const [id, n] of this.players) {
+      if (n === playerNumber) {
+        return id
+      }
+    }
+
+    return undefined
+  }
+
   public getPlayer(playerNumber: number): Entity | undefined {
     for (const [id, n] of this.players) {
       if (n === playerNumber) {
@@ -154,6 +167,10 @@ export class EntityManager {
       this.moveables.add(e.id)
     }
 
+    if (e.shooter) {
+      this.shooters.set(e.id, e.shooter)
+    }
+
     if (e.bullet) {
       this.bullets.add(e.id)
     }
@@ -183,6 +200,7 @@ export class EntityManager {
     this.transforms.delete(id)
     this.players.delete(id)
     this.moveables.delete(id)
+    this.shooters.delete(id)
     this.bullets.delete(id)
     this.damagers.delete(id)
     this.damageables.delete(id)

@@ -41,31 +41,35 @@ export const update = (
   })
 
   messages.forEach((message) => {
-    const e = simState.entityManager.getPlayer(message.playerNumber)!
+    const id = simState.entityManager.getPlayerId(message.playerNumber)!
+    const shooter = simState.entityManager.shooters.get(id)!
+
     if (
-      e.shooter!.lastFiredFrame !== -1 &&
-      message.frame - e.shooter!.lastFiredFrame < 15
+      shooter.lastFiredFrame !== -1 &&
+      message.frame - shooter.lastFiredFrame < 15
     ) {
       return
     }
 
-    simState.entityManager.checkpoint(e.id)
+    simState.entityManager.checkpoint(id)
 
-    e.shooter!.lastFiredFrame = message.frame
-    e.shooter!.orientation = getAngle(e.transform!.position, message.targetPos)
+    const transform = simState.entityManager.transforms.get(id)!
+
+    shooter.lastFiredFrame = message.frame
+    shooter.orientation = getAngle(transform.position, message.targetPos)
 
     const bulletPos = radialTranslate2(
       vec2.create(),
-      e.transform!.position,
-      e.shooter!.orientation,
+      transform.position,
+      shooter.orientation,
       TILE_SIZE * 0.25,
     )
 
     simState.entityManager.register(
       makeBullet({
         position: bulletPos,
-        orientation: e.shooter!.orientation,
-        owner: e.id,
+        orientation: shooter.orientation,
+        owner: id,
       }),
     )
 
@@ -77,14 +81,14 @@ export const update = (
         particleRadius: 3,
         particleRate: 240,
         particleSpeedRange: [120, 280],
-        orientation: e.shooter!.orientation,
+        orientation: shooter.orientation,
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })
 
       simState.registerParticleEmitter({
         emitter: muzzleFlash,
-        entity: e.id,
+        entity: id,
         frame: simState.frame,
       })
     }
