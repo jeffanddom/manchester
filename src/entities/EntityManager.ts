@@ -9,6 +9,7 @@ import { Team } from '~/components/team'
 import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
+import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
@@ -42,8 +43,11 @@ export class EntityManager {
   damageables: SortedMap<EntityId, Damageable>
   playfieldClamped: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
+  friendlyTeam: SortedSet<EntityId>
   targetables: SortedSet<EntityId>
+  obscurings: SortedSet<EntityId>
   obscureds: SortedSet<EntityId>
+  hitboxes: SortedMap<EntityId, Hitbox>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -66,8 +70,11 @@ export class EntityManager {
     this.damageables = new SortedMap()
     this.playfieldClamped = new SortedSet()
     this.teams = new SortedMap()
+    this.friendlyTeam = new SortedSet()
     this.targetables = new SortedSet()
+    this.obscurings = new SortedSet()
     this.obscureds = new SortedSet()
+    this.hitboxes = new SortedMap()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -96,7 +103,15 @@ export class EntityManager {
     if (this.checkpointedEntities.has(id)) {
       return
     }
-    this.checkpointedEntities.set(id, _.cloneDeep(this.entities.get(id)!))
+
+    const copy = _.cloneDeep(this.entities.get(id)!)
+
+    // obscured is an example of a mutable flag with no container component.
+    // Since we are moving toward component tables, we need to remember the
+    // state of the flag in our memoized copy.
+    copy.obscured = this.obscureds.has(id)
+
+    this.checkpointedEntities.set(id, copy)
   }
 
   public undoPrediction(): void {
@@ -203,12 +218,24 @@ export class EntityManager {
 
     this.teams.set(e.id, e.team)
 
+    if (e.team === Team.Friendly) {
+      this.friendlyTeam.add(e.id)
+    }
+
     if (e.targetable) {
       this.targetables.add(e.id)
     }
 
+    if (e.obscuring) {
+      this.obscurings.add(e.id)
+    }
+
     if (e.obscured) {
       this.obscureds.add(e.id)
+    }
+
+    if (e.hitbox) {
+      this.hitboxes.set(e.id, e.hitbox)
     }
 
     // Quadtree: for now, only add non-moving objects.
@@ -231,8 +258,11 @@ export class EntityManager {
     this.damageables.delete(id)
     this.playfieldClamped.delete(id)
     this.teams.delete(id)
+    this.friendlyTeam.delete(id)
     this.targetables.delete(id)
+    this.obscurings.delete(id)
     this.obscureds.delete(id)
+    this.hitboxes.delete(id)
 
     this.quadtree.remove(id)
   }

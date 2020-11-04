@@ -1,34 +1,44 @@
-import { Team } from '~/components/team'
+import { vec2 } from 'gl-matrix'
+
 import { EntityManager } from '~/entities/EntityManager'
 import { aabbOverlapArea } from '~/util/math'
 
 const REQUIRED_OVERLAP = 0.5
 
 export const update = (entityManager: EntityManager): void => {
-  const obscurings = Object.values(entityManager.entities).filter(
-    (e) => e.hitbox && e.obscuring,
-  )
+  const obscuringAabbs: [vec2, vec2][] = []
 
-  const hideables = Object.values(entityManager.entities).filter(
-    (e) => !!e.transform && !!e.hitbox && e.team === Team.Friendly,
-  )
+  // TODO: use spatial index to limit the size of this list
+  for (const id of entityManager.obscurings) {
+    const hitbox = entityManager.hitboxes.get(id)!
+    const transform = entityManager.transforms.get(id)!
+    obscuringAabbs.push(hitbox.aabb(transform.position))
+  }
 
-  for (const check of hideables) {
-    check.obscured = false
-    const checkArea = check.hitbox!.dimensions[0] * check.hitbox!.dimensions[1]
+  for (const id of entityManager.friendlyTeam) {
+    const hitbox = entityManager.hitboxes.get(id)!
+    const transform = entityManager.transforms.get(id)!
+    const obscurableAabb = hitbox.aabb(transform.position)
+    const checkArea = hitbox.dimensions[0] * hitbox.dimensions[1]
+
     let overlap = 0
-
-    for (const i in obscurings) {
-      const o = obscurings[i]
-      overlap +=
-        aabbOverlapArea(
-          o.hitbox!.aabb(o.transform!.position),
-          check.hitbox!.aabb(check.transform!.position),
-        ) / checkArea
+    let currentlyObscured = false
+    for (const obscuringAabb of obscuringAabbs) {
+      overlap += aabbOverlapArea(obscuringAabb, obscurableAabb) / checkArea
 
       if (overlap > REQUIRED_OVERLAP) {
-        check.obscured = true
+        currentlyObscured = true
         break
+      }
+    }
+
+    if (currentlyObscured !== entityManager.obscureds.has(id)) {
+      entityManager.checkpoint(id)
+
+      if (currentlyObscured) {
+        entityManager.obscureds.add(id)
+      } else {
+        entityManager.obscureds.delete(id)
       }
     }
   }

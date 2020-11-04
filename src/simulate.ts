@@ -28,7 +28,7 @@ export const simulate = (
 
   if (gameState === GameState.Running) {
     systems.tankMover(simState, dt)
-    // systems.hiding(this)
+    systems.hiding(simState.entityManager)
     // systems.builder(this, this.entityManager, dt)
     systems.shooter(simState)
     systems.turret(simState.entityManager, dt)
