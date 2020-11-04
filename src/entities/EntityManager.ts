@@ -11,6 +11,7 @@ import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
 import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
+import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
@@ -49,6 +50,7 @@ export class EntityManager {
   obscureds: SortedSet<EntityId>
   hitboxes: SortedMap<EntityId, Hitbox>
   walls: SortedSet<EntityId>
+  dropTypes: SortedMap<EntityId, PickupType>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -77,6 +79,7 @@ export class EntityManager {
     this.obscureds = new SortedSet()
     this.hitboxes = new SortedMap()
     this.walls = new SortedSet()
+    this.dropTypes = new SortedMap()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -244,6 +247,10 @@ export class EntityManager {
       this.walls.add(e.id)
     }
 
+    if (e.dropType) {
+      this.dropTypes.set(e.id, e.dropType)
+    }
+
     // Quadtree: for now, only add non-moving objects.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
@@ -270,6 +277,7 @@ export class EntityManager {
     this.obscureds.delete(id)
     this.hitboxes.delete(id)
     this.walls.delete(id)
+    this.dropTypes.delete(id)
 
     this.quadtree.remove(id)
   }
