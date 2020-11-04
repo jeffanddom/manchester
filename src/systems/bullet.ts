@@ -10,21 +10,19 @@ export const update = (
   simState: { entityManager: EntityManager },
   dt: number,
 ): void => {
-  for (const id of simState.entityManager.bullets) {
-    const e = simState.entityManager.entities.get(id)!
-
+  for (const [id, bullet] of simState.entityManager.bullets) {
     simState.entityManager.checkpoint(id)
 
+    const transform = simState.entityManager.transforms.get(id)!
+
     radialTranslate2(
-      e.transform!.position,
-      e.transform!.position,
-      e.transform!.orientation,
+      transform.position,
+      transform.position,
+      transform.orientation,
       BULLET_SPEED * dt,
     )
 
-    if (
-      vec2.distance(e.transform!.position, e.bullet!.origin) >= e.bullet!.range
-    ) {
+    if (vec2.distance(transform.position, bullet.origin) >= bullet.range) {
       simState.entityManager.markForDeletion(id)
       return
     }

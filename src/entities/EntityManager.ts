@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 
 import { Type } from './types'
 
+import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { Team } from '~/components/team'
@@ -38,7 +39,7 @@ export class EntityManager {
   players: SortedMap<EntityId, number>
   moveables: SortedSet<EntityId>
   shooters: SortedMap<EntityId, ShooterComponent>
-  bullets: SortedSet<EntityId>
+  bullets: SortedMap<EntityId, Bullet>
   turrets: SortedMap<EntityId, TurretComponent>
   damagers: SortedMap<EntityId, Damager>
   damageables: SortedMap<EntityId, Damageable>
@@ -67,7 +68,7 @@ export class EntityManager {
     this.players = new SortedMap()
     this.moveables = new SortedSet()
     this.shooters = new SortedMap()
-    this.bullets = new SortedSet()
+    this.bullets = new SortedMap()
     this.turrets = new SortedMap()
     this.damagers = new SortedMap()
     this.damageables = new SortedMap()
@@ -202,7 +203,7 @@ export class EntityManager {
     }
 
     if (e.bullet) {
-      this.bullets.add(e.id)
+      this.bullets.set(e.id, e.bullet)
     }
 
     if (e.turret) {
