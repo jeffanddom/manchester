@@ -294,10 +294,8 @@ export class EntityManager {
       results.add(id)
     }
 
-    for (const [id, e] of this.entities) {
-      if (e.bullet) {
-        results.add(id)
-      }
+    for (const [id] of this.bullets) {
+      results.add(id)
     }
 
     return Array.from(results).sort()
