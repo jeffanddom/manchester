@@ -28,7 +28,7 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   private nextEntityId: number
-  entities: Map<EntityId, Entity> // TODO: make this private
+  private entities: Map<EntityId, Entity>
   private toDelete: Set<EntityId>
   private checkpointedEntities: Map<EntityId, Entity>
   private predictedRegistrations: Set<EntityId>
