@@ -9,19 +9,15 @@ import { tileBox, tileCoords } from '~/util/tileMath'
 
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
   for (const [id] of simState.entityManager.players) {
-    const player = simState.entityManager.entities.get(id)
-    if (!player /* TODO: should not be necessary */ || !player.transform) {
-      continue
-    }
-
-    const position = player.transform.position
+    const transform = simState.entityManager.transforms.get(id)!
+    const position = transform.position
     const checkAabb: [vec2, vec2] = [
       vec2.fromValues(position[0] - TILE_SIZE, position[1] - TILE_SIZE),
       vec2.fromValues(position[0] + TILE_SIZE, position[1] + TILE_SIZE),
     ]
     const queried = simState.entityManager.queryByWorldPos(checkAabb)
-    const playerBox = tileBox(player.transform.position)
-    const previousPlayerBox = tileBox(player.transform.previousPosition)
+    const playerBox = tileBox(position)
+    const previousPlayerBox = tileBox(transform.previousPosition)
 
     let collisions: {
       direction: DirectionCollision
@@ -137,10 +133,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     })
 
     if (collisions.length > 0) {
-      simState.entityManager.checkpoint(player.id)
-
-      // TypeScript issues a "possibly-undefined" error without this binding. Why?
-      const transform = player.transform
+      simState.entityManager.checkpoint(id)
 
       // Halt motion for collided edges
       collisions.forEach((collision) => {
@@ -174,7 +167,6 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
             break
         }
       })
-      player.transform = transform
     }
   }
 }
