@@ -27,16 +27,11 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
 
     for (const index in queried) {
       const queriedId = queried[index]
-      const other = simState.entityManager.entities.get(queriedId)
-      if (
-        !other || // query includes deleted entities (TODO: it shouldn't!)
-        !other.wall || // query includes non-walls
-        !other.transform
-      ) {
+      if (!simState.entityManager.walls.has(queriedId)) {
         continue
       }
 
-      const otherTransform = other.transform
+      const otherTransform = simState.entityManager.transforms.get(queriedId)!
       const wallBox = tileBox(otherTransform.position)
 
       if (aabbOverlap(playerBox, wallBox)) {

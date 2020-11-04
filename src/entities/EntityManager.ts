@@ -48,6 +48,7 @@ export class EntityManager {
   obscurings: SortedSet<EntityId>
   obscureds: SortedSet<EntityId>
   hitboxes: SortedMap<EntityId, Hitbox>
+  walls: SortedSet<EntityId>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -75,6 +76,7 @@ export class EntityManager {
     this.obscurings = new SortedSet()
     this.obscureds = new SortedSet()
     this.hitboxes = new SortedMap()
+    this.walls = new SortedSet()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -238,6 +240,10 @@ export class EntityManager {
       this.hitboxes.set(e.id, e.hitbox)
     }
 
+    if (e.wall) {
+      this.walls.add(e.id)
+    }
+
     // Quadtree: for now, only add non-moving objects.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
@@ -263,6 +269,7 @@ export class EntityManager {
     this.obscurings.delete(id)
     this.obscureds.delete(id)
     this.hitboxes.delete(id)
+    this.walls.delete(id)
 
     this.quadtree.remove(id)
   }
