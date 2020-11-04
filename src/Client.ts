@@ -377,17 +377,22 @@ export class Client {
     }
 
     this.debugDraw(() => {
-      return Object.values(this.entityManager.entities)
-        .filter((e) => e.wall)
-        .map((e) => ({
+      const res: Renderable[] = []
+
+      for (const id of this.entityManager.walls) {
+        const transform = this.entityManager.transforms.get(id)!
+        res.push({
           primitive: Primitive.RECT,
           strokeStyle: 'cyan',
-          pos: vec2.subtract(vec2.create(), e.transform!.position, [
+          pos: vec2.subtract(vec2.create(), transform.position, [
             TILE_SIZE / 2,
             TILE_SIZE / 2,
           ]),
           dimensions: [TILE_SIZE, TILE_SIZE],
-        }))
+        })
+      }
+
+      return res
     })
 
     this.debugDraw(
