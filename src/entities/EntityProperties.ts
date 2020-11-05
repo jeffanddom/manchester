@@ -14,44 +14,40 @@ import { TurretComponent } from '~/systems/turret'
 
 export interface EntityProperties {
   id: EntityId
-  type?: Type
 
-  // flags
-  dropType?: PickupType
-  harvestType?: PickupType
-  enablePlayfieldClamping?: boolean
-  obscured: boolean
-  obscuring: boolean
-  playerNumber?: number
-  pickupType?: PickupType
-  targetable: boolean
-  team: Team
-  wall: boolean
-  moveable: boolean
-
-  // data types
-  transform?: ITransform
-
-  // classes
-  builderCreator?: BuilderCreator
   builder?: BuilderComponent
+  builderCreator?: BuilderCreator
   bullet?: Bullet
   damageable?: Damageable
   damager?: Damager
+  dropType?: PickupType
+  harvestType?: PickupType
   hitbox?: Hitbox
   inventory?: PickupType[]
+  moveable: boolean
+  obscured: boolean
+  obscuring: boolean
+  pickupType?: PickupType
+  playerNumber?: number
+  playfieldClamped?: boolean
   renderable?: IRenderable
   shooter?: ShooterComponent
+  targetable: boolean
+  team: Team
+  transform?: ITransform
   turret?: TurretComponent
+  type?: Type
+  wall: boolean
 }
 
 export const makeDefaultEntity = (): EntityProperties => {
   return {
     id: '' as EntityId,
-    enablePlayfieldClamping: false,
+
     moveable: false,
     obscured: false,
     obscuring: false,
+    playfieldClamped: false,
     targetable: false,
     team: Team.Neutral,
     wall: false,

@@ -18,7 +18,7 @@ export const makePlayer = (): EntityProperties => {
   const e = makeDefaultEntity()
   e.type = Type.PLAYER
 
-  e.enablePlayfieldClamping = true
+  e.playfieldClamped = true
   e.targetable = true
   e.team = Team.Friendly
   e.moveable = true

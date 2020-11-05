@@ -45,7 +45,7 @@ export class EntityManager {
   moveables: SortedSet<EntityId>
   obscureds: SortedSet<EntityId>
   obscurings: SortedSet<EntityId>
-  players: SortedMap<EntityId, number>
+  playerNumbers: SortedMap<EntityId, number>
   playfieldClamped: SortedSet<EntityId>
   renderables: SortedMap<EntityId, IRenderable>
   shooters: SortedMap<EntityId, ShooterComponent>
@@ -75,7 +75,7 @@ export class EntityManager {
     this.moveables = new SortedSet()
     this.obscureds = new SortedSet()
     this.obscurings = new SortedSet()
-    this.players = new SortedMap()
+    this.playerNumbers = new SortedMap()
     this.playfieldClamped = new SortedSet()
     this.renderables = new SortedMap()
     this.shooters = new SortedMap()
@@ -151,7 +151,7 @@ export class EntityManager {
   }
 
   public getPlayerId(playerNumber: number): EntityId | undefined {
-    for (const [id, n] of this.players) {
+    for (const [id, n] of this.playerNumbers) {
       if (n === playerNumber) {
         return id
       }
@@ -203,10 +203,10 @@ export class EntityManager {
     }
 
     if (e.playerNumber) {
-      this.players.set(e.id, e.playerNumber)
+      this.playerNumbers.set(e.id, e.playerNumber)
     }
 
-    if (e.enablePlayfieldClamping) {
+    if (e.playfieldClamped) {
       this.playfieldClamped.add(e.id)
     }
 
@@ -265,7 +265,7 @@ export class EntityManager {
     this.moveables.delete(id)
     this.obscureds.delete(id)
     this.obscurings.delete(id)
-    this.players.delete(id)
+    this.playerNumbers.delete(id)
     this.playfieldClamped.delete(id)
     this.renderables.delete(id)
     this.shooters.delete(id)
@@ -310,12 +310,12 @@ export class EntityManager {
       e.hitbox = hitbox.clone()
     }
 
-    const player = this.players.get(id)
-    if (player) {
-      e.playerNumber = player
+    const playerNumber = this.playerNumbers.get(id)
+    if (playerNumber) {
+      e.playerNumber = playerNumber
     }
 
-    e.enablePlayfieldClamping = this.playfieldClamped.has(id)
+    e.playfieldClamped = this.playfieldClamped.has(id)
 
     const renderable = this.renderables.get(id)
     if (renderable) {
@@ -352,7 +352,7 @@ export class EntityManager {
     )
 
     // Add all known moving entities (which are not yet added to the quadtree)
-    for (const [id] of this.players) {
+    for (const [id] of this.playerNumbers) {
       results.add(id)
     }
 
