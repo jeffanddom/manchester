@@ -1,8 +1,6 @@
 import { vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
-import { Type } from './types'
-
 import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
@@ -12,6 +10,7 @@ import * as transform from '~/components/transform'
 import { ITransform } from '~/components/transform'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
+import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
@@ -202,7 +201,7 @@ export class EntityManager {
       this.moveables.add(id)
     }
 
-    if (e.playerNumber) {
+    if (e.playerNumber !== undefined) {
       this.playerNumbers.set(id, e.playerNumber)
     }
 
@@ -230,7 +229,9 @@ export class EntityManager {
       this.targetables.add(id)
     }
 
-    this.teams.set(id, e.team)
+    if (e.team !== undefined) {
+      this.teams.set(id, e.team)
+    }
 
     if (e.transform) {
       this.transforms.set(id, e.transform)
@@ -280,14 +281,7 @@ export class EntityManager {
   }
 
   private snapshotEntityComponents(id: EntityId): EntityComponents {
-    const e: EntityComponents = {
-      moveable: this.moveables.has(id),
-      obscured: this.obscureds.has(id),
-      obscuring: this.obscurings.has(id),
-      targetable: this.targetables.has(id),
-      team: this.teams.get(id)!,
-      wall: this.walls.has(id),
-    }
+    const e: EntityComponents = {}
 
     const bullet = this.bullets.get(id)
     if (bullet) {
@@ -304,13 +298,24 @@ export class EntityManager {
       e.damager = damager.clone()
     }
 
+    const dropType = this.dropTypes.get(id)
+    if (dropType) {
+      e.dropType = dropType
+    }
+
     const hitbox = this.hitboxes.get(id)
     if (hitbox) {
       e.hitbox = hitbox.clone()
     }
 
+    e.moveable = this.moveables.has(id)
+
+    e.obscured = this.obscureds.has(id)
+
+    e.obscuring = this.obscurings.has(id)
+
     const playerNumber = this.playerNumbers.get(id)
-    if (playerNumber) {
+    if (playerNumber !== undefined) {
       e.playerNumber = playerNumber
     }
 
@@ -324,6 +329,13 @@ export class EntityManager {
     const shooter = this.shooters.get(id)
     if (shooter) {
       e.shooter = shooter.clone()
+    }
+
+    e.targetable = this.targetables.has(id)
+
+    const team = this.teams.get(id)
+    if (team !== undefined) {
+      e.team = team
     }
 
     const xform = this.transforms.get(id)
@@ -340,6 +352,8 @@ export class EntityManager {
     if (type) {
       e.type = type
     }
+
+    e.wall = this.walls.has(id)
 
     return e
   }
