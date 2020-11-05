@@ -28,11 +28,11 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   private nextEntityId: number
-  private entities: Map<EntityId, Entity>
-  private toDelete: Set<EntityId>
-  private checkpointedEntities: Map<EntityId, Entity>
-  private predictedRegistrations: Set<EntityId>
-  private predictedDeletes: Set<EntityId>
+  private entities: Map<EntityId, Entity> // TODO: delete this map. It's redundant to the component lists.
+  private toDelete: SortedSet<EntityId>
+  private checkpointedEntities: SortedMap<EntityId, Entity>
+  private predictedRegistrations: SortedSet<EntityId>
+  private predictedDeletes: SortedSet<EntityId>
 
   // TODO: make these private
   transforms: SortedMap<EntityId, ITransform>
@@ -59,10 +59,10 @@ export class EntityManager {
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
     this.entities = new Map()
-    this.toDelete = new Set()
-    this.checkpointedEntities = new Map()
-    this.predictedRegistrations = new Set()
-    this.predictedDeletes = new Set()
+    this.toDelete = new SortedSet()
+    this.checkpointedEntities = new SortedMap()
+    this.predictedRegistrations = new SortedSet()
+    this.predictedDeletes = new SortedSet()
 
     this.transforms = new SortedMap()
     this.players = new SortedMap()
@@ -96,7 +96,7 @@ export class EntityManager {
       this.unindexEntity(id)
       this.predictedDeletes.add(id)
     }
-    this.toDelete = new Set()
+    this.toDelete = new SortedSet()
   }
 
   /**
@@ -124,18 +124,21 @@ export class EntityManager {
     for (const [, entity] of this.checkpointedEntities) {
       this.indexEntity(entity)
     }
-    this.checkpointedEntities = new Map()
-    this.predictedDeletes = new Set()
+    this.checkpointedEntities = new SortedMap()
+    this.predictedDeletes = new SortedSet()
 
-    this.predictedRegistrations.forEach((id) => this.unindexEntity(id))
-    this.nextEntityId -= this.predictedRegistrations.size
-    this.predictedRegistrations = new Set()
+    for (const id of this.predictedRegistrations) {
+      this.unindexEntity(id)
+    }
+
+    this.nextEntityId -= this.predictedRegistrations.size()
+    this.predictedRegistrations = new SortedSet()
   }
 
   public commitPrediction(): void {
-    this.predictedRegistrations = new Set()
-    this.predictedDeletes = new Set()
-    this.checkpointedEntities = new Map()
+    this.predictedRegistrations = new SortedSet()
+    this.predictedDeletes = new SortedSet()
+    this.checkpointedEntities = new SortedMap()
   }
 
   public getRenderables(aabb: [vec2, vec2]): Renderable[] {
