@@ -30,7 +30,6 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   private nextEntityId: number
-  private entities: Map<EntityId, EntityProperties> // TODO: delete this map. It's redundant to the component lists.
   private toDelete: SortedSet<EntityId>
   private checkpointedEntities: SortedMap<EntityId, EntityProperties>
   private predictedRegistrations: SortedSet<EntityId>
@@ -62,7 +61,6 @@ export class EntityManager {
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
-    this.entities = new Map()
     this.toDelete = new SortedSet()
     this.checkpointedEntities = new SortedMap()
     this.predictedRegistrations = new SortedSet()
@@ -176,8 +174,6 @@ export class EntityManager {
   }
 
   private indexEntity(e: EntityProperties): void {
-    this.entities.set(e.id, e)
-
     if (e.type) {
       this.types.set(e.id, e.type)
     }
@@ -260,8 +256,6 @@ export class EntityManager {
   }
 
   private unindexEntity(id: EntityId): void {
-    this.entities.delete(id)
-
     this.types.delete(id)
     this.transforms.delete(id)
     this.players.delete(id)
