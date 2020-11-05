@@ -2,11 +2,11 @@ import { mat2d, vec2 } from 'gl-matrix'
 
 import { Client } from '~/Client'
 import { TILE_SIZE } from '~/constants'
-import { EntityProperties } from '~/entities/EntityProperties'
+import { EntityComponents } from '~/entities/EntityComponents'
 import { PickupModels } from '~/entities/pickup'
 import { Primitive } from '~/renderer/interfaces'
 
-export const update = (c: Client, player: EntityProperties): void => {
+export const update = (c: Client, player: EntityComponents): void => {
   if (!player) {
     return
   }

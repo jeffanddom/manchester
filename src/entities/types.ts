@@ -1,4 +1,4 @@
-import { EntityProperties } from '~/entities/EntityProperties'
+import { EntityComponents } from '~/entities/EntityComponents'
 import { makeCorePickup } from '~/entities/pickups/core'
 import { makePlayer } from '~/entities/player'
 import { makeTree } from '~/entities/tree'
@@ -37,7 +37,7 @@ export const typeDefinitions = {
   },
 }
 
-export const make = (t: Type): EntityProperties => {
+export const make = (t: Type): EntityComponents => {
   for (const k in typeDefinitions) {
     if (k !== t) {
       continue

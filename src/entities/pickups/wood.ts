@@ -4,14 +4,14 @@ import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
-  EntityProperties,
+  EntityComponents,
   makeDefaultEntity,
-} from '~/entities/EntityProperties'
+} from '~/entities/EntityComponents'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { PickupType } from '~/systems/pickups'
 
-export const makeWoodPickup = (): EntityProperties => {
+export const makeWoodPickup = (): EntityComponents => {
   const e = makeDefaultEntity()
   e.transform = transform.make()
   e.pickupType = PickupType.Wood

@@ -5,16 +5,16 @@ import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
-  EntityProperties,
+  EntityComponents,
   makeDefaultEntity,
-} from '~/entities/EntityProperties'
+} from '~/entities/EntityComponents'
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { BuilderCreator } from '~/systems/builder'
 import { ShooterComponent } from '~/systems/shooter'
 
-export const makePlayer = (): EntityProperties => {
+export const makePlayer = (): EntityComponents => {
   const e = makeDefaultEntity()
   e.type = Type.PLAYER
 

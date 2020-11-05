@@ -11,7 +11,7 @@ import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
-export interface EntityProperties {
+export interface EntityComponents {
   builder?: BuilderComponent
   builderCreator?: BuilderCreator
   bullet?: Bullet
@@ -37,7 +37,7 @@ export interface EntityProperties {
   wall: boolean
 }
 
-export const makeDefaultEntity = (): EntityProperties => {
+export const makeDefaultEntity = (): EntityComponents => {
   return {
     moveable: false,
     obscured: false,

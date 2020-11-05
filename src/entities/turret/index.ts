@@ -5,16 +5,16 @@ import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
-  EntityProperties,
+  EntityComponents,
   makeDefaultEntity,
-} from '~/entities/EntityProperties'
+} from '~/entities/EntityComponents'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { PickupType } from '~/systems/pickups'
 import { TurretComponent } from '~/systems/turret'
 
-export const makeTurret = (): EntityProperties => {
+export const makeTurret = (): EntityComponents => {
   const e = makeDefaultEntity()
   e.type = Type.TURRET
 

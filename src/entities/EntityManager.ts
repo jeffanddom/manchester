@@ -10,8 +10,8 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { ITransform } from '~/components/transform'
+import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
-import { EntityProperties } from '~/entities/EntityProperties'
 import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
@@ -31,7 +31,7 @@ type QuadtreeEntity = {
 export class EntityManager {
   private nextEntityId: number
   private toDelete: SortedSet<EntityId>
-  private checkpointedEntities: SortedMap<EntityId, EntityProperties>
+  private checkpointedEntities: SortedMap<EntityId, EntityComponents>
   private predictedRegistrations: SortedSet<EntityId>
   private predictedDeletes: SortedSet<EntityId>
 
@@ -114,7 +114,7 @@ export class EntityManager {
       return
     }
 
-    this.checkpointedEntities.set(id, this.getEntityProperties(id))
+    this.checkpointedEntities.set(id, this.snapshotEntityComponents(id))
   }
 
   public undoPrediction(): void {
@@ -160,7 +160,7 @@ export class EntityManager {
     return undefined
   }
 
-  public register(e: EntityProperties): void {
+  public register(e: EntityComponents): void {
     const id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++
     this.predictedRegistrations.add(id)
@@ -173,7 +173,7 @@ export class EntityManager {
     this.toDelete.add(id)
   }
 
-  private indexEntity(id: EntityId, e: EntityProperties): void {
+  private indexEntity(id: EntityId, e: EntityComponents): void {
     if (e.bullet) {
       this.bullets.set(id, e.bullet)
     }
@@ -279,8 +279,8 @@ export class EntityManager {
     this.quadtree.remove(id)
   }
 
-  private getEntityProperties(id: EntityId): EntityProperties {
-    const e: EntityProperties = {
+  private snapshotEntityComponents(id: EntityId): EntityComponents {
+    const e: EntityComponents = {
       moveable: this.moveables.has(id),
       obscured: this.obscureds.has(id),
       obscuring: this.obscurings.has(id),
