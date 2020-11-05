@@ -6,6 +6,8 @@ import { IRenderable } from '~/components/IRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
+import { EntityManager } from '~/entities/EntityManager'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
@@ -21,12 +23,13 @@ class TreeRenderable implements IRenderable {
   constructor() {
     this.fillStyle = sample(['green', 'forestgreen', 'darkgreen']) || 'green'
   }
-  getRenderables(e: Entity): Renderable[] {
+  getRenderables(
+    entityManager: EntityManager,
+    entityId: EntityId,
+  ): Renderable[] {
+    const t = entityManager.transforms.get(entityId)!
     return toRenderables(models.tree, {
-      worldTransform: mat2d.fromTranslation(
-        mat2d.create(),
-        e.transform!.position,
-      ),
+      worldTransform: mat2d.fromTranslation(mat2d.create(), t.position),
       itemFillStyles: {
         body: this.fillStyle,
       },

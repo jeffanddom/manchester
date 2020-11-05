@@ -1,6 +1,7 @@
-import { Entity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
+import { EntityManager } from '~/entities/EntityManager'
 import { Renderable } from '~/renderer/interfaces'
 
 export interface IRenderable {
-  getRenderables(e: Entity): Renderable[]
+  getRenderables(entityManager: EntityManager, entityId: EntityId): Renderable[]
 }

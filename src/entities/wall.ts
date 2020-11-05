@@ -5,6 +5,8 @@ import { IRenderable } from '~/components/IRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import { EntityId } from '~/entities/EntityId'
+import { EntityManager } from '~/entities/EntityManager'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
@@ -15,16 +17,19 @@ import { lerp } from '~/util/math'
 const WALL_HEALTH = 4.0
 
 class WallRenderable implements IRenderable {
-  getRenderables(e: Entity): Renderable[] {
-    const color = lerp(90, 130, e!.damageable!.health / WALL_HEALTH)
+  getRenderables(
+    entityManager: EntityManager,
+    entityId: EntityId,
+  ): Renderable[] {
+    const damageable = entityManager.damageables.get(entityId)!
+    const transform = entityManager.transforms.get(entityId)!
+
+    const color = lerp(90, 130, damageable.health / WALL_HEALTH)
 
     return toRenderables(models.wall, {
-      worldTransform: mat2d.fromTranslation(
-        mat2d.create(),
-        e.transform!.position,
-      ),
+      worldTransform: mat2d.fromTranslation(mat2d.create(), transform.position),
       itemTransforms: {
-        gun: mat2d.fromRotation(mat2d.create(), e.transform!.orientation),
+        gun: mat2d.fromRotation(mat2d.create(), transform.orientation),
       },
       itemFillStyles: {
         body: `rgba(${color},${color},${color},1)`,

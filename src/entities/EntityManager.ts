@@ -145,7 +145,7 @@ export class EntityManager {
       if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
         continue
       }
-      renderables.push(...e.renderable.getRenderables(e))
+      renderables.push(...e.renderable.getRenderables(this, id))
     }
     return renderables
   }
