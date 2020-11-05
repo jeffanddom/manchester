@@ -6,6 +6,7 @@ import { Type } from './types'
 import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
+import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
@@ -52,6 +53,7 @@ export class EntityManager {
   hitboxes: SortedMap<EntityId, Hitbox>
   walls: SortedSet<EntityId>
   dropTypes: SortedMap<EntityId, PickupType>
+  renderables: SortedMap<EntityId, IRenderable>
 
   // To include: walls, trees, turrets
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -81,6 +83,7 @@ export class EntityManager {
     this.hitboxes = new SortedMap()
     this.walls = new SortedSet()
     this.dropTypes = new SortedMap()
+    this.renderables = new SortedMap()
 
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
@@ -144,11 +147,11 @@ export class EntityManager {
   public getRenderables(aabb: [vec2, vec2]): Renderable[] {
     const renderables: Renderable[] = []
     for (const id of this.queryByWorldPos(aabb)) {
-      const e = this.entities.get(id)
-      if (!e /* TODO: we shouldn't need this */ || !e.renderable) {
+      const r = this.renderables.get(id)
+      if (!r) {
         continue
       }
-      renderables.push(...e.renderable.getRenderables(this, id))
+      renderables.push(...r.getRenderables(this, id))
     }
     return renderables
   }
@@ -245,6 +248,10 @@ export class EntityManager {
       this.dropTypes.set(e.id, e.dropType)
     }
 
+    if (e.renderable) {
+      this.renderables.set(e.id, e.renderable)
+    }
+
     // Quadtree: for now, only add non-moving objects.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
@@ -272,6 +279,7 @@ export class EntityManager {
     this.hitboxes.delete(id)
     this.walls.delete(id)
     this.dropTypes.delete(id)
+    this.renderables.delete(id)
 
     this.quadtree.remove(id)
   }
