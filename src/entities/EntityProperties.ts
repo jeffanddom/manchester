@@ -12,7 +12,7 @@ import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
-export interface Entity {
+export interface EntityProperties {
   id: EntityId
   type?: Type
 
@@ -45,7 +45,7 @@ export interface Entity {
   turret?: TurretComponent
 }
 
-export const makeDefaultEntity = (): Entity => {
+export const makeDefaultEntity = (): EntityProperties => {
   return {
     id: '' as EntityId,
     enablePlayfieldClamping: false,

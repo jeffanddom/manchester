@@ -10,8 +10,8 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { ITransform } from '~/components/transform'
-import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
+import { EntityProperties } from '~/entities/EntityProperties'
 import { Hitbox } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
@@ -30,9 +30,9 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   private nextEntityId: number
-  private entities: Map<EntityId, Entity> // TODO: delete this map. It's redundant to the component lists.
+  private entities: Map<EntityId, EntityProperties> // TODO: delete this map. It's redundant to the component lists.
   private toDelete: SortedSet<EntityId>
-  private checkpointedEntities: SortedMap<EntityId, Entity>
+  private checkpointedEntities: SortedMap<EntityId, EntityProperties>
   private predictedRegistrations: SortedSet<EntityId>
   private predictedDeletes: SortedSet<EntityId>
 
@@ -162,7 +162,7 @@ export class EntityManager {
     return undefined
   }
 
-  public register(e: Entity): void {
+  public register(e: EntityProperties): void {
     e.id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++
     this.predictedRegistrations.add(e.id)
@@ -175,7 +175,7 @@ export class EntityManager {
     this.toDelete.add(id)
   }
 
-  private indexEntity(e: Entity): void {
+  private indexEntity(e: EntityProperties): void {
     this.entities.set(e.id, e)
 
     if (e.type) {
@@ -285,8 +285,8 @@ export class EntityManager {
     this.quadtree.remove(id)
   }
 
-  private getEntityProperties(id: EntityId): Entity {
-    const e: Entity = {
+  private getEntityProperties(id: EntityId): EntityProperties {
+    const e: EntityProperties = {
       id,
       obscured: this.obscureds.has(id),
       obscuring: this.obscurings.has(id),

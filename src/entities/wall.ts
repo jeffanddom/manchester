@@ -4,9 +4,12 @@ import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity, makeDefaultEntity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
+import {
+  EntityProperties,
+  makeDefaultEntity,
+} from '~/entities/EntityProperties'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
@@ -38,7 +41,7 @@ class WallRenderable implements IRenderable {
   }
 }
 
-export const makeWall = (): Entity => {
+export const makeWall = (): EntityProperties => {
   const e = makeDefaultEntity()
   e.type = Type.WALL
 

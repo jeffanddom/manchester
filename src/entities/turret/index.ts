@@ -4,14 +4,17 @@ import { Damageable } from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import {
+  EntityProperties,
+  makeDefaultEntity,
+} from '~/entities/EntityProperties'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { PickupType } from '~/systems/pickups'
 import { TurretComponent } from '~/systems/turret'
 
-export const makeTurret = (): Entity => {
+export const makeTurret = (): EntityProperties => {
   const e = makeDefaultEntity()
   e.type = Type.TURRET
 

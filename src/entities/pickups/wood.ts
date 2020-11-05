@@ -3,12 +3,15 @@ import { vec2 } from 'gl-matrix'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
-import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import {
+  EntityProperties,
+  makeDefaultEntity,
+} from '~/entities/EntityProperties'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { PickupType } from '~/systems/pickups'
 
-export const makeWoodPickup = (): Entity => {
+export const makeWoodPickup = (): EntityProperties => {
   const e = makeDefaultEntity()
   e.transform = transform.make()
   e.pickupType = PickupType.Wood

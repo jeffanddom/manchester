@@ -4,7 +4,10 @@ import { Bullet } from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/transform'
-import { Entity, makeDefaultEntity } from '~/entities/Entity'
+import {
+  EntityProperties,
+  makeDefaultEntity,
+} from '~/entities/EntityProperties'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 
@@ -16,7 +19,7 @@ export const makeBullet = ({
   position: vec2
   owner: string
   orientation: number
-}): Entity => {
+}): EntityProperties => {
   const e = makeDefaultEntity()
 
   e.moveable = true
