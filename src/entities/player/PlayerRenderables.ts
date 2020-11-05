@@ -6,27 +6,21 @@ import { EntityManager } from '~/entities/EntityManager'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Renderable } from '~/renderer/interfaces'
-import { ShooterComponent } from '~/systems/shooter'
 
 export class PlayerRenderables implements IRenderable {
-  shooter: ShooterComponent
-
-  constructor(shooter: ShooterComponent) {
-    this.shooter = shooter
-  }
-
   getRenderables(
     entityManager: EntityManager,
     entityId: EntityId,
   ): Renderable[] {
     const t = entityManager.transforms.get(entityId)!
     const obscured = entityManager.obscureds.has(entityId)
+    const shooter = entityManager.shooters.get(entityId)!
 
     return toRenderables(models.tank, {
       worldTransform: mat2d.fromTranslation(mat2d.create(), t.position),
       itemTransforms: {
         body: mat2d.fromRotation(mat2d.create(), t.orientation),
-        gun: mat2d.fromRotation(mat2d.create(), this.shooter.orientation),
+        gun: mat2d.fromRotation(mat2d.create(), shooter.orientation),
       },
       itemFillStyles: {
         body: obscured ? 'rgba(0,0,0,0.65)' : 'black',

@@ -17,3 +17,9 @@ export const make = (): ITransform => ({
   position: vec2.create(),
   orientation: 0,
 })
+
+export const clone = (src: ITransform): ITransform => ({
+  previousPosition: vec2.clone(src.previousPosition),
+  position: vec2.clone(src.position),
+  orientation: src.orientation,
+})

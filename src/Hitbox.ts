@@ -20,4 +20,8 @@ export class Hitbox {
       ),
     ]
   }
+
+  clone(): Hitbox {
+    return new Hitbox(vec2.clone(this.offset), vec2.clone(this.dimensions))
+  }
 }

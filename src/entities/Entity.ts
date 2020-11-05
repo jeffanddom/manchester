@@ -27,7 +27,6 @@ export interface Entity {
   targetable: boolean
   team: Team
   wall: boolean
-  wallCollider: boolean
   moveable: boolean
 
   // data types
@@ -56,6 +55,5 @@ export const makeDefaultEntity = (): Entity => {
     targetable: false,
     team: Team.Neutral,
     wall: false,
-    wallCollider: false,
   }
 }

@@ -19,6 +19,12 @@ export class TurretComponent {
   constructor() {
     this.cooldownTtl = 0
   }
+
+  clone(): TurretComponent {
+    const c = new TurretComponent()
+    c.cooldownTtl = this.cooldownTtl
+    return c
+  }
 }
 
 export const update = (entityManager: EntityManager, dt: number): void => {

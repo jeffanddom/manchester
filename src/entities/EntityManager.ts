@@ -8,6 +8,7 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
+import * as transform from '~/components/transform'
 import { ITransform } from '~/components/transform'
 import { Entity } from '~/entities/Entity'
 import { EntityId } from '~/entities/EntityId'
@@ -115,14 +116,7 @@ export class EntityManager {
       return
     }
 
-    const copy = _.cloneDeep(this.entities.get(id)!)
-
-    // obscured is an example of a mutable flag with no container component.
-    // Since we are moving toward component tables, we need to remember the
-    // state of the flag in our memoized copy.
-    copy.obscured = this.obscureds.has(id)
-
-    this.checkpointedEntities.set(id, copy)
+    this.checkpointedEntities.set(id, this.getEntityProperties(id))
   }
 
   public undoPrediction(): void {
@@ -289,6 +283,72 @@ export class EntityManager {
     this.renderables.delete(id)
 
     this.quadtree.remove(id)
+  }
+
+  private getEntityProperties(id: EntityId): Entity {
+    const e: Entity = {
+      id,
+      obscured: this.obscureds.has(id),
+      obscuring: this.obscurings.has(id),
+      targetable: this.targetables.has(id),
+      team: this.teams.get(id)!,
+      wall: this.walls.has(id),
+      moveable: this.moveables.has(id),
+    }
+
+    const type = this.types.get(id)
+    if (type) {
+      e.type = type
+    }
+
+    const xform = this.transforms.get(id)
+    if (xform) {
+      e.transform = transform.clone(xform)
+    }
+
+    const player = this.players.get(id)
+    if (player) {
+      e.playerNumber = player
+    }
+
+    const shooter = this.shooters.get(id)
+    if (shooter) {
+      e.shooter = shooter.clone()
+    }
+
+    const bullet = this.bullets.get(id)
+    if (bullet) {
+      e.bullet = bullet.clone()
+    }
+
+    const turret = this.turrets.get(id)
+    if (turret) {
+      e.turret = turret.clone()
+    }
+
+    const damager = this.damagers.get(id)
+    if (damager) {
+      e.damager = damager.clone()
+    }
+
+    const damageable = this.damageables.get(id)
+    if (damageable) {
+      e.damageable = damageable.clone()
+    }
+
+    e.enablePlayfieldClamping = this.playfieldClamped.has(id)
+
+    const hitbox = this.hitboxes.get(id)
+    if (hitbox) {
+      e.hitbox = hitbox.clone()
+    }
+
+    const renderable = this.renderables.get(id)
+    if (renderable) {
+      e.renderable = _.cloneDeep(renderable)
+    }
+
+    return e
   }
 
   public queryByWorldPos(aabb: [vec2, vec2]): EntityId[] {

@@ -17,4 +17,10 @@ export class Damageable {
   aabb(transform: ITransform): [vec2, vec2] {
     return this.hitbox.aabb(transform.position)
   }
+
+  clone(): Damageable {
+    const c = new Damageable(this.maxHealth, this.hitbox.clone())
+    c.health = this.health
+    return c
+  }
 }

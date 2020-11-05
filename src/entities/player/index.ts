@@ -18,7 +18,6 @@ export const makePlayer = (): Entity => {
   e.enablePlayfieldClamping = true
   e.targetable = true
   e.team = Team.Friendly
-  e.wallCollider = true
   e.moveable = true
 
   const shooter = new ShooterComponent()
@@ -31,7 +30,7 @@ export const makePlayer = (): Entity => {
     ),
   )
   e.inventory = []
-  e.renderable = new PlayerRenderables(shooter)
+  e.renderable = new PlayerRenderables()
   e.hitbox = new Hitbox(
     vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),

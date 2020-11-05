@@ -25,6 +25,20 @@ export class ShooterComponent {
     this.orientation = 0
     this.input = { target: null, fire: false }
   }
+
+  clone(): ShooterComponent {
+    const c = new ShooterComponent()
+
+    c.cooldownTtl = this.cooldownTtl
+    c.lastFiredFrame = this.lastFiredFrame
+    c.orientation = this.orientation
+    c.input = {
+      target: this.input.target ? vec2.clone(this.input.target) : null,
+      fire: this.input.fire,
+    }
+
+    return c
+  }
 }
 
 export const update = (

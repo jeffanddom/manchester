@@ -25,4 +25,12 @@ export class Damager {
   aabb(transform: ITransform): [vec2, vec2] {
     return this.hitbox.aabb(transform.position)
   }
+
+  clone(): Damager {
+    return new Damager({
+      damageValue: this.damageValue,
+      hitbox: this.hitbox.clone(),
+      immuneList: this.immuneList.slice(),
+    })
+  }
 }
