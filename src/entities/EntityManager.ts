@@ -36,6 +36,7 @@ export class EntityManager {
   private predictedDeletes: SortedSet<EntityId>
 
   // TODO: make these private
+  types: SortedMap<EntityId, Type>
   transforms: SortedMap<EntityId, ITransform>
   players: SortedMap<EntityId, number>
   moveables: SortedSet<EntityId>
@@ -66,6 +67,7 @@ export class EntityManager {
     this.predictedRegistrations = new SortedSet()
     this.predictedDeletes = new SortedSet()
 
+    this.types = new SortedMap()
     this.transforms = new SortedMap()
     this.players = new SortedMap()
     this.moveables = new SortedSet()
@@ -182,12 +184,16 @@ export class EntityManager {
   private indexEntity(e: Entity): void {
     this.entities.set(e.id, e)
 
+    if (e.type) {
+      this.types.set(e.id, e.type)
+    }
+
     if (e.transform) {
       this.transforms.set(e.id, e.transform)
     }
 
-    if (e.type && e.type === Type.PLAYER) {
-      this.players.set(e.id, e.playerNumber!)
+    if (e.playerNumber) {
+      this.players.set(e.id, e.playerNumber)
     }
 
     if (e.moveable) {
@@ -262,6 +268,7 @@ export class EntityManager {
   private unindexEntity(id: EntityId): void {
     this.entities.delete(id)
 
+    this.types.delete(id)
     this.transforms.delete(id)
     this.players.delete(id)
     this.moveables.delete(id)
