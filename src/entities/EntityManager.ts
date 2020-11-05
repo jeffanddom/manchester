@@ -34,12 +34,11 @@ export class EntityManager {
   private predictedRegistrations: SortedSet<EntityId>
   private predictedDeletes: SortedSet<EntityId>
 
-  // TODO: make these private
+  // components
   bullets: SortedMap<EntityId, Bullet>
   damageables: SortedMap<EntityId, Damageable>
   damagers: SortedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
-  friendlyTeam: SortedSet<EntityId>
   hitboxes: SortedMap<EntityId, Hitbox>
   moveables: SortedSet<EntityId>
   obscureds: SortedSet<EntityId>
@@ -55,7 +54,8 @@ export class EntityManager {
   types: SortedMap<EntityId, Type>
   walls: SortedSet<EntityId>
 
-  // To include: walls, trees, turrets
+  // indexes
+  friendlyTeam: SortedSet<EntityId>
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
@@ -65,11 +65,11 @@ export class EntityManager {
     this.predictedRegistrations = new SortedSet()
     this.predictedDeletes = new SortedSet()
 
+    // components
     this.bullets = new SortedMap()
     this.damageables = new SortedMap()
     this.damagers = new SortedMap()
     this.dropTypes = new SortedMap()
-    this.friendlyTeam = new SortedSet()
     this.hitboxes = new SortedMap()
     this.moveables = new SortedSet()
     this.obscureds = new SortedSet()
@@ -85,6 +85,8 @@ export class EntityManager {
     this.types = new SortedMap()
     this.walls = new SortedSet()
 
+    // indexes
+    this.friendlyTeam = new SortedSet()
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
       aabb: playfieldAabb,
@@ -173,6 +175,8 @@ export class EntityManager {
   }
 
   private indexEntity(id: EntityId, e: EntityComponents): void {
+    // components
+
     if (e.bullet) {
       this.bullets.set(id, e.bullet)
     }
@@ -187,10 +191,6 @@ export class EntityManager {
 
     if (e.dropType) {
       this.dropTypes.set(id, e.dropType)
-    }
-
-    if (e.team === Team.Friendly) {
-      this.friendlyTeam.add(id)
     }
 
     if (e.hitbox) {
@@ -249,7 +249,13 @@ export class EntityManager {
       this.walls.add(id)
     }
 
-    // Quadtree: for now, only add non-moving objects.
+    // indexes
+
+    if (e.team === Team.Friendly) {
+      this.friendlyTeam.add(id)
+    }
+
+    // For now, only add non-moving objects to the quadtree.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
       this.quadtree.insert({ aabb: entityAabb, id: id })
@@ -257,11 +263,11 @@ export class EntityManager {
   }
 
   private unindexEntity(id: EntityId): void {
+    // components
     this.bullets.delete(id)
     this.damageables.delete(id)
     this.damagers.delete(id)
     this.dropTypes.delete(id)
-    this.friendlyTeam.delete(id)
     this.hitboxes.delete(id)
     this.moveables.delete(id)
     this.obscureds.delete(id)
@@ -277,6 +283,8 @@ export class EntityManager {
     this.types.delete(id)
     this.walls.delete(id)
 
+    // indexes
+    this.friendlyTeam.delete(id)
     this.quadtree.remove(id)
   }
 
