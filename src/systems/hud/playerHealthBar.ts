@@ -11,12 +11,12 @@ export const update = (
   },
   renderer: IRenderer,
 ): void => {
-  const player = simState.entityManager.getPlayer(simState.playerNumber)
-  if (!player) {
+  const playerId = simState.entityManager.getPlayerId(simState.playerNumber)
+  if (!playerId) {
     return
   }
 
-  const damageable = player.damageable!
+  const damageable = simState.entityManager.damageables.get(playerId)!
   const maxFill = 100
   const fill = lerp(
     0,

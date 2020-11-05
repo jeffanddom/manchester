@@ -160,16 +160,6 @@ export class EntityManager {
     return undefined
   }
 
-  public getPlayer(playerNumber: number): Entity | undefined {
-    for (const [id, n] of this.players) {
-      if (n === playerNumber) {
-        return this.entities.get(id)
-      }
-    }
-
-    return undefined
-  }
-
   public register(e: Entity): void {
     e.id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++

@@ -270,9 +270,10 @@ export class Client {
           this.emitters = this.emitters.filter((e) => !e.dead)
           this.emitters.forEach((e) => e.update(dt))
 
-          const player = this.entityManager.getPlayer(this.playerNumber)
-          if (player) {
-            this.camera.setPosition(player.transform!.position)
+          const playerId = this.entityManager.getPlayerId(this.playerNumber)
+          if (playerId) {
+            const transform = this.entityManager.transforms.get(playerId)!
+            this.camera.setPosition(transform.position)
           }
           this.camera.update(dt)
 
