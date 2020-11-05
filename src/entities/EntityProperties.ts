@@ -4,7 +4,6 @@ import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import { ITransform } from '~/components/transform'
-import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
@@ -13,8 +12,6 @@ import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
 export interface EntityProperties {
-  id: EntityId
-
   builder?: BuilderComponent
   builderCreator?: BuilderCreator
   bullet?: Bullet
@@ -42,8 +39,6 @@ export interface EntityProperties {
 
 export const makeDefaultEntity = (): EntityProperties => {
   return {
-    id: '' as EntityId,
-
     moveable: false,
     obscured: false,
     obscuring: false,

@@ -118,8 +118,8 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
-    for (const [, entity] of this.checkpointedEntities) {
-      this.indexEntity(entity)
+    for (const [id, entity] of this.checkpointedEntities) {
+      this.indexEntity(id, entity)
     }
     this.checkpointedEntities = new SortedMap()
     this.predictedDeletes = new SortedSet()
@@ -161,11 +161,11 @@ export class EntityManager {
   }
 
   public register(e: EntityProperties): void {
-    e.id = this.nextEntityId.toString() as EntityId
+    const id = this.nextEntityId.toString() as EntityId
     this.nextEntityId++
-    this.predictedRegistrations.add(e.id)
+    this.predictedRegistrations.add(id)
 
-    this.indexEntity(e)
+    this.indexEntity(id, e)
   }
 
   public markForDeletion(id: EntityId): void {
@@ -173,85 +173,85 @@ export class EntityManager {
     this.toDelete.add(id)
   }
 
-  private indexEntity(e: EntityProperties): void {
+  private indexEntity(id: EntityId, e: EntityProperties): void {
     if (e.bullet) {
-      this.bullets.set(e.id, e.bullet)
+      this.bullets.set(id, e.bullet)
     }
 
     if (e.damageable) {
-      this.damageables.set(e.id, e.damageable)
+      this.damageables.set(id, e.damageable)
     }
 
     if (e.damager) {
-      this.damagers.set(e.id, e.damager)
+      this.damagers.set(id, e.damager)
     }
 
     if (e.dropType) {
-      this.dropTypes.set(e.id, e.dropType)
+      this.dropTypes.set(id, e.dropType)
     }
 
     if (e.team === Team.Friendly) {
-      this.friendlyTeam.add(e.id)
+      this.friendlyTeam.add(id)
     }
 
     if (e.hitbox) {
-      this.hitboxes.set(e.id, e.hitbox)
+      this.hitboxes.set(id, e.hitbox)
     }
 
     if (e.moveable) {
-      this.moveables.add(e.id)
+      this.moveables.add(id)
     }
 
     if (e.playerNumber) {
-      this.playerNumbers.set(e.id, e.playerNumber)
+      this.playerNumbers.set(id, e.playerNumber)
     }
 
     if (e.playfieldClamped) {
-      this.playfieldClamped.add(e.id)
+      this.playfieldClamped.add(id)
     }
 
     if (e.obscured) {
-      this.obscureds.add(e.id)
+      this.obscureds.add(id)
     }
 
     if (e.obscuring) {
-      this.obscurings.add(e.id)
+      this.obscurings.add(id)
     }
 
     if (e.renderable) {
-      this.renderables.set(e.id, e.renderable)
+      this.renderables.set(id, e.renderable)
     }
 
     if (e.shooter) {
-      this.shooters.set(e.id, e.shooter)
+      this.shooters.set(id, e.shooter)
     }
 
     if (e.targetable) {
-      this.targetables.add(e.id)
+      this.targetables.add(id)
     }
 
-    this.teams.set(e.id, e.team)
+    this.teams.set(id, e.team)
 
     if (e.transform) {
-      this.transforms.set(e.id, e.transform)
+      this.transforms.set(id, e.transform)
     }
 
     if (e.turret) {
-      this.turrets.set(e.id, e.turret)
+      this.turrets.set(id, e.turret)
     }
 
     if (e.type) {
-      this.types.set(e.id, e.type)
+      this.types.set(id, e.type)
     }
 
     if (e.wall) {
-      this.walls.add(e.id)
+      this.walls.add(id)
     }
 
     // Quadtree: for now, only add non-moving objects.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
       const entityAabb = tileBox(e.transform!.position)
-      this.quadtree.insert({ aabb: entityAabb, id: e.id })
+      this.quadtree.insert({ aabb: entityAabb, id: id })
     }
   }
 
@@ -281,7 +281,6 @@ export class EntityManager {
 
   private getEntityProperties(id: EntityId): EntityProperties {
     const e: EntityProperties = {
-      id: id,
       moveable: this.moveables.has(id),
       obscured: this.obscureds.has(id),
       obscuring: this.obscurings.has(id),
