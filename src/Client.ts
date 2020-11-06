@@ -253,6 +253,11 @@ export class Client {
             systems.playerInput(this, this.simulationFrame)
           }
 
+          // We're unsure if we should increment the frame here;
+          // turret shooting seems to indicate that it's actually
+          // firing one frame early
+          // this.simulationFrame++
+
           simulate(
             {
               entityManager: this.entityManager,

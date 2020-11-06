@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-const BULLET_RANGE = 360
+const BULLET_RANGE = 250
 
 export class Bullet {
   origin: vec2
