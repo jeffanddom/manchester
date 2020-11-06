@@ -5,13 +5,15 @@ import { ITransform } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
-import { EntityManager } from '~/entities/EntityManager'
+import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { SimState } from '~/simulate'
 import { segmentToAabb } from '~/util/collision'
 import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
+import { SortedSet } from '~/util/SortedSet'
 
 const TURRET_ROT_SPEED = Math.PI / 2
-const RANGE = 240
-const COOLDOWN_PERIOD = 0.25
+const RANGE = 300
+const COOLDOWN_PERIOD = 0.33
 
 export class TurretComponent {
   cooldownTtl: number
@@ -27,16 +29,50 @@ export class TurretComponent {
   }
 }
 
-export const update = (entityManager: EntityManager, dt: number): void => {
-  for (const [id, turret] of entityManager.turrets) {
+export const update = (
+  simState: Pick<
+    SimState,
+    'entityManager' | 'frame' | 'registerParticleEmitter'
+  >,
+  dt: number,
+): void => {
+  const { entityManager, frame, registerParticleEmitter } = simState
+
+  const turretIds = new SortedSet<EntityId>()
+  for (const id of entityManager.friendlyTeam) {
+    const position = entityManager.transforms.get(id)!.position
+    const searchSpace: [vec2, vec2] = [
+      vec2.sub(vec2.create(), position, vec2.fromValues(RANGE, RANGE)),
+      vec2.add(vec2.create(), position, vec2.fromValues(RANGE, RANGE)),
+    ]
+    for (const turretId of entityManager.queryByWorldPos(searchSpace)) {
+      if (entityManager.turrets.has(turretId)) {
+        turretIds.add(turretId)
+      }
+    }
+  }
+
+  for (const id of turretIds) {
+    const turret = entityManager.turrets.get(id)!
     const transform = entityManager.transforms.get(id)!
     const team = entityManager.teams.get(id)!
 
     // I. Find a target
 
     const shootables: { id: EntityId; transform: ITransform }[] = []
-    for (const targetId of entityManager.targetables) {
-      if (targetId === id || entityManager.obscureds.has(targetId)) {
+    const turretOrigin = transform.position
+
+    const searchSpace: [vec2, vec2] = [
+      vec2.sub(vec2.create(), turretOrigin, vec2.fromValues(RANGE, RANGE)),
+      vec2.add(vec2.create(), turretOrigin, vec2.fromValues(RANGE, RANGE)),
+    ]
+
+    for (const targetId of entityManager.queryByWorldPos(searchSpace)) {
+      if (
+        targetId === id ||
+        !entityManager.targetables.has(targetId) ||
+        entityManager.obscureds.has(targetId)
+      ) {
         continue
       }
 
@@ -88,6 +124,8 @@ export const update = (entityManager: EntityManager, dt: number): void => {
       continue
     }
 
+    entityManager.checkpoint(id)
+
     // g.debugDraw(() => [
     //   {
     //     primitive: Primitive.LINE,
@@ -130,17 +168,24 @@ export const update = (entityManager: EntityManager, dt: number): void => {
       }),
     )
 
-    // const muzzleFlash = new ParticleEmitter({
-    //   spawnTtl: 0.1,
-    //   position: bulletPos,
-    //   particleTtl: 0.065,
-    //   particleRadius: 3,
-    //   particleRate: 240,
-    //   particleSpeedRange: [120, 280],
-    //   orientation: e.transform!.orientation,
-    //   arc: Math.PI / 4,
-    //   colors: ['#FF9933', '#CCC', '#FFF'],
-    // })
-    // g.client.emitters.push(muzzleFlash)
+    const muzzleFlash = new ParticleEmitter({
+      spawnTtl: 0.1,
+      position: bulletPos,
+      particleTtl: 0.065,
+      particleRadius: 3,
+      particleRate: 240,
+      particleSpeedRange: [120, 280],
+      orientation: transform!.orientation,
+      arc: Math.PI / 4,
+      colors: ['#FF9933', '#CCC', '#FFF'],
+    })
+
+    if (registerParticleEmitter) {
+      registerParticleEmitter({
+        emitter: muzzleFlash,
+        entity: id,
+        frame: frame,
+      })
+    }
   }
 }
