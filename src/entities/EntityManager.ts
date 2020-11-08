@@ -162,7 +162,7 @@ export class EntityManager {
   }
 
   public register(e: EntityComponents): void {
-    const id = this.nextEntityId.toString() as EntityId
+    const id = this.nextEntityId as EntityId
     this.nextEntityId++
     this.predictedRegistrations.add(id)
 

@@ -8,6 +8,7 @@ import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
+import { EntityId } from '~/entities/EntityId'
 import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 
@@ -17,7 +18,7 @@ export const makeBullet = ({
   orientation,
 }: {
   position: vec2
-  owner: string
+  owner: EntityId
   orientation: number
 }): EntityComponents => {
   const e = makeDefaultEntity()
