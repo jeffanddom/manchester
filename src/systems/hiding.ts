@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import { EntityManager } from '~/entities/EntityManager'
 import { aabbOverlapArea } from '~/util/math'
 
