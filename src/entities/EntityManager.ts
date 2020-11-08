@@ -33,7 +33,6 @@ export class EntityManager {
   private toDelete: SortedSet<EntityId>
   private checkpointedEntities: SortedMap<EntityId, EntityComponents>
   private predictedRegistrations: SortedSet<EntityId>
-  private predictedDeletes: SortedSet<EntityId>
 
   // components
   bullets: SortedMap<EntityId, Bullet>
@@ -65,7 +64,6 @@ export class EntityManager {
     this.toDelete = new SortedSet()
     this.checkpointedEntities = new SortedMap()
     this.predictedRegistrations = new SortedSet()
-    this.predictedDeletes = new SortedSet()
 
     // components
     this.bullets = new SortedMap()
@@ -101,7 +99,6 @@ export class EntityManager {
   public update(): void {
     for (const id of this.toDelete) {
       this.unindexEntity(id)
-      this.predictedDeletes.add(id)
     }
     this.toDelete = new SortedSet()
   }
@@ -125,7 +122,6 @@ export class EntityManager {
       this.indexEntity(id, entity)
     }
     this.checkpointedEntities = new SortedMap()
-    this.predictedDeletes = new SortedSet()
 
     for (const id of this.predictedRegistrations) {
       this.unindexEntity(id)
@@ -137,7 +133,6 @@ export class EntityManager {
 
   public commitPrediction(): void {
     this.predictedRegistrations = new SortedSet()
-    this.predictedDeletes = new SortedSet()
     this.checkpointedEntities = new SortedMap()
   }
 
