@@ -21,13 +21,13 @@ describe('Quadtree', () => {
   test('basic usage', () => {
     const items: TestItem[] = [
       { id: 'a', pos: vec2.fromValues(0.5, 1.5) },
-      { id: 'a', pos: vec2.fromValues(1.5, 1.5) },
-      { id: 'a', pos: vec2.fromValues(0.5, 2.5) },
-      { id: 'a', pos: vec2.fromValues(1.5, 2.5) },
-      { id: 'a', pos: vec2.fromValues(3.5, 1.5) },
-      { id: 'a', pos: vec2.fromValues(3.5, 2.5) },
-      { id: 'a', pos: vec2.fromValues(1, 4) },
-      { id: 'a', pos: vec2.fromValues(3, 4) },
+      { id: 'b', pos: vec2.fromValues(1.5, 1.5) },
+      { id: 'c', pos: vec2.fromValues(0.5, 2.5) },
+      { id: 'd', pos: vec2.fromValues(1.5, 2.5) },
+      { id: 'e', pos: vec2.fromValues(3.5, 1.5) },
+      { id: 'f', pos: vec2.fromValues(3.5, 2.5) },
+      { id: 'g', pos: vec2.fromValues(1, 4) },
+      { id: 'h', pos: vec2.fromValues(3, 4) },
     ]
 
     const qt = new Quadtree<string, TestItem>({
