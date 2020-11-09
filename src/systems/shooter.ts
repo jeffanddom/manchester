@@ -65,24 +65,23 @@ export const update = (
       return
     }
 
-    simState.entityManager.checkpoint(id)
-
+    const shooterMutable = simState.entityManager.shooters.checkpoint(id)!
     const transform = simState.entityManager.transforms.get(id)!
 
-    shooter.lastFiredFrame = message.frame
-    shooter.orientation = getAngle(transform.position, message.targetPos)
+    shooterMutable.lastFiredFrame = message.frame
+    shooterMutable.orientation = getAngle(transform.position, message.targetPos)
 
     const bulletPos = radialTranslate2(
       vec2.create(),
       transform.position,
-      shooter.orientation,
+      shooterMutable.orientation,
       TILE_SIZE * 0.25,
     )
 
     simState.entityManager.register(
       makeBullet({
         position: bulletPos,
-        orientation: shooter.orientation,
+        orientation: shooterMutable.orientation,
         owner: id,
       }),
     )
@@ -95,7 +94,7 @@ export const update = (
         particleRadius: 3,
         particleRate: 240,
         particleSpeedRange: [120, 280],
-        orientation: shooter.orientation,
+        orientation: shooterMutable.orientation,
         arc: Math.PI / 4,
         colors: ['#FF9933', '#CCC', '#FFF'],
       })

@@ -41,9 +41,7 @@ export const update = (
       continue
     }
 
-    const damageable = simState.entityManager.damageables.get(targetId)!
-    simState.entityManager.checkpoint(targetId)
-
+    const damageable = simState.entityManager.damageables.checkpoint(targetId)!
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
 

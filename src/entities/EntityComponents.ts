@@ -3,7 +3,7 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
-import { ITransform } from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import { Type } from '~/entities/types'
 import { Hitbox } from '~/Hitbox'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
@@ -31,7 +31,7 @@ export interface EntityComponents {
   shooter?: ShooterComponent
   targetable?: boolean
   team?: Team
-  transform?: ITransform
+  transform?: TransformComponent
   turret?: TurretComponent
   type?: Type
   wall?: boolean

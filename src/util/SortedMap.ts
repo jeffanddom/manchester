@@ -1,5 +1,5 @@
 export class SortedMap<Tk, Tv> {
-  private map: Map<Tk, Tv>
+  protected map: Map<Tk, Tv>
   private sortedKeys: Tk[]
 
   constructor() {
@@ -29,7 +29,7 @@ export class SortedMap<Tk, Tv> {
     }
   }
 
-  get(k: Tk): Tv | undefined {
+  get(k: Tk): Readonly<Tv> | undefined {
     return this.map.get(k)
   }
 

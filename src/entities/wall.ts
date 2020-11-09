@@ -2,7 +2,7 @@ import { mat2d, vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
-import * as transform from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
@@ -45,7 +45,7 @@ export const makeWall = (): EntityComponents => {
   const e = makeDefaultEntity()
   e.type = Type.WALL
 
-  e.transform = transform.make()
+  e.transform = new TransformComponent()
   e.wall = true
   e.targetable = true
   e.renderable = new WallRenderable()

@@ -3,7 +3,7 @@ import { sample } from 'lodash'
 
 import { Damageable } from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
-import * as transform from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
@@ -46,7 +46,7 @@ export const makeTree = (): EntityComponents => {
 
   e.obscuring = true
   e.harvestType = PickupType.Wood
-  e.transform = transform.make()
+  e.transform = new TransformComponent()
   e.renderable = new TreeRenderable()
   e.hitbox = new Hitbox(
     vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),

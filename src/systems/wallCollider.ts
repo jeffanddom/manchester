@@ -128,7 +128,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     })
 
     if (collisions.length > 0) {
-      simState.entityManager.checkpoint(id)
+      const transformMutable = simState.entityManager.transforms.checkpoint(id)!
 
       // Halt motion for collided edges
       collisions.forEach((collision) => {
@@ -137,27 +137,27 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
         const offset = TILE_SIZE / 2 + 1 / 1000
         switch (direction) {
           case DirectionCollision.North:
-            transform.position = vec2.fromValues(
-              transform.position[0],
+            transformMutable.position = vec2.fromValues(
+              transformMutable.position[0],
               value - offset,
             )
             break
           case DirectionCollision.South:
-            transform.position = vec2.fromValues(
-              transform.position[0],
+            transformMutable.position = vec2.fromValues(
+              transformMutable.position[0],
               value + offset,
             )
             break
           case DirectionCollision.East:
-            transform.position = vec2.fromValues(
+            transformMutable.position = vec2.fromValues(
               value + offset,
-              transform.position[1],
+              transformMutable.position[1],
             )
             break
           case DirectionCollision.West:
-            transform.position = vec2.fromValues(
+            transformMutable.position = vec2.fromValues(
               value - offset,
-              transform.position[1],
+              transformMutable.position[1],
             )
             break
         }

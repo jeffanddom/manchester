@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Bullet } from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
-import * as transform from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import {
   EntityComponents,
   makeDefaultEntity,
@@ -25,7 +25,7 @@ export const makeBullet = ({
 
   e.moveable = true
 
-  e.transform = transform.make()
+  e.transform = new TransformComponent()
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 

@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { Team } from '~/components/team'
-import * as transform from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
@@ -23,7 +23,7 @@ export const makeTurret = (): EntityComponents => {
   e.team = Team.Enemy
   e.dropType = PickupType.Core
 
-  e.transform = transform.make()
+  e.transform = new TransformComponent()
   e.turret = new TurretComponent()
   e.damageable = new Damageable(
     3,

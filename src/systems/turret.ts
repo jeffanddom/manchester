@@ -53,7 +53,6 @@ export const update = (
   }
 
   for (const id of turretIds) {
-    const turret = entityManager.turrets.get(id)!
     const transform = entityManager.transforms.get(id)!
     const team = entityManager.teams.get(id)!
 
@@ -124,7 +123,8 @@ export const update = (
       continue
     }
 
-    entityManager.checkpoint(id)
+    const transformMutable = entityManager.transforms.checkpoint(id)!
+    const turretMutable = entityManager.turrets.checkpoint(id)!
 
     // g.debugDraw(() => [
     //   {
@@ -138,32 +138,32 @@ export const update = (
 
     // II. Move toward target
 
-    transform.orientation = rotateUntil({
-      from: transform.orientation,
-      to: getAngle(transform.position, target.transform!.position),
+    transformMutable.orientation = rotateUntil({
+      from: transformMutable.orientation,
+      to: getAngle(transformMutable.position, target.transform!.position),
       amount: TURRET_ROT_SPEED * dt,
     })
 
     // III. Shoot at target
 
-    if (turret.cooldownTtl > 0) {
-      turret.cooldownTtl -= dt
+    if (turretMutable.cooldownTtl > 0) {
+      turretMutable.cooldownTtl -= dt
       continue
     }
 
-    turret.cooldownTtl = COOLDOWN_PERIOD
+    turretMutable.cooldownTtl = COOLDOWN_PERIOD
 
     const bulletPos = radialTranslate2(
       vec2.create(),
-      transform.position,
-      transform.orientation,
+      transformMutable.position,
+      transformMutable.orientation,
       TILE_SIZE * 0.25,
     )
 
     entityManager.register(
       makeBullet({
         position: bulletPos,
-        orientation: transform.orientation,
+        orientation: transformMutable.orientation,
         owner: id,
       }),
     )
@@ -175,7 +175,7 @@ export const update = (
       particleRadius: 3,
       particleRate: 240,
       particleSpeedRange: [120, 280],
-      orientation: transform!.orientation,
+      orientation: transformMutable!.orientation,
       arc: Math.PI / 4,
       colors: ['#FF9933', '#CCC', '#FFF'],
     })

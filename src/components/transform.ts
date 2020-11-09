@@ -23,3 +23,23 @@ export const clone = (src: ITransform): ITransform => ({
   position: vec2.clone(src.position),
   orientation: src.orientation,
 })
+
+export class TransformComponent implements ITransform {
+  public previousPosition: vec2
+  public position: vec2
+  public orientation: number
+
+  constructor() {
+    this.previousPosition = vec2.create()
+    this.position = vec2.create()
+    this.orientation = 0
+  }
+
+  clone(): TransformComponent {
+    const cloned = new TransformComponent()
+    cloned.previousPosition = vec2.clone(this.previousPosition)
+    cloned.position = vec2.clone(this.position)
+    cloned.orientation = this.orientation
+    return cloned
+  }
+}

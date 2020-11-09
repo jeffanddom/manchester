@@ -6,8 +6,7 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
-import * as transform from '~/components/transform'
-import { ITransform } from '~/components/transform'
+import { TransformComponent } from '~/components/transform'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
@@ -18,6 +17,7 @@ import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
+import { SortedCheckpointedMap } from '~/util/SortedCheckpointedMap'
 import { SortedMap } from '~/util/SortedMap'
 import { SortedSet } from '~/util/SortedSet'
 import { tileBox } from '~/util/tileMath'
@@ -35,9 +35,9 @@ export class EntityManager {
   private predictedDeletes: SortedSet<EntityId>
 
   // components
-  bullets: SortedMap<EntityId, Bullet>
-  damageables: SortedMap<EntityId, Damageable>
-  damagers: SortedMap<EntityId, Damager>
+  bullets: SortedCheckpointedMap<EntityId, Bullet>
+  damageables: SortedCheckpointedMap<EntityId, Damageable>
+  damagers: SortedCheckpointedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
   moveables: SortedSet<EntityId>
@@ -46,11 +46,11 @@ export class EntityManager {
   playerNumbers: SortedMap<EntityId, number>
   playfieldClamped: SortedSet<EntityId>
   renderables: SortedMap<EntityId, IRenderable>
-  shooters: SortedMap<EntityId, ShooterComponent>
+  shooters: SortedCheckpointedMap<EntityId, ShooterComponent>
   targetables: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
-  transforms: SortedMap<EntityId, ITransform>
-  turrets: SortedMap<EntityId, TurretComponent>
+  transforms: SortedCheckpointedMap<EntityId, TransformComponent>
+  turrets: SortedCheckpointedMap<EntityId, TurretComponent>
   types: SortedMap<EntityId, Type>
   walls: SortedSet<EntityId>
 
@@ -66,9 +66,9 @@ export class EntityManager {
     this.predictedDeletes = new SortedSet()
 
     // components
-    this.bullets = new SortedMap()
-    this.damageables = new SortedMap()
-    this.damagers = new SortedMap()
+    this.bullets = new SortedCheckpointedMap()
+    this.damageables = new SortedCheckpointedMap()
+    this.damagers = new SortedCheckpointedMap()
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
     this.moveables = new SortedSet()
@@ -77,11 +77,11 @@ export class EntityManager {
     this.playerNumbers = new SortedMap()
     this.playfieldClamped = new SortedSet()
     this.renderables = new SortedMap()
-    this.shooters = new SortedMap()
+    this.shooters = new SortedCheckpointedMap()
     this.targetables = new SortedSet()
     this.teams = new SortedMap()
-    this.transforms = new SortedMap()
-    this.turrets = new SortedMap()
+    this.transforms = new SortedCheckpointedMap()
+    this.turrets = new SortedCheckpointedMap()
     this.types = new SortedMap()
     this.walls = new SortedSet()
 
@@ -348,7 +348,7 @@ export class EntityManager {
 
     const xform = this.transforms.get(id)
     if (xform) {
-      e.transform = transform.clone(xform)
+      e.transform = xform.clone()
     }
 
     const turret = this.turrets.get(id)
