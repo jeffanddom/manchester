@@ -7,7 +7,7 @@ export enum ClientMessageType {
   // client to server.
   FRAME_END,
   MOVE_PLAYER,
-  TANK_SHOOT,
+  TANK_AIM,
 }
 
 export type ClientMessageFrameEnd = {
@@ -22,14 +22,15 @@ export type MovePlayerClientMessage = {
   direction: DirectionMove
 }
 
-export type TankShootClientMessage = {
+export type TankAimClientMessage = {
   frame: number
   playerNumber: number
-  type: ClientMessageType.TANK_SHOOT
+  type: ClientMessageType.TANK_AIM
   targetPos: vec2
+  firing: boolean
 }
 
 export type ClientMessage =
   | ClientMessageFrameEnd
   | MovePlayerClientMessage
-  | TankShootClientMessage
+  | TankAimClientMessage

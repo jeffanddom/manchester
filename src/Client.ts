@@ -151,6 +151,7 @@ export class Client {
         vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
       ),
     ])
+    this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
 

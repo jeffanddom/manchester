@@ -82,12 +82,7 @@ const handleMoveInput = (client: Client, frame: number): void => {
 }
 
 const handleAttackInput = (client: Client, frame: number): void => {
-  // FIXME
   if (!client.mouse) {
-    return
-  }
-
-  if (!client.mouse.isDown(MouseButton.LEFT)) {
     return
   }
 
@@ -99,8 +94,9 @@ const handleAttackInput = (client: Client, frame: number): void => {
   client.sendClientMessage({
     frame,
     playerNumber: client.playerNumber,
-    type: ClientMessageType.TANK_SHOOT,
+    type: ClientMessageType.TANK_AIM,
     targetPos: client.camera.viewToWorldspace(mousePos),
+    firing: client.mouse.isDown(MouseButton.LEFT),
   })
 }
 

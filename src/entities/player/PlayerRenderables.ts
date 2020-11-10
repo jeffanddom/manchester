@@ -13,8 +13,15 @@ export class PlayerRenderables implements IRenderable {
     entityId: EntityId,
   ): Renderable[] {
     const t = entityManager.transforms.get(entityId)!
+    const currentPlayerId = entityManager.getPlayerId(
+      entityManager.currentPlayer,
+    )
     const obscured = entityManager.obscureds.has(entityId)
     const shooter = entityManager.shooters.get(entityId)!
+
+    if (currentPlayerId !== entityId && obscured) {
+      return []
+    }
 
     return toRenderables(models.tank, {
       worldTransform: mat2d.fromTranslation(mat2d.create(), t.position),

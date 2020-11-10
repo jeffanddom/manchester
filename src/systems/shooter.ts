@@ -1,10 +1,10 @@
-import { vec2 } from 'gl-matrix'
+import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import {
   ClientMessageType,
-  TankShootClientMessage,
+  TankAimClientMessage,
 } from '~/network/ClientMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
@@ -47,9 +47,9 @@ export const update = (
     'entityManager' | 'messages' | 'registerParticleEmitter' | 'frame'
   >,
 ): void => {
-  const messages: Array<TankShootClientMessage> = []
+  const messages: Array<TankAimClientMessage> = []
   simState.messages.forEach((m) => {
-    if (m.type === ClientMessageType.TANK_SHOOT) {
+    if (m.type === ClientMessageType.TANK_AIM) {
       messages.push(m)
     }
   })
@@ -57,20 +57,26 @@ export const update = (
   messages.forEach((message) => {
     const id = simState.entityManager.getPlayerId(message.playerNumber)!
     const shooter = simState.entityManager.shooters.get(id)!
+    const transform = simState.entityManager.transforms.get(id)!
+    const newAngle = getAngle(transform.position, message.targetPos)
 
     if (
-      shooter.lastFiredFrame !== -1 &&
-      message.frame - shooter.lastFiredFrame < 15
+      !message.firing ||
+      (shooter.lastFiredFrame !== -1 &&
+        message.frame - shooter.lastFiredFrame < 15)
     ) {
+      if (!glMatrix.equals(newAngle, shooter.orientation)) {
+        simState.entityManager.checkpoint(id)
+        shooter.orientation = newAngle
+      }
+
       return
     }
 
     simState.entityManager.checkpoint(id)
 
-    const transform = simState.entityManager.transforms.get(id)!
-
     shooter.lastFiredFrame = message.frame
-    shooter.orientation = getAngle(transform.position, message.targetPos)
+    shooter.orientation = newAngle
 
     const bulletPos = radialTranslate2(
       vec2.create(),

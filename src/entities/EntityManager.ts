@@ -28,6 +28,7 @@ type QuadtreeEntity = {
 }
 
 export class EntityManager {
+  public currentPlayer: number
   private nextEntityId: number
   private toDelete: SortedSet<EntityId>
   private checkpointedEntities: SortedMap<EntityId, EntityComponents>
@@ -60,6 +61,7 @@ export class EntityManager {
 
   constructor(playfieldAabb: [vec2, vec2]) {
     this.nextEntityId = 0
+    this.currentPlayer = -1
     this.toDelete = new SortedSet()
     this.checkpointedEntities = new SortedMap()
     this.predictedRegistrations = new SortedSet()

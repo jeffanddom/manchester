@@ -34,6 +34,7 @@ export const update = (
       to: message.direction,
       amount: TANK_ROT_SPEED * dt,
     })
+
     radialTranslate2(
       transform.position,
       transform.position,
