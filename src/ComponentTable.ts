@@ -15,7 +15,7 @@ export class ComponentTable<T> {
     this.clone = clone
   }
 
-  add(id: EntityId, component: T): void {
+  set(id: EntityId, component: T): void {
     this.contents.set(id, component)
     this.uncommittedAdds.add(id)
   }

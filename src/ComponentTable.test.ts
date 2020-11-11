@@ -9,22 +9,22 @@ describe('ComponentTable', () => {
   it('#get', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(0 as EntityId, { value: 0 })
-    table.add(1 as EntityId, { value: 1 })
+    table.set(0 as EntityId, { value: 0 })
+    table.set(1 as EntityId, { value: 1 })
 
     expect(table.get(0 as EntityId)).toStrictEqual({ value: 0 })
     expect(table.get(1 as EntityId)).toStrictEqual({ value: 1 })
     expect(table.get(2 as EntityId)).toBeUndefined()
 
-    table.add(1 as EntityId, { value: 1111 }) // okay to replace similar IDs
+    table.set(1 as EntityId, { value: 1111 }) // okay to replace similar IDs
     expect(table.get(1 as EntityId)).toStrictEqual({ value: 1111 })
   })
 
   it('#has', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(0 as EntityId, { value: 0 })
-    table.add(1 as EntityId, { value: 1 })
+    table.set(0 as EntityId, { value: 0 })
+    table.set(1 as EntityId, { value: 1 })
 
     expect(table.has(0 as EntityId)).toBe(true)
     expect(table.has(1 as EntityId)).toBe(true)
@@ -34,8 +34,8 @@ describe('ComponentTable', () => {
   it('#delete', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(0 as EntityId, { value: 0 })
-    table.add(1 as EntityId, { value: 1 })
+    table.set(0 as EntityId, { value: 0 })
+    table.set(1 as EntityId, { value: 1 })
     table.delete(0 as EntityId)
     table.delete(2 as EntityId) // okay to delete non-existent IDs
 
@@ -46,9 +46,9 @@ describe('ComponentTable', () => {
   it('iteration', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(0 as EntityId, { value: 0 })
-    table.add(1 as EntityId, { value: 1 })
-    table.add(2 as EntityId, { value: 2 })
+    table.set(0 as EntityId, { value: 0 })
+    table.set(1 as EntityId, { value: 1 })
+    table.set(2 as EntityId, { value: 2 })
 
     expect([...table]).toStrictEqual([
       [0 as EntityId, { value: 0 }],
@@ -60,7 +60,7 @@ describe('ComponentTable', () => {
   it('#update', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(1 as EntityId, { value: 1 })
+    table.set(1 as EntityId, { value: 1 })
     expect(table.get(1 as EntityId)).toStrictEqual({ value: 1 })
 
     table.update(1 as EntityId, { value: 1111 })
@@ -70,20 +70,20 @@ describe('ComponentTable', () => {
   it('commit/rollback', () => {
     const table = new ComponentTable<TestEntry>((c) => ({ value: c.value }))
 
-    table.add(0 as EntityId, { value: 0 })
+    table.set(0 as EntityId, { value: 0 })
     expect(table.has(0 as EntityId)).toBe(true)
 
     table.commit()
     expect(table.has(0 as EntityId)).toBe(true)
 
-    table.add(1 as EntityId, { value: 1 })
+    table.set(1 as EntityId, { value: 1 })
     expect(table.has(1 as EntityId)).toBe(true)
 
     table.rollback()
     expect(table.has(0 as EntityId)).toBe(true)
     expect(table.has(1 as EntityId)).toBe(false)
 
-    table.add(1 as EntityId, { value: 1 })
+    table.set(1 as EntityId, { value: 1 })
     expect(table.has(1 as EntityId)).toBe(true)
 
     table.commit()
@@ -107,9 +107,9 @@ describe('ComponentTable', () => {
     table.rollback()
     expect(table.get(1 as EntityId)).toStrictEqual({ value: 1111 })
 
-    // update after add, no commit
+    // update after set, no commit
 
-    table.add(2 as EntityId, { value: 2 })
+    table.set(2 as EntityId, { value: 2 })
     expect(table.get(2 as EntityId)).toStrictEqual({ value: 2 })
 
     table.update(2 as EntityId, { value: 2222 })
