@@ -1,5 +1,5 @@
 import { IRenderable } from '~/components/IRenderable'
-import * as transform from '~/components/transform'
+import * as transform from '~/components/Transform'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { Model, toRenderables } from '~/Model'

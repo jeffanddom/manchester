@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Damageable } from '~/components/Damageable'
 import { Team } from '~/components/team'
-import * as transform from '~/components/transform'
+import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,

@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { Team } from '~/components/team'
-import { ITransform } from '~/components/transform'
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
@@ -59,7 +59,7 @@ export const update = (
 
     // I. Find a target
 
-    const shootables: { id: EntityId; transform: ITransform }[] = []
+    const shootables: { id: EntityId; transform: Transform }[] = []
     const turretOrigin = transform.position
 
     const searchSpace: [vec2, vec2] = [

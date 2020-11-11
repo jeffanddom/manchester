@@ -6,8 +6,8 @@ import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
-import * as transform from '~/components/transform'
-import { ITransform } from '~/components/transform'
+import * as transform from '~/components/Transform'
+import { Transform } from '~/components/Transform'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
@@ -49,7 +49,7 @@ export class EntityManager {
   shooters: SortedMap<EntityId, ShooterComponent>
   targetables: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
-  transforms: SortedMap<EntityId, ITransform>
+  transforms: SortedMap<EntityId, Transform>
   turrets: SortedMap<EntityId, TurretComponent>
   types: SortedMap<EntityId, Type>
   walls: SortedSet<EntityId>

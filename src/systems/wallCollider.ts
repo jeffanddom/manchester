@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { ITransform } from '~/components/transform'
+import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { DirectionCollision } from '~/interfaces'
 import { SimState } from '~/simulate'
@@ -21,7 +21,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
 
     let collisions: {
       direction: DirectionCollision
-      transform: ITransform
+      transform: Transform
       value: number
     }[] = []
 

@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Bullet } from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
-import * as transform from '~/components/transform'
+import * as transform from '~/components/Transform'
 import {
   EntityComponents,
   makeDefaultEntity,

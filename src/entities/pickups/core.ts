@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
-import * as transform from '~/components/transform'
+import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
