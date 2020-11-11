@@ -1,6 +1,5 @@
 import { vec2 } from 'gl-matrix'
 
-import { Damageable } from '~/components/Damageable'
 import { TILE_SIZE } from '~/constants'
 import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
