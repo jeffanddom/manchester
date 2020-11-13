@@ -1,10 +1,19 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-export const clamp = (v: number, range: [number, number]): number => {
+import { Immutable } from '~/types/immutable'
+
+export const clamp = (
+  v: number,
+  range: Immutable<[number, number]>,
+): number => {
   return Math.min(Math.max(range[0], v), range[1])
 }
 
-export const clamp2 = (out: vec2, v: vec2, range: [vec2, vec2]): vec2 => {
+export const clamp2 = (
+  out: vec2,
+  v: Immutable<vec2>,
+  range: Immutable<[vec2, vec2]>,
+): vec2 => {
   return vec2.min(out, vec2.max(out, v, range[0]), range[1])
 }
 
@@ -22,7 +31,7 @@ export const inverseLerp = (min: number, max: number, pos: number): number => {
  */
 export const radialTranslate2 = (
   out: vec2,
-  start: vec2,
+  start: Immutable<vec2>,
   orientation: number,
   amount: number,
 ): vec2 => {
@@ -49,7 +58,10 @@ export const aabbOverlapArea = (a: [vec2, vec2], b: [vec2, vec2]): number => {
   )
 }
 
-export const getAngle = (from: vec2, to: vec2): number => {
+export const getAngle = (
+  from: Immutable<vec2>,
+  to: Immutable<vec2>,
+): number => {
   const offset = vec2.sub(vec2.create(), to, from)
   return Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
 }

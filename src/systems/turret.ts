@@ -7,6 +7,7 @@ import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
+import { Immutable } from '~/types/immutable'
 import { segmentToAabb } from '~/util/collision'
 import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 import { SortedSet } from '~/util/SortedSet'
@@ -59,7 +60,7 @@ export const update = (
 
     // I. Find a target
 
-    const shootables: { id: EntityId; transform: Transform }[] = []
+    const shootables: { id: EntityId; transform: Immutable<Transform> }[] = []
     const turretOrigin = transform.position
 
     const searchSpace: [vec2, vec2] = [
@@ -99,7 +100,7 @@ export const update = (
         return false
       }
 
-      const lineOfSight: [vec2, vec2] = [
+      const lineOfSight: Immutable<[vec2, vec2]> = [
         transform.position,
         candidate.transform!.position,
       ]
@@ -124,65 +125,54 @@ export const update = (
       continue
     }
 
-    entityManager.checkpoint(id)
-
-    // g.debugDraw(() => [
-    //   {
-    //     primitive: Primitive.LINE,
-    //     width: 1,
-    //     style: 'purple',
-    //     from: e.transform!.position,
-    //     to: target.transform!.position,
-    //   },
-    // ])
-
     // II. Move toward target
 
-    transform.orientation = rotateUntil({
+    const newOrientation = rotateUntil({
       from: transform.orientation,
       to: getAngle(transform.position, target.transform!.position),
       amount: TURRET_ROT_SPEED * dt,
     })
+    simState.entityManager.transforms.update(id, {
+      orientation: newOrientation,
+    })
 
     // III. Shoot at target
 
+    entityManager.checkpoint(id)
     if (turret.cooldownTtl > 0) {
       turret.cooldownTtl -= dt
       continue
     }
-
     turret.cooldownTtl = COOLDOWN_PERIOD
 
     const bulletPos = radialTranslate2(
       vec2.create(),
       transform.position,
-      transform.orientation,
+      newOrientation,
       TILE_SIZE * 0.25,
     )
 
     entityManager.register(
       makeBullet({
         position: bulletPos,
-        orientation: transform.orientation,
+        orientation: newOrientation,
         owner: id,
       }),
     )
 
-    const muzzleFlash = new ParticleEmitter({
-      spawnTtl: 0.1,
-      position: bulletPos,
-      particleTtl: 0.065,
-      particleRadius: 3,
-      particleRate: 240,
-      particleSpeedRange: [120, 280],
-      orientation: transform!.orientation,
-      arc: Math.PI / 4,
-      colors: ['#FF9933', '#CCC', '#FFF'],
-    })
-
     if (registerParticleEmitter) {
       registerParticleEmitter({
-        emitter: muzzleFlash,
+        emitter: new ParticleEmitter({
+          spawnTtl: 0.1,
+          position: bulletPos,
+          particleTtl: 0.065,
+          particleRadius: 3,
+          particleRate: 240,
+          particleSpeedRange: [120, 280],
+          orientation: newOrientation,
+          arc: Math.PI / 4,
+          colors: ['#FF9933', '#CCC', '#FFF'],
+        }),
         entity: id,
         frame: frame,
       })

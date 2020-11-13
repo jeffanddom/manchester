@@ -1,6 +1,6 @@
-import { ReadonlyVec2, mat2d, vec2 } from 'gl-matrix'
+import { mat2d, vec2 } from 'gl-matrix'
 
-import { Immutable } from '~/util/Immutable'
+import { Immutable } from '~/types/immutable'
 
 export interface Transform {
   previousPosition: vec2
@@ -8,7 +8,7 @@ export interface Transform {
   orientation: number
 }
 
-export const toMWTransform = (transform: Transform): mat2d => {
+export const toMWTransform = (transform: Immutable<Transform>): mat2d => {
   const t = mat2d.fromTranslation(mat2d.create(), transform.position)
   const r = mat2d.fromRotation(mat2d.create(), transform.orientation)
   return mat2d.multiply(mat2d.create(), t, r)
@@ -21,7 +21,7 @@ export const make = (): Transform => ({
 })
 
 export const clone = (src: Immutable<Transform>): Transform => ({
-  previousPosition: vec2.clone(src.previousPosition as ReadonlyVec2),
-  position: vec2.clone(src.position as ReadonlyVec2),
+  previousPosition: vec2.clone(src.previousPosition),
+  position: vec2.clone(src.position),
   orientation: src.orientation,
 })

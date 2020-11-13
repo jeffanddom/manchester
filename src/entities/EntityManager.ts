@@ -8,6 +8,7 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { Transform } from '~/components/Transform'
+import { ComponentTable } from '~/ComponentTable'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
@@ -29,7 +30,8 @@ type QuadtreeEntity = {
 
 export class EntityManager {
   public currentPlayer: number
-  private nextEntityId: number
+  private nextEntityIdUncommitted: number
+  private nextEntityIdCommitted: number
   private toDelete: SortedSet<EntityId>
   private checkpointedEntities: SortedMap<EntityId, EntityComponents>
   private predictedRegistrations: SortedSet<EntityId>
@@ -49,7 +51,7 @@ export class EntityManager {
   shooters: SortedMap<EntityId, ShooterComponent>
   targetables: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
-  transforms: SortedMap<EntityId, Transform>
+  transforms: ComponentTable<Transform>
   turrets: SortedMap<EntityId, TurretComponent>
   types: SortedMap<EntityId, Type>
   walls: SortedSet<EntityId>
@@ -59,7 +61,8 @@ export class EntityManager {
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
 
   constructor(playfieldAabb: [vec2, vec2]) {
-    this.nextEntityId = 0
+    this.nextEntityIdUncommitted = 0
+    this.nextEntityIdCommitted = 0
     this.currentPlayer = -1
     this.toDelete = new SortedSet()
     this.checkpointedEntities = new SortedMap()
@@ -80,7 +83,7 @@ export class EntityManager {
     this.shooters = new SortedMap()
     this.targetables = new SortedSet()
     this.teams = new SortedMap()
-    this.transforms = new SortedMap()
+    this.transforms = new ComponentTable(transform.clone)
     this.turrets = new SortedMap()
     this.types = new SortedMap()
     this.walls = new SortedSet()
@@ -98,12 +101,16 @@ export class EntityManager {
 
   public update(): void {
     for (const id of this.toDelete) {
+      this.transforms.delete(id)
+
       this.unindexEntity(id)
     }
     this.toDelete = new SortedSet()
   }
 
   /**
+   * TODO: replace this with autocheckpointing via ComponentTable.
+   *
    * Before modifying entity state, we need to to checkpoint it. Internally,
    * this will snapshot the entity state before any updates occur. The snapshot
    * allows us to restore the state of the entity if we need to rewind changes
@@ -118,20 +125,25 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
+    this.transforms.rollback()
+
     for (const [id, entity] of this.checkpointedEntities) {
       this.indexEntity(id, entity)
     }
-    this.checkpointedEntities = new SortedMap()
 
     for (const id of this.predictedRegistrations) {
       this.unindexEntity(id)
     }
 
-    this.nextEntityId -= this.predictedRegistrations.size()
+    this.nextEntityIdUncommitted = this.nextEntityIdCommitted
     this.predictedRegistrations = new SortedSet()
+    this.checkpointedEntities = new SortedMap()
   }
 
   public commitPrediction(): void {
+    this.transforms.commit()
+
+    this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()
     this.checkpointedEntities = new SortedMap()
   }
@@ -159,9 +171,13 @@ export class EntityManager {
   }
 
   public register(e: EntityComponents): void {
-    const id = this.nextEntityId as EntityId
-    this.nextEntityId++
+    const id = this.nextEntityIdUncommitted as EntityId
+    this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
+
+    if (e.transform) {
+      this.transforms.set(id, e.transform)
+    }
 
     this.indexEntity(id, e)
   }
@@ -230,10 +246,6 @@ export class EntityManager {
       this.teams.set(id, e.team)
     }
 
-    if (e.transform) {
-      this.transforms.set(id, e.transform)
-    }
-
     if (e.turret) {
       this.turrets.set(id, e.turret)
     }
@@ -254,7 +266,7 @@ export class EntityManager {
 
     // For now, only add non-moving objects to the quadtree.
     if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
-      const entityAabb = tileBox(e.transform!.position)
+      const entityAabb = tileBox(this.transforms.get(id)!.position)
       this.quadtree.insert({ aabb: entityAabb, id: id })
     }
   }
@@ -275,7 +287,6 @@ export class EntityManager {
     this.shooters.delete(id)
     this.targetables.delete(id)
     this.teams.delete(id)
-    this.transforms.delete(id)
     this.turrets.delete(id)
     this.types.delete(id)
     this.walls.delete(id)
@@ -341,11 +352,6 @@ export class EntityManager {
     const team = this.teams.get(id)
     if (team !== undefined) {
       e.team = team
-    }
-
-    const xform = this.transforms.get(id)
-    if (xform) {
-      e.transform = transform.clone(xform)
     }
 
     const turret = this.turrets.get(id)

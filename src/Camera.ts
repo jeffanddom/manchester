@@ -1,6 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
+import { Immutable } from '~/types/immutable'
 import * as math from '~/util/math'
 
 export class Camera {
@@ -85,7 +86,7 @@ export class Camera {
     return vec2.clone(this.position)
   }
 
-  setPosition(worldPos: vec2): void {
+  setPosition(worldPos: Immutable<vec2>): void {
     math.clamp2(this.position, worldPos, [
       vec2.add(
         vec2.create(),

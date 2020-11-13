@@ -31,10 +31,12 @@ export interface EntityComponents {
   shooter?: ShooterComponent
   targetable?: boolean
   team?: Team
-  transform?: Transform
   turret?: TurretComponent
   type?: Type
   wall?: boolean
+
+  // The following properties should only be used for creation, not snapshotting
+  transform?: Transform
 }
 
 export const makeDefaultEntity = (): EntityComponents => {

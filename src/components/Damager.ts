@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Transform } from '~/components/Transform'
 import { EntityId } from '~/entities/EntityId'
 import { Hitbox } from '~/Hitbox'
+import { Immutable } from '~/types/immutable'
 
 export class Damager {
   damageValue: number
@@ -23,7 +24,7 @@ export class Damager {
     this.immuneList = immuneList
   }
 
-  aabb(transform: Transform): [vec2, vec2] {
+  aabb(transform: Immutable<Transform>): [vec2, vec2] {
     return this.hitbox.aabb(transform.position)
   }
 

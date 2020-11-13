@@ -6,7 +6,9 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
   for (const id of simState.entityManager.moveables) {
     const transform = simState.entityManager.transforms.get(id)!
     if (!vec2.equals(transform.position, transform.previousPosition)) {
-      transform.previousPosition = vec2.clone(transform.position)
+      simState.entityManager.transforms.update(id, {
+        previousPosition: vec2.clone(transform.position),
+      })
     }
   }
 }

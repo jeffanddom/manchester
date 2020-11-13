@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Transform } from '~/components/Transform'
 import { Hitbox } from '~/Hitbox'
+import { Immutable } from '~/types/immutable'
 
 export class Damageable {
   maxHealth: number
@@ -14,7 +15,7 @@ export class Damageable {
     this.hitbox = hitbox
   }
 
-  aabb(transform: Transform): [vec2, vec2] {
+  aabb(transform: Immutable<Transform>): [vec2, vec2] {
     return this.hitbox.aabb(transform.position)
   }
 

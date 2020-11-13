@@ -1,8 +1,9 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
+import { Immutable } from '~/types/immutable'
 import { aabbOverlap } from '~/util/math'
 
-const aabbFromSegment = (s: [vec2, vec2]): [vec2, vec2] => {
+const aabbFromSegment = (s: Immutable<[vec2, vec2]>): [vec2, vec2] => {
   const northwest = vec2.fromValues(
     Math.min(s[0][0], s[1][0]),
     Math.min(s[0][1], s[1][1]),
@@ -19,7 +20,10 @@ const crossScalar = (v: vec2, w: vec2): number => {
 }
 
 // From https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-export const segmentSegment = (s1: [vec2, vec2], s2: [vec2, vec2]): boolean => {
+export const segmentSegment = (
+  s1: Immutable<[vec2, vec2]>,
+  s2: Immutable<[vec2, vec2]>,
+): boolean => {
   const p = s1[0]
   const r = vec2.sub(vec2.create(), s1[1], s1[0])
 
@@ -46,7 +50,10 @@ export const segmentSegment = (s1: [vec2, vec2], s2: [vec2, vec2]): boolean => {
   }
 }
 
-export const segmentToAabb = (s: [vec2, vec2], aabb: [vec2, vec2]): boolean => {
+export const segmentToAabb = (
+  s: Immutable<[vec2, vec2]>,
+  aabb: Immutable<[vec2, vec2]>,
+): boolean => {
   const nw = vec2.fromValues(aabb[0][0], aabb[0][1])
   const ne = vec2.fromValues(aabb[1][0], aabb[0][1])
   const sw = vec2.fromValues(aabb[0][0], aabb[1][1])

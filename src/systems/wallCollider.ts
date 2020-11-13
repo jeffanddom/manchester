@@ -4,6 +4,7 @@ import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { DirectionCollision } from '~/interfaces'
 import { SimState } from '~/simulate'
+import { Immutable } from '~/types/immutable'
 import { aabbOverlap } from '~/util/math'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
@@ -21,7 +22,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
 
     let collisions: {
       direction: DirectionCollision
-      transform: Transform
+      transform: Immutable<Transform>
       value: number
     }[] = []
 
@@ -128,8 +129,6 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     })
 
     if (collisions.length > 0) {
-      simState.entityManager.checkpoint(id)
-
       // Halt motion for collided edges
       collisions.forEach((collision) => {
         const direction = collision.direction
@@ -137,28 +136,24 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
         const offset = TILE_SIZE / 2 + 1 / 1000
         switch (direction) {
           case DirectionCollision.North:
-            transform.position = vec2.fromValues(
-              transform.position[0],
-              value - offset,
-            )
+            simState.entityManager.transforms.update(id, {
+              position: vec2.fromValues(transform.position[0], value - offset),
+            })
             break
           case DirectionCollision.South:
-            transform.position = vec2.fromValues(
-              transform.position[0],
-              value + offset,
-            )
+            simState.entityManager.transforms.update(id, {
+              position: vec2.fromValues(transform.position[0], value + offset),
+            })
             break
           case DirectionCollision.East:
-            transform.position = vec2.fromValues(
-              value + offset,
-              transform.position[1],
-            )
+            simState.entityManager.transforms.update(id, {
+              position: vec2.fromValues(value + offset, transform.position[1]),
+            })
             break
           case DirectionCollision.West:
-            transform.position = vec2.fromValues(
-              value - offset,
-              transform.position[1],
-            )
+            simState.entityManager.transforms.update(id, {
+              position: vec2.fromValues(value - offset, transform.position[1]),
+            })
             break
         }
       })

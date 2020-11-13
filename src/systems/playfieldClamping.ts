@@ -8,17 +8,13 @@ export const update = (simState: {
   terrainLayer: terrain.Layer
 }): void => {
   for (const id of simState.entityManager.playfieldClamped) {
-    const transform = simState.entityManager.transforms.get(id)!
+    const position = vec2.clone(
+      simState.entityManager.transforms.get(id)!.position,
+    )
 
-    vec2.max(
-      transform.position,
-      transform.position,
-      simState.terrainLayer.minWorldPos(),
-    )
-    vec2.min(
-      transform.position,
-      transform.position,
-      simState.terrainLayer.maxWorldPos(),
-    )
+    vec2.max(position, position, simState.terrainLayer.minWorldPos())
+    vec2.min(position, position, simState.terrainLayer.maxWorldPos())
+
+    simState.entityManager.transforms.update(id, { position })
   }
 }
