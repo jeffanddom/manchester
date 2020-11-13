@@ -24,6 +24,10 @@
     },
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types",
+    ]
   },
   "exclude": [
     "dist",
