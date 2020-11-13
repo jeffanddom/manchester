@@ -1,5 +1,5 @@
 import { EntityId } from '~/entities/EntityId'
-import { Immutable } from '~/util/Immutable'
+import { Immutable } from '~/types/immutable'
 import { SortedMap } from '~/util/SortedMap'
 
 export class ComponentTable<T> {
@@ -50,9 +50,10 @@ export class ComponentTable<T> {
     return this.contents.get(id)
   }
 
-  *[Symbol.iterator](): Iterator<[EntityId, Immutable<T>]> {
-    for (const item of this.contents) {
-      yield item
+  [Symbol.iterator](): Iterator<[EntityId, Immutable<T>]> {
+    const iterator = this.contents[Symbol.iterator]()
+    return {
+      next: () => iterator.next(),
     }
   }
 
