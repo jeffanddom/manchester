@@ -52,9 +52,26 @@ export class SortedMap<Tk, Tv> {
     return true
   }
 
-  *[Symbol.iterator](): Iterator<[Tk, Tv]> {
-    for (const id of this.sortedKeys) {
-      yield [id, this.map.get(id)!]
+  [Symbol.iterator](): Iterator<[Tk, Tv]> {
+    let i = 0
+
+    return {
+      next: (): IteratorResult<[Tk, Tv]> => {
+        if (i >= this.sortedKeys.length) {
+          return { done: true, value: undefined }
+        }
+
+        const k = this.sortedKeys[i]
+        const value: [Tk, Tv] = [k, this.map.get(k)!]
+        const result = {
+          done: false,
+          value,
+        }
+
+        i++
+
+        return result
+      },
     }
   }
 }

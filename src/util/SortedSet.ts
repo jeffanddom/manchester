@@ -23,9 +23,17 @@ export class SortedSet<Tk> {
     return this.map.delete(k)
   }
 
-  *[Symbol.iterator](): Iterator<Tk> {
-    for (const [id] of this.map) {
-      yield id
+  [Symbol.iterator](): Iterator<Tk> {
+    const iterator = this.map[Symbol.iterator]()
+
+    return {
+      next: (): IteratorResult<Tk> => {
+        const mapResult = iterator.next()
+        if (mapResult.done) {
+          return mapResult
+        }
+        return { done: false, value: mapResult.value[0] }
+      },
     }
   }
 }
