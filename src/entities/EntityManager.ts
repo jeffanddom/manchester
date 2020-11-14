@@ -52,7 +52,7 @@ export class EntityManager {
   obscurings: EntitySet
   playerNumbers: SortedMap<EntityId, number>
   playfieldClamped: EntitySet
-  renderables: SortedMap<EntityId, IRenderable>
+  renderables: ComponentTable<IRenderable>
   shooters: ComponentTable<ShooterComponent>
   targetables: EntitySet
   teams: SortedMap<EntityId, Team>
@@ -84,7 +84,7 @@ export class EntityManager {
     this.obscurings = new EntitySet()
     this.playerNumbers = new SortedMap()
     this.playfieldClamped = new EntitySet()
-    this.renderables = new SortedMap()
+    this.renderables = new ComponentTable((r) => _.cloneDeep(r)) // TODO: see if we can avoid a deep clone
     this.shooters = new ComponentTable(shooterClone)
     this.targetables = new EntitySet()
     this.teams = new SortedMap()
@@ -115,6 +115,7 @@ export class EntityManager {
       this.obscurings.delete(id)
       this.playfieldClamped.delete(id)
       this.shooters.delete(id)
+      this.renderables.delete(id)
       this.targetables.delete(id)
       this.transforms.delete(id)
       this.turrets.delete(id)
@@ -150,6 +151,7 @@ export class EntityManager {
     this.obscureds.rollback()
     this.obscurings.rollback()
     this.playfieldClamped.rollback()
+    this.renderables.rollback()
     this.shooters.rollback()
     this.targetables.rollback()
     this.transforms.rollback()
@@ -178,6 +180,7 @@ export class EntityManager {
     this.obscureds.commit()
     this.obscurings.commit()
     this.playfieldClamped.commit()
+    this.renderables.commit()
     this.shooters.commit()
     this.targetables.commit()
     this.transforms.commit()
@@ -196,7 +199,11 @@ export class EntityManager {
       if (!r) {
         continue
       }
-      renderables.push(...r.getRenderables(this, id))
+
+      // an as-cast is required here to call member variables. Eventually, we
+      // should transform this object into a plain-old-data structure instead
+      // of a class.
+      renderables.push(...(r as IRenderable).getRenderables(this, id))
     }
     return renderables
   }
@@ -248,6 +255,10 @@ export class EntityManager {
       this.obscurings.add(id)
     }
 
+    if (e.renderable) {
+      this.renderables.set(id, e.renderable)
+    }
+
     if (e.targetable) {
       this.targetables.add(id)
     }
@@ -287,10 +298,6 @@ export class EntityManager {
       this.playerNumbers.set(id, e.playerNumber)
     }
 
-    if (e.renderable) {
-      this.renderables.set(id, e.renderable)
-    }
-
     if (e.team !== undefined) {
       this.teams.set(id, e.team)
     }
@@ -316,7 +323,6 @@ export class EntityManager {
     // components
     this.dropTypes.delete(id)
     this.playerNumbers.delete(id)
-    this.renderables.delete(id)
     this.teams.delete(id)
     this.types.delete(id)
 
@@ -336,10 +342,6 @@ export class EntityManager {
     const playerNumber = this.playerNumbers.get(id)
     if (playerNumber !== undefined) {
       e.playerNumber = playerNumber
-    }
-    const renderable = this.renderables.get(id)
-    if (renderable) {
-      e.renderable = _.cloneDeep(renderable) // TODO: get rid of this!
     }
 
     const team = this.teams.get(id)
