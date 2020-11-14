@@ -20,9 +20,7 @@ export interface EntityComponents {
   pickupType?: PickupType
   playerNumber?: number
   renderable?: IRenderable
-  shooter?: ShooterComponent
   team?: Team
-  turret?: TurretComponent
   type?: Type
 
   // The following properties should only be used for creation, not snapshotting
@@ -34,8 +32,10 @@ export interface EntityComponents {
   obscured?: boolean
   obscuring?: boolean
   playfieldClamped?: boolean
+  shooter?: ShooterComponent
   targetable?: boolean
   transform?: Transform
+  turret?: TurretComponent
   wall?: boolean
 }
 
