@@ -12,31 +12,31 @@ import { ShooterComponent } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 
 export interface EntityComponents {
-  builder?: BuilderComponent
-  builderCreator?: BuilderCreator
-  dropType?: PickupType
-  harvestType?: PickupType
-  inventory?: PickupType[]
-  pickupType?: PickupType
-  playerNumber?: number
-  team?: Team
-  type?: Type
-
-  // The following properties should only be used for creation, not snapshotting
   bullet?: Bullet
   damageable?: Damageable
   damager?: Damager
+  dropType?: PickupType
   hitbox?: Hitbox
   moveable?: boolean
   obscured?: boolean
   obscuring?: boolean
+  playerNumber?: number
   playfieldClamped?: boolean
   renderable?: IRenderable
   shooter?: ShooterComponent
   targetable?: boolean
+  team?: Team
   transform?: Transform
   turret?: TurretComponent
+  type?: Type
   wall?: boolean
+
+  // Components that are currently not used by simulation
+  builder?: BuilderComponent
+  builderCreator?: BuilderCreator
+  harvestType?: PickupType
+  inventory?: PickupType[]
+  pickupType?: PickupType
 }
 
 export const makeDefaultEntity = (): EntityComponents => {

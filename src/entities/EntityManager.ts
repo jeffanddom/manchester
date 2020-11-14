@@ -24,7 +24,6 @@ import { TurretComponent } from '~/systems/turret'
 import * as turret from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
-import { SortedMap } from '~/util/SortedMap'
 import { SortedSet } from '~/util/SortedSet'
 import { tileBox } from '~/util/tileMath'
 
@@ -38,27 +37,27 @@ export class EntityManager {
   private nextEntityIdUncommitted: number
   private nextEntityIdCommitted: number
   private toDelete: SortedSet<EntityId>
-  private checkpointedEntities: SortedMap<EntityId, EntityComponents>
+  private predictedDeletes: SortedSet<EntityId>
   private predictedRegistrations: SortedSet<EntityId>
 
   // components
   bullets: ComponentTable<Bullet>
   damageables: ComponentTable<Damageable>
   damagers: ComponentTable<Damager>
-  dropTypes: SortedMap<EntityId, PickupType>
+  dropTypes: ComponentTable<PickupType>
   hitboxes: ComponentTable<Hitbox>
   moveables: EntitySet
   obscureds: EntitySet
   obscurings: EntitySet
-  playerNumbers: SortedMap<EntityId, number>
+  playerNumbers: ComponentTable<number>
   playfieldClamped: EntitySet
   renderables: ComponentTable<IRenderable>
   shooters: ComponentTable<ShooterComponent>
   targetables: EntitySet
-  teams: SortedMap<EntityId, Team>
+  teams: ComponentTable<Team>
   transforms: ComponentTable<Transform>
   turrets: ComponentTable<TurretComponent>
-  types: SortedMap<EntityId, Type>
+  types: ComponentTable<Type>
   walls: EntitySet
 
   // indexes
@@ -70,27 +69,27 @@ export class EntityManager {
     this.nextEntityIdCommitted = 0
     this.currentPlayer = -1
     this.toDelete = new SortedSet()
-    this.checkpointedEntities = new SortedMap()
+    this.predictedDeletes = new SortedSet()
     this.predictedRegistrations = new SortedSet()
 
     // components
     this.bullets = new ComponentTable(bullet.clone)
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new ComponentTable(damager.clone)
-    this.dropTypes = new SortedMap()
+    this.dropTypes = new ComponentTable((c) => c)
     this.hitboxes = new ComponentTable(hitboxClone)
     this.moveables = new EntitySet()
     this.obscureds = new EntitySet()
     this.obscurings = new EntitySet()
-    this.playerNumbers = new SortedMap()
+    this.playerNumbers = new ComponentTable((c) => c)
     this.playfieldClamped = new EntitySet()
     this.renderables = new ComponentTable((r) => _.cloneDeep(r)) // TODO: see if we can avoid a deep clone
     this.shooters = new ComponentTable(shooterClone)
     this.targetables = new EntitySet()
-    this.teams = new SortedMap()
+    this.teams = new ComponentTable((c) => c)
     this.transforms = new ComponentTable(transform.clone)
     this.turrets = new ComponentTable(turret.clone)
-    this.types = new SortedMap()
+    this.types = new ComponentTable((c) => c)
     this.walls = new EntitySet()
 
     // indexes
@@ -109,57 +108,50 @@ export class EntityManager {
       this.bullets.delete(id)
       this.damageables.delete(id)
       this.damagers.delete(id)
+      this.dropTypes.delete(id)
       this.hitboxes.delete(id)
       this.moveables.delete(id)
       this.obscureds.delete(id)
       this.obscurings.delete(id)
+      this.playerNumbers.delete(id)
       this.playfieldClamped.delete(id)
       this.shooters.delete(id)
       this.renderables.delete(id)
       this.targetables.delete(id)
+      this.teams.delete(id)
       this.transforms.delete(id)
+      this.types.delete(id)
       this.turrets.delete(id)
       this.walls.delete(id)
 
       this.unindexEntity(id)
+      this.predictedDeletes.add(id)
     }
     this.toDelete = new SortedSet()
-  }
-
-  /**
-   * TODO: replace this with autocheckpointing via ComponentTable.
-   *
-   * Before modifying entity state, we need to to checkpoint it. Internally,
-   * this will snapshot the entity state before any updates occur. The snapshot
-   * allows us to restore the state of the entity if we need to rewind changes
-   * due to predicted simulation.
-   */
-  public checkpoint(id: EntityId): void {
-    if (this.checkpointedEntities.has(id)) {
-      return
-    }
-
-    this.checkpointedEntities.set(id, this.snapshotEntityComponents(id))
   }
 
   public undoPrediction(): void {
     this.bullets.rollback()
     this.damageables.rollback()
     this.damagers.rollback()
+    this.dropTypes.rollback()
     this.hitboxes.rollback()
     this.moveables.rollback()
     this.obscureds.rollback()
     this.obscurings.rollback()
+    this.playerNumbers.rollback()
     this.playfieldClamped.rollback()
     this.renderables.rollback()
     this.shooters.rollback()
     this.targetables.rollback()
+    this.teams.rollback()
     this.transforms.rollback()
     this.turrets.rollback()
+    this.types.rollback()
     this.walls.rollback()
 
-    for (const [id, entity] of this.checkpointedEntities) {
-      this.indexEntity(id, entity)
+    for (const id of this.predictedDeletes) {
+      this.indexEntity(id)
     }
 
     for (const id of this.predictedRegistrations) {
@@ -168,28 +160,32 @@ export class EntityManager {
 
     this.nextEntityIdUncommitted = this.nextEntityIdCommitted
     this.predictedRegistrations = new SortedSet()
-    this.checkpointedEntities = new SortedMap()
+    this.predictedDeletes = new SortedSet()
   }
 
   public commitPrediction(): void {
     this.bullets.commit()
     this.damageables.commit()
     this.damagers.commit()
+    this.dropTypes.commit()
     this.hitboxes.commit()
     this.moveables.commit()
     this.obscureds.commit()
     this.obscurings.commit()
+    this.playerNumbers.commit()
     this.playfieldClamped.commit()
     this.renderables.commit()
     this.shooters.commit()
     this.targetables.commit()
+    this.teams.commit()
     this.transforms.commit()
     this.turrets.commit()
+    this.types.commit()
     this.walls.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()
-    this.checkpointedEntities = new SortedMap()
+    this.predictedDeletes = new SortedSet()
   }
 
   public getRenderables(aabb: [vec2, vec2]): Renderable[] {
@@ -223,19 +219,23 @@ export class EntityManager {
     this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
 
-    if (e.bullet) {
+    if (e.bullet !== undefined) {
       this.bullets.set(id, e.bullet)
     }
 
-    if (e.damageable) {
+    if (e.damageable !== undefined) {
       this.damageables.set(id, e.damageable)
     }
 
-    if (e.damager) {
+    if (e.damager !== undefined) {
       this.damagers.set(id, e.damager)
     }
 
-    if (e.hitbox) {
+    if (e.dropType !== undefined) {
+      this.dropTypes.set(id, e.dropType)
+    }
+
+    if (e.hitbox !== undefined) {
       this.hitboxes.set(id, e.hitbox)
     }
 
@@ -255,7 +255,11 @@ export class EntityManager {
       this.obscurings.add(id)
     }
 
-    if (e.renderable) {
+    if (e.playerNumber !== undefined) {
+      this.playerNumbers.set(id, e.playerNumber)
+    }
+
+    if (e.renderable !== undefined) {
       this.renderables.set(id, e.renderable)
     }
 
@@ -263,98 +267,58 @@ export class EntityManager {
       this.targetables.add(id)
     }
 
-    if (e.shooter) {
+    if (e.team !== undefined) {
+      this.teams.set(id, e.team)
+    }
+
+    if (e.shooter !== undefined) {
       this.shooters.set(id, e.shooter)
     }
 
-    if (e.transform) {
+    if (e.transform !== undefined) {
       this.transforms.set(id, e.transform)
     }
 
-    if (e.turret) {
+    if (e.turret !== undefined) {
       this.turrets.set(id, e.turret)
+    }
+
+    if (e.type !== undefined) {
+      this.types.set(id, e.type)
     }
 
     if (e.wall) {
       this.walls.add(id)
     }
 
-    this.indexEntity(id, e)
+    this.indexEntity(id)
   }
 
   public markForDeletion(id: EntityId): void {
-    this.checkpoint(id)
     this.toDelete.add(id)
   }
 
-  private indexEntity(id: EntityId, e: EntityComponents): void {
-    // components
-
-    if (e.dropType) {
-      this.dropTypes.set(id, e.dropType)
-    }
-
-    if (e.playerNumber !== undefined) {
-      this.playerNumbers.set(id, e.playerNumber)
-    }
-
-    if (e.team !== undefined) {
-      this.teams.set(id, e.team)
-    }
-
-    if (e.type) {
-      this.types.set(id, e.type)
-    }
-
-    // indexes
-
-    if (e.team === Team.Friendly) {
+  // FIXME: indexing only occurs on registers, not updates.
+  private indexEntity(id: EntityId): void {
+    if (this.teams.get(id) === Team.Friendly) {
       this.friendlyTeam.add(id)
     }
 
     // For now, only add non-moving objects to the quadtree.
-    if (e.type && [Type.TREE, Type.TURRET, Type.WALL].includes(e.type)) {
+    const entityType = this.types.get(id)
+    if (
+      entityType !== undefined &&
+      [Type.TREE, Type.TURRET, Type.WALL].includes(entityType)
+    ) {
       const entityAabb = tileBox(this.transforms.get(id)!.position)
       this.quadtree.insert({ aabb: entityAabb, id: id })
     }
   }
 
+  // FIXME: unindexing only occurs on deletes, not updates.
   private unindexEntity(id: EntityId): void {
-    // components
-    this.dropTypes.delete(id)
-    this.playerNumbers.delete(id)
-    this.teams.delete(id)
-    this.types.delete(id)
-
-    // indexes
     this.friendlyTeam.delete(id)
     this.quadtree.remove(id)
-  }
-
-  private snapshotEntityComponents(id: EntityId): EntityComponents {
-    const e: EntityComponents = {}
-
-    const dropType = this.dropTypes.get(id)
-    if (dropType) {
-      e.dropType = dropType
-    }
-
-    const playerNumber = this.playerNumbers.get(id)
-    if (playerNumber !== undefined) {
-      e.playerNumber = playerNumber
-    }
-
-    const team = this.teams.get(id)
-    if (team !== undefined) {
-      e.team = team
-    }
-
-    const type = this.types.get(id)
-    if (type) {
-      e.type = type
-    }
-
-    return e
   }
 
   public queryByWorldPos(aabb: [vec2, vec2]): EntityId[] {
