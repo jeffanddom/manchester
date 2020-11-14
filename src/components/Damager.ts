@@ -6,30 +6,23 @@ import { Hitbox } from '~/Hitbox'
 import * as hitbox from '~/Hitbox'
 import { Immutable } from '~/types/immutable'
 
-export class Damager {
+export type Damager = {
   damageValue: number
   hitbox: Hitbox
   immuneList: EntityId[]
+}
 
-  constructor(config: {
-    damageValue: number
-    hitbox: Hitbox
-    immuneList: EntityId[]
-  }) {
-    this.damageValue = config.damageValue
-    this.hitbox = config.hitbox
-    this.immuneList = config.immuneList
-  }
+export function aabb(
+  d: Immutable<Damager>,
+  transform: Immutable<Transform>,
+): [vec2, vec2] {
+  return hitbox.aabb(d.hitbox, transform.position)
+}
 
-  aabb(transform: Immutable<Transform>): [vec2, vec2] {
-    return hitbox.aabb(this.hitbox, transform.position)
-  }
-
-  clone(): Damager {
-    return new Damager({
-      damageValue: this.damageValue,
-      hitbox: hitbox.clone(this.hitbox),
-      immuneList: this.immuneList.slice(),
-    })
+export function clone(d: Immutable<Damager>): Damager {
+  return {
+    damageValue: d.damageValue,
+    hitbox: hitbox.clone(d.hitbox),
+    immuneList: (d.immuneList as EntityId[]).slice(),
   }
 }

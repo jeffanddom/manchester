@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
+import { aabb as damagerAabb } from '~/components/Damager'
 import { TILE_SIZE } from '~/constants'
 import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -15,7 +16,7 @@ export const update = (
 ): void => {
   for (const [id, damager] of simState.entityManager.damagers) {
     const transform = simState.entityManager.transforms.get(id)!
-    const attackerAabb = damager.aabb(transform)
+    const attackerAabb = damagerAabb(damager, transform)
     const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
 
     let targetId: EntityId | undefined

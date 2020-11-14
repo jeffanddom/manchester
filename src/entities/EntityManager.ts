@@ -5,6 +5,7 @@ import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
 import { Damageable } from '~/components/Damageable'
+import * as damager from '~/components/Damager'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
@@ -43,7 +44,7 @@ export class EntityManager {
   // components
   bullets: ComponentTable<Bullet>
   damageables: ComponentTable<Damageable>
-  damagers: SortedMap<EntityId, Damager>
+  damagers: ComponentTable<Damager>
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
   moveables: EntitySet
@@ -75,7 +76,7 @@ export class EntityManager {
     // components
     this.bullets = new ComponentTable(bullet.clone)
     this.damageables = new ComponentTable(damageable.clone)
-    this.damagers = new SortedMap()
+    this.damagers = new ComponentTable(damager.clone)
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
     this.moveables = new EntitySet()
@@ -107,6 +108,7 @@ export class EntityManager {
     for (const id of this.toDelete) {
       this.bullets.delete(id)
       this.damageables.delete(id)
+      this.damagers.delete(id)
       this.moveables.delete(id)
       this.obscureds.delete(id)
       this.obscurings.delete(id)
@@ -141,6 +143,7 @@ export class EntityManager {
   public undoPrediction(): void {
     this.bullets.rollback()
     this.damageables.rollback()
+    this.damagers.rollback()
     this.moveables.rollback()
     this.obscureds.rollback()
     this.obscurings.rollback()
@@ -167,6 +170,7 @@ export class EntityManager {
   public commitPrediction(): void {
     this.bullets.commit()
     this.damageables.commit()
+    this.damagers.commit()
     this.moveables.commit()
     this.obscureds.commit()
     this.obscurings.commit()
@@ -217,6 +221,10 @@ export class EntityManager {
       this.damageables.set(id, e.damageable)
     }
 
+    if (e.damager) {
+      this.damagers.set(id, e.damager)
+    }
+
     if (e.moveable) {
       this.moveables.add(id)
     }
@@ -264,10 +272,6 @@ export class EntityManager {
   private indexEntity(id: EntityId, e: EntityComponents): void {
     // components
 
-    if (e.damager) {
-      this.damagers.set(id, e.damager)
-    }
-
     if (e.dropType) {
       this.dropTypes.set(id, e.dropType)
     }
@@ -307,7 +311,6 @@ export class EntityManager {
 
   private unindexEntity(id: EntityId): void {
     // components
-    this.damagers.delete(id)
     this.dropTypes.delete(id)
     this.hitboxes.delete(id)
     this.playerNumbers.delete(id)
@@ -322,11 +325,6 @@ export class EntityManager {
 
   private snapshotEntityComponents(id: EntityId): EntityComponents {
     const e: EntityComponents = {}
-
-    const damager = this.damagers.get(id)
-    if (damager) {
-      e.damager = damager.clone()
-    }
 
     const dropType = this.dropTypes.get(id)
     if (dropType) {

@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
 import * as bullet from '~/components/Bullet'
-import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/Transform'
 import {
@@ -31,14 +30,14 @@ export const makeBullet = ({
   e.bullet = bullet.make(e.transform.position)
   e.renderable = new DefaultModelRenderable(models.bullet)
 
-  e.damager = new Damager({
+  e.damager = {
     damageValue: 1,
     hitbox: {
       offset: vec2.fromValues(-2, -2),
       dimensions: vec2.fromValues(4, 4),
     },
     immuneList: [owner],
-  })
+  }
 
   return e
 }
