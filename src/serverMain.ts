@@ -38,7 +38,10 @@ const entrypointWithHotReload = entrypointPage.replace(
 <script>
   window.buildkey = '${buildkey}'
   console.log('buildkey: ' + window.buildkey)
-  window.hotReload.poll(window.buildkey)
+
+  if (window.hotReload && window.hotReload.poll) {
+    window.hotReload.poll(window.buildkey)
+  }
 </script>
 `,
 )
