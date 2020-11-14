@@ -1,14 +1,15 @@
 declare global {
   interface Window {
     hotReload: {
+      enabled: boolean
       poll: (initialBuildkey: string) => void
       interval?: number
     }
   }
 }
 
-export const init = (): void => {
-  window.hotReload = { poll }
+export const init = (opts: { enabled: boolean } = { enabled: true }): void => {
+  window.hotReload = { enabled: opts.enabled, poll }
 }
 
 // This function will execute outside of the main client bundle, which means
@@ -46,4 +47,23 @@ export const poll = (initialBuildkey: string): void => {
         console.log('buildkey fetch: error:', err)
       })
   }, 1000)
+}
+
+export const updateEntrypointHtmlForHotReload = (opts: {
+  buildkey: string
+  html: string
+}): string => {
+  return opts.html.replace(
+    '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
+    `
+<script>
+  window.buildkey = '${opts.buildkey}'
+  console.log('buildkey: ' + window.buildkey)
+
+  if (window.hotReload.enabled) {
+    window.hotReload.poll(window.buildkey)
+  }
+</script>
+`,
+  )
 }

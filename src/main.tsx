@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import * as clientHotReload from '~/build/clientHotReload'
 import { Client } from '~/Client'
 import { Keyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
@@ -29,7 +30,7 @@ client.mouse = new Mouse(canvas)
 
 // Development-related globals
 window.g = window.game = client // expose game to console
-// clientHotReload.init()
+clientHotReload.init({ enabled: false })
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)

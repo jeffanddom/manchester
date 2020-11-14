@@ -6,6 +6,7 @@ import KoaRouter from 'koa-router'
 import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
+import { updateEntrypointHtmlForHotReload } from '~/build/clientHotReload'
 import { buildkeyPath, clientBuildOutputPath } from '~/build/common'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
@@ -28,23 +29,14 @@ setInterval(
 const httpServer = new Koa()
 const port = 3000
 
-const buildkey = fs.readFileSync(buildkeyPath)
+const buildkey = fs.readFileSync(buildkeyPath).toString()
 const entrypointPage = fs
   .readFileSync(path.join(clientBuildOutputPath, 'index.html'))
   .toString('utf8')
-const entrypointWithHotReload = entrypointPage.replace(
-  '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
-  `
-<script>
-  window.buildkey = '${buildkey}'
-  console.log('buildkey: ' + window.buildkey)
-
-  if (window.hotReload && window.hotReload.poll) {
-    window.hotReload.poll(window.buildkey)
-  }
-</script>
-`,
-)
+const entrypointWithHotReload = updateEntrypointHtmlForHotReload({
+  buildkey,
+  html: entrypointPage,
+})
 
 const wsServer = new WebSocket.Server({ noServer: true })
 const router = new KoaRouter()
