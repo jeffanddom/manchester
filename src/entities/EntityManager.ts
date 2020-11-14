@@ -45,19 +45,19 @@ export class EntityManager {
   damagers: SortedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
-  moveables: SortedSet<EntityId>
+  moveables: ComponentSet
   obscureds: ComponentSet
-  obscurings: SortedSet<EntityId>
+  obscurings: ComponentSet
   playerNumbers: SortedMap<EntityId, number>
-  playfieldClamped: SortedSet<EntityId>
+  playfieldClamped: ComponentSet
   renderables: SortedMap<EntityId, IRenderable>
   shooters: ComponentTable<ShooterComponent>
-  targetables: SortedSet<EntityId>
+  targetables: ComponentSet
   teams: SortedMap<EntityId, Team>
   transforms: ComponentTable<Transform>
   turrets: ComponentTable<TurretComponent>
   types: SortedMap<EntityId, Type>
-  walls: SortedSet<EntityId>
+  walls: ComponentSet
 
   // indexes
   friendlyTeam: SortedSet<EntityId>
@@ -77,19 +77,19 @@ export class EntityManager {
     this.damagers = new SortedMap()
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
-    this.moveables = new SortedSet()
+    this.moveables = new ComponentSet()
     this.obscureds = new ComponentSet()
-    this.obscurings = new SortedSet()
+    this.obscurings = new ComponentSet()
     this.playerNumbers = new SortedMap()
-    this.playfieldClamped = new SortedSet()
+    this.playfieldClamped = new ComponentSet()
     this.renderables = new SortedMap()
     this.shooters = new ComponentTable(shooterClone)
-    this.targetables = new SortedSet()
+    this.targetables = new ComponentSet()
     this.teams = new SortedMap()
     this.transforms = new ComponentTable(transform.clone)
     this.turrets = new ComponentTable(turret.clone)
     this.types = new SortedMap()
-    this.walls = new SortedSet()
+    this.walls = new ComponentSet()
 
     // indexes
     this.friendlyTeam = new SortedSet()
@@ -105,10 +105,15 @@ export class EntityManager {
   public update(): void {
     for (const id of this.toDelete) {
       this.damageables.delete(id)
+      this.moveables.delete(id)
       this.obscureds.delete(id)
+      this.obscurings.delete(id)
+      this.playfieldClamped.delete(id)
       this.shooters.delete(id)
+      this.targetables.delete(id)
       this.transforms.delete(id)
       this.turrets.delete(id)
+      this.walls.delete(id)
 
       this.unindexEntity(id)
     }
@@ -133,10 +138,15 @@ export class EntityManager {
 
   public undoPrediction(): void {
     this.damageables.rollback()
+    this.moveables.rollback()
     this.obscureds.rollback()
+    this.obscurings.rollback()
+    this.playfieldClamped.rollback()
     this.shooters.rollback()
+    this.targetables.rollback()
     this.transforms.rollback()
     this.turrets.rollback()
+    this.walls.rollback()
 
     for (const [id, entity] of this.checkpointedEntities) {
       this.indexEntity(id, entity)
@@ -153,10 +163,15 @@ export class EntityManager {
 
   public commitPrediction(): void {
     this.damageables.commit()
+    this.moveables.commit()
     this.obscureds.commit()
+    this.obscurings.commit()
+    this.playfieldClamped.commit()
     this.shooters.commit()
+    this.targetables.commit()
     this.transforms.commit()
     this.turrets.commit()
+    this.walls.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()
@@ -194,8 +209,24 @@ export class EntityManager {
       this.damageables.set(id, e.damageable)
     }
 
+    if (e.moveable) {
+      this.moveables.add(id)
+    }
+
+    if (e.playfieldClamped) {
+      this.playfieldClamped.add(id)
+    }
+
     if (e.obscured) {
       this.obscureds.add(id)
+    }
+
+    if (e.obscuring) {
+      this.obscurings.add(id)
+    }
+
+    if (e.targetable) {
+      this.targetables.add(id)
     }
 
     if (e.shooter) {
@@ -208,6 +239,10 @@ export class EntityManager {
 
     if (e.turret) {
       this.turrets.set(id, e.turret)
+    }
+
+    if (e.wall) {
+      this.walls.add(id)
     }
 
     this.indexEntity(id, e)
@@ -237,28 +272,12 @@ export class EntityManager {
       this.hitboxes.set(id, e.hitbox)
     }
 
-    if (e.moveable) {
-      this.moveables.add(id)
-    }
-
     if (e.playerNumber !== undefined) {
       this.playerNumbers.set(id, e.playerNumber)
     }
 
-    if (e.playfieldClamped) {
-      this.playfieldClamped.add(id)
-    }
-
-    if (e.obscuring) {
-      this.obscurings.add(id)
-    }
-
     if (e.renderable) {
       this.renderables.set(id, e.renderable)
-    }
-
-    if (e.targetable) {
-      this.targetables.add(id)
     }
 
     if (e.team !== undefined) {
@@ -267,10 +286,6 @@ export class EntityManager {
 
     if (e.type) {
       this.types.set(id, e.type)
-    }
-
-    if (e.wall) {
-      this.walls.add(id)
     }
 
     // indexes
@@ -292,15 +307,10 @@ export class EntityManager {
     this.damagers.delete(id)
     this.dropTypes.delete(id)
     this.hitboxes.delete(id)
-    this.moveables.delete(id)
-    this.obscurings.delete(id)
     this.playerNumbers.delete(id)
-    this.playfieldClamped.delete(id)
     this.renderables.delete(id)
-    this.targetables.delete(id)
     this.teams.delete(id)
     this.types.delete(id)
-    this.walls.delete(id)
 
     // indexes
     this.friendlyTeam.delete(id)
@@ -330,23 +340,14 @@ export class EntityManager {
       e.hitbox = hitboxClone(hitbox)
     }
 
-    e.moveable = this.moveables.has(id)
-
-    e.obscuring = this.obscurings.has(id)
-
     const playerNumber = this.playerNumbers.get(id)
     if (playerNumber !== undefined) {
       e.playerNumber = playerNumber
     }
-
-    e.playfieldClamped = this.playfieldClamped.has(id)
-
     const renderable = this.renderables.get(id)
     if (renderable) {
       e.renderable = _.cloneDeep(renderable) // TODO: get rid of this!
     }
-
-    e.targetable = this.targetables.has(id)
 
     const team = this.teams.get(id)
     if (team !== undefined) {
@@ -357,8 +358,6 @@ export class EntityManager {
     if (type) {
       e.type = type
     }
-
-    e.wall = this.walls.has(id)
 
     return e
   }

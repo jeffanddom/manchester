@@ -20,23 +20,23 @@ export interface EntityComponents {
   harvestType?: PickupType
   hitbox?: Hitbox
   inventory?: PickupType[]
-  moveable?: boolean
-  obscured?: boolean
-  obscuring?: boolean
   pickupType?: PickupType
   playerNumber?: number
   playfieldClamped?: boolean
   renderable?: IRenderable
   shooter?: ShooterComponent
-  targetable?: boolean
   team?: Team
   turret?: TurretComponent
   type?: Type
-  wall?: boolean
 
   // The following properties should only be used for creation, not snapshotting
   damageable?: Damageable
+  moveable?: boolean
+  obscured?: boolean
+  obscuring?: boolean
+  targetable?: boolean
   transform?: Transform
+  wall?: boolean
 }
 
 export const makeDefaultEntity = (): EntityComponents => {
