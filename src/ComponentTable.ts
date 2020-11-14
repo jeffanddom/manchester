@@ -1,8 +1,9 @@
 import { EntityId } from '~/entities/EntityId'
+import { EntityStateContainer } from '~/EntityStateContainer'
 import { Immutable } from '~/types/immutable'
 import { SortedMap } from '~/util/SortedMap'
 
-export class ComponentTable<T> {
+export class ComponentTable<T> implements EntityStateContainer {
   private contents: SortedMap<EntityId, T>
   private uncommittedAdds: Set<EntityId>
   private snapshot: SortedMap<EntityId, T>

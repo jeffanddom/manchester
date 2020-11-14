@@ -16,6 +16,7 @@ import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
 import { EntitySet } from '~/EntitySet'
+import { EntityStateContainer } from '~/EntityStateContainer'
 import { Hitbox, clone as hitboxClone } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
@@ -60,6 +61,8 @@ export class EntityManager {
   types: ComponentTable<Type>
   walls: EntitySet
 
+  private allContainers: EntityStateContainer[]
+
   // indexes
   friendlyTeam: SortedSet<EntityId>
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
@@ -92,6 +95,27 @@ export class EntityManager {
     this.types = new ComponentTable((c) => c)
     this.walls = new EntitySet()
 
+    this.allContainers = [
+      this.bullets,
+      this.damageables,
+      this.damagers,
+      this.dropTypes,
+      this.hitboxes,
+      this.moveables,
+      this.obscureds,
+      this.obscurings,
+      this.playerNumbers,
+      this.playfieldClamped,
+      this.renderables,
+      this.shooters,
+      this.targetables,
+      this.teams,
+      this.transforms,
+      this.turrets,
+      this.types,
+      this.walls,
+    ]
+
     // indexes
     this.friendlyTeam = new SortedSet()
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
@@ -105,24 +129,9 @@ export class EntityManager {
 
   public update(): void {
     for (const id of this.toDelete) {
-      this.bullets.delete(id)
-      this.damageables.delete(id)
-      this.damagers.delete(id)
-      this.dropTypes.delete(id)
-      this.hitboxes.delete(id)
-      this.moveables.delete(id)
-      this.obscureds.delete(id)
-      this.obscurings.delete(id)
-      this.playerNumbers.delete(id)
-      this.playfieldClamped.delete(id)
-      this.shooters.delete(id)
-      this.renderables.delete(id)
-      this.targetables.delete(id)
-      this.teams.delete(id)
-      this.transforms.delete(id)
-      this.types.delete(id)
-      this.turrets.delete(id)
-      this.walls.delete(id)
+      for (const container of this.allContainers) {
+        container.delete(id)
+      }
 
       this.unindexEntity(id)
       this.predictedDeletes.add(id)
@@ -131,24 +140,9 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
-    this.bullets.rollback()
-    this.damageables.rollback()
-    this.damagers.rollback()
-    this.dropTypes.rollback()
-    this.hitboxes.rollback()
-    this.moveables.rollback()
-    this.obscureds.rollback()
-    this.obscurings.rollback()
-    this.playerNumbers.rollback()
-    this.playfieldClamped.rollback()
-    this.renderables.rollback()
-    this.shooters.rollback()
-    this.targetables.rollback()
-    this.teams.rollback()
-    this.transforms.rollback()
-    this.turrets.rollback()
-    this.types.rollback()
-    this.walls.rollback()
+    for (const container of this.allContainers) {
+      container.rollback()
+    }
 
     for (const id of this.predictedDeletes) {
       this.indexEntity(id)
@@ -164,24 +158,9 @@ export class EntityManager {
   }
 
   public commitPrediction(): void {
-    this.bullets.commit()
-    this.damageables.commit()
-    this.damagers.commit()
-    this.dropTypes.commit()
-    this.hitboxes.commit()
-    this.moveables.commit()
-    this.obscureds.commit()
-    this.obscurings.commit()
-    this.playerNumbers.commit()
-    this.playfieldClamped.commit()
-    this.renderables.commit()
-    this.shooters.commit()
-    this.targetables.commit()
-    this.teams.commit()
-    this.transforms.commit()
-    this.turrets.commit()
-    this.types.commit()
-    this.walls.commit()
+    for (const container of this.allContainers) {
+      container.commit()
+    }
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()

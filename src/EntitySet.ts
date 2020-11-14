@@ -1,7 +1,8 @@
 import { EntityId } from '~/entities/EntityId'
+import { EntityStateContainer } from '~/EntityStateContainer'
 import { SortedSet } from '~/util/SortedSet'
 
-export class EntitySet {
+export class EntitySet implements EntityStateContainer {
   private contents: SortedSet<EntityId>
   private uncommittedAdds: Set<EntityId>
   private uncommittedDeletes: Set<EntityId>
