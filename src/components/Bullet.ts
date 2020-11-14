@@ -1,19 +1,24 @@
 import { vec2 } from 'gl-matrix'
 
+import { Immutable } from '~/types/immutable'
+
 const BULLET_RANGE = 250
 
-export class Bullet {
+export type Bullet = {
   origin: vec2
   range: number
+}
 
-  constructor(origin: vec2) {
-    this.origin = origin
-    this.range = BULLET_RANGE
+export function make(origin: vec2): Bullet {
+  return {
+    origin: vec2.clone(origin),
+    range: BULLET_RANGE,
   }
+}
 
-  clone(): Bullet {
-    const c = new Bullet(vec2.clone(this.origin))
-    c.range = this.range
-    return c
+export function clone(b: Immutable<Bullet>): Bullet {
+  return {
+    origin: vec2.clone(b.origin),
+    range: b.range,
   }
 }

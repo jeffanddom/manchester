@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Bullet } from '~/components/Bullet'
+import * as bullet from '~/components/Bullet'
 import { Damager } from '~/components/Damager'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/Transform'
@@ -28,7 +28,7 @@ export const makeBullet = ({
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.bullet = new Bullet(vec2.clone(e.transform.position))
+  e.bullet = bullet.make(e.transform.position)
   e.renderable = new DefaultModelRenderable(models.bullet)
 
   e.damager = new Damager({

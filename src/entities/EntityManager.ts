@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
+import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
 import { Damageable } from '~/components/Damageable'
@@ -40,7 +41,7 @@ export class EntityManager {
   private predictedRegistrations: SortedSet<EntityId>
 
   // components
-  bullets: SortedMap<EntityId, Bullet>
+  bullets: ComponentTable<Bullet>
   damageables: ComponentTable<Damageable>
   damagers: SortedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
@@ -72,7 +73,7 @@ export class EntityManager {
     this.predictedRegistrations = new SortedSet()
 
     // components
-    this.bullets = new SortedMap()
+    this.bullets = new ComponentTable(bullet.clone)
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new SortedMap()
     this.dropTypes = new SortedMap()
@@ -104,6 +105,7 @@ export class EntityManager {
 
   public update(): void {
     for (const id of this.toDelete) {
+      this.bullets.delete(id)
       this.damageables.delete(id)
       this.moveables.delete(id)
       this.obscureds.delete(id)
@@ -137,6 +139,7 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
+    this.bullets.rollback()
     this.damageables.rollback()
     this.moveables.rollback()
     this.obscureds.rollback()
@@ -162,6 +165,7 @@ export class EntityManager {
   }
 
   public commitPrediction(): void {
+    this.bullets.commit()
     this.damageables.commit()
     this.moveables.commit()
     this.obscureds.commit()
@@ -204,6 +208,10 @@ export class EntityManager {
     const id = this.nextEntityIdUncommitted as EntityId
     this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
+
+    if (e.bullet) {
+      this.bullets.set(id, e.bullet)
+    }
 
     if (e.damageable) {
       this.damageables.set(id, e.damageable)
@@ -256,10 +264,6 @@ export class EntityManager {
   private indexEntity(id: EntityId, e: EntityComponents): void {
     // components
 
-    if (e.bullet) {
-      this.bullets.set(id, e.bullet)
-    }
-
     if (e.damager) {
       this.damagers.set(id, e.damager)
     }
@@ -303,7 +307,6 @@ export class EntityManager {
 
   private unindexEntity(id: EntityId): void {
     // components
-    this.bullets.delete(id)
     this.damagers.delete(id)
     this.dropTypes.delete(id)
     this.hitboxes.delete(id)
@@ -319,11 +322,6 @@ export class EntityManager {
 
   private snapshotEntityComponents(id: EntityId): EntityComponents {
     const e: EntityComponents = {}
-
-    const bullet = this.bullets.get(id)
-    if (bullet) {
-      e.bullet = bullet.clone()
-    }
 
     const damager = this.damagers.get(id)
     if (damager) {

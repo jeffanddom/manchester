@@ -14,7 +14,6 @@ import { TurretComponent } from '~/systems/turret'
 export interface EntityComponents {
   builder?: BuilderComponent
   builderCreator?: BuilderCreator
-  bullet?: Bullet
   damager?: Damager
   dropType?: PickupType
   harvestType?: PickupType
@@ -30,6 +29,7 @@ export interface EntityComponents {
   type?: Type
 
   // The following properties should only be used for creation, not snapshotting
+  bullet?: Bullet
   damageable?: Damageable
   moveable?: boolean
   obscured?: boolean
