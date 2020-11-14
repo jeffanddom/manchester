@@ -11,18 +11,16 @@ import {
 import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Type } from '~/entities/types'
 import { BuilderCreator } from '~/systems/builder'
-import { ShooterComponent } from '~/systems/shooter'
+import * as shooter from '~/systems/shooter'
 
 export const makePlayer = (): EntityComponents => {
   const e = makeDefaultEntity()
-  e.type = Type.PLAYER
 
+  e.type = Type.PLAYER
   e.playfieldClamped = true
   e.targetable = true
   e.team = Team.Friendly
   e.moveable = true
-
-  const shooter = new ShooterComponent()
   e.builderCreator = new BuilderCreator()
   e.damageable = damageable.make(10, {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
@@ -34,8 +32,7 @@ export const makePlayer = (): EntityComponents => {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
   }
-  e.shooter = shooter
-
+  e.shooter = shooter.make()
   e.transform = transform.make()
 
   return e

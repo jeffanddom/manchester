@@ -17,7 +17,7 @@ import { Type } from '~/entities/types'
 import { Hitbox, clone as hitboxClone } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
-import { ShooterComponent } from '~/systems/shooter'
+import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
@@ -50,7 +50,7 @@ export class EntityManager {
   playerNumbers: SortedMap<EntityId, number>
   playfieldClamped: SortedSet<EntityId>
   renderables: SortedMap<EntityId, IRenderable>
-  shooters: SortedMap<EntityId, ShooterComponent>
+  shooters: ComponentTable<ShooterComponent>
   targetables: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
   transforms: ComponentTable<Transform>
@@ -82,7 +82,7 @@ export class EntityManager {
     this.playerNumbers = new SortedMap()
     this.playfieldClamped = new SortedSet()
     this.renderables = new SortedMap()
-    this.shooters = new SortedMap()
+    this.shooters = new ComponentTable(shooterClone)
     this.targetables = new SortedSet()
     this.teams = new SortedMap()
     this.transforms = new ComponentTable(transform.clone)
@@ -105,6 +105,7 @@ export class EntityManager {
     for (const id of this.toDelete) {
       this.damageables.delete(id)
       this.obscureds.delete(id)
+      this.shooters.delete(id)
       this.transforms.delete(id)
 
       this.unindexEntity(id)
@@ -131,6 +132,7 @@ export class EntityManager {
   public undoPrediction(): void {
     this.damageables.rollback()
     this.obscureds.rollback()
+    this.shooters.rollback()
     this.transforms.rollback()
 
     for (const [id, entity] of this.checkpointedEntities) {
@@ -149,6 +151,7 @@ export class EntityManager {
   public commitPrediction(): void {
     this.damageables.commit()
     this.obscureds.commit()
+    this.shooters.commit()
     this.transforms.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
@@ -189,6 +192,10 @@ export class EntityManager {
 
     if (e.obscured) {
       this.obscureds.add(id)
+    }
+
+    if (e.shooter) {
+      this.shooters.set(id, e.shooter)
     }
 
     if (e.transform) {
@@ -242,10 +249,6 @@ export class EntityManager {
       this.renderables.set(id, e.renderable)
     }
 
-    if (e.shooter) {
-      this.shooters.set(id, e.shooter)
-    }
-
     if (e.targetable) {
       this.targetables.add(id)
     }
@@ -290,7 +293,6 @@ export class EntityManager {
     this.playerNumbers.delete(id)
     this.playfieldClamped.delete(id)
     this.renderables.delete(id)
-    this.shooters.delete(id)
     this.targetables.delete(id)
     this.teams.delete(id)
     this.turrets.delete(id)
@@ -339,11 +341,6 @@ export class EntityManager {
     const renderable = this.renderables.get(id)
     if (renderable) {
       e.renderable = _.cloneDeep(renderable) // TODO: get rid of this!
-    }
-
-    const shooter = this.shooters.get(id)
-    if (shooter) {
-      e.shooter = shooter.clone()
     }
 
     e.targetable = this.targetables.has(id)
