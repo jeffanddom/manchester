@@ -17,18 +17,16 @@ const TURRET_ROT_SPEED = Math.PI / 2
 const RANGE = 300
 const COOLDOWN_PERIOD = 0.33
 
-export class TurretComponent {
+export type TurretComponent = {
   cooldownTtl: number
+}
 
-  constructor() {
-    this.cooldownTtl = 0
-  }
+export function make(): TurretComponent {
+  return { cooldownTtl: 0 }
+}
 
-  clone(): TurretComponent {
-    const c = new TurretComponent()
-    c.cooldownTtl = this.cooldownTtl
-    return c
-  }
+export function clone(t: TurretComponent): TurretComponent {
+  return { cooldownTtl: t.cooldownTtl }
 }
 
 export const update = (
@@ -142,12 +140,14 @@ export const update = (
 
     // III. Shoot at target
 
-    entityManager.checkpoint(id)
     if (turret.cooldownTtl > 0) {
-      turret.cooldownTtl -= dt
+      simState.entityManager.turrets.update(id, {
+        cooldownTtl: turret.cooldownTtl - dt,
+      })
       continue
     }
-    turret.cooldownTtl = COOLDOWN_PERIOD
+
+    simState.entityManager.turrets.update(id, { cooldownTtl: COOLDOWN_PERIOD })
 
     const bulletPos = radialTranslate2(
       vec2.create(),

@@ -19,6 +19,7 @@ import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
+import * as turret from '~/systems/turret'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedMap } from '~/util/SortedMap'
@@ -54,7 +55,7 @@ export class EntityManager {
   targetables: SortedSet<EntityId>
   teams: SortedMap<EntityId, Team>
   transforms: ComponentTable<Transform>
-  turrets: SortedMap<EntityId, TurretComponent>
+  turrets: ComponentTable<TurretComponent>
   types: SortedMap<EntityId, Type>
   walls: SortedSet<EntityId>
 
@@ -86,7 +87,7 @@ export class EntityManager {
     this.targetables = new SortedSet()
     this.teams = new SortedMap()
     this.transforms = new ComponentTable(transform.clone)
-    this.turrets = new SortedMap()
+    this.turrets = new ComponentTable(turret.clone)
     this.types = new SortedMap()
     this.walls = new SortedSet()
 
@@ -107,6 +108,7 @@ export class EntityManager {
       this.obscureds.delete(id)
       this.shooters.delete(id)
       this.transforms.delete(id)
+      this.turrets.delete(id)
 
       this.unindexEntity(id)
     }
@@ -134,6 +136,7 @@ export class EntityManager {
     this.obscureds.rollback()
     this.shooters.rollback()
     this.transforms.rollback()
+    this.turrets.rollback()
 
     for (const [id, entity] of this.checkpointedEntities) {
       this.indexEntity(id, entity)
@@ -153,6 +156,7 @@ export class EntityManager {
     this.obscureds.commit()
     this.shooters.commit()
     this.transforms.commit()
+    this.turrets.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()
@@ -200,6 +204,10 @@ export class EntityManager {
 
     if (e.transform) {
       this.transforms.set(id, e.transform)
+    }
+
+    if (e.turret) {
+      this.turrets.set(id, e.turret)
     }
 
     this.indexEntity(id, e)
@@ -257,10 +265,6 @@ export class EntityManager {
       this.teams.set(id, e.team)
     }
 
-    if (e.turret) {
-      this.turrets.set(id, e.turret)
-    }
-
     if (e.type) {
       this.types.set(id, e.type)
     }
@@ -295,7 +299,6 @@ export class EntityManager {
     this.renderables.delete(id)
     this.targetables.delete(id)
     this.teams.delete(id)
-    this.turrets.delete(id)
     this.types.delete(id)
     this.walls.delete(id)
 
@@ -348,11 +351,6 @@ export class EntityManager {
     const team = this.teams.get(id)
     if (team !== undefined) {
       e.team = team
-    }
-
-    const turret = this.turrets.get(id)
-    if (turret) {
-      e.turret = turret.clone()
     }
 
     const type = this.types.get(id)

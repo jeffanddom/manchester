@@ -11,7 +11,7 @@ import {
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
 import { PickupType } from '~/systems/pickups'
-import { TurretComponent } from '~/systems/turret'
+import * as turret from '~/systems/turret'
 
 export const makeTurret = (): EntityComponents => {
   const e = makeDefaultEntity()
@@ -23,7 +23,7 @@ export const makeTurret = (): EntityComponents => {
   e.dropType = PickupType.Core
 
   e.transform = transform.make()
-  e.turret = new TurretComponent()
+  e.turret = turret.make()
   e.damageable = damageable.make(3, {
     offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
