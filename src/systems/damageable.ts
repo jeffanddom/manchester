@@ -17,7 +17,7 @@ export const update = (
 
     if (damageable.health <= 0) {
       const dropType = simState.entityManager.dropTypes.get(id)
-      if (dropType) {
+      if (dropType !== undefined) {
         const core = PickupConstructors[dropType]()
         core.transform!.position = vec2.clone(transform.position)
         simState.entityManager.register(core)

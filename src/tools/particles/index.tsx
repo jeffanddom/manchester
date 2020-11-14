@@ -12,20 +12,21 @@ import * as time from '~/util/time'
 const storage = window.localStorage
 const storedConfig = storage.getItem('config')
 
-let globalConfig: Config = storedConfig
-  ? JSON.parse(storedConfig)
-  : {
-      backgroundColor: '#888',
-      spawnTtl: 1,
-      particleTtl: 1,
-      orientation: 0,
-      arc: Math.PI,
-      particleRate: 120,
-      particleRadius: 2,
-      particleSpeedMin: 60,
-      particleSpeedMax: 240,
-      colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
-    }
+let globalConfig: Config =
+  storedConfig !== null
+    ? JSON.parse(storedConfig)
+    : {
+        backgroundColor: '#888',
+        spawnTtl: 1,
+        particleTtl: 1,
+        orientation: 0,
+        arc: Math.PI,
+        particleRate: 120,
+        particleRadius: 2,
+        particleSpeedMin: 60,
+        particleSpeedMax: 240,
+        colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
+      }
 
 const updateGlobalConfig = (newConfig: Config) => {
   globalConfig = newConfig

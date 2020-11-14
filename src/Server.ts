@@ -28,7 +28,7 @@ export class Server {
 
   // Common game state
   state: GameState
-  nextState: GameState | null
+  nextState: GameState | undefined
 
   currentLevel: number
 
@@ -49,7 +49,7 @@ export class Server {
 
     // Common
     this.state = GameState.Connecting
-    this.nextState = null
+    this.nextState = undefined
 
     this.currentLevel = 0
 
@@ -126,9 +126,9 @@ export class Server {
       }
     }
 
-    if (this.nextState) {
+    if (this.nextState !== undefined) {
       this.state = this.nextState
-      this.nextState = null
+      this.nextState = undefined
 
       switch (this.state) {
         case GameState.Running:

@@ -62,7 +62,7 @@ const rebuild = async () => {
   await Promise.all([clientBuild, serverBuild])
 
   // Restart server
-  if (server) {
+  if (server !== undefined) {
     server.kill()
   }
 

@@ -91,17 +91,17 @@ export class Layer {
   public getRenderables(visibleExtents: [vec2, vec2]): Renderable[] {
     const tmin = this.w2t(visibleExtents[0])
     const tmax = this.w2t(visibleExtents[1])
-    const renderables: Renderable[] = []
+    const result: Renderable[] = []
 
     for (let i = tmin[1]; i <= tmax[1]; i++) {
       for (let j = tmin[0]; j <= tmax[0]; j++) {
         const n = i * this.tileDimensions[0] + j
-        if (this.renderables[n]) {
-          renderables.push(this.renderables[n])
+        if (this.renderables[n] !== undefined) {
+          result.push(this.renderables[n])
         }
       }
     }
 
-    return renderables
+    return result
   }
 }

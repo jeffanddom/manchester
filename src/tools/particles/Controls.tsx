@@ -5,9 +5,10 @@ import { Config } from '~/tools/particles/interfaces'
 export const Controls = (props: {
   initialConfig: Config
   updateGlobalConfig: (c: Config) => void
-}) => {
+}): React.ReactElement => {
   const [config, setConfig] = React.useState(props.initialConfig)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateConfig = (key: string, value: any) => {
     const newConfig = { ...config, [key]: value }
     setConfig(newConfig)

@@ -11,17 +11,31 @@ import * as terrain from '~/terrain'
 import { BrushMode, Editor } from '~/tools/map/Editor'
 
 export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
-  const [state, setState] = useState({
+  const initialState: {
+    zoom: number
+    map: Map
+    tilePos: vec2 | undefined
+    brush: {
+      mode: BrushMode
+      terrain: terrain.Type
+      entity: entities.types.Type
+    }
+    showTerrain: boolean
+    showEntities: boolean
+    showGrid: boolean
+    fileOperationInProgress: boolean
+  } = {
     zoom: 1,
     map: editor.map,
-    tilePos: null,
+    tilePos: undefined,
     brush: editor.brush,
     showTerrain: true,
     showEntities: true,
     showGrid: true,
     fileOperationInProgress: false,
-  })
+  }
 
+  const [state, setState] = useState(initialState)
   const fileOpenRef = useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {

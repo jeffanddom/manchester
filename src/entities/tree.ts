@@ -23,8 +23,9 @@ class TreeRenderable implements IRenderable {
   fillStyle: string
 
   constructor() {
-    this.fillStyle = sample(['green', 'forestgreen', 'darkgreen']) || 'green'
+    this.fillStyle = sample(['green', 'forestgreen', 'darkgreen']) ?? 'green'
   }
+
   getRenderables(
     entityManager: EntityManager,
     entityId: EntityId,

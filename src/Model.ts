@@ -52,7 +52,7 @@ export const toRenderables = (
   const result: Array<Renderable> = []
   for (const k in model) {
     const mwTransform = mat2d.create()
-    if (itemTransforms[k]) {
+    if (itemTransforms[k] !== undefined) {
       mat2d.copy(mwTransform, itemTransforms[k])
     } else {
       mat2d.identity(mwTransform)

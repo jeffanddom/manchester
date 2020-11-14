@@ -7,10 +7,6 @@ import { PickupModels } from '~/entities/pickup'
 import { Primitive } from '~/renderer/interfaces'
 
 export const update = (c: Client, player: EntityComponents): void => {
-  if (!player) {
-    return
-  }
-
   const x = 50
   let y = 15
 

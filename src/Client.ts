@@ -66,7 +66,7 @@ export class Client {
 
   // Common game state
   state: GameState
-  nextState: GameState | null
+  nextState: GameState | undefined
 
   currentLevel: number
 
@@ -117,7 +117,7 @@ export class Client {
 
     // Common
     this.state = GameState.Connecting
-    this.nextState = null
+    this.nextState = undefined
 
     this.currentLevel = 0
 
@@ -190,9 +190,9 @@ export class Client {
       serverMessages = this.serverConnection.consume()
     }
 
-    if (this.nextState) {
+    if (this.nextState !== undefined) {
       this.state = this.nextState
-      this.nextState = null
+      this.nextState = undefined
 
       switch (this.state) {
         case GameState.Running:

@@ -33,7 +33,7 @@ export const Controls = (): React.ReactElement => {
           setCurrentMap(evt.target.value)
           window.location = window.location
         }}
-        value={getCurrentMap() || 'bigMap'}
+        value={getCurrentMap() ?? 'bigMap'}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

@@ -53,7 +53,7 @@ export class ParticleEmitter {
     this.colors = params.colors
   }
 
-  update(dt: number) {
+  update(dt: number): void {
     this.spawnTtl -= dt
 
     if (this.spawnTtl <= 0 && this.particles.length === 0) {

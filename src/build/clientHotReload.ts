@@ -16,7 +16,7 @@ export const init = (opts: { enabled: boolean } = { enabled: true }): void => {
 // you should avoid using dependencies not available globally in the browser,
 // as well as async/await.
 export const poll = (initialBuildkey: string): void => {
-  if (window.hotReload.interval) {
+  if (window.hotReload.interval !== undefined) {
     return
   }
 

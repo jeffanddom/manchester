@@ -3,7 +3,6 @@ import { vec2 } from 'gl-matrix'
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
 import { TILE_SIZE } from '~/constants'
-import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
@@ -19,28 +18,25 @@ export const update = (
     const attackerAabb = damagerAabb(damager, transform)
     const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
 
-    let targetId: EntityId | undefined
-    if (targetIds) {
-      targetId = targetIds.find((damageableId) => {
-        if (id === damageableId || damager.immuneList.includes(damageableId)) {
-          return false
-        }
+    const targetId = targetIds.find((damageableId) => {
+      if (id === damageableId || damager.immuneList.includes(damageableId)) {
+        return false
+      }
 
-        const damageable = simState.entityManager.damageables.get(damageableId)
-        if (!damageable) {
-          return false
-        }
+      const damageable = simState.entityManager.damageables.get(damageableId)
+      if (!damageable) {
+        return false
+      }
 
-        const targetTransform = simState.entityManager.transforms.get(
-          damageableId,
-        )!
+      const targetTransform = simState.entityManager.transforms.get(
+        damageableId,
+      )!
 
-        return aabbOverlap(
-          damageableAabb(damageable, targetTransform),
-          attackerAabb,
-        )
-      })
-    }
+      return aabbOverlap(
+        damageableAabb(damageable, targetTransform),
+        attackerAabb,
+      )
+    })
 
     if (!targetId) {
       continue
