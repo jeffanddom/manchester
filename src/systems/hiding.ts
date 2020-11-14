@@ -31,8 +31,6 @@ export const update = (entityManager: EntityManager): void => {
     }
 
     if (currentlyObscured !== entityManager.obscureds.has(id)) {
-      entityManager.checkpoint(id)
-
       if (currentlyObscured) {
         entityManager.obscureds.add(id)
       } else {

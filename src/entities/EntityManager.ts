@@ -9,6 +9,7 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { Transform } from '~/components/Transform'
+import { ComponentSet } from '~/ComponentSet'
 import { ComponentTable } from '~/ComponentTable'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
@@ -44,7 +45,7 @@ export class EntityManager {
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
   moveables: SortedSet<EntityId>
-  obscureds: SortedSet<EntityId>
+  obscureds: ComponentSet
   obscurings: SortedSet<EntityId>
   playerNumbers: SortedMap<EntityId, number>
   playfieldClamped: SortedSet<EntityId>
@@ -76,7 +77,7 @@ export class EntityManager {
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
     this.moveables = new SortedSet()
-    this.obscureds = new SortedSet()
+    this.obscureds = new ComponentSet()
     this.obscurings = new SortedSet()
     this.playerNumbers = new SortedMap()
     this.playfieldClamped = new SortedSet()
@@ -103,6 +104,7 @@ export class EntityManager {
   public update(): void {
     for (const id of this.toDelete) {
       this.damageables.delete(id)
+      this.obscureds.delete(id)
       this.transforms.delete(id)
 
       this.unindexEntity(id)
@@ -128,6 +130,7 @@ export class EntityManager {
 
   public undoPrediction(): void {
     this.damageables.rollback()
+    this.obscureds.rollback()
     this.transforms.rollback()
 
     for (const [id, entity] of this.checkpointedEntities) {
@@ -145,6 +148,7 @@ export class EntityManager {
 
   public commitPrediction(): void {
     this.damageables.commit()
+    this.obscureds.commit()
     this.transforms.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
@@ -181,6 +185,10 @@ export class EntityManager {
 
     if (e.damageable) {
       this.damageables.set(id, e.damageable)
+    }
+
+    if (e.obscured) {
+      this.obscureds.add(id)
     }
 
     if (e.transform) {
@@ -224,10 +232,6 @@ export class EntityManager {
 
     if (e.playfieldClamped) {
       this.playfieldClamped.add(id)
-    }
-
-    if (e.obscured) {
-      this.obscureds.add(id)
     }
 
     if (e.obscuring) {
@@ -282,7 +286,6 @@ export class EntityManager {
     this.dropTypes.delete(id)
     this.hitboxes.delete(id)
     this.moveables.delete(id)
-    this.obscureds.delete(id)
     this.obscurings.delete(id)
     this.playerNumbers.delete(id)
     this.playfieldClamped.delete(id)
@@ -323,8 +326,6 @@ export class EntityManager {
     }
 
     e.moveable = this.moveables.has(id)
-
-    e.obscured = this.obscureds.has(id)
 
     e.obscuring = this.obscurings.has(id)
 
