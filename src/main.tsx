@@ -8,8 +8,7 @@ import { createServerConnectionWs } from '~/network/ServerConnection'
 
 declare global {
   interface Window {
-    g: Client
-    game: Client
+    client: Client
   }
 }
 
@@ -29,7 +28,7 @@ client.keyboard = new Keyboard()
 client.mouse = new Mouse(canvas)
 
 // Development-related globals
-window.g = window.game = client // expose game to console
+window.client = client // expose game to console
 clientHotReload.init({ enabled: false })
 
 function syncViewportSize() {
