@@ -1,10 +1,10 @@
-import { ComponentSet } from './ComponentSet'
+import { EntitySet } from './EntitySet'
 
 import { EntityId } from '~/entities/EntityId'
 
-describe('ComponentSet', () => {
+describe('EntitySet', () => {
   it('#has', () => {
-    const table = new ComponentSet()
+    const table = new EntitySet()
 
     table.add(0 as EntityId)
     table.add(1 as EntityId)
@@ -15,7 +15,7 @@ describe('ComponentSet', () => {
   })
 
   it('#delete', () => {
-    const table = new ComponentSet()
+    const table = new EntitySet()
 
     table.add(0 as EntityId)
     table.add(1 as EntityId)
@@ -27,7 +27,7 @@ describe('ComponentSet', () => {
   })
 
   it('iteration', () => {
-    const table = new ComponentSet()
+    const table = new EntitySet()
 
     table.add(0 as EntityId)
     table.add(1 as EntityId)
@@ -41,7 +41,7 @@ describe('ComponentSet', () => {
   })
 
   it('commit/rollback', () => {
-    const table = new ComponentSet()
+    const table = new EntitySet()
 
     table.add(0 as EntityId)
     expect(table.has(0 as EntityId)).toBe(true)

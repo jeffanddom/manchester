@@ -9,11 +9,11 @@ import { IRenderable } from '~/components/IRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { Transform } from '~/components/Transform'
-import { ComponentSet } from '~/ComponentSet'
 import { ComponentTable } from '~/ComponentTable'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
+import { EntitySet } from '~/EntitySet'
 import { Hitbox, clone as hitboxClone } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
@@ -45,19 +45,19 @@ export class EntityManager {
   damagers: SortedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
-  moveables: ComponentSet
-  obscureds: ComponentSet
-  obscurings: ComponentSet
+  moveables: EntitySet
+  obscureds: EntitySet
+  obscurings: EntitySet
   playerNumbers: SortedMap<EntityId, number>
-  playfieldClamped: ComponentSet
+  playfieldClamped: EntitySet
   renderables: SortedMap<EntityId, IRenderable>
   shooters: ComponentTable<ShooterComponent>
-  targetables: ComponentSet
+  targetables: EntitySet
   teams: SortedMap<EntityId, Team>
   transforms: ComponentTable<Transform>
   turrets: ComponentTable<TurretComponent>
   types: SortedMap<EntityId, Type>
-  walls: ComponentSet
+  walls: EntitySet
 
   // indexes
   friendlyTeam: SortedSet<EntityId>
@@ -77,19 +77,19 @@ export class EntityManager {
     this.damagers = new SortedMap()
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
-    this.moveables = new ComponentSet()
-    this.obscureds = new ComponentSet()
-    this.obscurings = new ComponentSet()
+    this.moveables = new EntitySet()
+    this.obscureds = new EntitySet()
+    this.obscurings = new EntitySet()
     this.playerNumbers = new SortedMap()
-    this.playfieldClamped = new ComponentSet()
+    this.playfieldClamped = new EntitySet()
     this.renderables = new SortedMap()
     this.shooters = new ComponentTable(shooterClone)
-    this.targetables = new ComponentSet()
+    this.targetables = new EntitySet()
     this.teams = new SortedMap()
     this.transforms = new ComponentTable(transform.clone)
     this.turrets = new ComponentTable(turret.clone)
     this.types = new SortedMap()
-    this.walls = new ComponentSet()
+    this.walls = new EntitySet()
 
     // indexes
     this.friendlyTeam = new SortedSet()
