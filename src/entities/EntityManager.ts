@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
 import { Bullet } from '~/components/Bullet'
+import * as damageable from '~/components/Damageable'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
 import { IRenderable } from '~/components/IRenderable'
@@ -12,7 +13,7 @@ import { ComponentTable } from '~/ComponentTable'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { Type } from '~/entities/types'
-import { Hitbox } from '~/Hitbox'
+import { Hitbox, clone as hitboxClone } from '~/Hitbox'
 import { Renderable } from '~/renderer/interfaces'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
@@ -38,7 +39,7 @@ export class EntityManager {
 
   // components
   bullets: SortedMap<EntityId, Bullet>
-  damageables: SortedMap<EntityId, Damageable>
+  damageables: ComponentTable<Damageable>
   damagers: SortedMap<EntityId, Damager>
   dropTypes: SortedMap<EntityId, PickupType>
   hitboxes: SortedMap<EntityId, Hitbox>
@@ -70,7 +71,7 @@ export class EntityManager {
 
     // components
     this.bullets = new SortedMap()
-    this.damageables = new SortedMap()
+    this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new SortedMap()
     this.dropTypes = new SortedMap()
     this.hitboxes = new SortedMap()
@@ -101,6 +102,7 @@ export class EntityManager {
 
   public update(): void {
     for (const id of this.toDelete) {
+      this.damageables.delete(id)
       this.transforms.delete(id)
 
       this.unindexEntity(id)
@@ -125,6 +127,7 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
+    this.damageables.rollback()
     this.transforms.rollback()
 
     for (const [id, entity] of this.checkpointedEntities) {
@@ -141,6 +144,7 @@ export class EntityManager {
   }
 
   public commitPrediction(): void {
+    this.damageables.commit()
     this.transforms.commit()
 
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
@@ -175,6 +179,10 @@ export class EntityManager {
     this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
 
+    if (e.damageable) {
+      this.damageables.set(id, e.damageable)
+    }
+
     if (e.transform) {
       this.transforms.set(id, e.transform)
     }
@@ -192,10 +200,6 @@ export class EntityManager {
 
     if (e.bullet) {
       this.bullets.set(id, e.bullet)
-    }
-
-    if (e.damageable) {
-      this.damageables.set(id, e.damageable)
     }
 
     if (e.damager) {
@@ -274,7 +278,6 @@ export class EntityManager {
   private unindexEntity(id: EntityId): void {
     // components
     this.bullets.delete(id)
-    this.damageables.delete(id)
     this.damagers.delete(id)
     this.dropTypes.delete(id)
     this.hitboxes.delete(id)
@@ -304,11 +307,6 @@ export class EntityManager {
       e.bullet = bullet.clone()
     }
 
-    const damageable = this.damageables.get(id)
-    if (damageable) {
-      e.damageable = damageable.clone()
-    }
-
     const damager = this.damagers.get(id)
     if (damager) {
       e.damager = damager.clone()
@@ -321,7 +319,7 @@ export class EntityManager {
 
     const hitbox = this.hitboxes.get(id)
     if (hitbox) {
-      e.hitbox = hitbox.clone()
+      e.hitbox = hitboxClone(hitbox)
     }
 
     e.moveable = this.moveables.has(id)

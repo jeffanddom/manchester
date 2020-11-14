@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Damageable } from '~/components/Damageable'
+import * as damageable from '~/components/Damageable'
 import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
@@ -10,7 +10,6 @@ import {
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
-import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 import { BuilderComponent, BuilderMode } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
@@ -42,17 +41,14 @@ export const make = (params: {
 
   e.team = Team.Friendly
   e.targetable = true
-  e.damageable = new Damageable(
-    0.1,
-    new Hitbox(
-      vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
-      vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    ),
-  )
-  e.hitbox = new Hitbox(
-    vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
-    vec2.fromValues(TILE_SIZE, TILE_SIZE),
-  )
+  e.damageable = damageable.make(0.1, {
+    offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  })
+  e.hitbox = {
+    offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  }
 
   return e
 }

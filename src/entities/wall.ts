@@ -1,6 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { Damageable } from '~/components/Damageable'
+import * as damageable from '~/components/Damageable'
 import { IRenderable } from '~/components/IRenderable'
 import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
@@ -11,7 +11,6 @@ import {
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { Type } from '~/entities/types'
-import { Hitbox } from '~/Hitbox'
 import { toRenderables } from '~/Model'
 import * as models from '~/models'
 import { Renderable } from '~/renderer/interfaces'
@@ -49,12 +48,9 @@ export const makeWall = (): EntityComponents => {
   e.wall = true
   e.targetable = true
   e.renderable = new WallRenderable()
-  e.damageable = new Damageable(
-    WALL_HEALTH,
-    new Hitbox(
-      vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
-      vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    ),
-  )
+  e.damageable = damageable.make(WALL_HEALTH, {
+    offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  })
   return e
 }

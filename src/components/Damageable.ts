@@ -1,27 +1,32 @@
 import { vec2 } from 'gl-matrix'
 
 import { Transform } from '~/components/Transform'
-import { Hitbox } from '~/Hitbox'
+import * as hitbox from '~/Hitbox'
 import { Immutable } from '~/types/immutable'
 
-export class Damageable {
+export type Damageable = {
   maxHealth: number
   health: number
-  hitbox: Hitbox
+  hitbox: hitbox.Hitbox
+}
 
-  constructor(health: number, hitbox: Hitbox) {
-    this.maxHealth = health
-    this.health = health
-    this.hitbox = hitbox
+export function make(health: number, hitbox: hitbox.Hitbox): Damageable {
+  return {
+    maxHealth: health,
+    health: health,
+    hitbox: hitbox,
   }
+}
 
-  aabb(transform: Immutable<Transform>): [vec2, vec2] {
-    return this.hitbox.aabb(transform.position)
-  }
+export function aabb(
+  d: Immutable<Damageable>,
+  transform: Immutable<Transform>,
+): [vec2, vec2] {
+  return hitbox.aabb(d.hitbox, transform.position)
+}
 
-  clone(): Damageable {
-    const c = new Damageable(this.maxHealth, this.hitbox.clone())
-    c.health = this.health
-    return c
-  }
+export function clone(d: Immutable<Damageable>): Damageable {
+  const c = make(d.maxHealth, hitbox.clone(d.hitbox))
+  c.health = d.health
+  return c
 }

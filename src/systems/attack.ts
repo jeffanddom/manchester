@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import { aabb as damageableAabb } from '~/components/Damageable'
 import { TILE_SIZE } from '~/constants'
 import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -33,7 +34,10 @@ export const update = (
           damageableId,
         )!
 
-        return aabbOverlap(damageable.aabb(targetTransform), attackerAabb)
+        return aabbOverlap(
+          damageableAabb(damageable, targetTransform),
+          attackerAabb,
+        )
       })
     }
 
@@ -41,16 +45,14 @@ export const update = (
       continue
     }
 
-    const damageable = simState.entityManager.damageables.get(targetId)!
-    simState.entityManager.checkpoint(targetId)
-
     // For now, the only behavior for damagers is "bullet" style: apply
     // damage to the damageable, and then remove self from simulation.
 
-    // TODO: change to hit event for damageable system
-    damageable.health -= damager.damageValue
+    const damageable = simState.entityManager.damageables.get(targetId)!
+    simState.entityManager.damageables.update(targetId, {
+      health: damageable.health - damager.damageValue,
+    })
 
-    // TODO: client and server both delete their own bullets
     simState.entityManager.markForDeletion(id)
 
     // ---------------------
@@ -81,10 +83,5 @@ export const update = (
         frame: simState.frame,
       })
     }
-
-    // const player = simState.entityManager.getPlayer()
-    // if (player && player.id === targetId) {
-    //   g.client.camera.shake()
-    // }
   }
 }

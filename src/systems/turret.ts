@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
@@ -112,7 +113,10 @@ export const update = (
         const closerTransform = entityManager.transforms.get(shootables[i].id)!
 
         if (
-          segmentToAabb(lineOfSight, closerDamageable.aabb(closerTransform))
+          segmentToAabb(
+            lineOfSight,
+            damageable.aabb(closerDamageable, closerTransform),
+          )
         ) {
           return false
         }

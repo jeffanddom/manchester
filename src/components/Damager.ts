@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Transform } from '~/components/Transform'
 import { EntityId } from '~/entities/EntityId'
 import { Hitbox } from '~/Hitbox'
+import * as hitbox from '~/Hitbox'
 import { Immutable } from '~/types/immutable'
 
 export class Damager {
@@ -10,28 +11,24 @@ export class Damager {
   hitbox: Hitbox
   immuneList: EntityId[]
 
-  constructor({
-    damageValue,
-    hitbox,
-    immuneList,
-  }: {
+  constructor(config: {
     damageValue: number
     hitbox: Hitbox
     immuneList: EntityId[]
   }) {
-    this.damageValue = damageValue
-    this.hitbox = hitbox
-    this.immuneList = immuneList
+    this.damageValue = config.damageValue
+    this.hitbox = config.hitbox
+    this.immuneList = config.immuneList
   }
 
   aabb(transform: Immutable<Transform>): [vec2, vec2] {
-    return this.hitbox.aabb(transform.position)
+    return hitbox.aabb(this.hitbox, transform.position)
   }
 
   clone(): Damager {
     return new Damager({
       damageValue: this.damageValue,
-      hitbox: this.hitbox.clone(),
+      hitbox: hitbox.clone(this.hitbox),
       immuneList: this.immuneList.slice(),
     })
   }

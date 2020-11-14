@@ -15,7 +15,6 @@ export interface EntityComponents {
   builder?: BuilderComponent
   builderCreator?: BuilderCreator
   bullet?: Bullet
-  damageable?: Damageable
   damager?: Damager
   dropType?: PickupType
   harvestType?: PickupType
@@ -36,6 +35,7 @@ export interface EntityComponents {
   wall?: boolean
 
   // The following properties should only be used for creation, not snapshotting
+  damageable?: Damageable
   transform?: Transform
 }
 

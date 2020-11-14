@@ -6,9 +6,9 @@ export class ComponentTable<T> {
   private contents: SortedMap<EntityId, T>
   private uncommittedAdds: Set<EntityId>
   private snapshot: SortedMap<EntityId, T>
-  private clone: (component: Immutable<T>) => T
+  private clone: (component: T) => T
 
-  constructor(clone: (component: Immutable<T>) => T) {
+  constructor(clone: (component: T) => T) {
     this.contents = new SortedMap()
     this.snapshot = new SortedMap()
     this.uncommittedAdds = new Set()

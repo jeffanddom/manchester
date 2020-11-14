@@ -42,7 +42,10 @@ export const radialTranslate2 = (
   )
 }
 
-export const aabbOverlap = (a: [vec2, vec2], b: [vec2, vec2]): boolean => {
+export const aabbOverlap = (
+  a: Immutable<[vec2, vec2]>,
+  b: Immutable<[vec2, vec2]>,
+): boolean => {
   return (
     a[0][0] <= b[1][0] &&
     a[1][0] >= b[0][0] &&

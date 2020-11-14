@@ -9,7 +9,6 @@ import {
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
-import { Hitbox } from '~/Hitbox'
 import * as models from '~/models'
 
 export const makeBullet = ({
@@ -34,7 +33,10 @@ export const makeBullet = ({
 
   e.damager = new Damager({
     damageValue: 1,
-    hitbox: new Hitbox(vec2.fromValues(-2, -2), vec2.fromValues(4, 4)),
+    hitbox: {
+      offset: vec2.fromValues(-2, -2),
+      dimensions: vec2.fromValues(4, 4),
+    },
     immuneList: [owner],
   })
 

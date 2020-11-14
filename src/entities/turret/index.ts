@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { Damageable } from '~/components/Damageable'
+import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
@@ -10,7 +10,6 @@ import {
 } from '~/entities/EntityComponents'
 import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
-import { Hitbox } from '~/Hitbox'
 import { PickupType } from '~/systems/pickups'
 import { TurretComponent } from '~/systems/turret'
 
@@ -25,17 +24,14 @@ export const makeTurret = (): EntityComponents => {
 
   e.transform = transform.make()
   e.turret = new TurretComponent()
-  e.damageable = new Damageable(
-    3,
-    new Hitbox(
-      vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
-      vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    ),
-  )
-  e.hitbox = new Hitbox(
-    vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
-    vec2.fromValues(TILE_SIZE, TILE_SIZE),
-  )
+  e.damageable = damageable.make(3, {
+    offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  })
+  e.hitbox = {
+    offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
+    dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+  }
   e.renderable = new TurretRenderables()
 
   return e

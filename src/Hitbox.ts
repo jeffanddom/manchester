@@ -2,28 +2,26 @@ import { vec2 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 
-export class Hitbox {
+export type Hitbox = {
   offset: vec2
   dimensions: vec2
+}
 
-  constructor(offset: vec2, dimensions: vec2) {
-    this.offset = offset
-    this.dimensions = dimensions
-  }
+export function aabb(
+  h: Immutable<Hitbox>,
+  position: Immutable<vec2>,
+): [vec2, vec2] {
+  const offsetPosition = vec2.add(vec2.create(), h.offset, position)
 
-  aabb(position: Immutable<vec2>): [vec2, vec2] {
-    const offsetPosition = vec2.add(vec2.create(), this.offset, position)
+  return [
+    offsetPosition,
+    vec2.fromValues(
+      offsetPosition[0] + h.dimensions[0],
+      offsetPosition[1] + h.dimensions[1],
+    ),
+  ]
+}
 
-    return [
-      offsetPosition,
-      vec2.fromValues(
-        offsetPosition[0] + this.dimensions[0],
-        offsetPosition[1] + this.dimensions[1],
-      ),
-    ]
-  }
-
-  clone(): Hitbox {
-    return new Hitbox(vec2.clone(this.offset), vec2.clone(this.dimensions))
-  }
+export function clone(h: Immutable<Hitbox>): Hitbox {
+  return { offset: vec2.clone(h.offset), dimensions: vec2.clone(h.dimensions) }
 }
