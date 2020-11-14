@@ -46,7 +46,7 @@ export class EntityManager {
   damageables: ComponentTable<Damageable>
   damagers: ComponentTable<Damager>
   dropTypes: SortedMap<EntityId, PickupType>
-  hitboxes: SortedMap<EntityId, Hitbox>
+  hitboxes: ComponentTable<Hitbox>
   moveables: EntitySet
   obscureds: EntitySet
   obscurings: EntitySet
@@ -78,7 +78,7 @@ export class EntityManager {
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new ComponentTable(damager.clone)
     this.dropTypes = new SortedMap()
-    this.hitboxes = new SortedMap()
+    this.hitboxes = new ComponentTable(hitboxClone)
     this.moveables = new EntitySet()
     this.obscureds = new EntitySet()
     this.obscurings = new EntitySet()
@@ -109,6 +109,7 @@ export class EntityManager {
       this.bullets.delete(id)
       this.damageables.delete(id)
       this.damagers.delete(id)
+      this.hitboxes.delete(id)
       this.moveables.delete(id)
       this.obscureds.delete(id)
       this.obscurings.delete(id)
@@ -144,6 +145,7 @@ export class EntityManager {
     this.bullets.rollback()
     this.damageables.rollback()
     this.damagers.rollback()
+    this.hitboxes.rollback()
     this.moveables.rollback()
     this.obscureds.rollback()
     this.obscurings.rollback()
@@ -171,6 +173,7 @@ export class EntityManager {
     this.bullets.commit()
     this.damageables.commit()
     this.damagers.commit()
+    this.hitboxes.commit()
     this.moveables.commit()
     this.obscureds.commit()
     this.obscurings.commit()
@@ -225,6 +228,10 @@ export class EntityManager {
       this.damagers.set(id, e.damager)
     }
 
+    if (e.hitbox) {
+      this.hitboxes.set(id, e.hitbox)
+    }
+
     if (e.moveable) {
       this.moveables.add(id)
     }
@@ -276,10 +283,6 @@ export class EntityManager {
       this.dropTypes.set(id, e.dropType)
     }
 
-    if (e.hitbox) {
-      this.hitboxes.set(id, e.hitbox)
-    }
-
     if (e.playerNumber !== undefined) {
       this.playerNumbers.set(id, e.playerNumber)
     }
@@ -312,7 +315,6 @@ export class EntityManager {
   private unindexEntity(id: EntityId): void {
     // components
     this.dropTypes.delete(id)
-    this.hitboxes.delete(id)
     this.playerNumbers.delete(id)
     this.renderables.delete(id)
     this.teams.delete(id)
@@ -329,11 +331,6 @@ export class EntityManager {
     const dropType = this.dropTypes.get(id)
     if (dropType) {
       e.dropType = dropType
-    }
-
-    const hitbox = this.hitboxes.get(id)
-    if (hitbox) {
-      e.hitbox = hitboxClone(hitbox)
     }
 
     const playerNumber = this.playerNumbers.get(id)

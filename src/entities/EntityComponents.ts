@@ -16,7 +16,6 @@ export interface EntityComponents {
   builderCreator?: BuilderCreator
   dropType?: PickupType
   harvestType?: PickupType
-  hitbox?: Hitbox
   inventory?: PickupType[]
   pickupType?: PickupType
   playerNumber?: number
@@ -30,6 +29,7 @@ export interface EntityComponents {
   bullet?: Bullet
   damageable?: Damageable
   damager?: Damager
+  hitbox?: Hitbox
   moveable?: boolean
   obscured?: boolean
   obscuring?: boolean
