@@ -4,6 +4,7 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
     ecmaFeatures: { jsx: true },
+    project: './tsconfig.eslint.json',
   },
   settings: {
     react: { version: 'detect' },
@@ -16,8 +17,12 @@ module.exports = {
   ],
   plugins: ['import'],
   rules: {
+    '@typescript-eslint/strict-boolean-expressions': [
+      2,
+      { allowNullableBoolean: true },
+    ],
+    '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'import/order': [
       'error',
       {
@@ -28,7 +33,6 @@ module.exports = {
         },
       },
     ],
-    '@typescript-eslint/no-non-null-assertion': 'off',
     'prettier/prettier': [
       1,
       {
@@ -39,5 +43,6 @@ module.exports = {
         trailingComma: 'all',
       },
     ],
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
   },
 }
