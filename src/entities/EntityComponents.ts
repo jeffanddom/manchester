@@ -21,7 +21,6 @@ export interface EntityComponents {
   inventory?: PickupType[]
   pickupType?: PickupType
   playerNumber?: number
-  playfieldClamped?: boolean
   renderable?: IRenderable
   shooter?: ShooterComponent
   team?: Team
@@ -34,6 +33,7 @@ export interface EntityComponents {
   moveable?: boolean
   obscured?: boolean
   obscuring?: boolean
+  playfieldClamped?: boolean
   targetable?: boolean
   transform?: Transform
   wall?: boolean
