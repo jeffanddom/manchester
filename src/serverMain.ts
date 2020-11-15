@@ -39,20 +39,10 @@ const entrypointWithHotReload = updateEntrypointHtmlForHotReload({
 })
 
 const wsServer = new WebSocket.Server({ noServer: true })
-const router = new KoaRouter()
-
-router
-  .get('/', async (ctx, next) => {
-    ctx.body = entrypointWithHotReload
-    return await next()
-  })
-  .get('/client/(.*)', async (ctx) =>
-    koaSend(ctx, ctx.path.substr('/client/'.length), {
-      root: clientBuildOutputPath,
-    }),
-  )
-  .get('/api/buildkey', async (ctx) => (ctx.body = buildkey))
-  .get('/api/connect', async (ctx) => {
+const apiRouter = new KoaRouter()
+apiRouter
+  .get('/buildkey', async (ctx) => (ctx.body = buildkey))
+  .get('/connect', async (ctx) => {
     if (ctx.get('Upgrade') !== 'websocket') {
       ctx.throw(400, 'invalid websocket connection request')
     }
@@ -74,6 +64,21 @@ router
 
     gameServer.connectClient(new ClientConnectionWs(socket))
   })
+
+const router = new KoaRouter()
+router.use('/api', apiRouter.routes())
+router
+  .get('/', async (ctx, next) => {
+    ctx.body = entrypointWithHotReload
+    return await next()
+  })
+  // FIXME: this route catches requests with the `/api` prefix that apiRouter
+  // doesn't handle. This is suprising and weird.
+  .get('/(.*)', async (ctx) =>
+    koaSend(ctx, ctx.path, {
+      root: clientBuildOutputPath,
+    }),
+  )
 
 console.log(`Starting dev server on port ${port}, buildkey ${buildkey}`)
 httpServer.use(router.routes()).use(router.allowedMethods())

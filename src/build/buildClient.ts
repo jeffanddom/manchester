@@ -9,7 +9,6 @@ console.log('Creating bundle...')
 const bundler = new Bundler(path.join(gameSrcPath, 'index.html'), {
   outDir: clientBuildOutputPath,
   outFile: 'index.html', // The name of the outputFile
-  publicUrl: '/client',
   watch: false, // explicitly disable watching...we want the supervisor to control this
   cache: true,
   cacheDir: '.cache',
