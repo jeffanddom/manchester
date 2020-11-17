@@ -1,5 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { Canvas3DRenderer } from './renderer/Canvas3DRenderer'
+
 import { Camera } from '~/Camera'
 import {
   MAX_PREDICTED_FRAMES,
@@ -16,7 +18,6 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import {
   IRenderer,
   Primitive,
@@ -102,7 +103,7 @@ export class Client {
     this.debugDrawRenderables = []
     this.debugDrawViewspace = []
     this.enableDebugDraw = true
-    this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
+    this.renderer = new Canvas3DRenderer(canvas)
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()

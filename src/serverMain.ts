@@ -14,7 +14,11 @@ import { Server as GameServer } from '~/Server'
 
 // TODO: read from envvar
 const playerCount = 1
+<<<<<<< HEAD
 const clientBufferSize = 7
+=======
+const clientBufferSize = 1
+>>>>>>> fef0d95... 3d WIP
 
 const gameServer = new GameServer({
   playerCount,
