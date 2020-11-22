@@ -17,6 +17,9 @@
     "type": "git",
     "url": "git+https://github.com/jeffanddom/manchester.git"
   },
+  "browser": {
+    "perf_hooks": "./src/browserShims/perf_hooks.ts"
+  },
   "dependencies": {
     "file-saver": "^2.0.2",
     "gl-matrix": "^3.3.0",
