@@ -1,5 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { IRenderable } from './components/IRenderable'
 import { EntityId } from './entities/EntityId'
 
 import { Camera } from '~/Camera'
@@ -54,9 +55,12 @@ export class Client {
   lastUpdateAt: number
   lastTickAt: number
   lastRenderAt: number
+  serverUpdateFrameDurationAvg: number
+  serverSimulationDurationAvg: number
 
   tickDurations: RunningAverage
-  updateDurations: RunningAverage
+  updateFrameDurations: RunningAverage
+  renderDurations: RunningAverage
   renderFrameDurations: RunningAverage
   framesAheadOfServer: RunningAverage
   serverInputsPerFrame: RunningAverage
@@ -99,12 +103,16 @@ export class Client {
     this.debugDrawViewspace = []
     this.enableDebugDraw = true
     this.renderer = new Canvas2DRenderer(canvas.getContext('2d')!)
+
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()
     this.lastRenderAt = time.current()
+    this.serverUpdateFrameDurationAvg = NaN
+    this.serverSimulationDurationAvg = NaN
 
     this.tickDurations = new RunningAverage(3 * 60)
-    this.updateDurations = new RunningAverage(3 * 60)
+    this.updateFrameDurations = new RunningAverage(3 * 60)
+    this.renderDurations = new RunningAverage(3 * 60)
     this.renderFrameDurations = new RunningAverage(3 * 60)
     this.framesAheadOfServer = new RunningAverage(3 * 60)
     this.serverInputsPerFrame = new RunningAverage(3 * 60)
@@ -169,22 +177,20 @@ export class Client {
 
   update(): void {
     const now = time.current()
-    this.updateDurations.sample(now - this.lastUpdateAt)
+    this.updateFrameDurations.sample(now - this.lastUpdateAt)
     this.lastUpdateAt = now
 
     // schedule next update before we run potentially expensive game sim
     setTimeout(() => this.update(), this.updatePeriod)
 
     for (let i = 0; i < this.ticksPerUpdate; i++) {
+      const now = time.current()
       this.tick(SIMULATION_PERIOD_S)
+      this.tickDurations.sample(time.current() - now)
     }
   }
 
   tick(dt: number): void {
-    const now = time.current()
-    this.tickDurations.sample(now - this.lastTickAt)
-    this.lastTickAt = now
-
     let serverMessages: ServerMessage[] = []
     if (this.serverConnection) {
       serverMessages = this.serverConnection.consume()
@@ -232,6 +238,8 @@ export class Client {
                   })
 
                   this.serverInputsPerFrame.sample(msg.inputs.length)
+                  this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
+                  this.serverSimulationDurationAvg = msg.simulationDurationAvg
                 }
                 break
               case ServerMessageType.SPEED_UP:
@@ -404,76 +412,40 @@ export class Client {
 
     this.debugDraw(
       () => {
-        const rightEdge = this.camera.viewportDimensions[0]
-        return [
-          {
-            primitive: Primitive.TEXT,
-            text: `Player ${this.playerNumber}`,
-            pos: vec2.fromValues(rightEdge - 10, 10),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `Render FPS: ${(
-              1 / this.renderFrameDurations.average()
-            ).toFixed(2)}`,
-            pos: vec2.fromValues(rightEdge - 10, 30),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `Update FPS: ${(1 / this.updateDurations.average()).toFixed(
-              2,
-            )}`,
-            pos: vec2.fromValues(rightEdge - 10, 50),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `Tick FPS: ${(1 / this.tickDurations.average()).toFixed(2)}`,
-            pos: vec2.fromValues(rightEdge - 10, 70),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-            pos: vec2.fromValues(rightEdge - 10, 90),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
-            pos: vec2.fromValues(rightEdge - 10, 110),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          },
-          {
-            primitive: Primitive.TEXT,
-            text: this.ticksPerUpdate > 1 ? `OVERDRIVE` : '',
-            pos: vec2.fromValues(rightEdge - 10, 150),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '36px monospace',
-            style: 'red',
-          },
+        const text = [
+          `Player ${this.playerNumber}`,
+          `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
+          `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
+          `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
+          `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
+          `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
+          `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+          `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
+            2,
+          )}`,
+          `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
+            2,
+          )}`,
+          this.ticksPerUpdate > 1 ? `OVERDRIVE` : '',
         ]
+
+        const x = this.camera.viewportDimensions[0] - 10
+        let y = 10
+        const res: Renderable[] = []
+        for (const t of text) {
+          res.push({
+            primitive: Primitive.TEXT,
+            text: t,
+            pos: vec2.fromValues(x, y),
+            hAlign: TextAlign.Max,
+            vAlign: TextAlign.Center,
+            font: '16px monospace',
+            style: 'cyan',
+          })
+          y += 20
+        }
+
+        return res
       },
       { viewspace: true },
     )
@@ -485,6 +457,8 @@ export class Client {
     }
 
     this.debugDrawViewspace = []
+
+    this.renderDurations.sample(time.current() - now)
   }
 
   registerParticleEmitter(params: {

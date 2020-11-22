@@ -16,6 +16,8 @@ export type ServerFrameUpdateMessage = {
   type: ServerMessageType.FRAME_UPDATE
   frame: number
   inputs: ClientMessage[]
+  updateFrameDurationAvg: number
+  simulationDurationAvg: number
 }
 
 export type ServerSpeedUpMessage = {

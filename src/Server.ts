@@ -6,9 +6,11 @@ import { GameState, gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
-import { ServerMessageType } from '~/network/ServerMessage'
+import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { simulate } from '~/simulate'
 import * as terrain from '~/terrain'
+import { RunningAverage } from '~/util/RunningAverage'
+import * as time from '~/util/time'
 
 export class Server {
   entityManager: EntityManager
@@ -35,6 +37,10 @@ export class Server {
   map: Map
   terrainLayer: terrain.Layer
 
+  updateFrameDurations: RunningAverage
+  lastUpdateAt: number
+  simulationDurations: RunningAverage
+
   constructor(config: { playerCount: number; minFramesBehindClient: number }) {
     this.clientMessagesByFrame = []
     this.entityManager = new EntityManager([
@@ -47,7 +53,6 @@ export class Server {
     this.simulationFrame = 0
     this.maxReceivedClientFrame = -1
 
-    // Common
     this.state = GameState.Connecting
     this.nextState = undefined
 
@@ -59,6 +64,10 @@ export class Server {
       tileDimensions: vec2.create(),
       terrain: this.map.terrain,
     })
+
+    this.updateFrameDurations = new RunningAverage(3 * 60)
+    this.lastUpdateAt = time.current()
+    this.simulationDurations = new RunningAverage(3 * 60)
   }
 
   connectClient(conn: IClientConnection): void {
@@ -79,6 +88,10 @@ export class Server {
   }
 
   update(dt: number): void {
+    const now = time.current()
+    this.updateFrameDurations.sample(now - this.lastUpdateAt)
+    this.lastUpdateAt = now
+
     // process incoming client messages
     for (const client of this.clients) {
       for (const msg of client.conn.consume()) {
@@ -184,6 +197,8 @@ export class Server {
             break
           }
 
+          const start = time.current()
+
           // Remove this frame's client messages from the history, then process.
           const frameMessages = this.clientMessagesByFrame.shift() || []
           simulate(
@@ -197,12 +212,16 @@ export class Server {
             dt,
           )
 
+          this.simulationDurations.sample(time.current() - start)
+
           // send authoritative updates to clients
           this.clients.forEach((client) => {
             client.conn.send({
               type: ServerMessageType.FRAME_UPDATE,
               frame: this.simulationFrame,
               inputs: frameMessages,
+              updateFrameDurationAvg: this.updateFrameDurations.average(),
+              simulationDurationAvg: this.simulationDurations.average(),
             })
           })
 
