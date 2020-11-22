@@ -29,7 +29,7 @@ client.mouse = new Mouse(canvas)
 
 // Development-related globals
 window.client = client // expose game to console
-clientHotReload.init({ enabled: false })
+clientHotReload.init({ enabled: true })
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
