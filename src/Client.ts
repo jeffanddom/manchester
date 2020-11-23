@@ -1,10 +1,8 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { IRenderable } from './components/IRenderable'
-import { EntityId } from './entities/EntityId'
-
 import { Camera } from '~/Camera'
 import { SIMULATION_PERIOD_S, TILE_SIZE } from '~/constants'
+import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
