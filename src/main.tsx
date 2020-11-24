@@ -49,6 +49,9 @@ client.update()
 clientRenderLoop()
 
 // Connect to server
-createServerConnectionWs(`ws://${location.host}/api/connect`).then((conn) => {
-  client.connectServer(conn)
-})
+const schema = location.protocol === 'https:' ? 'wss' : 'ws'
+createServerConnectionWs(`${schema}://${location.host}/api/connect`).then(
+  (conn) => {
+    client.connectServer(conn)
+  },
+)
