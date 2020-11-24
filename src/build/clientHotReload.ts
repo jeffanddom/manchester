@@ -46,7 +46,7 @@ export const poll = (initialBuildkey: string): void => {
       .catch((err) => {
         console.log('buildkey fetch: error:', err)
       })
-  }, 1000)
+  }, 5000)
 }
 
 export const updateEntrypointHtmlForHotReload = (opts: {
