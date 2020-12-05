@@ -41,8 +41,6 @@ export class Client {
   committedFrame: number
   simulationFrame: number
   ticksPerUpdate: number
-  updatePeriod: number
-
   camera: Camera
   debugDrawRenderables: Renderable[]
   debugDrawViewspace: Renderable[]
@@ -88,7 +86,6 @@ export class Client {
     this.committedFrame = -1
     this.simulationFrame = 0
     this.ticksPerUpdate = 1
-    this.updatePeriod = SIMULATION_PERIOD_S * 1000
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -178,9 +175,6 @@ export class Client {
     this.updateFrameDurations.sample(now - this.lastUpdateAt)
     this.lastUpdateAt = now
 
-    // schedule next update before we run potentially expensive game sim
-    setTimeout(() => this.update(), this.updatePeriod)
-
     for (let i = 0; i < this.ticksPerUpdate; i++) {
       const now = time.current()
       this.tick(SIMULATION_PERIOD_S)
@@ -239,14 +233,6 @@ export class Client {
                   this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
                   this.serverSimulationDurationAvg = msg.simulationDurationAvg
                 }
-                break
-              case ServerMessageType.SPEED_UP:
-                this.ticksPerUpdate = 2
-                this.updatePeriod = (1000 * SIMULATION_PERIOD_S) / 2
-                break
-              case ServerMessageType.SLOW_DOWN:
-                this.ticksPerUpdate = 1
-                this.updatePeriod = 1000 * SIMULATION_PERIOD_S
                 break
             }
           }

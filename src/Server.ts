@@ -103,16 +103,6 @@ export class Server {
             this.maxReceivedClientFrame,
             client.frame,
           )
-
-          const framesBehindLeader = this.maxReceivedClientFrame - client.frame
-          if (framesBehindLeader > this.minFramesBehindClient) {
-            client.conn.send({ type: ServerMessageType.SPEED_UP })
-          } else if (
-            this.minFramesBehindClient / 2 >= framesBehindLeader ||
-            client.frame === this.maxReceivedClientFrame
-          ) {
-            client.conn.send({ type: ServerMessageType.SLOW_DOWN })
-          }
         }
 
         // Discard client messages for frames older than the server simulation.

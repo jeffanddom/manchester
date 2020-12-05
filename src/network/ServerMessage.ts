@@ -20,16 +20,4 @@ export type ServerFrameUpdateMessage = {
   simulationDurationAvg: number
 }
 
-export type ServerSpeedUpMessage = {
-  type: ServerMessageType.SPEED_UP
-}
-
-export type ServerSlowDownMessage = {
-  type: ServerMessageType.SLOW_DOWN
-}
-
-export type ServerMessage =
-  | ServerStartGameMessage
-  | ServerFrameUpdateMessage
-  | ServerSpeedUpMessage
-  | ServerSlowDownMessage
+export type ServerMessage = ServerStartGameMessage | ServerFrameUpdateMessage

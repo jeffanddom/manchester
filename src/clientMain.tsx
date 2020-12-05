@@ -42,10 +42,10 @@ window.addEventListener('resize', syncViewportSize)
 
 function clientRenderLoop() {
   requestAnimationFrame(clientRenderLoop)
+  client.update()
   client.render()
 }
 
-client.update()
 clientRenderLoop()
 
 // Connect to server
