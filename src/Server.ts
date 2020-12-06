@@ -24,9 +24,7 @@ export class Server {
     conn: IClientConnection
   }[]
   playerCount: number
-  minFramesBehindClient: number
   simulationFrame: number
-  maxReceivedClientFrame: number
 
   // Common game state
   state: GameState
@@ -49,9 +47,7 @@ export class Server {
     ])
     this.clients = []
     this.playerCount = config.playerCount
-    this.minFramesBehindClient = config.minFramesBehindClient
     this.simulationFrame = 0
-    this.maxReceivedClientFrame = -1
 
     this.state = GameState.Connecting
     this.nextState = undefined
@@ -95,20 +91,15 @@ export class Server {
     // process incoming client messages
     for (const client of this.clients) {
       for (const msg of client.conn.consume()) {
-        if (msg.type === ClientMessageType.FRAME_END) {
+        if (
+          msg.type === ClientMessageType.FRAME_END &&
+          msg.frame > client.frame
+        ) {
           client.frame = msg.frame
-
-          // Set a high-water mark for the fastest client.
-          this.maxReceivedClientFrame = Math.max(
-            this.maxReceivedClientFrame,
-            client.frame,
-          )
         }
 
-        // Discard client messages for frames older than the server simulation.
-        // This will happen if one client is lagging significantly behind the
-        // fastest client. Discarded client messages means that the client will
-        // almost certainly encounter misprediction.
+        // Discard the message if it is no longer possible to simulate; i.e.,
+        // the frame it describes has already been simulated.
         if (msg.frame < this.simulationFrame) {
           continue
         }
@@ -174,16 +165,17 @@ export class Server {
 
       case GameState.Running:
         {
-          // Because the server ignores client messages for frames that occur
-          // before the server's frame, the server needs to run some number of
-          // frames behind the clients. This ensures that clients have a grace
-          // period to send inputs to the server. The current grace period is to
-          // run the server simulation a fixed number of frames behind the
-          // fastest client.
-          if (
-            this.maxReceivedClientFrame - this.simulationFrame <
-            this.minFramesBehindClient
-          ) {
+          // Advance only if all clients have already reached the frame the
+          // server is about to simulate.
+          let doSim = true
+          for (const c of this.clients) {
+            if (c.frame < this.simulationFrame) {
+              doSim = false
+              break
+            }
+          }
+
+          if (!doSim) {
             break
           }
 

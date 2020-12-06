@@ -1,7 +1,11 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
 import { Camera } from '~/Camera'
-import { SIMULATION_PERIOD_S, TILE_SIZE } from '~/constants'
+import {
+  MAX_PREDICTED_FRAMES,
+  SIMULATION_PERIOD_S,
+  TILE_SIZE,
+} from '~/constants'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
@@ -237,6 +241,13 @@ export class Client {
             }
           }
 
+          if (
+            this.serverFrameUpdates.length == 0 &&
+            this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
+          ) {
+            break
+          }
+
           systems.syncServerState(this, dt, this.simulationFrame)
           this.framesAheadOfServer.sample(
             this.simulationFrame - this.committedFrame,
@@ -283,16 +294,14 @@ export class Client {
             (m) => m.frame <= this.simulationFrame,
           )
 
+          this.serverConnection!.send({
+            type: ClientMessageType.FRAME_END,
+            frame: this.simulationFrame,
+          })
+
           this.simulationFrame++
         }
         break
-    }
-
-    if (this.serverConnection) {
-      this.serverConnection.send({
-        type: ClientMessageType.FRAME_END,
-        frame: this.simulationFrame,
-      })
     }
   }
 
