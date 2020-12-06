@@ -44,7 +44,8 @@ export class Client {
   }[]
   committedFrame: number
   simulationFrame: number
-  ticksPerUpdate: number
+  waitingForServer: boolean
+
   camera: Camera
   debugDrawRenderables: Renderable[]
   debugDrawViewspace: Renderable[]
@@ -89,7 +90,7 @@ export class Client {
     this.serverFrameUpdates = []
     this.committedFrame = -1
     this.simulationFrame = 0
-    this.ticksPerUpdate = 1
+    this.waitingForServer = false
 
     this.camera = new Camera(
       vec2.fromValues(canvas.width, canvas.height),
@@ -175,15 +176,12 @@ export class Client {
   }
 
   update(): void {
-    const now = time.current()
-    this.updateFrameDurations.sample(now - this.lastUpdateAt)
-    this.lastUpdateAt = now
+    const start = time.current()
+    this.updateFrameDurations.sample(start - this.lastUpdateAt)
+    this.lastUpdateAt = start
 
-    for (let i = 0; i < this.ticksPerUpdate; i++) {
-      const now = time.current()
-      this.tick(SIMULATION_PERIOD_S)
-      this.tickDurations.sample(time.current() - now)
-    }
+    this.tick(SIMULATION_PERIOD_S)
+    this.tickDurations.sample(time.current() - start)
   }
 
   tick(dt: number): void {
@@ -241,10 +239,10 @@ export class Client {
             }
           }
 
-          if (
+          this.waitingForServer =
             this.serverFrameUpdates.length == 0 &&
             this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
-          ) {
+          if (this.waitingForServer) {
             break
           }
 
@@ -419,7 +417,7 @@ export class Client {
           `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
             2,
           )}`,
-          this.ticksPerUpdate > 1 ? `OVERDRIVE` : '',
+          this.waitingForServer ? 'WAITING FOR SERVER' : '',
         ]
 
         const x = this.camera.viewportDimensions[0] - 10
