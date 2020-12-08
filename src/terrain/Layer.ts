@@ -33,16 +33,16 @@ export class Layer {
       let fillStyle
       switch (tile) {
         case Type.Grass:
-          fillStyle = '#7EC850'
+          fillStyle = 'green'
           break
         case Type.Mountain:
-          fillStyle = '#5B5036'
+          fillStyle = 'brown'
           break
         case Type.River:
-          fillStyle = '#2B5770'
+          fillStyle = 'blue'
           break
         case Type.Unknown:
-          fillStyle = '#FF00FF'
+          fillStyle = 'magenta'
           break
       }
 
@@ -56,13 +56,6 @@ export class Layer {
         dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
       }
     }
-  }
-
-  private w2t(worldpos: vec2): vec2 {
-    return vec2.fromValues(
-      Math.floor(worldpos[0] / TILE_SIZE) - this.tileOrigin[0],
-      Math.floor(worldpos[1] / TILE_SIZE) - this.tileOrigin[1],
-    )
   }
 
   private t2w(tilepos: vec2): vec2 {
@@ -88,20 +81,7 @@ export class Layer {
    * Returns renderables for the worldspace area described by the given
    * AABB.
    */
-  public getRenderables(visibleExtents: [vec2, vec2]): Renderable[] {
-    const tmin = this.w2t(visibleExtents[0])
-    const tmax = this.w2t(visibleExtents[1])
-    const result: Renderable[] = []
-
-    for (let i = tmin[1]; i <= tmax[1]; i++) {
-      for (let j = tmin[0]; j <= tmax[0]; j++) {
-        const n = i * this.tileDimensions[0] + j
-        if (this.renderables[n] !== undefined) {
-          result.push(this.renderables[n])
-        }
-      }
-    }
-
-    return result
+  public getRenderables(): Renderable[] {
+    return this.renderables
   }
 }

@@ -26,6 +26,18 @@ export class Canvas2DRenderer implements IRenderer {
     this.transform = mat2d.clone(t)
   }
 
+  loadTerrain(_: Renderable[]): void {
+    throw new Error('unsupported')
+  }
+
+  renderTerrain(): void {
+    throw new Error('unsupported')
+  }
+
+  setCameraWorldPos(_: vec2): void {
+    throw new Error('unsupported')
+  }
+
   setGlobalOpacity(alpha: number): void {
     this.ctx.globalAlpha = alpha
   }

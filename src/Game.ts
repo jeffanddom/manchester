@@ -16,9 +16,9 @@ export enum GameState {
 }
 
 export const gameProgression = [
+  maps.bigMap,
   maps.quadtreeTest,
   maps.collisionTest,
-  maps.bigMap,
 ]
 
 export const initMap = (

@@ -59,6 +59,9 @@ export type Renderable = Path | Rect | Circle | Line | Text
 export interface IRenderer {
   clear(color: string): void
   setTransform(t: mat2d): void
+  setCameraWorldPos(p: vec2): void
   setGlobalOpacity(alpha: number): void
+  loadTerrain(r: Renderable[]): void
+  renderTerrain(): void
   render(r: Renderable): void
 }

@@ -163,6 +163,7 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
+    this.renderer.loadTerrain(this.terrainLayer.getRenderables())
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
@@ -311,11 +312,8 @@ export class Client {
 
     this.renderer.clear('magenta')
 
-    this.renderer.setTransform(this.camera.wvTransform())
-
-    this.terrainLayer
-      .getRenderables(this.camera.getVisibleExtents())
-      .forEach((r) => this.renderer.render(r))
+    this.renderer.setCameraWorldPos(this.camera.getPosition())
+    this.renderer.renderTerrain()
     this.entityManager
       .getRenderables(this.camera.getVisibleExtents())
       .forEach((r) => this.renderer.render(r))
@@ -333,6 +331,7 @@ export class Client {
     this.debugDrawRenderables = []
 
     // Viewspace rendering
+    return
 
     this.renderer.setTransform(mat2d.identity(mat2d.create()))
 
