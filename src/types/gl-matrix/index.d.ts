@@ -12,6 +12,7 @@ declare module 'gl-matrix' {
   export namespace vec2 {
     export function add(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function clone(a: Immutable<vec2>): vec2
+    export function copy(out: vec2, a: Immutable<vec2>): vec2
     export function distance(a: Immutable<vec2>, b: Immutable<vec2>): number
     export function equals(a: Immutable<vec2>, b: Immutable<vec2>): boolean
     export function max(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2

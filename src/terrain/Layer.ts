@@ -1,14 +1,15 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Primitive, Renderable } from '~/renderer/interfaces'
+import { types } from '~/entities'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
   private tileOrigin: vec2
   private tileDimensions: vec2
   private terrain: (Type | null)[]
-  private renderables: Renderable[]
+  public renderables: Float32Array;
+  public colors: Float32Array;
 
   public constructor({
     tileOrigin: origin,
@@ -22,39 +23,38 @@ export class Layer {
     this.tileOrigin = origin
     this.tileDimensions = dimensions
     this.terrain = tiles
-    this.renderables = new Array(this.terrain.length)
+    this.renderables = new Float32Array(this.terrain.length * 18)
+    this.colors = new Float32Array(this.terrain.length * 24)
 
     for (let i = 0; i < this.terrain.length; i++) {
-      const tile = this.terrain[i]
-      if (tile === null) {
-        continue
-      }
-
-      let fillStyle
-      switch (tile) {
-        case Type.Grass:
-          fillStyle = 'green'
-          break
-        case Type.Mountain:
-          fillStyle = 'brown'
-          break
-        case Type.River:
-          fillStyle = 'blue'
-          break
-        case Type.Unknown:
-          fillStyle = 'magenta'
-          break
-      }
-
       const y = Math.floor(i / this.tileDimensions[1])
       const x = i % this.tileDimensions[1]
+      const pos = this.t2w([x, y])
 
-      this.renderables[i] = {
-        primitive: Primitive.RECT,
-        fillStyle: fillStyle,
-        pos: this.t2w([x, y]),
-        dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+      const nw = [pos[0], pos[1], 0]
+      const ne = [pos[0] + TILE_SIZE, pos[1], 0]
+      const sw = [pos[0], pos[1] + TILE_SIZE, 0]
+      const se = [pos[0] + TILE_SIZE, pos[1] + TILE_SIZE, 0]
+
+      // prettier-ignore
+      this.renderables.set(
+        [...nw, ...se, ...ne,
+        ...nw, ...sw, ...se], i * 18
+      )
+
+      const colors : {[key: number]: [number, number, number, number]} = {
+        [Type.Grass]: [126/255,200/255,80/255,1.0],
+        [Type.Mountain]: [91/255,80/255,54/255,1.0],
+        [Type.River]: [43/255,87/255,112/255,1.0],
       }
+      const c = colors[tiles[i] ?? Type.Grass]
+
+      // prettier-ignore
+      this.colors.set([
+        ...c, ...c, ...c,
+        ...c, ...c, ...c,
+      ], i * 24)
+
     }
   }
 

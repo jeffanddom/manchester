@@ -1,7 +1,5 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { Canvas3DRenderer } from './renderer/Canvas3DRenderer'
-
 import { Camera } from '~/Camera'
 import {
   MAX_PREDICTED_FRAMES,
@@ -19,11 +17,11 @@ import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import {
-  IRenderer,
   Primitive,
   Renderable,
   TextAlign,
 } from '~/renderer/interfaces'
+import { Canvas3DRenderer } from '~/renderer/Canvas3DRenderer'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -53,7 +51,7 @@ export class Client {
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
   enableDebugDraw: boolean
-  renderer: IRenderer
+  renderer: Canvas3DRenderer
   lastUpdateAt: number
   lastTickAt: number
   lastRenderAt: number
@@ -163,7 +161,37 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer.loadTerrain(this.terrainLayer.getRenderables())
+    this.renderer.loadModel('terrain', this.terrainLayer.renderables, this.terrainLayer.colors)
+    // this.renderer.loadModel('wall', [{
+    //   primitive: Primitive.RECT,
+    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
+    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    //   fillStyle: 'grey',
+    // }])
+    // this.renderer.loadModel('tank', [{
+    //   primitive: Primitive.RECT,
+    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
+    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    //   fillStyle: 'black',
+    // }])
+    // this.renderer.loadModel('turret', [{
+    //   primitive: Primitive.RECT,
+    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
+    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
+    //   fillStyle: 'yellow',
+    // }])
+    // this.renderer.loadModel('bullet', [{
+    //   primitive: Primitive.RECT,
+    //   pos: vec2.fromValues(-2, -2),
+    //   dimensions: vec2.fromValues(4, 4),
+    //   fillStyle: 'red',
+    // }])
+    // this.renderer.loadModel('tree', [{
+    //   primitive: Primitive.RECT,
+    //   pos: vec2.fromValues(-TILE_SIZE * 0.8/2, -TILE_SIZE * 0.8/2),
+    //   dimensions: vec2.fromValues(TILE_SIZE*0.8, TILE_SIZE*0.8),
+    //   fillStyle: 'forestgreen',
+    // }])
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
@@ -313,22 +341,26 @@ export class Client {
     this.renderer.clear('magenta')
 
     this.renderer.setCameraWorldPos(this.camera.getPosition())
-    this.renderer.renderTerrain()
-    this.entityManager
-      .getRenderables(this.camera.getVisibleExtents())
-      .forEach((r) => this.renderer.render(r))
-    this.emitters!.forEach((e) =>
-      e.getRenderables().forEach((r) => this.renderer.render(r)),
-    )
+    this.renderer.drawModel('terrain', vec2.create())
 
-    systems.crosshair(this)
+    for (const [entityId, model] of this.entityManager.renderables) {
+      const transform = this.entityManager.transforms.get(entityId)!
 
-    if (this.enableDebugDraw) {
-      this.debugDrawRenderables.forEach((r) => {
-        this.renderer.render(r)
-      })
+      this.renderer.drawModel(model, transform.position)
     }
-    this.debugDrawRenderables = []
+
+    // this.emitters!.forEach((e) =>
+    //   e.getRenderables().forEach((r) => this.renderer.render(r)),
+    // )
+
+    // systems.crosshair(this)
+
+    // if (this.enableDebugDraw) {
+    //   this.debugDrawRenderables.forEach((r) => {
+    //     this.renderer.render(r)
+    //    })
+    // }
+    // this.debugDrawRenderables = []
 
     // Viewspace rendering
     return

@@ -87,20 +87,7 @@ export class Camera {
   }
 
   setPosition(worldPos: Immutable<vec2>): void {
-    math.clamp2(this.position, worldPos, [
-      vec2.add(
-        vec2.create(),
-        this.minWorldPos,
-        vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
-      ),
-      vec2.sub(
-        vec2.create(),
-        this.maxWorldPos(),
-        vec2.scale(vec2.create(), this.viewportDimensions, 0.5 / this.zoom),
-      ),
-    ])
-
-    this.wvTransformCache = undefined
+    vec2.copy(this.position, worldPos)
   }
 
   /**

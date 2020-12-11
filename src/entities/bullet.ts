@@ -28,7 +28,7 @@ export const makeBullet = ({
   e.transform.orientation = orientation
 
   e.bullet = bullet.make(e.transform.position)
-  e.renderable = new DefaultModelRenderable(models.bullet)
+  e.renderable = 'bullet'
 
   e.damager = {
     damageValue: 1,

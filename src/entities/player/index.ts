@@ -27,7 +27,7 @@ export const makePlayer = (): EntityComponents => {
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
   })
   e.inventory = []
-  e.renderable = new PlayerRenderables()
+  e.renderable = 'tank'
   e.hitbox = {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),

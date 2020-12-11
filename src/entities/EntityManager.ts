@@ -52,7 +52,7 @@ export class EntityManager {
   obscurings: EntitySet
   playerNumbers: ComponentTable<number>
   playfieldClamped: EntitySet
-  renderables: ComponentTable<IRenderable>
+  renderables: ComponentTable<string>
   shooters: ComponentTable<ShooterComponent>
   targetables: EntitySet
   teams: ComponentTable<Team>
@@ -86,7 +86,7 @@ export class EntityManager {
     this.obscurings = new EntitySet()
     this.playerNumbers = new ComponentTable((c) => c)
     this.playfieldClamped = new EntitySet()
-    this.renderables = new ComponentTable((r) => _.cloneDeep(r)) // TODO: see if we can avoid a deep clone
+    this.renderables = new ComponentTable((c) => c)
     this.shooters = new ComponentTable(shooterClone)
     this.targetables = new EntitySet()
     this.teams = new ComponentTable((c) => c)
@@ -167,21 +167,21 @@ export class EntityManager {
     this.predictedDeletes = new SortedSet()
   }
 
-  public getRenderables(aabb: [vec2, vec2]): Renderable[] {
-    const renderables: Renderable[] = []
-    for (const id of this.queryByWorldPos(aabb)) {
-      const r = this.renderables.get(id)
-      if (!r) {
-        continue
-      }
+  // public getRenderables(aabb: [vec2, vec2]): Renderable[] {
+  //   const renderables: Renderable[] = []
+  //   for (const id of this.queryByWorldPos(aabb)) {
+  //     const r = this.renderables.get(id)
+  //     if (!r) {
+  //       continue
+  //     }
 
-      // an as-cast is required here to call member variables. Eventually, we
-      // should transform this object into a plain-old-data structure instead
-      // of a class.
-      renderables.push(...(r as IRenderable).getRenderables(this, id))
-    }
-    return renderables
-  }
+  //     // an as-cast is required here to call member variables. Eventually, we
+  //     // should transform this object into a plain-old-data structure instead
+  //     // of a class.
+  //     renderables.push(...(r as IRenderable).getRenderables(this, id))
+  //   }
+  //   return renderables
+  // }
 
   public getPlayerId(playerNumber: number): EntityId | undefined {
     for (const [id, n] of this.playerNumbers) {

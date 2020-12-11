@@ -47,7 +47,7 @@ export const makeTree = (): EntityComponents => {
   e.obscuring = true
   e.harvestType = PickupType.Wood
   e.transform = transform.make()
-  e.renderable = new TreeRenderable()
+  e.renderable = 'tree'
   e.hitbox = {
     offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
