@@ -28,6 +28,7 @@ import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
+import { getModel } from './models'
 
 export class Client {
   entityManager: EntityManager
@@ -161,7 +162,20 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer.loadModel('terrain', this.terrainLayer.renderables, this.terrainLayer.colors)
+    this.renderer.loadModel('terrain', this.terrainLayer.vertices, this.terrainLayer.colors)
+
+    const wallModel = getModel('wall')
+    this.renderer.loadModel('wall', wallModel.vertices, wallModel.colors)
+
+    const tankModel = getModel('tank')
+    this.renderer.loadModel('tank', tankModel.vertices, tankModel.colors)
+
+    const turretModel = getModel('turret')
+    this.renderer.loadModel('turret', turretModel.vertices, turretModel.colors)
+
+    const treeModel = getModel('tree')
+    this.renderer.loadModel('tree', treeModel.vertices, treeModel.colors)
+
     // this.renderer.loadModel('wall', [{
     //   primitive: Primitive.RECT,
     //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),

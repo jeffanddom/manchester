@@ -1,14 +1,13 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { types } from '~/entities'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
   private tileOrigin: vec2
   private tileDimensions: vec2
   private terrain: (Type | null)[]
-  public renderables: Float32Array;
+  public vertices: Float32Array;
   public colors: Float32Array;
 
   public constructor({
@@ -23,7 +22,7 @@ export class Layer {
     this.tileOrigin = origin
     this.tileDimensions = dimensions
     this.terrain = tiles
-    this.renderables = new Float32Array(this.terrain.length * 18)
+    this.vertices = new Float32Array(this.terrain.length * 18)
     this.colors = new Float32Array(this.terrain.length * 24)
 
     for (let i = 0; i < this.terrain.length; i++) {
@@ -37,7 +36,7 @@ export class Layer {
       const se = [pos[0] + TILE_SIZE, pos[1] + TILE_SIZE, 0]
 
       // prettier-ignore
-      this.renderables.set(
+      this.vertices.set(
         [...nw, ...se, ...ne,
         ...nw, ...sw, ...se], i * 18
       )
@@ -75,13 +74,5 @@ export class Layer {
 
   public dimensions(): vec2 {
     return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
-  }
-
-  /**
-   * Returns renderables for the worldspace area described by the given
-   * AABB.
-   */
-  public getRenderables(): Renderable[] {
-    return this.renderables
   }
 }

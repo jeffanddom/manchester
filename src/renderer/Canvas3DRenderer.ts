@@ -1,10 +1,8 @@
 import { vec3 } from 'gl-matrix'
 import { quat } from 'gl-matrix'
-import { vec4 } from 'gl-matrix'
 import { mat4 } from 'gl-matrix'
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { Primitive, Renderable } from '~/renderer/interfaces'
 import { Immutable } from '~/types/immutable'
 
 const gl = WebGL2RenderingContext
@@ -50,12 +48,12 @@ export class Canvas3DRenderer {
   private ctx: WebGL2RenderingContext
   private cameraWorldPos: vec3
   private program: WebGLProgram
-  
+
   private vaos: {[key: string]: {
     vao: WebGLVertexArrayObject
     numVerts: number
   }}
-  
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.ctx = canvas.getContext('webgl2')!
@@ -81,7 +79,7 @@ export class Canvas3DRenderer {
     this.vaos = {}
 
     // Set projection matrix
-    const projection = mat4.perspective(mat4.create(), 
+    const projection = mat4.perspective(mat4.create(),
       90 * Math.PI / 180,
       canvas.width / canvas.height,
       0.1,
@@ -133,6 +131,8 @@ export class Canvas3DRenderer {
   }
   loadModel(key: string, vertices: Float32Array, colors: Float32Array): void {
     const numVerts = vertices.length / 3
+
+    console.log(key, vertices, colors)
 
     const aVertexPosition = this.ctx.getAttribLocation(
       this.program,
@@ -199,9 +199,5 @@ export class Canvas3DRenderer {
     )
 
     this.ctx.drawArrays(this.ctx.TRIANGLES, 0, vao.numVerts)
-  }
-
-  render(_: Renderable): void {
-    // TODO
   }
 }
