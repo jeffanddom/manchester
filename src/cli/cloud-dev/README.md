@@ -30,10 +30,14 @@ This will provision a new EC2 instance, and update your local SSH config so you 
 ```
 % bin/cloud-dev
 launching new instance of template jeffanddom-cloud-dev-template-1...
-instance i-0a8b08a6ea27ca78d created, waiting for public hostname...
-public hostname is ec2-3-101-81-255.us-west-1.compute.amazonaws.com
+instance i-033ba945bfcbf8a74 created, waiting for public hostname...
 updating /Users/jeff/.ssh/config...
-Happy hacking! Press CTRL+C to terminate.
+cloud-dev is ready!
+* Remote hostname: ec2-54-219-222-91.us-west-1.compute.amazonaws.com
+* SSH alias: jeffanddom-cloud-dev
+  * Connect via: ssh -A jeffanddom-cloud-dev
+  * Local port 3000 will be fowarded to 3000
+* Press CTRL+C to terminate instance
 ```
 
 Keep this program running! It will terminate the EC2 instance when closed.
@@ -46,6 +50,10 @@ The manchester repo will likely be out-of-date, so you'll want to fetch latest c
 
 To run the game server, use the VSCode terminal and run `yarn dev`. You can access the the server via the web using the hostname emitted by `bin/cloud-dev`.
 
+#### Connecting to the game server
+
+If you're running the game server on the cloud dev host, you can connect to it by accessing `http://localhost:3000`. Web requests will be forwarded via SSH to the cloud host.
+
 #### Git
 
 SSH agent forwarding seems to be broken in VSCode, so fetch/push actions in the cloud dev server require a separate SSH session from a new terminal. To connect to the server, run:
@@ -56,11 +64,18 @@ ssh -A jeffanddom-cloud-dev
 
 Use this terminal session to perform fetches and pushes.
 
+Note that additional SSH connections will print the following warning, which can be safely ignored:
+
+```
+bind [127.0.0.1]:3000: Address already in use
+channel_setup_fwd_listener_tcpip: cannot listen to port: 3000
+Could not request local forwarding.
+```
+
 #### TODO
 
-- Wait for upstream to [fix SSH agent forwarding](https://github.com/microsoft/vscode-remote-release/issues/4183), so we can do git fetch/push on the cloud dev's repo via VSCode, rather than having to open a separate terminal.
 - When closing `bin/cloud-dev`, stop, rather than terminate, the EC2 instance. This will prevent changes in the cloud dev repo from getting lost. We may need to introduce a user-based tagging system so that multiple people can have their own dev servers.
-- Use the VSCode SSH session to forward HTTP traffic from a local port to the cloud server. This way, we can avoid worrying about the cloud dev server's hostname unless we want to do multiplayer.
+- Wait for upstream to [fix SSH agent forwarding](https://github.com/microsoft/vscode-remote-release/issues/4183), so we can do git fetch/push on the cloud dev's repo via VSCode, rather than having to open a separate terminal.
 
 ## Ops stuff
 
