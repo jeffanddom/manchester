@@ -1,0 +1,3 @@
+#!/bin/sh
+
+npx ts-node --transpile-only src/cli/cloud-dev/main.ts "$@"
