@@ -120,10 +120,13 @@ function sshConfigTemplate(opts: {
   localHostAlias: string
   remoteHost: string
   remoteUser: string
+  localPort: number
+  remotePort: number
 }): string {
   return `Host ${opts.localHostAlias}
   HostName ${opts.remoteHost}
   User ${opts.remoteUser}
+  LocalForward ${opts.remotePort} localhost:${opts.localPort}
 `
 }
 
@@ -140,6 +143,8 @@ async function updateSshConfig(opts: {
   localHostAlias: string
   remoteHost: string
   remoteUser: string
+  localPort: number
+  remotePort: number
 }): Promise<void> {
   const srcConfig = (await fs.promises.readFile(opts.sshConfigPath)).toString()
 
@@ -165,6 +170,8 @@ async function main(): Promise<void> {
   const localHostAlias = 'jeffanddom-cloud-dev'
   const remoteUser = 'ubuntu'
   const sshConfigPath = process.env['HOME'] + '/.ssh/config'
+  const localPort = 3000
+  const remotePort = 3000
 
   console.log(`launching new instance of template ${launchTemplateName}...`)
   const instance = await launch(ec2, launchTemplateName)
@@ -195,7 +202,6 @@ async function main(): Promise<void> {
     `instance ${instance.InstanceId} created, waiting for public hostname...`,
   )
   const remoteHost = await waitForPublicDnsName(ec2, instanceId)
-  console.log(`public hostname is ${remoteHost}`)
 
   // Update SSH config with new remote host
   console.log(`updating ${sshConfigPath}...`)
@@ -204,11 +210,18 @@ async function main(): Promise<void> {
     localHostAlias,
     remoteHost,
     remoteUser,
+    localPort,
+    remotePort,
   })
 
   // Prevent the program from quitting when main() returns. We'll wait for an
   // OS signal instead.
-  console.log('Happy hacking! Press CTRL+C to terminate.')
+  console.log(`cloud-dev is ready!
+* Remote hostname: ${remoteHost}
+* SSH alias: ${localHostAlias}
+  * Connect via: ssh -A ${localHostAlias}
+  * Local port ${localPort} will be fowarded to ${remotePort}
+* Press CTRL+C to terminate instance`)
   util.preventDefaultTermination()
 }
 
