@@ -1,6 +1,7 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import * as chokidar from 'chokidar'
 import * as path from 'path'
+
+import * as chokidar from 'chokidar'
 
 import { gameSrcPath, serverBuildOutputPath } from './common'
 
@@ -88,21 +89,23 @@ let debounce = false
 const ignore = new Set([
   'build/buildkey', // this file is modified by the build process itself
 ])
-chokidar.watch(gameSrcPath, { ignoreInitial: true, persistent: true }).on('all', (event, filename) => {
-  if (ignore.has(filename)) {
-    return
-  }
-  
-  if (debounce) {
-    return
-  }
+chokidar
+  .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
+  .on('all', (event, filename) => {
+    if (ignore.has(filename)) {
+      return
+    }
 
-  debounce = true
+    if (debounce) {
+      return
+    }
 
-  setTimeout(() => {
-    debounce = false
-    rebuild()
-  }, 500)
-})
+    debounce = true
+
+    setTimeout(() => {
+      debounce = false
+      rebuild()
+    }, 500)
+  })
 
 rebuild()
