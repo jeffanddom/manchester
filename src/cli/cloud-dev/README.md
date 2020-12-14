@@ -17,7 +17,8 @@ Get an IAM access key for your user account via the AWS console. Make sure the u
 
 #### VSCode
 
-Add the [Remote SSH extension](https://code.visualstudio.com/docs/remote/ssh).
+- Add the [Remote SSH extension](https://code.visualstudio.com/docs/remote/ssh).
+- From the command palette, choose "Remote-SSH: Settings". Under "Default Extensions", add `dbaeumer.vscode-eslint`. You may be asked to reconfirm whether ESLint can be used to format text in the workspace.
 
 ### Usage
 
