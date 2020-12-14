@@ -2,23 +2,11 @@ import { vec3 } from 'gl-matrix'
 import { quat } from 'gl-matrix'
 import { mat4 } from 'gl-matrix'
 import { mat2d, vec2 } from 'gl-matrix'
+import { Transform } from '~/components/Transform'
 
 import { Immutable } from '~/types/immutable'
 
 const gl = WebGL2RenderingContext
-
-const colorTable: { [key: string]: [number, number, number] } = {
-  red: [1.0, 0.0, 0.0],
-  magenta: [1.0, 0.0, 1.0],
-  black: [0.0, 0.0, 0.0],
-  yellow: [1.0, 1.0, 0.0],
-  green: [0.0, 1.0, 0.0],
-  forestgreen: [0.2, 0.8, 0.1],
-  darkgreen: [0.0, 1.0, 0.0],
-  blue: [0.0, 0.0, 1.0],
-  brown: [0.65, 0.16, 0.1],
-  grey: [0.33, 0.33, 0.33],
-}
 
 const vertexShaderSrc = `
 attribute vec3 aVertexPosition;
@@ -52,6 +40,7 @@ export class Canvas3DRenderer {
   private vaos: {[key: string]: {
     vao: WebGLVertexArrayObject
     numVerts: number
+    primitive: string
   }}
 
   constructor(canvas: HTMLCanvasElement) {
@@ -76,14 +65,19 @@ export class Canvas3DRenderer {
     this.ctx.useProgram(program)
     this.program = program
 
+    this.ctx.enable(this.ctx.DEPTH_TEST)
+    this.ctx.enable(this.ctx.CULL_FACE)
+    this.ctx.cullFace(this.ctx.BACK)
+    this.ctx.frontFace(this.ctx.CCW)
+
     this.vaos = {}
 
     // Set projection matrix
     const projection = mat4.perspective(mat4.create(),
-      90 * Math.PI / 180,
+      75 * Math.PI / 180,
       canvas.width / canvas.height,
       0.1,
-      10000
+      64
     )
     this.ctx.uniformMatrix4fv(
       this.ctx.getUniformLocation(this.program, 'projection'),
@@ -94,45 +88,31 @@ export class Canvas3DRenderer {
 
   clear(_: string): void {
     this.ctx.clearColor(0.0, 0.0, 0.0, 1.0)
-    this.ctx.clear(gl.COLOR_BUFFER_BIT)
-  }
-
-  setTransform(_: mat2d): void {
-    throw new Error('does not work')
+    this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
   }
 
   setCameraWorldPos(p: vec2): void {
-    this.cameraWorldPos = vec3.fromValues(p[0], -p[1] - 250, 300.0)
+    this.cameraWorldPos = vec3.fromValues(p[0], 7.0, p[1] + 4)
 
-    // prettier-ignore
-    const flipY = mat4.fromValues(
-      1,  0, 0, 0,
-      0, -1, 0, 0,
-      0,  0, 1, 0,
-      0,  0, 0, 1
-    )
-
-    // 1. Move camera in world space
+    // Move camera in world space
     const v2w = mat4.fromRotationTranslation(
       mat4.create(),
-      quat.fromEuler(quat.create(), 45, 0, 0),
+      quat.fromEuler(quat.create(), -60, 0, 0),
       this.cameraWorldPos,
     )
     const w2v = mat4.invert(mat4.create(), v2w)
 
-    // 2. Reverse the y-axis
-    const xform = mat4.multiply(mat4.create(), w2v, flipY)
-
     this.ctx.uniformMatrix4fv(
       this.ctx.getUniformLocation(this.program, 'uXform'),
       false,
-      xform,
+      w2v,
     )
   }
-  loadModel(key: string, vertices: Float32Array, colors: Float32Array): void {
-    const numVerts = vertices.length / 3
 
-    console.log(key, vertices, colors)
+  loadModel(key: string, model: {
+    vertices: Float32Array, colors: Float32Array, primitive?: string
+  }): void {
+    const numVerts = model.vertices.length / 3
 
     const aVertexPosition = this.ctx.getAttribLocation(
       this.program,
@@ -160,7 +140,7 @@ export class Canvas3DRenderer {
     )
     this.ctx.bufferData(
       this.ctx.ARRAY_BUFFER,
-      vertices,
+      model.vertices,
       this.ctx.STATIC_DRAW,
     )
 
@@ -170,7 +150,7 @@ export class Canvas3DRenderer {
     this.ctx.vertexAttribPointer(aVertexColor, 4, this.ctx.FLOAT, false, 0, 0)
     this.ctx.bufferData(
       this.ctx.ARRAY_BUFFER,
-      new Float32Array(colors),
+      new Float32Array(model.colors),
       this.ctx.STATIC_DRAW,
     )
 
@@ -180,14 +160,16 @@ export class Canvas3DRenderer {
     // Set VAO
     this.vaos[key] = {
       vao,
-      numVerts
+      numVerts,
+      primitive: model.primitive ?? 'TRIANGLES'
     }
   }
 
-  drawModel(key: string, pos: Immutable<vec2>) {
+  drawModel(key: string, pos: Immutable<vec2>, orientation: number) {
     if (!this.vaos[key]) {
       return
     }
+
 
     const vao = this.vaos[key]
     this.ctx.bindVertexArray(vao.vao)
@@ -195,9 +177,15 @@ export class Canvas3DRenderer {
     this.ctx.uniformMatrix4fv(
       this.ctx.getUniformLocation(this.program, 'model2world'),
       false,
-      mat4.fromTranslation(mat4.create(), vec3.fromValues(pos[0], pos[1], 0))
+      mat4.fromRotationTranslation(
+        mat4.create(),
+        quat.fromEuler(quat.create(), 0, -orientation * 180 / Math.PI, 0),
+        vec3.fromValues(
+          pos[0], 0, pos[1]
+        )
+      )
     )
 
-    this.ctx.drawArrays(this.ctx.TRIANGLES, 0, vao.numVerts)
+    this.ctx.drawArrays(this.ctx[vao.primitive], 0, vao.numVerts)
   }
 }

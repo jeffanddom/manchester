@@ -1,4 +1,4 @@
-import { mat2d, vec2 } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import { Camera } from '~/Camera'
 import {
@@ -17,9 +17,7 @@ import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import {
-  Primitive,
   Renderable,
-  TextAlign,
 } from '~/renderer/interfaces'
 import { Canvas3DRenderer } from '~/renderer/Canvas3DRenderer'
 import { simulate } from '~/simulate'
@@ -28,7 +26,7 @@ import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
-import { getModel } from './models'
+import { getModel, loadGrid } from '~/models'
 
 export class Client {
   entityManager: EntityManager
@@ -162,50 +160,25 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer.loadModel('terrain', this.terrainLayer.vertices, this.terrainLayer.colors)
+    this.renderer.loadModel('terrain', this.terrainLayer)
+
+    const gridModel = loadGrid()
+    this.renderer.loadModel('grid', gridModel)
 
     const wallModel = getModel('wall')
-    this.renderer.loadModel('wall', wallModel.vertices, wallModel.colors)
+    this.renderer.loadModel('wall', wallModel)
 
     const tankModel = getModel('tank')
-    this.renderer.loadModel('tank', tankModel.vertices, tankModel.colors)
+    this.renderer.loadModel('tank', tankModel)
 
     const turretModel = getModel('turret')
-    this.renderer.loadModel('turret', turretModel.vertices, turretModel.colors)
+    this.renderer.loadModel('turret', turretModel)
 
     const treeModel = getModel('tree')
-    this.renderer.loadModel('tree', treeModel.vertices, treeModel.colors)
+    this.renderer.loadModel('tree', treeModel)
 
-    // this.renderer.loadModel('wall', [{
-    //   primitive: Primitive.RECT,
-    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
-    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    //   fillStyle: 'grey',
-    // }])
-    // this.renderer.loadModel('tank', [{
-    //   primitive: Primitive.RECT,
-    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
-    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    //   fillStyle: 'black',
-    // }])
-    // this.renderer.loadModel('turret', [{
-    //   primitive: Primitive.RECT,
-    //   pos: vec2.fromValues(-TILE_SIZE/2, -TILE_SIZE/2),
-    //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
-    //   fillStyle: 'yellow',
-    // }])
-    // this.renderer.loadModel('bullet', [{
-    //   primitive: Primitive.RECT,
-    //   pos: vec2.fromValues(-2, -2),
-    //   dimensions: vec2.fromValues(4, 4),
-    //   fillStyle: 'red',
-    // }])
-    // this.renderer.loadModel('tree', [{
-    //   primitive: Primitive.RECT,
-    //   pos: vec2.fromValues(-TILE_SIZE * 0.8/2, -TILE_SIZE * 0.8/2),
-    //   dimensions: vec2.fromValues(TILE_SIZE*0.8, TILE_SIZE*0.8),
-    //   fillStyle: 'forestgreen',
-    // }])
+    const bulletModel = getModel('bullet')
+    this.renderer.loadModel('bullet', bulletModel)
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
@@ -355,12 +328,15 @@ export class Client {
     this.renderer.clear('magenta')
 
     this.renderer.setCameraWorldPos(this.camera.getPosition())
-    this.renderer.drawModel('terrain', vec2.create())
+    this.renderer.drawModel('terrain', vec2.create(), 0)
+
+    // GRID DEBUG
+    this.renderer.drawModel('grid', vec2.create(),0 )
 
     for (const [entityId, model] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!
 
-      this.renderer.drawModel(model, transform.position)
+      this.renderer.drawModel(model, transform.position, transform.orientation)
     }
 
     // this.emitters!.forEach((e) =>
@@ -379,123 +355,123 @@ export class Client {
     // Viewspace rendering
     return
 
-    this.renderer.setTransform(mat2d.identity(mat2d.create()))
+    // this.renderer.setTransform(mat2d.identity(mat2d.create()))
 
-    systems.playerHealthBar(
-      {
-        entityManager: this.entityManager,
-        playerNumber: this.playerNumber,
-      },
-      this.renderer,
-    )
-    // systems.inventoryDisplay(this, this.entityManager.getPlayer())
+    // systems.playerHealthBar(
+    //   {
+    //     entityManager: this.entityManager,
+    //     playerNumber: this.playerNumber,
+    //   },
+    //   this.renderer,
+    // )
+    // // systems.inventoryDisplay(this, this.entityManager.getPlayer())
 
-    if (this.state === GameState.YouDied) {
-      this.renderer.render({
-        primitive: Primitive.TEXT,
-        text: 'YOU DIED',
-        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-        hAlign: TextAlign.Center,
-        vAlign: TextAlign.Center,
-        font: '48px serif',
-        style: 'red',
-      })
-    }
+    // if (this.state === GameState.YouDied) {
+    //   this.renderer.render({
+    //     primitive: Primitive.TEXT,
+    //     text: 'YOU DIED',
+    //     pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+    //     hAlign: TextAlign.Center,
+    //     vAlign: TextAlign.Center,
+    //     font: '48px serif',
+    //     style: 'red',
+    //   })
+    // }
 
-    if (this.state === GameState.LevelComplete) {
-      this.renderer.render({
-        primitive: Primitive.TEXT,
-        text: 'YOU WIN',
-        pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-        hAlign: TextAlign.Center,
-        vAlign: TextAlign.Center,
-        font: '48px serif',
-        style: 'black',
-      })
+    // if (this.state === GameState.LevelComplete) {
+    //   this.renderer.render({
+    //     primitive: Primitive.TEXT,
+    //     text: 'YOU WIN',
+    //     pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+    //     hAlign: TextAlign.Center,
+    //     vAlign: TextAlign.Center,
+    //     font: '48px serif',
+    //     style: 'black',
+    //   })
 
-      this.renderer.render({
-        primitive: Primitive.TEXT,
-        text: 'Press space to continue',
-        pos: vec2.add(
-          vec2.create(),
-          vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-          vec2.fromValues(0, 50),
-        ),
-        hAlign: TextAlign.Center,
-        vAlign: TextAlign.Center,
-        font: '24px serif',
-        style: 'black',
-      })
-    }
+    //   this.renderer.render({
+    //     primitive: Primitive.TEXT,
+    //     text: 'Press space to continue',
+    //     pos: vec2.add(
+    //       vec2.create(),
+    //       vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
+    //       vec2.fromValues(0, 50),
+    //     ),
+    //     hAlign: TextAlign.Center,
+    //     vAlign: TextAlign.Center,
+    //     font: '24px serif',
+    //     style: 'black',
+    //   })
+    // }
 
-    this.debugDraw(() => {
-      const res: Renderable[] = []
+    // this.debugDraw(() => {
+    //   const res: Renderable[] = []
 
-      for (const id of this.entityManager.walls) {
-        const transform = this.entityManager.transforms.get(id)!
-        res.push({
-          primitive: Primitive.RECT,
-          strokeStyle: 'cyan',
-          pos: vec2.subtract(vec2.create(), transform.position, [
-            TILE_SIZE / 2,
-            TILE_SIZE / 2,
-          ]),
-          dimensions: [TILE_SIZE, TILE_SIZE],
-        })
-      }
+    //   for (const id of this.entityManager.walls) {
+    //     const transform = this.entityManager.transforms.get(id)!
+    //     res.push({
+    //       primitive: Primitive.RECT,
+    //       strokeStyle: 'cyan',
+    //       pos: vec2.subtract(vec2.create(), transform.position, [
+    //         TILE_SIZE / 2,
+    //         TILE_SIZE / 2,
+    //       ]),
+    //       dimensions: [TILE_SIZE, TILE_SIZE],
+    //     })
+    //   }
 
-      return res
-    })
+    //   return res
+    // })
 
-    this.debugDraw(
-      () => {
-        const text = [
-          `Player ${this.playerNumber}`,
-          `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
-          `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
-          `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
-          `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
-          `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-          `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
-          `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
-            2,
-          )}`,
-          `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
-            2,
-          )}`,
-          this.waitingForServer ? 'WAITING FOR SERVER' : '',
-        ]
+    // this.debugDraw(
+    //   () => {
+    //     const text = [
+    //       `Player ${this.playerNumber}`,
+    //       `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
+    //       `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
+    //       `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
+    //       `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
+    //       `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
+    //       `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+    //       `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
+    //         2,
+    //       )}`,
+    //       `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
+    //         2,
+    //       )}`,
+    //       this.waitingForServer ? 'WAITING FOR SERVER' : '',
+    //     ]
 
-        const x = this.camera.viewportDimensions[0] - 10
-        let y = 10
-        const res: Renderable[] = []
-        for (const t of text) {
-          res.push({
-            primitive: Primitive.TEXT,
-            text: t,
-            pos: vec2.fromValues(x, y),
-            hAlign: TextAlign.Max,
-            vAlign: TextAlign.Center,
-            font: '16px monospace',
-            style: 'cyan',
-          })
-          y += 20
-        }
+    //     const x = this.camera.viewportDimensions[0] - 10
+    //     let y = 10
+    //     const res: Renderable[] = []
+    //     for (const t of text) {
+    //       res.push({
+    //         primitive: Primitive.TEXT,
+    //         text: t,
+    //         pos: vec2.fromValues(x, y),
+    //         hAlign: TextAlign.Max,
+    //         vAlign: TextAlign.Center,
+    //         font: '16px monospace',
+    //         style: 'cyan',
+    //       })
+    //       y += 20
+    //     }
 
-        return res
-      },
-      { viewspace: true },
-    )
+    //     return res
+    //   },
+    //   { viewspace: true },
+    // )
 
-    if (this.enableDebugDraw) {
-      this.debugDrawViewspace.forEach((r) => {
-        this.renderer.render(r)
-      })
-    }
+    // if (this.enableDebugDraw) {
+    //   this.debugDrawViewspace.forEach((r) => {
+    //     this.renderer.render(r)
+    //   })
+    // }
 
-    this.debugDrawViewspace = []
+    // this.debugDrawViewspace = []
 
-    this.renderDurations.sample(time.current() - now)
+    // this.renderDurations.sample(time.current() - now)
   }
 
   registerParticleEmitter(params: {

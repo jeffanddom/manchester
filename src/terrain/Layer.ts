@@ -30,10 +30,10 @@ export class Layer {
       const x = i % this.tileDimensions[1]
       const pos = this.t2w([x, y])
 
-      const nw = [pos[0], pos[1], 0]
-      const ne = [pos[0] + TILE_SIZE, pos[1], 0]
-      const sw = [pos[0], pos[1] + TILE_SIZE, 0]
-      const se = [pos[0] + TILE_SIZE, pos[1] + TILE_SIZE, 0]
+      const nw = [pos[0], 0, pos[1]]
+      const ne = [pos[0] + TILE_SIZE, 0, pos[1]]
+      const sw = [pos[0], 0, pos[1] + TILE_SIZE]
+      const se = [pos[0] + TILE_SIZE, 0, pos[1] + TILE_SIZE]
 
       // prettier-ignore
       this.vertices.set(
