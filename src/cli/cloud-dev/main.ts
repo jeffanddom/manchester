@@ -217,12 +217,14 @@ async function main(): Promise<void> {
 
   // Prevent the program from quitting when main() returns. We'll wait for an
   // OS signal instead.
-  console.log(`cloud-dev is ready!
+  console.log(`---
+cloud-dev is ready!
 * Remote hostname: ${remoteHost}
 * SSH alias: ${localHostAlias}
-  * Connect via: ssh -A ${localHostAlias}
-  * Local port ${localPort} will be fowarded to ${remotePort}
-* Press CTRL+C to terminate instance`)
+  * Connect via: ssh ${localHostAlias}
+  * Local port ${localPort} will be fowarded to remote port ${remotePort}
+* Press CTRL+C to stop instance
+---`)
   util.preventDefaultTermination()
 }
 
