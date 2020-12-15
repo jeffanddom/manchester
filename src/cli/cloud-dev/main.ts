@@ -126,6 +126,7 @@ function sshConfigTemplate(opts: {
   return `Host ${opts.localHostAlias}
   HostName ${opts.remoteHost}
   User ${opts.remoteUser}
+  ForwardAgent yes
   LocalForward ${opts.remotePort} localhost:${opts.localPort}
 `
 }
