@@ -68,28 +68,15 @@ To run the game server, use the VSCode terminal and run `yarn dev`. You can acce
 
 If you're running the game server on the cloud dev host, you can connect to it by accessing `http://localhost:3000`. Web requests will be forwarded via SSH to the cloud host.
 
-#### Git
+#### SSH
 
-SSH agent forwarding seems to be broken in VSCode, so fetch/push actions in the cloud dev server require a separate SSH session from a new terminal. To connect to the server, run:
-
-```
-ssh -A jeffanddom-cloud-dev
-```
-
-Use this terminal session to perform fetches and pushes.
-
-Note that additional SSH connections will print the following warning, which can be safely ignored:
+Note that additional SSH connections past the first one will print the following warning, which can be safely ignored:
 
 ```
 bind [127.0.0.1]:3000: Address already in use
 channel_setup_fwd_listener_tcpip: cannot listen to port: 3000
 Could not request local forwarding.
 ```
-
-#### TODO
-
-- When closing `bin/cloud-dev`, stop, rather than terminate, the EC2 instance. This will prevent changes in the cloud dev repo from getting lost. We may need to introduce a user-based tagging system so that multiple people can have their own dev servers.
-- Wait for upstream to [fix SSH agent forwarding](https://github.com/microsoft/vscode-remote-release/issues/4183), so we can do git fetch/push on the cloud dev's repo via VSCode, rather than having to open a separate terminal.
 
 ## Ops stuff
 
