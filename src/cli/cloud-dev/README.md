@@ -30,22 +30,35 @@ This will provision a new EC2 instance, and update your local SSH config so you 
 
 ```
 % bin/cloud-dev
-launching new instance of template jeffanddom-cloud-dev-template-1...
-instance i-033ba945bfcbf8a74 created, waiting for public hostname...
+fetching IAM username...
+user: jeff
+locating EBS volume...
+volume vol-03071059b0eeb17e7 found...
+launching new instance of template jeffanddom-cloud-dev-template-1 for user jeff...
+instance i-0a25b0a3955baa352 created.
+waiting for public hostname...
+attaching EBS volume...
 updating /Users/jeff/.ssh/config...
+waiting for SSH availability...
+The authenticity of host 'ec2-18-144-43-246.us-west-1.compute.amazonaws.com (18.144.43.246)' can't be established.
+ECDSA key fingerprint is SHA256:YBZDH/V/T7nua+QiJ8kC6/xSxnxr3W8cv3sJaH7COXY.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+mounting volume...
+---
 cloud-dev is ready!
-* Remote hostname: ec2-54-219-222-91.us-west-1.compute.amazonaws.com
+* Remote hostname: ec2-18-144-43-246.us-west-1.compute.amazonaws.com
 * SSH alias: jeffanddom-cloud-dev
-  * Connect via: ssh -A jeffanddom-cloud-dev
-  * Local port 3000 will be fowarded to 3000
-* Press CTRL+C to terminate instance
+  * Connect via: ssh jeffanddom-cloud-dev
+  * Local port 3000 will be fowarded to remote port 3000
+* Press CTRL+C to stop instance
+---
 ```
 
-Keep this program running! It will terminate the EC2 instance when closed.
+Keep this program running! It will terminate the EC2 instance when closed. The EBS volume will be preserved, so don't worry too much about losing data. But as always, commit early and often, and don't forget to push!
 
 #### Connecting with VSCode
 
-Next, open the VSCode command palette and choose `Remote-SSH: Connect to Host...`. It should show `jeffanddom-cloud-dev` as an option. Once connected, choose "Open folder". Changes you make will update the cloud server's manchester repository, not the local one.
+Open the VSCode command palette and choose `Remote-SSH: Connect to Host...`. It should show `jeffanddom-cloud-dev` as an option. Once connected, choose "Open folder". Changes you make will update the cloud server's manchester repository, not the local one.
 
 The manchester repo will likely be out-of-date, so you'll want to fetch latest changes (see [Git](#Git) below for instructions) and re-run `yarn`.
 
@@ -85,27 +98,59 @@ Could not request local forwarding.
 Launch an EC2 instance with the following:
 
 - AMI: Ubuntu 20.04 HVM LTS (`ami-00831fc7c1e3ddc60`)
-- Instance type: t3.xlarge (4 vCPUs, bursty)
+- Instance type: c5.xlarge (4 vCPUs, 8GM RAM)
+- Spot request (one-time)
 - Security group: `jeffanddom-cloud-dev-sg-2`, which opens ingress ports 22, 43, 80, and 3000
 - SSH key: `jeffanddom-cloud-dev-1`
+- Tags: `app=jeffanddom-cloud-dev`
+- Metadata access: enabled
 
 Note that most of our AWS objects follow the namescheme `jeffanddom-cloud-dev-{object type}-{version number}`.
 
 Next, perform the following on-host config:
 
-- `sudo apt install yarn npm`
-- Clone manchester, then run `yarn` to install deps
+```
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update
+sudo apt install yarn npm
+```
+
+This can be snapshotted and used for a launch template.
 
 The `jeffanddom-cloud-dev-template-1` launch template includes an AMI that includes all of the above.
+
+### EBS volumes
+
+- Config: gp3, 16GB, baseline IOPS & bandwidth
+- Tags: `app=jeffanddom-cloud-dev`, `user=<IAM username>`
+
+Modern `c5.xlarge` uses the "Nitro" system, which [exposes the new volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html) at `/dev/nvme1n1`.
+
+Create the filesystem:
+
+```
+sudo mkfs -t ext4 /dev/nvme1n1
+sudo mkdir /home/ubuntu/data
+sudo mount /dev/nvme1n1 /home/ubuntu/data
+sudo chown ubuntu:ubuntu /home/ubuntu/data
+```
 
 ### IAM policies for local development
 
 `bin/cloud-dev` needs to be able to:
 
-- list EC2 instances
-- launch EC2 instances via a launch template
-- create EC2 tags
-- terminate EC2 instances
-- decode STS encoded error messages (just to debug EC2 error messages)
+- EC2 instances
+  - describe
+  - terminate
+  - create tags
+  - launch (requires access to many resources)
+- EC2 volumes
+  - describe
+  - attach
+- IAM
+  - get user info
+- STS
+  - decode error messages (for API call errors)
 
 These policies are currently stored in `jeffanddom-cloud-dev-policy-1`.
