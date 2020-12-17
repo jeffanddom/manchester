@@ -27,36 +27,36 @@ async function main(): Promise<void> {
 
   // Get IAM username
   console.log(`fetching IAM username...`)
-  const user = await awsUtils.getUser()
-  console.log(`user: ${user.UserName}`)
+  const username = (await awsUtils.getUser()).UserName
+  console.log(`user: ${username}`)
 
   // Get user-associated EBS volume
   // TODO: ensure the volume is not currently in use (maybe detach before termination)
   console.log(`locating EBS volume...`)
   const volumeTags = new Map()
   volumeTags.set('app', 'jeffanddom-cloud-dev')
-  volumeTags.set('user', user.UserName)
+  volumeTags.set('user', username)
   const volume = await awsUtils.getEbsVolume(ec2, volumeTags)
   const volumeId = volume.VolumeId
   if (volumeId === undefined) {
     throw new Error(`invalid volume ID`)
   }
-  console.log(`volume ${volumeId} found...`)
+  console.log(`volume: ${volumeId}`)
 
   // Launch new EC2 instance
   console.log(
-    `launching new instance of template ${launchTemplateName} for user ${user.UserName}...`,
+    `launching new instance of template ${launchTemplateName} for user ${username}...`,
   )
   const instance = await awsUtils.launch(ec2, {
     templateName: launchTemplateName,
-    userTag: user.UserName,
+    userTag: username,
     az,
   })
   const instanceId = instance.InstanceId
   if (instanceId === undefined) {
     throw new Error('no instance ID returned')
   }
-  console.log(`instance ${instanceId} created.`)
+  console.log(`instance: ${instanceId}`)
 
   // Ensure that the instance is terminated when this program quits.
   const quit = () => {
