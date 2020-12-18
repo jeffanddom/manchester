@@ -11,22 +11,20 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
+import { getModel, loadGrid } from '~/models'
 import { Mouse } from '~/Mouse'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import {
-  Renderable,
-} from '~/renderer/interfaces'
 import { Canvas3DRenderer } from '~/renderer/Canvas3DRenderer'
+import { Renderable } from '~/renderer/interfaces'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
-import { getModel, loadGrid } from '~/models'
 
 export class Client {
   entityManager: EntityManager
@@ -140,6 +138,7 @@ export class Client {
 
   setViewportDimensions(d: vec2): void {
     this.camera.setViewportDimensions(d)
+    this.renderer.setViewportDimensions(d)
   }
 
   startPlay(): void {
@@ -160,7 +159,7 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer.loadModel('terrain', this.terrainLayer)
+    this.renderer.loadModel('terrain', this.terrainLayer.getModel())
 
     const gridModel = loadGrid()
     this.renderer.loadModel('grid', gridModel)
@@ -331,7 +330,7 @@ export class Client {
     this.renderer.drawModel('terrain', vec2.create(), 0)
 
     // GRID DEBUG
-    this.renderer.drawModel('grid', vec2.create(),0 )
+    this.renderer.drawModel('grid', vec2.create(), 0)
 
     for (const [entityId, model] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!

@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
 import * as damageable from '~/components/Damageable'
-import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
@@ -10,7 +9,6 @@ import {
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
-import * as models from '~/models'
 import { BuilderComponent, BuilderMode } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 
@@ -37,7 +35,7 @@ export const make = (params: {
     host: params.host,
     path: params.path,
   })
-  e.renderable = new DefaultModelRenderable(models.builder)
+  e.renderable = 'not a real model' // fixme
 
   e.team = Team.Friendly
   e.targetable = true

@@ -1,14 +1,12 @@
 import { vec2 } from 'gl-matrix'
 
 import * as bullet from '~/components/Bullet'
-import { DefaultModelRenderable } from '~/components/DefaultModelRenderable'
 import * as transform from '~/components/Transform'
 import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
-import * as models from '~/models'
 
 export const makeBullet = ({
   position,

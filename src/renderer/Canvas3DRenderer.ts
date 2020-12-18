@@ -1,9 +1,9 @@
 import { vec3 } from 'gl-matrix'
 import { quat } from 'gl-matrix'
 import { mat4 } from 'gl-matrix'
-import { mat2d, vec2 } from 'gl-matrix'
-import { Transform } from '~/components/Transform'
+import { vec2 } from 'gl-matrix'
 
+import { Model } from '~/models'
 import { Immutable } from '~/types/immutable'
 
 const gl = WebGL2RenderingContext
@@ -37,18 +37,18 @@ export class Canvas3DRenderer {
   private cameraWorldPos: vec3
   private program: WebGLProgram
 
-  private vaos: {[key: string]: {
-    vao: WebGLVertexArrayObject
-    numVerts: number
-    primitive: string
-  }}
+  private vaos: {
+    [key: string]: {
+      vao: WebGLVertexArrayObject
+      numVerts: number
+      primitive: string
+    }
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.ctx = canvas.getContext('webgl2')!
     this.cameraWorldPos = vec3.create()
-
-    this.ctx.viewport(0, 0, this.canvas.width, this.canvas.height)
 
     const vertexShader = this.ctx.createShader(gl.VERTEX_SHADER)!
     this.ctx.shaderSource(vertexShader, vertexShaderSrc)
@@ -72,23 +72,34 @@ export class Canvas3DRenderer {
 
     this.vaos = {}
 
-    // Set projection matrix
-    const projection = mat4.perspective(mat4.create(),
-      75 * Math.PI / 180,
-      canvas.width / canvas.height,
-      0.1,
-      64
-    )
-    this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'projection'),
-      false,
-      projection
+    this.setViewportDimensions(
+      vec2.fromValues(this.canvas.width, this.canvas.height),
     )
   }
 
   clear(_: string): void {
     this.ctx.clearColor(0.0, 0.0, 0.0, 1.0)
     this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
+  }
+
+  setViewportDimensions(d: vec2): void {
+    this.canvas.width = d[0]
+    this.canvas.height = d[1]
+    this.ctx.viewport(0, 0, d[0], d[1])
+
+    // Set projection matrix
+    const projection = mat4.perspective(
+      mat4.create(),
+      (75 * Math.PI) / 180,
+      d[0] / d[1],
+      0.1,
+      64,
+    )
+    this.ctx.uniformMatrix4fv(
+      this.ctx.getUniformLocation(this.program, 'projection'),
+      false,
+      projection,
+    )
   }
 
   setCameraWorldPos(p: vec2): void {
@@ -109,9 +120,7 @@ export class Canvas3DRenderer {
     )
   }
 
-  loadModel(key: string, model: {
-    vertices: Float32Array, colors: Float32Array, primitive?: string
-  }): void {
+  loadModel(key: string, model: Model): void {
     const numVerts = model.vertices.length / 3
 
     const aVertexPosition = this.ctx.getAttribLocation(
@@ -161,15 +170,14 @@ export class Canvas3DRenderer {
     this.vaos[key] = {
       vao,
       numVerts,
-      primitive: model.primitive ?? 'TRIANGLES'
+      primitive: model.primitive,
     }
   }
 
-  drawModel(key: string, pos: Immutable<vec2>, orientation: number) {
-    if (!this.vaos[key]) {
+  drawModel(key: string, pos: Immutable<vec2>, orientation: number): void {
+    if (this.vaos[key] === undefined) {
       return
     }
-
 
     const vao = this.vaos[key]
     this.ctx.bindVertexArray(vao.vao)
@@ -179,13 +187,23 @@ export class Canvas3DRenderer {
       false,
       mat4.fromRotationTranslation(
         mat4.create(),
-        quat.fromEuler(quat.create(), 0, -orientation * 180 / Math.PI, 0),
-        vec3.fromValues(
-          pos[0], 0, pos[1]
-        )
-      )
+        quat.fromEuler(quat.create(), 0, (-orientation * 180) / Math.PI, 0),
+        vec3.fromValues(pos[0], 0, pos[1]),
+      ),
     )
 
-    this.ctx.drawArrays(this.ctx[vao.primitive], 0, vao.numVerts)
+    let primitive
+    switch (vao.primitive) {
+      case 'TRIANGLES':
+        primitive = this.ctx.TRIANGLES
+        break
+      case 'LINES':
+        primitive = this.ctx.LINES
+        break
+      default:
+        throw new Error(`invalid primitive: ${vao.primitive}`)
+    }
+
+    this.ctx.drawArrays(primitive, 0, vao.numVerts)
   }
 }

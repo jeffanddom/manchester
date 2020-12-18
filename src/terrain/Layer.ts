@@ -1,14 +1,17 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { Model } from '~/models'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
   private tileOrigin: vec2
   private tileDimensions: vec2
   private terrain: (Type | null)[]
-  public vertices: Float32Array;
-  public colors: Float32Array;
+
+  private vertices: Float32Array
+  private colors: Float32Array
+  private normals: Float32Array
 
   public constructor({
     tileOrigin: origin,
@@ -24,6 +27,7 @@ export class Layer {
     this.terrain = tiles
     this.vertices = new Float32Array(this.terrain.length * 18)
     this.colors = new Float32Array(this.terrain.length * 24)
+    this.normals = new Float32Array(this.terrain.length * 18)
 
     for (let i = 0; i < this.terrain.length; i++) {
       const y = Math.floor(i / this.tileDimensions[1])
@@ -41,10 +45,10 @@ export class Layer {
         ...nw, ...sw, ...se], i * 18
       )
 
-      const colors : {[key: number]: [number, number, number, number]} = {
-        [Type.Grass]: [126/255,200/255,80/255,1.0],
-        [Type.Mountain]: [91/255,80/255,54/255,1.0],
-        [Type.River]: [43/255,87/255,112/255,1.0],
+      const colors: { [key: number]: [number, number, number, number] } = {
+        [Type.Grass]: [126 / 255, 200 / 255, 80 / 255, 1.0],
+        [Type.Mountain]: [91 / 255, 80 / 255, 54 / 255, 1.0],
+        [Type.River]: [43 / 255, 87 / 255, 112 / 255, 1.0],
       }
       const c = colors[tiles[i] ?? Type.Grass]
 
@@ -54,6 +58,17 @@ export class Layer {
         ...c, ...c, ...c,
       ], i * 24)
 
+      // prettier-ignore
+      this.normals.set(
+        [
+          0, 1, 0,
+          0, 1, 0,
+          0, 1, 0,
+          0, 1, 0,
+          0, 1, 0,
+          0, 1, 0,
+        ], i * 18
+      )
     }
   }
 
@@ -74,5 +89,16 @@ export class Layer {
 
   public dimensions(): vec2 {
     return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
+  }
+
+  public getModel(): Model {
+    const foo = {
+      vertices: this.vertices,
+      colors: this.colors,
+      normals: this.normals,
+      primitive: 'TRIANGLES',
+    }
+    console.log(foo)
+    return foo
   }
 }
