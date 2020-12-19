@@ -6,7 +6,7 @@
     "start": "parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
     "buildServer": "npx ts-node --transpile-only src/build/buildServer.ts",
-    "dev": "npx ts-node --transpile-only src/build/dev.ts",
+    "dev": "npx ts-node --transpile-only src/cli/build/dev.ts",
     "devServer": "node out/server/server.js",
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",

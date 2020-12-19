@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import * as clientHotReload from '~/build/clientHotReload'
+import * as clientHotReload from '~/clientHotReload'
 import { Client } from '~/Client'
 import { Keyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'

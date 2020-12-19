@@ -34,7 +34,7 @@ const rebuild = async () => {
     const build = spawn('npx', [
       'ts-node',
       '--transpile-only',
-      path.join(gameSrcPath, 'build', 'buildClient.ts'),
+      path.join(gameSrcPath, 'cli', 'build', 'buildClient.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -49,7 +49,7 @@ const rebuild = async () => {
     const build = spawn('npx', [
       'ts-node',
       '--transpile-only',
-      path.join(gameSrcPath, 'build', 'buildServer.ts'),
+      path.join(gameSrcPath, 'cli', 'build', 'buildServer.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
