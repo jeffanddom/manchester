@@ -8,7 +8,6 @@ import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
-import { PlayerRenderables } from '~/entities/player/PlayerRenderables'
 import { Type } from '~/entities/types'
 import { BuilderCreator } from '~/systems/builder'
 import * as shooter from '~/systems/shooter'

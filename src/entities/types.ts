@@ -4,7 +4,6 @@ import { makePlayer } from '~/entities/player'
 import { makeTree } from '~/entities/tree'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
-import * as models from '~/models'
 
 export enum Type {
   PLAYER = 'PLAYER',
@@ -17,23 +16,18 @@ export enum Type {
 export const typeDefinitions = {
   [Type.PLAYER]: {
     make: makePlayer,
-    editorModel: models.tank,
   },
   [Type.TURRET]: {
     make: makeTurret,
-    editorModel: models.turret,
   },
   [Type.WALL]: {
     make: makeWall,
-    editorModel: models.wall,
   },
   [Type.CORE]: {
     make: makeCorePickup,
-    editorModel: models.pickup,
   },
   [Type.TREE]: {
     make: makeTree,
-    editorModel: models.tree,
   },
 }
 

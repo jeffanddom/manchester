@@ -8,7 +8,6 @@ import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
-import { TurretRenderables } from '~/entities/turret/TurretRenderables'
 import { Type } from '~/entities/types'
 import { PickupType } from '~/systems/pickups'
 import * as turret from '~/systems/turret'

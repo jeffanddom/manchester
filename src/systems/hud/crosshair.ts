@@ -1,25 +1,16 @@
-import { mat2d, vec2 } from 'gl-matrix'
-
 import { Client } from '~/Client'
-import { TILE_SIZE } from '~/constants'
-import * as models from '~/models'
-import { Primitive } from '~/renderer/interfaces'
 import { CursorMode } from '~/systems/client/playerInput'
-import { tileCoords, tileToWorld } from '~/util/tileMath'
 
 export const update = (c: Client): void => {
   const mousePos = c.mouse!.getPos()
   if (mousePos) {
-    const mouseWorldPos = c.camera.viewToWorldspace(mousePos)
-
     // crosshair (TODO: this could probably be moved to HUD rendering, which
     // uses viewspace)
-    const topLeft = vec2.sub(
-      vec2.create(),
-      mouseWorldPos,
-      vec2.fromValues(3, 3),
-    )
-    const d = vec2.fromValues(6, 6)
+    // const topLeft = vec2.sub(
+    //   vec2.create(),
+    //   mouseWorldPos,
+    //   vec2.fromValues(3, 3),
+    // )
     // c.renderer.render({
     //   primitive: Primitive.RECT,
     //   strokeStyle: 'black',
@@ -30,8 +21,6 @@ export const update = (c: Client): void => {
 
     // tile indicator
     if (c.playerInputState.cursorMode !== CursorMode.NONE) {
-      const tileWorldPos = tileToWorld(tileCoords(topLeft))
-
       // c.renderer.render({
       //   primitive: Primitive.RECT,
       //   strokeStyle: 'rgba(255, 255, 0, 0.7)',
@@ -43,9 +32,7 @@ export const update = (c: Client): void => {
       //   ),
       //   dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
       // })
-
       // c.renderer.setGlobalOpacity(0.5)
-
       // switch (c.playerInputState.cursorMode) {
       //   case CursorMode.HARVEST:
       //     toRenderables(models.harvestIcon, {
@@ -68,7 +55,6 @@ export const update = (c: Client): void => {
       //     }).forEach((r) => c.renderer.render(r))
       //     break
       // }
-
       // c.renderer.setGlobalOpacity(1)
     }
   }

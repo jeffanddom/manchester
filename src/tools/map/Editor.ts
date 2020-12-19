@@ -223,7 +223,7 @@ export class Editor {
     this.renderer.setTransform(this.camera.wvTransform())
 
     if (this.showTerrain) {
-      this.renderTerrain()
+      // this.renderTerrain()
     }
 
     if (this.showEntities) {
@@ -239,11 +239,11 @@ export class Editor {
     }
   }
 
-  renderTerrain(): void {
-    this.terrain
-      .getRenderables(this.camera.getVisibleExtents())
-      .forEach((r) => this.renderer.render(r))
-  }
+  // renderTerrain(): void {
+  //   this.terrain
+  //     .getRenderables(this.camera.getVisibleExtents())
+  //     .forEach((r) => this.renderer.render(r))
+  // }
 
   renderEntities(): void {
     const nwTile = this.v2t(vec2.fromValues(0, 0))
@@ -257,12 +257,12 @@ export class Editor {
           continue
         }
 
-        toRenderables(entities.types.typeDefinitions[e].editorModel, {
-          worldTransform: mat2d.fromTranslation(
-            mat2d.create(),
-            this.t2w(tpos, { center: true }),
-          ),
-        }).forEach((r) => this.renderer.render(r))
+        // toRenderables(entities.types.typeDefinitions[e].editorModel, {
+        //   worldTransform: mat2d.fromTranslation(
+        //     mat2d.create(),
+        //     this.t2w(tpos, { center: true }),
+        //   ),
+        // }).forEach((r) => this.renderer.render(r))
       }
     }
   }

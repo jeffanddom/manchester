@@ -92,13 +92,11 @@ export class Layer {
   }
 
   public getModel(): Model {
-    const foo = {
+    return {
       vertices: this.vertices,
       colors: this.colors,
       normals: this.normals,
       primitive: 'TRIANGLES',
     }
-    console.log(foo)
-    return foo
   }
 }
