@@ -1,5 +1,4 @@
-const scale = 1/4
-const model = `
+const obj = `
 v -0.050225 4.274594 0.172272
 v 0.293113 3.168918 0.304215
 v 0.474476 2.911522 0.077707
@@ -629,7 +628,7 @@ f 227 225 229
 f 225 227 226
 `
 
-export const tree = {
-  scale,
-  model,
+export const model = {
+  scale: 1 / 4,
+  obj,
 }

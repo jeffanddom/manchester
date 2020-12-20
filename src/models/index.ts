@@ -1,16 +1,18 @@
-import { bullet } from './bullet'
-import { tank } from './tank'
-import { tree } from './tree'
-import { turret } from './turret'
-import { wall } from './wall'
+import { vec3 } from 'gl-matrix'
+
+import { model as bullet } from './bullet'
+import { model as tank } from './tank'
+import { model as tree } from './tree'
+import { model as turret } from './turret'
+import { model as wall } from './wall'
 
 import { TILE_SIZE } from '~/constants'
 
 const models: {
   [key: string]: {
-    model: string
+    obj: string
     scale: number
-    translate?: [number, number, number]
+    translate?: vec3
   }
 } = {
   wall: wall,
@@ -50,7 +52,7 @@ export const getModel: (modelType: ModelTypes) => Model = (modelType) => {
   const objNormals: number[][] = []
 
   let currentColor = defaultColor
-  obj.model.split('\n').forEach((line) => {
+  obj.obj.split('\n').forEach((line) => {
     if (!line) {
       return
     }
@@ -60,9 +62,9 @@ export const getModel: (modelType: ModelTypes) => Model = (modelType) => {
 
     if (components[0] === 'v') {
       objVerts.push([
-        (parseFloat(components[1]) + translate[0]) * obj.scale,
-        (parseFloat(components[2]) + translate[1]) * obj.scale,
-        (parseFloat(components[3]) + translate[2]) * obj.scale,
+        parseFloat(components[1]) * obj.scale + translate[0],
+        parseFloat(components[2]) * obj.scale + translate[1],
+        parseFloat(components[3]) * obj.scale + translate[2],
       ])
     }
 

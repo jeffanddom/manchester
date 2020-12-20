@@ -1,6 +1,6 @@
-const scale = 1/192
-const translate : [number, number, number] = [0, 100, 20]
-const model = `
+import { vec3 } from 'gl-matrix'
+
+const obj = `
 usemtl tank
 v -31.165217 12.382609 0.0
 v -31.047681 12.382608 32.108763
@@ -2100,8 +2100,8 @@ f 708 705 706
 f 708 706 699
 `
 
-export const tank = {
-  scale,
-  model,
-  translate,
+export const model = {
+  scale: 1 / 192,
+  translate: vec3.fromValues(25 / 192, 100 / 192, 40 / 192),
+  obj,
 }
