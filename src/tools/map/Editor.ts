@@ -219,7 +219,7 @@ export class Editor {
   }
 
   render(): void {
-    this.renderer.clear('#FCFCFC')
+    this.renderer.clear()
     this.renderer.setTransform(this.camera.wvTransform())
 
     if (this.showTerrain) {

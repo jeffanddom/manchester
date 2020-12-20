@@ -84,7 +84,7 @@ function gameLoop() {
 
   emitter.update(dt)
 
-  renderer.clear(globalConfig.backgroundColor)
+  renderer.clear()
   emitter.getRenderables().forEach((r) => renderer.render(r))
 
   if (emitter.dead) {
