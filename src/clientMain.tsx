@@ -45,8 +45,8 @@ clientHotReload.init({ enabled: true })
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
-  canvas3d.width = size[0]
-  canvas3d.height = size[1]
+  canvas3d.width = canvas2d.width = size[0]
+  canvas3d.height = canvas2d.height = size[1]
   client.setViewportDimensions(size)
 }
 

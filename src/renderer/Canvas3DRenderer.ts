@@ -83,8 +83,6 @@ export class Canvas3DRenderer {
   }
 
   setViewportDimensions(d: vec2): void {
-    this.canvas.width = d[0]
-    this.canvas.height = d[1]
     this.ctx.viewport(0, 0, d[0], d[1])
 
     // Set projection matrix
