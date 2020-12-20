@@ -15,17 +15,29 @@ declare global {
 // disable right clicks
 document.addEventListener('contextmenu', (e) => e.preventDefault())
 
-const canvas = document.createElement('canvas')
-document.body.appendChild(canvas)
+const canvas3d = document.createElement('canvas')
+canvas3d.setAttribute(
+  'style',
+  'position: absolute; top: 0; left: 0; z-index: 0',
+)
+canvas3d.width = window.innerWidth
+canvas3d.height = window.innerHeight
+document.body.appendChild(canvas3d)
 
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+const canvas2d = document.createElement('canvas')
+canvas2d.setAttribute(
+  'style',
+  'position: absolute; top: 0; left: 0; z-index: 1',
+)
+canvas2d.width = window.innerWidth
+canvas2d.height = window.innerHeight
+document.body.appendChild(canvas2d)
 
-const client = new Client(canvas)
+const client = new Client({ canvas3d, canvas2d })
 
 // Set up local input
 client.keyboard = new Keyboard()
-client.mouse = new Mouse(canvas)
+client.mouse = new Mouse(canvas3d)
 
 // Development-related globals
 window.client = client // expose game to console
@@ -33,8 +45,8 @@ clientHotReload.init({ enabled: true })
 
 function syncViewportSize() {
   const size = vec2.fromValues(window.innerWidth, window.innerHeight)
-  canvas.width = size[0]
-  canvas.height = size[1]
+  canvas3d.width = size[0]
+  canvas3d.height = size[1]
   client.setViewportDimensions(size)
 }
 

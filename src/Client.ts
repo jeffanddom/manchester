@@ -1,4 +1,7 @@
 import { vec2 } from 'gl-matrix'
+import { mat2d } from 'gl-matrix'
+
+import { Canvas2DRenderer } from './renderer/Canvas2DRenderer'
 
 import { Camera } from '~/Camera'
 import {
@@ -18,7 +21,7 @@ import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Canvas3DRenderer } from '~/renderer/Canvas3DRenderer'
-import { Renderable } from '~/renderer/interfaces'
+import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/interfaces'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -43,12 +46,12 @@ export class Client {
   waitingForServer: boolean
 
   camera: Camera
-  debugDrawRenderables: Renderable[]
-  debugDrawViewspace: Renderable[]
+  debugDraw2dRenderables: Renderable2d[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
   enableDebugDraw: boolean
-  renderer: Canvas3DRenderer
+  renderer3d: Canvas3DRenderer
+  renderer2d: Canvas2DRenderer
   lastUpdateAt: number
   lastTickAt: number
   lastRenderAt: number
@@ -74,7 +77,10 @@ export class Client {
   map: Map
   terrainLayer: terrain.Layer
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(config: {
+    canvas3d: HTMLCanvasElement
+    canvas2d: HTMLCanvasElement
+  }) {
     this.entityManager = new EntityManager([
       [0, 0],
       [0, 0],
@@ -89,16 +95,16 @@ export class Client {
     this.waitingForServer = false
 
     this.camera = new Camera(
-      vec2.fromValues(canvas.width, canvas.height),
+      vec2.fromValues(config.canvas3d.width, config.canvas3d.height),
       vec2.create(),
       vec2.create(),
     )
     this.emitters = []
     this.emitterHistory = new Set()
-    this.debugDrawRenderables = []
-    this.debugDrawViewspace = []
+    this.debugDraw2dRenderables = []
     this.enableDebugDraw = true
-    this.renderer = new Canvas3DRenderer(canvas)
+    this.renderer3d = new Canvas3DRenderer(config.canvas3d)
+    this.renderer2d = new Canvas2DRenderer(config.canvas2d)
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()
@@ -138,7 +144,7 @@ export class Client {
 
   setViewportDimensions(d: vec2): void {
     this.camera.setViewportDimensions(d)
-    this.renderer.setViewportDimensions(d)
+    this.renderer3d.setViewportDimensions(d)
   }
 
   startPlay(): void {
@@ -159,25 +165,25 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer.loadModel('terrain', this.terrainLayer.getModel())
+    this.renderer3d.loadModel('terrain', this.terrainLayer.getModel())
 
     const gridModel = loadGrid()
-    this.renderer.loadModel('grid', gridModel)
+    this.renderer3d.loadModel('grid', gridModel)
 
     const wallModel = getModel('wall')
-    this.renderer.loadModel('wall', wallModel)
+    this.renderer3d.loadModel('wall', wallModel)
 
     const tankModel = getModel('tank')
-    this.renderer.loadModel('tank', tankModel)
+    this.renderer3d.loadModel('tank', tankModel)
 
     const turretModel = getModel('turret')
-    this.renderer.loadModel('turret', turretModel)
+    this.renderer3d.loadModel('turret', turretModel)
 
     const treeModel = getModel('tree')
-    this.renderer.loadModel('tree', treeModel)
+    this.renderer3d.loadModel('tree', treeModel)
 
     const bulletModel = getModel('bullet')
-    this.renderer.loadModel('bullet', bulletModel)
+    this.renderer3d.loadModel('bullet', bulletModel)
 
     this.camera.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera.worldDimensions = this.terrainLayer.dimensions()
@@ -324,18 +330,22 @@ export class Client {
     this.renderFrameDurations.sample(now - this.lastRenderAt)
     this.lastRenderAt = now
 
-    this.renderer.clear('magenta')
+    this.renderer3d.clear('magenta')
 
-    this.renderer.setCameraWorldPos(this.camera.getPosition())
-    this.renderer.drawModel('terrain', vec2.create(), 0)
+    this.renderer3d.setCameraWorldPos(this.camera.getPosition())
+    this.renderer3d.drawModel('terrain', vec2.create(), 0)
 
     // GRID DEBUG
-    this.renderer.drawModel('grid', vec2.create(), 0)
+    this.renderer3d.drawModel('grid', vec2.create(), 0)
 
     for (const [entityId, model] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!
 
-      this.renderer.drawModel(model, transform.position, transform.orientation)
+      this.renderer3d.drawModel(
+        model,
+        transform.position,
+        transform.orientation,
+      )
     }
 
     // this.emitters!.forEach((e) =>
@@ -347,14 +357,14 @@ export class Client {
     // if (this.enableDebugDraw) {
     //   this.debugDrawRenderables.forEach((r) => {
     //     this.renderer.render(r)
-    //    })
+    //   })
     // }
     // this.debugDrawRenderables = []
 
     // Viewspace rendering
-    return
 
-    // this.renderer.setTransform(mat2d.identity(mat2d.create()))
+    this.renderer2d.clear()
+    this.renderer2d.setTransform(mat2d.identity(mat2d.create()))
 
     // systems.playerHealthBar(
     //   {
@@ -403,74 +413,52 @@ export class Client {
     //   })
     // }
 
-    // this.debugDraw(() => {
-    //   const res: Renderable[] = []
+    this.debugDraw2d(() => {
+      const text = [
+        `Player ${this.playerNumber}`,
+        `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
+        `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
+        `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
+        `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
+        `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
+        `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+        `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
+          2,
+        )}`,
+        `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
+          2,
+        )}`,
+        this.waitingForServer ? 'WAITING FOR SERVER' : '',
+      ]
 
-    //   for (const id of this.entityManager.walls) {
-    //     const transform = this.entityManager.transforms.get(id)!
-    //     res.push({
-    //       primitive: Primitive.RECT,
-    //       strokeStyle: 'cyan',
-    //       pos: vec2.subtract(vec2.create(), transform.position, [
-    //         TILE_SIZE / 2,
-    //         TILE_SIZE / 2,
-    //       ]),
-    //       dimensions: [TILE_SIZE, TILE_SIZE],
-    //     })
-    //   }
+      const x = this.camera.viewportDimensions[0] - 10
+      let y = 10
+      const res: Renderable2d[] = []
+      for (const t of text) {
+        res.push({
+          primitive: Primitive2d.TEXT,
+          text: t,
+          pos: vec2.fromValues(x, y),
+          hAlign: TextAlign.Max,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        })
+        y += 20
+      }
 
-    //   return res
-    // })
+      return res
+    })
 
-    // this.debugDraw(
-    //   () => {
-    //     const text = [
-    //       `Player ${this.playerNumber}`,
-    //       `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
-    //       `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
-    //       `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
-    //       `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
-    //       `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-    //       `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
-    //       `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
-    //         2,
-    //       )}`,
-    //       `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
-    //         2,
-    //       )}`,
-    //       this.waitingForServer ? 'WAITING FOR SERVER' : '',
-    //     ]
+    if (this.enableDebugDraw) {
+      this.debugDraw2dRenderables.forEach((r) => {
+        this.renderer2d.render(r)
+      })
+    }
 
-    //     const x = this.camera.viewportDimensions[0] - 10
-    //     let y = 10
-    //     const res: Renderable[] = []
-    //     for (const t of text) {
-    //       res.push({
-    //         primitive: Primitive.TEXT,
-    //         text: t,
-    //         pos: vec2.fromValues(x, y),
-    //         hAlign: TextAlign.Max,
-    //         vAlign: TextAlign.Center,
-    //         font: '16px monospace',
-    //         style: 'cyan',
-    //       })
-    //       y += 20
-    //     }
+    this.debugDraw2dRenderables = []
 
-    //     return res
-    //   },
-    //   { viewspace: true },
-    // )
-
-    // if (this.enableDebugDraw) {
-    //   this.debugDrawViewspace.forEach((r) => {
-    //     this.renderer.render(r)
-    //   })
-    // }
-
-    // this.debugDrawViewspace = []
-
-    // this.renderDurations.sample(time.current() - now)
+    this.renderDurations.sample(time.current() - now)
   }
 
   registerParticleEmitter(params: {
@@ -484,23 +472,14 @@ export class Client {
     }
   }
 
-  debugDraw(
-    makeRenderables: () => Renderable[],
-    options: { viewspace?: boolean } = {},
-  ): void {
+  debugDraw2d(makeRenderables: () => Renderable2d[]): void {
     if (!this.enableDebugDraw) {
       return
     }
 
-    if (options.viewspace) {
-      this.debugDrawViewspace = this.debugDrawViewspace.concat(
-        makeRenderables(),
-      )
-    } else {
-      this.debugDrawRenderables = this.debugDrawRenderables.concat(
-        makeRenderables(),
-      )
-    }
+    this.debugDraw2dRenderables = this.debugDraw2dRenderables.concat(
+      makeRenderables(),
+    )
   }
 
   sendClientMessage(m: ClientMessage): void {

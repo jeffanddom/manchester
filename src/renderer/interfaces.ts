@@ -1,6 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-export enum Primitive {
+export enum Primitive2d {
   PATH = 0,
   RECT = 1,
   CIRCLE = 2,
@@ -9,14 +9,14 @@ export enum Primitive {
 }
 
 export interface Path {
-  primitive: Primitive.PATH
+  primitive: Primitive2d.PATH
   fillStyle: string
   mwTransform: mat2d
   path: Array<vec2> // modelspace coordinates
 }
 
 export interface Rect {
-  primitive: Primitive.RECT
+  primitive: Primitive2d.RECT
   fillStyle?: string
   strokeStyle?: string
   pos: vec2 // worldspace coordinates
@@ -24,14 +24,14 @@ export interface Rect {
 }
 
 export interface Circle {
-  primitive: Primitive.CIRCLE
+  primitive: Primitive2d.CIRCLE
   fillStyle: string
   pos: vec2 // worldspace coordinates
   radius: number
 }
 
 export interface Line {
-  primitive: Primitive.LINE
+  primitive: Primitive2d.LINE
   style: string
   from: vec2
   to: vec2
@@ -45,7 +45,7 @@ export enum TextAlign {
 }
 
 export interface Text {
-  primitive: Primitive.TEXT
+  primitive: Primitive2d.TEXT
   style: string
   font: string
   pos: vec2
@@ -54,4 +54,4 @@ export interface Text {
   vAlign: TextAlign
 }
 
-export type Renderable = Path | Rect | Circle | Line | Text
+export type Renderable2d = Path | Rect | Circle | Line | Text

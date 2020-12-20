@@ -10,7 +10,7 @@ import { Keyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse, MouseButton } from '~/Mouse'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
-import { Primitive } from '~/renderer/interfaces'
+import { Primitive2d } from '~/renderer/interfaces'
 import * as terrain from '~/terrain'
 import * as math from '~/util/math'
 
@@ -67,7 +67,7 @@ export class Editor {
   showGrid: boolean
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
-    this.renderer = new Canvas2DRenderer(params.canvas.getContext('2d')!)
+    this.renderer = new Canvas2DRenderer(params.canvas)
     this.events = new EventEmitter()
 
     this.viewportDimensions = vec2.fromValues(
@@ -294,7 +294,7 @@ export class Editor {
 
   renderTile(tpos: vec2, fillStyle: string): void {
     this.renderer.render({
-      primitive: Primitive.RECT,
+      primitive: Primitive2d.RECT,
       fillStyle: fillStyle,
       pos: this.t2w(tpos),
       dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
@@ -320,7 +320,7 @@ export class Editor {
     for (let i = 0; i < this.map.dimensions[1]; i++) {
       const y = (i + this.map.origin[1]) * TILE_SIZE
       this.renderer.render({
-        primitive: Primitive.LINE,
+        primitive: Primitive2d.LINE,
         style: '#DDDDDD',
         width: y === 0 ? axisWeight : nonaxisWeight,
         from: vec2.fromValues(visibleMin[0], y),
@@ -331,7 +331,7 @@ export class Editor {
     for (let j = 0; j < this.map.dimensions[0]; j++) {
       const x = (j + this.map.origin[0]) * TILE_SIZE
       this.renderer.render({
-        primitive: Primitive.LINE,
+        primitive: Primitive2d.LINE,
         style: '#DDDDDD',
         width: x === 0 ? axisWeight : nonaxisWeight,
         from: vec2.fromValues(x, visibleMin[1]),

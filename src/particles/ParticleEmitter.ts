@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
-import { Primitive, Renderable } from '~/renderer/interfaces'
+import { Primitive2d, Renderable2d } from '~/renderer/interfaces'
 import { lerp, radialTranslate2 } from '~/util/math'
 
 interface Particle {
@@ -97,10 +97,10 @@ export class ParticleEmitter {
     }
   }
 
-  getRenderables(): Renderable[] {
+  getRenderables(): Renderable2d[] {
     return this.particles.map((p) => {
       return {
-        primitive: Primitive.CIRCLE,
+        primitive: Primitive2d.CIRCLE,
         fillStyle: p.color,
         pos: p.position,
         radius: p.radius,
