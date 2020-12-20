@@ -1,14 +1,9 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
-import {
-  IRenderer,
-  Primitive,
-  Renderable,
-  TextAlign,
-} from '~/renderer/interfaces'
+import { Primitive, Renderable, TextAlign } from '~/renderer/interfaces'
 import { transformCircle } from '~/util/math'
 
-export class Canvas2DRenderer implements IRenderer {
+export class Canvas2DRenderer {
   private ctx: CanvasRenderingContext2D
   private transform: mat2d
 

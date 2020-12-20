@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import * as clientHotReload from '~/clientHotReload'
 import { Client } from '~/Client'
+import * as clientHotReload from '~/clientHotReload'
 import { Keyboard } from '~/Keyboard'
 import { Mouse } from '~/Mouse'
 import { createServerConnectionWs } from '~/network/ServerConnection'

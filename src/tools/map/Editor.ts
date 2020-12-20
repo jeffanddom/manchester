@@ -10,7 +10,7 @@ import { Keyboard } from '~/Keyboard'
 import { Map } from '~/map/interfaces'
 import { Mouse, MouseButton } from '~/Mouse'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
-import { IRenderer, Primitive } from '~/renderer/interfaces'
+import { Primitive } from '~/renderer/interfaces'
 import * as terrain from '~/terrain'
 import * as math from '~/util/math'
 
@@ -44,7 +44,7 @@ const TERRAIN_TYPES = [
 const ENTITY_TYPES = Object.values(entities.types.Type)
 
 export class Editor {
-  renderer: IRenderer
+  renderer: Canvas2DRenderer
   events: EventEmitter
 
   viewportDimensions: vec2
