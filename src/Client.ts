@@ -149,6 +149,7 @@ export class Client {
   setViewportDimensions(d: vec2): void {
     this.camera.setViewportDimensions(d)
     this.renderer3d.setViewportDimensions(d)
+    this.renderer2d.setViewportDimensions(d)
   }
 
   startPlay(): void {
@@ -435,7 +436,7 @@ export class Client {
         this.waitingForServer ? 'WAITING FOR SERVER' : '',
       ]
 
-      const x = this.camera.viewportDimensions[0] - 10
+      const x = this.renderer2d.getViewportDimensions()[0] - 10
       let y = 10
       const res: Renderable2d[] = []
       for (const t of text) {

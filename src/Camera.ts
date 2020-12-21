@@ -5,7 +5,7 @@ import { Immutable } from '~/types/immutable'
 
 export class Camera {
   private position: vec2
-  viewportDimensions: vec2
+  private viewportDimensions: vec2
   minWorldPos: vec2
   worldDimensions: vec2
   private zoom: number // ratio of view distance to world distance

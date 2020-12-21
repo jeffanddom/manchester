@@ -1,5 +1,6 @@
 import { mat2d, vec2 } from 'gl-matrix'
 
+import { Immutable } from '~/types/immutable'
 import { transformCircle } from '~/util/math'
 
 export enum Primitive2d {
@@ -61,10 +62,12 @@ export type Renderable2d = Path | Rect | Circle | Line | Text
 export class Renderer2d {
   private ctx: CanvasRenderingContext2D
   private transform: mat2d
+  private viewportDimensions: vec2
 
   constructor(canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!
     this.transform = mat2d.identity(mat2d.create())
+    this.viewportDimensions = vec2.fromValues(canvas.width, canvas.height)
   }
 
   clear(): void {
@@ -73,6 +76,14 @@ export class Renderer2d {
 
   setTransform(t: mat2d): void {
     this.transform = mat2d.clone(t)
+  }
+
+  setViewportDimensions(dimensions: Immutable<vec2>): void {
+    this.viewportDimensions = vec2.clone(dimensions)
+  }
+
+  getViewportDimensions(): Immutable<vec2> {
+    return this.viewportDimensions
   }
 
   setGlobalOpacity(alpha: number): void {
