@@ -87,7 +87,7 @@ const handleAttackInput = (client: Client, frame: number): void => {
     frame,
     playerNumber: client.playerNumber,
     type: ClientMessageType.TANK_AIM,
-    targetPos: client.camera.viewToWorldspace(mousePos),
+    targetPos: client.camera2d.viewToWorldspace(mousePos),
     firing: client.mouse.isDown(MouseButton.LEFT),
   })
 }

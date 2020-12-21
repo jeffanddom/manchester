@@ -25,4 +25,12 @@ declare module 'gl-matrix' {
       b: Immutable<vec2>,
     ): vec2
   }
+
+  export namespace vec3 {
+    export function clone(a: Immutable<vec3>): vec3
+  }
+
+  export namespace vec4 {
+    export function clone(a: Immutable<vec4>): vec4
+  }
 }

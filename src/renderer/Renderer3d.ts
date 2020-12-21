@@ -34,7 +34,6 @@ void main() {
 export class Renderer3d {
   private canvas: HTMLCanvasElement
   private ctx: WebGL2RenderingContext
-  private cameraWorldPos: vec3
   private program: WebGLProgram
 
   private vaos: {
@@ -48,7 +47,6 @@ export class Renderer3d {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.ctx = canvas.getContext('webgl2')!
-    this.cameraWorldPos = vec3.create()
 
     const vertexShader = this.ctx.createShader(gl.VERTEX_SHADER)!
     this.ctx.shaderSource(vertexShader, vertexShaderSrc)
@@ -100,17 +98,7 @@ export class Renderer3d {
     )
   }
 
-  setCameraWorldPos(p: vec2): void {
-    this.cameraWorldPos = vec3.fromValues(p[0], 7.0, p[1] + 4)
-
-    // Move camera in world space
-    const v2w = mat4.fromRotationTranslation(
-      mat4.create(),
-      quat.fromEuler(quat.create(), -60, 0, 0),
-      this.cameraWorldPos,
-    )
-    const w2v = mat4.invert(mat4.create(), v2w)
-
+  setWvTransform(w2v: mat4): void {
     this.ctx.uniformMatrix4fv(
       this.ctx.getUniformLocation(this.program, 'uXform'),
       false,

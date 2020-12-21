@@ -116,3 +116,10 @@ export const transformCircle = (
     radius: vec2.length(vec2.sub(edge, edge, center)),
   }
 }
+
+/**
+ * Convert radians to degrees
+ */
+export function r2d(radians: number): number {
+  return (radians * 180) / Math.PI
+}

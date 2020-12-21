@@ -1,9 +1,10 @@
 import { vec2 } from 'gl-matrix'
 import { mat2d } from 'gl-matrix'
-
-import { Renderer2d } from './renderer/Renderer2d'
+import { vec3 } from 'gl-matrix'
+import { quat } from 'gl-matrix'
 
 import { Camera2d } from '~/camera/Camera2d'
+import { Camera3d } from '~/camera/Camera3d'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
@@ -19,12 +20,14 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { Renderer2d } from '~/renderer/Renderer2d'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
+import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
@@ -44,7 +47,8 @@ export class Client {
   simulationFrame: number
   waitingForServer: boolean
 
-  camera: Camera2d
+  camera2d: Camera2d
+  camera: Camera3d
   debugDraw2dRenderables: Renderable2d[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
@@ -95,11 +99,12 @@ export class Client {
     this.simulationFrame = 0
     this.waitingForServer = false
 
-    this.camera = new Camera2d(
+    this.camera2d = new Camera2d(
       vec2.fromValues(config.canvas3d.width, config.canvas3d.height),
       vec2.create(),
       vec2.create(),
     )
+    this.camera = new Camera3d()
     this.emitters = []
     this.emitterHistory = new Set()
     this.debugDraw2dRenderables = []
@@ -147,7 +152,7 @@ export class Client {
   }
 
   setViewportDimensions(d: vec2): void {
-    this.camera.setViewportDimensions(d)
+    this.camera2d.setViewportDimensions(d)
     this.renderer3d.setViewportDimensions(d)
     this.renderer2d.setViewportDimensions(d)
   }
@@ -190,8 +195,8 @@ export class Client {
     const bulletModel = getModel('bullet')
     this.renderer3d.loadModel('bullet', bulletModel)
 
-    this.camera.minWorldPos = this.terrainLayer.minWorldPos()
-    this.camera.worldDimensions = this.terrainLayer.dimensions()
+    this.camera2d.minWorldPos = this.terrainLayer.minWorldPos()
+    this.camera2d.worldDimensions = this.terrainLayer.dimensions()
   }
 
   setState(s: GameState): void {
@@ -307,9 +312,41 @@ export class Client {
           const playerId = this.entityManager.getPlayerId(this.playerNumber)
           if (playerId) {
             const transform = this.entityManager.transforms.get(playerId)!
-            this.camera.setPosition(transform.position)
+            this.camera2d.setPosition(transform.position)
+            this.camera2d.update(dt)
+
+            // Position the 3D camera at a fixed offset from the player, and
+            // point the camera directly at the player.
+            const offset = vec3.fromValues(0, 7, 4)
+            this.camera.setPos(
+              vec3.add(
+                vec3.create(),
+                vec3.fromValues(
+                  transform.position[0],
+                  0,
+                  transform.position[1],
+                ),
+                offset,
+              ),
+            )
+            this.camera.setOrientation(
+              quat.fromEuler(
+                quat.create(),
+                // We want the value of b, which is a negative-value downward
+                // rotation around the x-axis.
+                // c ------------------
+                // | \  b
+                // | a \
+                // |     \
+                // |       \
+                // |         \
+                // ----------- p ------
+                math.r2d(Math.atan2(offset[2], offset[1]) - Math.PI / 2),
+                0,
+                0,
+              ),
+            )
           }
-          this.camera.update(dt)
 
           this.keyboard?.update()
           this.mouse?.update()
@@ -337,7 +374,7 @@ export class Client {
 
     this.renderer3d.clear('magenta')
 
-    this.renderer3d.setCameraWorldPos(this.camera.getPosition())
+    this.renderer3d.setWvTransform(this.camera.getWvTransform())
     this.renderer3d.drawModel('terrain', vec2.create(), 0)
 
     // GRID DEBUG
