@@ -7,7 +7,7 @@ import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { IKeyboard } from '~/input/interfaces'
-import { Mouse, MouseButton } from '~/input/Mouse'
+import { IMouse, MouseButton } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
 import { Primitive2d, Renderer2d } from '~/renderer/Renderer2d'
 import * as terrain from '~/terrain'
@@ -52,7 +52,7 @@ export class Editor {
 
   camera: Camera
   keyboard: IKeyboard
-  mouse: Mouse
+  mouse: IMouse
 
   cursorTilePos: vec2 | null
   brush: {
@@ -69,6 +69,7 @@ export class Editor {
     canvas: HTMLCanvasElement
     map: Map
     keyboard: IKeyboard
+    mouse: IMouse
   }) {
     this.renderer = new Renderer2d(params.canvas)
     this.events = new EventEmitter()
@@ -90,7 +91,7 @@ export class Editor {
       vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
     )
     this.keyboard = params.keyboard
-    this.mouse = new Mouse(params.canvas)
+    this.mouse = params.mouse
 
     this.cursorTilePos = null
     this.brush = {

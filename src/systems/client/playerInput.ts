@@ -1,6 +1,6 @@
 import { Client } from '~/Client'
 import { DirectionMove } from '~/input/interfaces'
-import { MouseButton } from '~/input/Mouse'
+import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
 
 export const keyMap = {
@@ -78,10 +78,6 @@ const handleMoveInput = (client: Client, frame: number): void => {
 }
 
 const handleAttackInput = (client: Client, frame: number): void => {
-  if (!client.mouse) {
-    return
-  }
-
   const mousePos = client.mouse.getPos()
   if (!mousePos) {
     return

@@ -12,8 +12,7 @@ import {
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
-import { IKeyboard } from '~/input/interfaces'
-import { Mouse } from '~/input/Mouse'
+import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
 import { getModel, loadGrid } from '~/models'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
@@ -66,7 +65,7 @@ export class Client {
   serverInputsPerFrame: RunningAverage
 
   keyboard: IKeyboard
-  mouse?: Mouse
+  mouse: IMouse
 
   // Common game state
   state: GameState
@@ -81,6 +80,7 @@ export class Client {
     canvas3d: HTMLCanvasElement
     canvas2d: HTMLCanvasElement
     keyboard: IKeyboard
+    mouse: IMouse
   }) {
     this.entityManager = new EntityManager([
       [0, 0],
@@ -108,6 +108,7 @@ export class Client {
     this.renderer2d = new Renderer2d(config.canvas2d)
 
     this.keyboard = config.keyboard
+    this.mouse = config.mouse
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()

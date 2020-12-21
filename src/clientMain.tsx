@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Client } from '~/Client'
 import * as clientHotReload from '~/clientHotReload'
 import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
-import { Mouse } from '~/input/Mouse'
+import { DocumentEventMouse } from '~/input/Mouse'
 import { createServerConnectionWs } from '~/network/ServerConnection'
 
 declare global {
@@ -37,10 +37,8 @@ const client = new Client({
   canvas3d,
   canvas2d,
   keyboard: new DocumentEventKeyboard(document),
+  mouse: new DocumentEventMouse(document),
 })
-
-// Set up local input
-client.mouse = new Mouse(document.body)
 
 // Development-related globals
 window.client = client // expose game to console

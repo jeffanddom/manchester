@@ -1,40 +1,29 @@
 import { vec2 } from 'gl-matrix'
 
-export enum MouseButton {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2,
-}
+import { IMouse, MouseButton, mouseButtonFromRaw } from './interfaces'
 
-function mouseButtonFromRaw(raw: number): MouseButton | undefined {
-  if (MouseButton[raw] === undefined) {
-    return undefined
-  }
-  return <MouseButton>raw
-}
-
-export class Mouse {
+export class DocumentEventMouse implements IMouse {
   private pos: vec2 | null
   private down: Set<MouseButton>
   private up: Set<MouseButton>
 
-  constructor(element: HTMLElement) {
+  constructor(document: Document) {
     this.pos = null
     this.down = new Set()
     this.up = new Set()
 
-    element.addEventListener('mousemove', (event) => {
+    document.addEventListener('mousemove', (event) => {
       this.pos = vec2.fromValues(event.offsetX, event.offsetY)
     })
 
-    element.addEventListener('mousedown', (event) => {
+    document.addEventListener('mousedown', (event) => {
       const b = mouseButtonFromRaw(event.button)
       if (b !== undefined) {
         this.down.add(b)
       }
     })
 
-    element.addEventListener('mouseup', (event) => {
+    document.addEventListener('mouseup', (event) => {
       const b = mouseButtonFromRaw(event.button)
       if (b !== undefined) {
         if (this.down.has(b)) {
@@ -46,7 +35,7 @@ export class Mouse {
 
     // clear state if the mouse leaves the root element, or if the window loses
     // focus
-    element.addEventListener('mouseout', (_event) => {
+    document.addEventListener('mouseout', (_event) => {
       this.pos = null
       this.down = new Set()
     })
