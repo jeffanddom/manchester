@@ -3,7 +3,7 @@ import { mat2d, vec2 } from 'gl-matrix'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/interfaces'
 import { transformCircle } from '~/util/math'
 
-export class Canvas2DRenderer {
+export class Renderer2d {
   private ctx: CanvasRenderingContext2D
   private transform: mat2d
 

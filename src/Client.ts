@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { mat2d } from 'gl-matrix'
 
-import { Canvas2DRenderer } from './renderer/Canvas2DRenderer'
+import { Renderer2d } from './renderer/Renderer2d'
 
 import { Camera } from '~/Camera'
 import {
@@ -20,8 +20,8 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Canvas3DRenderer } from '~/renderer/Canvas3DRenderer'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/interfaces'
+import { Renderer3d } from '~/renderer/Renderer3d'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -50,8 +50,8 @@ export class Client {
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
   enableDebugDraw: boolean
-  renderer3d: Canvas3DRenderer
-  renderer2d: Canvas2DRenderer
+  renderer3d: Renderer3d
+  renderer2d: Renderer2d
   lastUpdateAt: number
   lastTickAt: number
   lastRenderAt: number
@@ -103,8 +103,8 @@ export class Client {
     this.emitterHistory = new Set()
     this.debugDraw2dRenderables = []
     this.enableDebugDraw = true
-    this.renderer3d = new Canvas3DRenderer(config.canvas3d)
-    this.renderer2d = new Canvas2DRenderer(config.canvas2d)
+    this.renderer3d = new Renderer3d(config.canvas3d)
+    this.renderer2d = new Renderer2d(config.canvas2d)
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()

@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
+import { Renderer2d } from '~/renderer/Renderer2d'
 import { Controls } from '~/tools/particles/Controls'
 import { Config } from '~/tools/particles/interfaces'
 import * as time from '~/util/time'
@@ -48,7 +48,7 @@ document.body.prepend(canvas)
 canvas.width = 400
 canvas.height = 400
 
-const renderer: Canvas2DRenderer = new Canvas2DRenderer(canvas)
+const renderer: Renderer2d = new Renderer2d(canvas)
 renderer.setTransform(
   mat2d.fromTranslation(mat2d.create(), vec2.fromValues(200, 200)),
 )

@@ -31,7 +31,7 @@ void main() {
 }
 `
 
-export class Canvas3DRenderer {
+export class Renderer3d {
   private canvas: HTMLCanvasElement
   private ctx: WebGL2RenderingContext
   private cameraWorldPos: vec3

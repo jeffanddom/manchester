@@ -9,8 +9,8 @@ import * as entities from '~/entities'
 import { Keyboard } from '~/input/Keyboard'
 import { Mouse, MouseButton } from '~/input/Mouse'
 import { Map } from '~/map/interfaces'
-import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import { Primitive2d } from '~/renderer/interfaces'
+import { Renderer2d } from '~/renderer/Renderer2d'
 import * as terrain from '~/terrain'
 import * as math from '~/util/math'
 
@@ -44,7 +44,7 @@ const TERRAIN_TYPES = [
 const ENTITY_TYPES = Object.values(entities.types.Type)
 
 export class Editor {
-  renderer: Canvas2DRenderer
+  renderer: Renderer2d
   events: EventEmitter
 
   viewportDimensions: vec2
@@ -67,7 +67,7 @@ export class Editor {
   showGrid: boolean
 
   constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
-    this.renderer = new Canvas2DRenderer(params.canvas)
+    this.renderer = new Renderer2d(params.canvas)
     this.events = new EventEmitter()
 
     this.viewportDimensions = vec2.fromValues(
@@ -160,8 +160,8 @@ export class Editor {
       } else {
         this.brush.terrain =
           TERRAIN_TYPES[
-          (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
-          TERRAIN_TYPES.length
+            (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
+              TERRAIN_TYPES.length
           ]
       }
 
@@ -184,7 +184,7 @@ export class Editor {
       } else {
         this.brush.entity =
           ENTITY_TYPES[
-          (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
+            (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
           ]
       }
 
