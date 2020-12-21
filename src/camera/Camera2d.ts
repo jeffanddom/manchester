@@ -3,7 +3,7 @@ import { sample } from 'lodash'
 
 import { Immutable } from '~/types/immutable'
 
-export class Camera {
+export class Camera2d {
   private position: vec2
   private viewportDimensions: vec2
   minWorldPos: vec2

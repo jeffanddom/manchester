@@ -3,7 +3,7 @@ import { mat2d } from 'gl-matrix'
 
 import { Renderer2d } from './renderer/Renderer2d'
 
-import { Camera } from '~/Camera'
+import { Camera2d } from '~/camera/Camera2d'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
@@ -44,7 +44,7 @@ export class Client {
   simulationFrame: number
   waitingForServer: boolean
 
-  camera: Camera
+  camera: Camera2d
   debugDraw2dRenderables: Renderable2d[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
@@ -95,7 +95,7 @@ export class Client {
     this.simulationFrame = 0
     this.waitingForServer = false
 
-    this.camera = new Camera(
+    this.camera = new Camera2d(
       vec2.fromValues(config.canvas3d.width, config.canvas3d.height),
       vec2.create(),
       vec2.create(),

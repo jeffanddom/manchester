@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 import { mat2d, vec2 } from 'gl-matrix'
 import * as _ from 'lodash'
 
-import { Camera } from '~/Camera'
+import { Camera2d } from '~/camera/Camera2d'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { IKeyboard } from '~/input/interfaces'
@@ -50,7 +50,7 @@ export class Editor {
   map: Map
   terrain: terrain.Layer
 
-  camera: Camera
+  camera: Camera2d
   keyboard: IKeyboard
   mouse: IMouse
 
@@ -85,7 +85,7 @@ export class Editor {
       terrain: this.map.terrain,
     })
 
-    this.camera = new Camera(
+    this.camera = new Camera2d(
       this.viewportDimensions,
       vec2.scale(vec2.create(), this.map.origin, TILE_SIZE),
       vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
