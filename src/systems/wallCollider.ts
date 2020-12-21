@@ -2,11 +2,17 @@ import { vec2 } from 'gl-matrix'
 
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { DirectionCollision } from '~/interfaces'
 import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 import { aabbOverlap } from '~/util/math'
 import { tileBox, tileCoords } from '~/util/tileMath'
+
+enum DirectionCollision {
+  North = 'N',
+  South = 'S',
+  East = 'E',
+  West = 'W',
+}
 
 export const update = (simState: Pick<SimState, 'entityManager'>): void => {
   for (const [id] of simState.entityManager.playerNumbers) {

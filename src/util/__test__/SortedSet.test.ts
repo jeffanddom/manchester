@@ -1,4 +1,4 @@
-import { SortedSet } from './SortedSet'
+import { SortedSet } from '../SortedSet'
 
 describe('SortedSet', () => {
   it('basic adds/removes', () => {

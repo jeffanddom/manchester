@@ -1,4 +1,4 @@
-import { SortedMap } from './SortedMap'
+import { SortedMap } from '../SortedMap'
 
 describe('SortedMap', () => {
   it('basic adds/removes', () => {

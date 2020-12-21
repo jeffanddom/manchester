@@ -1,9 +1,9 @@
 import { vec2 } from 'gl-matrix'
 
+import { Hitbox } from '~/components/Hitbox'
+import * as hitbox from '~/components/Hitbox'
 import { Transform } from '~/components/Transform'
 import { EntityId } from '~/entities/EntityId'
-import { Hitbox } from '~/Hitbox'
-import * as hitbox from '~/Hitbox'
 import { Immutable } from '~/types/immutable'
 
 export type Damager = {

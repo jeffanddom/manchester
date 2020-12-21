@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
 import { aabbOverlap } from '../math'
-
 import {
   ChildList,
   Quadrant,
@@ -12,7 +11,7 @@ import {
   nodeInsert,
   nodeQuery,
   quadrantOfAabb,
-} from './helpers'
+} from '../quadtree/helpers'
 
 type TestItem = {
   id: string

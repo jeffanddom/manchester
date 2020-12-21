@@ -1,4 +1,4 @@
-import { ComponentTable } from '~/ComponentTable'
+import { ComponentTable } from '~/entities/ComponentTable'
 import { EntityId } from '~/entities/EntityId'
 
 type TestEntry = {

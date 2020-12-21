@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { segmentSegment } from './collision'
+import { segmentSegment } from '../collision'
 
 test('perpendicular, intersecting, neither vertical', () => {
   const segment1: [vec2, vec2] = [

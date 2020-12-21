@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { DirectionMove } from '~/interfaces'
+import { DirectionMove } from '~/input/interfaces'
 
 export enum ClientMessageType {
   // Informs the server about the end of a client frame. Sent every frame from

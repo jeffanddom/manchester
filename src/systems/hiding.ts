@@ -1,5 +1,5 @@
+import { aabb as hitboxAabb } from '~/components/Hitbox'
 import { EntityManager } from '~/entities/EntityManager'
-import { aabb as hitboxAabb } from '~/Hitbox'
 import { aabbOverlapArea } from '~/util/math'
 
 const REQUIRED_OVERLAP = 0.5

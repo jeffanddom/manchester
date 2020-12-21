@@ -6,9 +6,9 @@ import * as _ from 'lodash'
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
-import { Keyboard } from '~/Keyboard'
+import { Keyboard } from '~/input/Keyboard'
+import { Mouse, MouseButton } from '~/input/Mouse'
 import { Map } from '~/map/interfaces'
-import { Mouse, MouseButton } from '~/Mouse'
 import { Canvas2DRenderer } from '~/renderer/Canvas2DRenderer'
 import { Primitive2d } from '~/renderer/interfaces'
 import * as terrain from '~/terrain'
@@ -160,8 +160,8 @@ export class Editor {
       } else {
         this.brush.terrain =
           TERRAIN_TYPES[
-            (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
-              TERRAIN_TYPES.length
+          (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
+          TERRAIN_TYPES.length
           ]
       }
 
@@ -184,7 +184,7 @@ export class Editor {
       } else {
         this.brush.entity =
           ENTITY_TYPES[
-            (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
+          (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
           ]
       }
 

@@ -1,10 +1,3 @@
-export enum DirectionCollision {
-  North = 'N',
-  South = 'S',
-  East = 'E',
-  West = 'W',
-}
-
 export enum DirectionMove {
   N = 0,
   NE = -Math.PI / 4,

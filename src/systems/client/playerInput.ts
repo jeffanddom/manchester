@@ -1,6 +1,6 @@
 import { Client } from '~/Client'
-import { DirectionMove } from '~/interfaces'
-import { MouseButton } from '~/Mouse'
+import { DirectionMove } from '~/input/interfaces'
+import { MouseButton } from '~/input/Mouse'
 import { ClientMessageType } from '~/network/ClientMessage'
 
 export const keyMap = {
