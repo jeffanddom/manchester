@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { sample } from 'lodash'
 
-import { Primitive2d, Renderable2d } from '~/renderer/interfaces'
+import { Primitive2d, Renderable2d } from '~/renderer/Renderer2d'
 import { lerp, radialTranslate2 } from '~/util/math'
 
 interface Particle {

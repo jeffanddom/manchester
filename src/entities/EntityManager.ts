@@ -164,22 +164,6 @@ export class EntityManager {
     this.predictedDeletes = new SortedSet()
   }
 
-  // public getRenderables(aabb: [vec2, vec2]): Renderable[] {
-  //   const renderables: Renderable[] = []
-  //   for (const id of this.queryByWorldPos(aabb)) {
-  //     const r = this.renderables.get(id)
-  //     if (!r) {
-  //       continue
-  //     }
-
-  //     // an as-cast is required here to call member variables. Eventually, we
-  //     // should transform this object into a plain-old-data structure instead
-  //     // of a class.
-  //     renderables.push(...(r as IRenderable).getRenderables(this, id))
-  //   }
-  //   return renderables
-  // }
-
   public getPlayerId(playerNumber: number): EntityId | undefined {
     for (const [id, n] of this.playerNumbers) {
       if (n === playerNumber) {
