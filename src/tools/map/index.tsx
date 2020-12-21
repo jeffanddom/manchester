@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom'
 
 import { loadMap } from './storage'
 
+import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
 import { Map } from '~/map/interfaces'
 import { Controls } from '~/tools/map/Controls'
 import { Editor } from '~/tools/map/Editor'
@@ -22,7 +23,11 @@ if (map) {
   map = new Map(vec2.fromValues(64, 64))
 }
 
-const editor = new Editor({ canvas, map })
+const editor = new Editor({
+  canvas,
+  map,
+  keyboard: new DocumentEventKeyboard(document),
+})
 
 let prevFrameTime = time.current()
 function gameLoop() {

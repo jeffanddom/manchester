@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Client } from '~/Client'
 import * as clientHotReload from '~/clientHotReload'
-import { Keyboard } from '~/input/Keyboard'
+import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
 import { Mouse } from '~/input/Mouse'
 import { createServerConnectionWs } from '~/network/ServerConnection'
 
@@ -33,10 +33,13 @@ canvas2d.width = window.innerWidth
 canvas2d.height = window.innerHeight
 document.body.appendChild(canvas2d)
 
-const client = new Client({ canvas3d, canvas2d })
+const client = new Client({
+  canvas3d,
+  canvas2d,
+  keyboard: new DocumentEventKeyboard(document),
+})
 
 // Set up local input
-client.keyboard = new Keyboard()
 client.mouse = new Mouse(document.body)
 
 // Development-related globals

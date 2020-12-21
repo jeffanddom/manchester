@@ -44,10 +44,6 @@ export const update = (client: Client, frame: number): void => {
 // }
 
 const handleMoveInput = (client: Client, frame: number): void => {
-  if (!client.keyboard) {
-    return
-  }
-
   let direction
   if (client.keyboard.downKeys.has(keyMap.moveUp)) {
     if (client.keyboard.downKeys.has(keyMap.moveLeft)) {

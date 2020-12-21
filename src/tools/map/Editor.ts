@@ -6,7 +6,7 @@ import * as _ from 'lodash'
 import { Camera } from '~/Camera'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
-import { Keyboard } from '~/input/Keyboard'
+import { IKeyboard } from '~/input/interfaces'
 import { Mouse, MouseButton } from '~/input/Mouse'
 import { Map } from '~/map/interfaces'
 import { Primitive2d, Renderer2d } from '~/renderer/Renderer2d'
@@ -51,7 +51,7 @@ export class Editor {
   terrain: terrain.Layer
 
   camera: Camera
-  keyboard: Keyboard
+  keyboard: IKeyboard
   mouse: Mouse
 
   cursorTilePos: vec2 | null
@@ -65,7 +65,11 @@ export class Editor {
   showEntities: boolean
   showGrid: boolean
 
-  constructor(params: { canvas: HTMLCanvasElement; map: Map }) {
+  constructor(params: {
+    canvas: HTMLCanvasElement
+    map: Map
+    keyboard: IKeyboard
+  }) {
     this.renderer = new Renderer2d(params.canvas)
     this.events = new EventEmitter()
 
@@ -85,7 +89,7 @@ export class Editor {
       vec2.scale(vec2.create(), this.map.origin, TILE_SIZE),
       vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
     )
-    this.keyboard = new Keyboard()
+    this.keyboard = params.keyboard
     this.mouse = new Mouse(params.canvas)
 
     this.cursorTilePos = null

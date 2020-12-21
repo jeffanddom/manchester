@@ -3,19 +3,13 @@
  * to internal state on a frame-by-frame basis.
  */
 
-import { keyMap } from '~/systems/client/playerInput'
+import { IKeyboard } from '~/input/interfaces'
 
-export interface IKeyboard {
-  downKeys: Set<number>
-  upKeys: Set<number>
-  update: () => void
-}
-
-export class Keyboard implements IKeyboard {
+export class DocumentEventKeyboard implements IKeyboard {
   downKeys: Set<number>
   upKeys: Set<number>
 
-  constructor() {
+  constructor(document: Document) {
     this.downKeys = new Set()
     this.upKeys = new Set()
 
@@ -35,27 +29,5 @@ export class Keyboard implements IKeyboard {
 
   update(): void {
     this.upKeys.clear()
-  }
-}
-
-export class SimulatedKeyboard implements IKeyboard {
-  downKeys: Set<number>
-  upKeys: Set<number>
-  frameCount: number
-
-  constructor() {
-    this.frameCount = 0
-    this.downKeys = new Set()
-    this.upKeys = new Set()
-  }
-
-  update(): void {
-    this.frameCount++
-
-    this.downKeys = new Set(
-      Math.floor(this.frameCount / 60) % 2 === 1
-        ? [keyMap.moveLeft]
-        : [keyMap.moveRight],
-    )
   }
 }

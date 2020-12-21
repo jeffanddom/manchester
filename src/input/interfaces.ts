@@ -8,3 +8,9 @@ export enum DirectionMove {
   W = Math.PI / 2,
   NW = Math.PI / 4,
 }
+
+export interface IKeyboard {
+  downKeys: Set<number>
+  upKeys: Set<number>
+  update: () => void
+}
