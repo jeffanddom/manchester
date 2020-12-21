@@ -37,7 +37,7 @@ const client = new Client({ canvas3d, canvas2d })
 
 // Set up local input
 client.keyboard = new Keyboard()
-client.mouse = new Mouse(canvas3d)
+client.mouse = new Mouse(document.body)
 
 // Development-related globals
 window.client = client // expose game to console
