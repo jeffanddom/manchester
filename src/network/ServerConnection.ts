@@ -7,6 +7,7 @@ import { ServerMessage } from '~/network/ServerMessage'
 export interface IServerConnection {
   send(msg: ClientMessage): void
   consume(): ServerMessage[]
+  close(): void
 }
 
 export class ServerConnectionWs implements IServerConnection {
@@ -31,6 +32,10 @@ export class ServerConnectionWs implements IServerConnection {
     const msgs = this.received // we may need to copy to prevent mutation?
     this.received = []
     return msgs
+  }
+
+  close(): void {
+    this.socket.close()
   }
 }
 

@@ -8,7 +8,10 @@ import { createServerConnectionWs } from '~/network/ServerConnection'
 
 declare global {
   interface Window {
-    client: Client
+    debug: {
+      client: Client
+      restartServer: () => Promise<void>
+    }
   }
 }
 
@@ -33,15 +36,13 @@ canvas2d.width = window.innerWidth
 canvas2d.height = window.innerHeight
 document.body.appendChild(canvas2d)
 
-const client = new Client({
+let client = new Client({
   canvas3d,
   canvas2d,
   keyboard: new DocumentEventKeyboard(document),
   mouse: new DocumentEventMouse(document),
 })
 
-// Development-related globals
-window.client = client // expose game to console
 clientHotReload.init({ enabled: true })
 
 function syncViewportSize() {
@@ -62,9 +63,46 @@ function clientRenderLoop() {
 clientRenderLoop()
 
 // Connect to server
-const schema = location.protocol === 'https:' ? 'wss' : 'ws'
-createServerConnectionWs(`${schema}://${location.host}/api/connect`).then(
-  (conn) => {
-    client.connectServer(conn)
-  },
-)
+function connectToServer(): Promise<void> {
+  const schema = location.protocol === 'https:' ? 'wss' : 'ws'
+  return createServerConnectionWs(
+    `${schema}://${location.host}/api/connect`,
+  ).then((conn) => client.connectServer(conn))
+}
+
+connectToServer()
+
+function restartServer(): Promise<void> {
+  return fetch(`${location.protocol}//${location.host}/api/restart`).then(
+    () => {
+      client = new Client({
+        canvas3d,
+        canvas2d,
+        keyboard: new DocumentEventKeyboard(document),
+        mouse: new DocumentEventMouse(document),
+      })
+      return connectToServer()
+    },
+  )
+}
+
+// Add a debounced hotkey for restarting the server
+let restartHotkeyTimeout: number | undefined = undefined
+document.addEventListener('keyup', (event) => {
+  if (event.code === 'KeyR' && event.ctrlKey && event.shiftKey) {
+    if (restartHotkeyTimeout !== undefined) {
+      return
+    }
+
+    restartHotkeyTimeout = setTimeout(() => {
+      restartHotkeyTimeout = undefined
+    }, 500)
+    restartServer()
+  }
+})
+
+// Development-related globals
+window.debug = {
+  client,
+  restartServer,
+}

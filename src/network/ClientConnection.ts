@@ -9,6 +9,7 @@ import { ServerMessage } from '~/network/ServerMessage'
 export interface IClientConnection {
   send(msg: ServerMessage): void
   consume(): ClientMessage[]
+  close(): void
 }
 
 export class ClientConnectionWs implements IClientConnection {
@@ -33,5 +34,9 @@ export class ClientConnectionWs implements IClientConnection {
     const msgs = this.received
     this.received = []
     return msgs
+  }
+
+  close(): void {
+    this.socket.close()
   }
 }

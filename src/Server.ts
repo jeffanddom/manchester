@@ -29,6 +29,7 @@ export class Server {
   // Common game state
   state: GameState
   nextState: GameState | undefined
+  shuttingDown: boolean
 
   currentLevel: number
 
@@ -51,6 +52,7 @@ export class Server {
 
     this.state = GameState.Connecting
     this.nextState = undefined
+    this.shuttingDown = false
 
     this.currentLevel = 0
 
@@ -66,7 +68,21 @@ export class Server {
     this.simulationDurations = new RunningAverage(3 * 60)
   }
 
+  shutdown(): void {
+    this.shuttingDown = true
+
+    // Terminate all client connections
+    for (const { conn } of this.clients) {
+      conn.close()
+    }
+  }
+
   connectClient(conn: IClientConnection): void {
+    if (this.shuttingDown) {
+      conn.close()
+      return
+    }
+
     if (this.clients.length === this.playerCount) {
       console.log('already reached maximum player count') // TODO: close connection
       return
@@ -84,6 +100,10 @@ export class Server {
   }
 
   update(dt: number): void {
+    if (this.shuttingDown) {
+      return
+    }
+
     const now = time.current()
     this.updateFrameDurations.sample(now - this.lastUpdateAt)
     this.lastUpdateAt = now

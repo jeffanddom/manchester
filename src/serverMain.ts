@@ -16,7 +16,7 @@ import { Server as GameServer } from '~/Server'
 const playerCount = 1
 const clientBufferSize = 7
 
-const gameServer = new GameServer({
+let gameServer = new GameServer({
   playerCount,
   minFramesBehindClient: clientBufferSize,
 })
@@ -42,6 +42,15 @@ const wsServer = new WebSocket.Server({ noServer: true })
 const apiRouter = new KoaRouter()
 apiRouter
   .get('/buildkey', async (ctx) => (ctx.body = buildkey))
+  .get('/restart', async (ctx) => {
+    console.log('restarting game server')
+    gameServer.shutdown()
+    gameServer = new GameServer({
+      playerCount,
+      minFramesBehindClient: clientBufferSize,
+    })
+    ctx.body = 'ok'
+  })
   .get('/connect', async (ctx) => {
     if (ctx.get('Upgrade') !== 'websocket') {
       ctx.throw(400, 'invalid websocket connection request')
@@ -50,12 +59,7 @@ apiRouter
     ctx.respond = false
 
     const socket = await new Promise((resolve: (ws: WebSocket) => void) => {
-      wsServer.handleUpgrade(
-        ctx.req,
-        ctx.request.socket,
-        Buffer.alloc(0),
-        resolve,
-      )
+      wsServer.handleUpgrade(ctx.req, ctx.req.socket, Buffer.alloc(0), resolve)
     })
 
     console.log(

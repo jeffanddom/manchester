@@ -154,6 +154,10 @@ export class Client {
     this.registerParticleEmitter = this.registerParticleEmitter.bind(this)
   }
 
+  shutdown(): void {
+    this.serverConnection?.close()
+  }
+
   setViewportDimensions(d: vec2): void {
     this.camera2d.setViewportDimensions(d)
     this.renderer3d.setViewportDimensions(d)
