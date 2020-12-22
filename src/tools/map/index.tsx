@@ -5,7 +5,7 @@ import * as ReactDOM from 'react-dom'
 import { loadMap } from './storage'
 
 import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
-import { DocumentEventMouse } from '~/input/Mouse'
+import { DocumentEventMouse } from '~/input/DocumentEventMouse'
 import { Map } from '~/map/interfaces'
 import { Controls } from '~/tools/map/Controls'
 import { Editor } from '~/tools/map/Editor'

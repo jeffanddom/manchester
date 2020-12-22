@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { Client } from '~/Client'
 import * as clientHotReload from '~/clientHotReload'
 import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
-import { DocumentEventMouse } from '~/input/Mouse'
+import { DocumentEventMouse } from '~/input/DocumentEventMouse'
 import { createServerConnectionWs } from '~/network/ServerConnection'
 
 declare global {
