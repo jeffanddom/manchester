@@ -72,7 +72,7 @@ const handleMoveInput = (client: Client, frame: number): void => {
     direction = DirectionMove.E
   }
 
-  if (direction !== undefined) {
+  if (direction !== undefined && client.playerNumber !== undefined) {
     client.sendClientMessage({
       frame,
       playerNumber: client.playerNumber,
@@ -105,13 +105,30 @@ const handleAttackInput = (client: Client, frame: number): void => {
     cameraWorldPos[2] - (cameraWorldPos[1] * dz) / dy,
   )
 
-  client.sendClientMessage({
-    frame,
-    playerNumber: client.playerNumber,
-    type: ClientMessageType.TANK_AIM,
-    targetPos,
-    firing: client.mouse.isDown(MouseButton.LEFT),
-  })
+  if (client.playerNumber !== undefined) {
+    client.sendClientMessage({
+      frame,
+      playerNumber: client.playerNumber,
+      type: ClientMessageType.TANK_AIM,
+      targetPos,
+      firing: client.mouse.isDown(MouseButton.LEFT),
+    })
+
+    const playerId = client.entityManager.getPlayerId(client.playerNumber)
+    if (playerId !== undefined) {
+      const playerPos = client.entityManager.transforms.get(playerId)!.position
+      client.debugDraw3d(() => [
+        {
+          // prettier-ignore
+          points: new Float32Array([
+            playerPos[0], 0.5, playerPos[1],
+            targetPos[0], 0.5, targetPos[1],
+          ]),
+          color: vec4.fromValues(1, 0, 0, 1),
+        },
+      ])
+    }
+  }
 
   client.debugDraw3d(() => {
     const halfSize = 0.5

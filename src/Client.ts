@@ -39,7 +39,7 @@ export class Client {
     cursorMode: CursorMode
   }
   serverConnection: IServerConnection | null
-  playerNumber: number
+  playerNumber: number | undefined
   serverFrameUpdates: {
     frame: number
     inputs: ClientMessage[]
@@ -95,7 +95,7 @@ export class Client {
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = null
-    this.playerNumber = -1
+    this.playerNumber = undefined
     this.serverFrameUpdates = []
     this.committedFrame = -1
     this.simulationFrame = 0
@@ -179,7 +179,7 @@ export class Client {
         vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
       ),
     ])
-    this.entityManager.currentPlayer = this.playerNumber
+    this.entityManager.currentPlayer = this.playerNumber!
 
     this.terrainLayer = initMap(this.entityManager, this.map)
     this.renderer3d.loadModel('terrain', this.terrainLayer.getModel())
@@ -316,7 +316,7 @@ export class Client {
           this.emitters = this.emitters.filter((e) => !e.dead)
           this.emitters.forEach((e) => e.update(dt))
 
-          const playerId = this.entityManager.getPlayerId(this.playerNumber)
+          const playerId = this.entityManager.getPlayerId(this.playerNumber!)
           if (playerId) {
             const transform = this.entityManager.transforms.get(playerId)!
             this.camera2d.setPosition(transform.position)
