@@ -97,14 +97,12 @@ const handleAttackInput = (client: Client, frame: number): void => {
 
   // Get camera ray in world space
   const cameraWorldPos = client.camera.getPos()
-  const deltas = vec3.sub(vec3.create(), mouseWorldPos, cameraWorldPos)
+  const [dx, dy, dz] = vec3.sub(vec3.create(), mouseWorldPos, cameraWorldPos)
 
-  // Extrapolate ray to the xy-plane
-  const dydx = deltas[1] / deltas[0]
-  const dydz = deltas[1] / deltas[2]
+  // Extrapolate ray to the xx-plane
   const targetPos = vec2.fromValues(
-    (dydx * cameraWorldPos[0] - cameraWorldPos[1]) / dydx,
-    (dydz * cameraWorldPos[2] - cameraWorldPos[1]) / dydz,
+    cameraWorldPos[0] - (cameraWorldPos[1] * dx) / dy,
+    cameraWorldPos[2] - (cameraWorldPos[1] * dz) / dy,
   )
 
   client.sendClientMessage({
