@@ -1,3 +1,4 @@
+import { vec3 } from 'gl-matrix'
 import { mat2d, vec2 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
@@ -122,4 +123,13 @@ export const transformCircle = (
  */
 export function r2d(radians: number): number {
   return (radians * 180) / Math.PI
+}
+
+export function vec3toFixedString(
+  v: Immutable<vec3>,
+  decimals: number,
+): string {
+  return `(${v[0].toFixed(decimals)}, ${v[1].toFixed(decimals)}, ${v[2].toFixed(
+    decimals,
+  )})`
 }

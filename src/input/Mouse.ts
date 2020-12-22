@@ -3,12 +3,12 @@ import { vec2 } from 'gl-matrix'
 import { IMouse, MouseButton, mouseButtonFromRaw } from './interfaces'
 
 export class DocumentEventMouse implements IMouse {
-  private pos: vec2 | null
+  private pos: vec2 | undefined
   private down: Set<MouseButton>
   private up: Set<MouseButton>
 
   constructor(document: Document) {
-    this.pos = null
+    this.pos = undefined
     this.down = new Set()
     this.up = new Set()
 
@@ -36,17 +36,17 @@ export class DocumentEventMouse implements IMouse {
     // clear state if the mouse leaves the root element, or if the window loses
     // focus
     document.addEventListener('mouseout', (_event) => {
-      this.pos = null
+      this.pos = undefined
       this.down = new Set()
     })
 
     document.addEventListener('focusout', () => {
-      this.pos = null
+      this.pos = undefined
       this.down = new Set()
     })
   }
 
-  getPos(): vec2 | null {
+  getPos(): vec2 | undefined {
     return this.pos
   }
 

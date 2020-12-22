@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 import { mat2d } from 'gl-matrix'
+import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 import { quat } from 'gl-matrix'
 
@@ -22,7 +23,7 @@ import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Renderer2d } from '~/renderer/Renderer2d'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
-import { Renderer3d } from '~/renderer/Renderer3d'
+import { DebugLineModel, Renderer3d } from '~/renderer/Renderer3d'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -50,6 +51,7 @@ export class Client {
   camera2d: Camera2d
   camera: Camera3d
   debugDraw2dRenderables: Renderable2d[]
+  debugDraw3dModels: DebugLineModel[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
   enableDebugDraw: boolean
@@ -108,6 +110,7 @@ export class Client {
     this.emitters = []
     this.emitterHistory = new Set()
     this.debugDraw2dRenderables = []
+    this.debugDraw3dModels = []
     this.enableDebugDraw = true
     this.renderer3d = new Renderer3d(config.canvas3d)
     this.renderer2d = new Renderer2d(config.canvas2d)
@@ -470,13 +473,17 @@ export class Client {
         `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
           2,
         )}`,
-        this.waitingForServer ? 'WAITING FOR SERVER' : '',
+        this.waitingForServer ? 'WAITING FOR SERVER' : undefined,
       ]
 
       const x = this.renderer2d.getViewportDimensions()[0] - 10
       let y = 10
       const res: Renderable2d[] = []
       for (const t of text) {
+        if (t === undefined) {
+          continue
+        }
+
         res.push({
           primitive: Primitive2d.TEXT,
           text: t,
@@ -486,6 +493,7 @@ export class Client {
           font: '16px monospace',
           style: 'cyan',
         })
+
         y += 20
       }
 
@@ -496,9 +504,14 @@ export class Client {
       this.debugDraw2dRenderables.forEach((r) => {
         this.renderer2d.render(r)
       })
+
+      for (const m of this.debugDraw3dModels) {
+        this.renderer3d.drawLines(m.points, m.color)
+      }
     }
 
     this.debugDraw2dRenderables = []
+    this.debugDraw3dModels = []
 
     this.renderDurations.sample(time.current() - now)
   }
@@ -522,6 +535,14 @@ export class Client {
     this.debugDraw2dRenderables = this.debugDraw2dRenderables.concat(
       makeRenderables(),
     )
+  }
+
+  debugDraw3d(makeModels: () => { points: Float32Array; color: vec4 }[]): void {
+    if (!this.enableDebugDraw) {
+      return
+    }
+
+    this.debugDraw3dModels = this.debugDraw3dModels.concat(makeModels())
   }
 
   sendClientMessage(m: ClientMessage): void {

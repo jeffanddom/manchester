@@ -1,5 +1,6 @@
 import { vec3 } from 'gl-matrix'
 import { quat } from 'gl-matrix'
+import { vec4 } from 'gl-matrix'
 import { mat4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
@@ -13,12 +14,12 @@ attribute vec3 aVertexPosition;
 attribute vec4 aVertexColor;
 uniform mat4 model2world;
 uniform mat4 projection;
-uniform mat4 uXform;
+uniform mat4 world2view;
 
 varying lowp vec4 vColor;
 
 void main() {
-  gl_Position = projection * uXform * model2world * vec4(aVertexPosition, 1.0);
+  gl_Position = projection * world2view * model2world * vec4(aVertexPosition, 1.0);
   vColor = aVertexColor;
 }
 `
@@ -31,10 +32,16 @@ void main() {
 }
 `
 
+export interface DebugLineModel {
+  points: Float32Array
+  color: vec4
+}
+
 export class Renderer3d {
   private canvas: HTMLCanvasElement
   private ctx: WebGL2RenderingContext
   private program: WebGLProgram
+  private viewportDimensions: vec2
 
   private vaos: {
     [key: string]: {
@@ -70,9 +77,11 @@ export class Renderer3d {
 
     this.vaos = {}
 
-    this.setViewportDimensions(
-      vec2.fromValues(this.canvas.width, this.canvas.height),
+    this.viewportDimensions = vec2.fromValues(
+      this.canvas.width,
+      this.canvas.height,
     )
+    this.setViewportDimensions(this.viewportDimensions)
   }
 
   clear(_: string): void {
@@ -80,13 +89,28 @@ export class Renderer3d {
     this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
   }
 
-  setViewportDimensions(d: vec2): void {
+  getViewportDimension(): Immutable<vec2> {
+    return this.viewportDimensions
+  }
+
+  getFov(): number {
+    return (75 * Math.PI) / 180
+  }
+
+  getFocalLength(): number {
+    return 1 / Math.tan(this.getFov() / 2)
+  }
+
+  setViewportDimensions(d: Immutable<vec2>): void {
+    this.viewportDimensions = vec2.clone(d)
+
+    // Update gl viewport
     this.ctx.viewport(0, 0, d[0], d[1])
 
-    // Set projection matrix
+    // Update projection matrix
     const projection = mat4.perspective(
       mat4.create(),
-      (75 * Math.PI) / 180,
+      this.getFov(),
       d[0] / d[1],
       0.1,
       64,
@@ -100,9 +124,27 @@ export class Renderer3d {
 
   setWvTransform(w2v: mat4): void {
     this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'uXform'),
+      this.ctx.getUniformLocation(this.program, 'world2view'),
       false,
       w2v,
+    )
+  }
+
+  /**
+   * Translate a screenspace position (relative to the upper-left corner of the
+   * viewport) to a viewspace position. The absolute value of the z-distance of
+   * this point is equivalent to the focal length.
+   *
+   * See: "Picking", chapter 6.6 Van Verth and Bishop, 2nd ed.
+   */
+  screenToView(screenPos: Immutable<vec2>): vec3 {
+    const w = this.viewportDimensions[0]
+    const h = this.viewportDimensions[1]
+
+    return vec3.fromValues(
+      (2 * (screenPos[0] - w / 2)) / h,
+      (-2 * (screenPos[1] - h / 2)) / h,
+      -this.getFocalLength(),
     )
   }
 
@@ -191,5 +233,70 @@ export class Renderer3d {
     }
 
     this.ctx.drawArrays(primitive, 0, vao.numVerts)
+  }
+
+  /**
+   * Draws a sequence of lines, all of the same color. `srcVerts` should be a
+   * set of point pairs, with each point described by three contiguous floats.
+   */
+  drawLines(srcVerts: Float32Array, color: vec4): void {
+    const posAttrib = this.ctx.getAttribLocation(
+      this.program,
+      'aVertexPosition',
+    )
+    const colorAttrib = this.ctx.getAttribLocation(this.program, 'aVertexColor')
+    const numPoints = srcVerts.length / 3
+
+    // Make a color buffer in memory
+    const srcColors = new Float32Array(4 * numPoints)
+    for (let i = 0; i < numPoints; i++) {
+      for (let j = 0; j < 4; j++) {
+        srcColors[i * 4 + j] = color[j]
+      }
+    }
+
+    // Start a new VAO
+    const vao = this.ctx.createVertexArray()
+    if (vao === null) {
+      throw new Error('could not create vertex array')
+    }
+    this.ctx.bindVertexArray(vao)
+
+    // Setup position array
+    const posGlBuffer = this.ctx.createBuffer()
+    if (posGlBuffer === null) {
+      throw new Error('could not create buffer')
+    }
+    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, posGlBuffer)
+    this.ctx.enableVertexAttribArray(posAttrib)
+    this.ctx.vertexAttribPointer(posAttrib, 3, this.ctx.FLOAT, false, 0, 0)
+    this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcVerts, this.ctx.STATIC_DRAW)
+
+    // Setup vertex color buffer
+    // TODO: we should use a different shader program that just lets us set
+    // color as a frag shader uniform.
+    const colorGlBuffer = this.ctx.createBuffer()
+    if (colorGlBuffer === null) {
+      throw new Error('could not create buffer')
+    }
+    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, colorGlBuffer)
+    this.ctx.enableVertexAttribArray(colorAttrib)
+    this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
+    this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcColors, this.ctx.STATIC_DRAW)
+
+    // Our VAO is ready...set uniforms and execute the draw.
+    this.ctx.uniformMatrix4fv(
+      this.ctx.getUniformLocation(this.program, 'model2world'),
+      false,
+      mat4.create(),
+    )
+    this.ctx.drawArrays(this.ctx.LINES, 0, numPoints)
+
+    // Unbind our objects and delete them
+    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
+    this.ctx.bindVertexArray(null)
+    this.ctx.deleteVertexArray(vao)
+    this.ctx.deleteBuffer(posGlBuffer)
+    this.ctx.deleteBuffer(colorGlBuffer)
   }
 }

@@ -1,3 +1,8 @@
+import { vec2 } from 'gl-matrix'
+import { vec4 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix'
+
 import { Client } from '~/Client'
 import { DirectionMove } from '~/input/interfaces'
 import { MouseButton } from '~/input/interfaces'
@@ -79,16 +84,78 @@ const handleMoveInput = (client: Client, frame: number): void => {
 
 const handleAttackInput = (client: Client, frame: number): void => {
   const mousePos = client.mouse.getPos()
-  if (!mousePos) {
+  if (mousePos === undefined) {
     return
   }
+
+  // Translate mouse position to world position
+  const mouseWorldPos = vec3.transformMat4(
+    vec3.create(),
+    client.renderer3d.screenToView(mousePos),
+    mat4.invert(mat4.create(), client.camera.getWvTransform()),
+  )
+
+  // Get camera ray in world space
+  const cameraWorldPos = client.camera.getPos()
+  const deltas = vec3.sub(vec3.create(), mouseWorldPos, cameraWorldPos)
+
+  // Extrapolate ray to the xy-plane
+  const dydx = deltas[1] / deltas[0]
+  const dydz = deltas[1] / deltas[2]
+  const targetPos = vec2.fromValues(
+    (dydx * cameraWorldPos[0] - cameraWorldPos[1]) / dydx,
+    (dydz * cameraWorldPos[2] - cameraWorldPos[1]) / dydz,
+  )
 
   client.sendClientMessage({
     frame,
     playerNumber: client.playerNumber,
     type: ClientMessageType.TANK_AIM,
-    targetPos: client.camera2d.viewToWorldspace(mousePos),
+    targetPos,
     firing: client.mouse.isDown(MouseButton.LEFT),
+  })
+
+  client.debugDraw3d(() => {
+    const halfSize = 0.5
+
+    const minX = targetPos[0] - halfSize
+    const maxX = targetPos[0] + halfSize
+    const minY = 0.01
+    const maxY = minY + halfSize * 2
+    const minZ = targetPos[1] - halfSize
+    const maxZ = targetPos[1] + halfSize
+
+    const lowNW = [minX, minY, minZ]
+    const lowNE = [maxX, minY, minZ]
+    const lowSW = [minX, minY, maxZ]
+    const lowSE = [maxX, minY, maxZ]
+    const highNW = [minX, maxY, minZ]
+    const highNE = [maxX, maxY, minZ]
+    const highSW = [minX, maxY, maxZ]
+    const highSE = [maxX, maxY, maxZ]
+
+    return [
+      {
+        // prettier-ignore
+        points: new Float32Array([
+          ...lowNW, ...lowNE,
+          ...lowNE, ...lowSE,
+          ...lowSE, ...lowSW,
+          ...lowSW, ...lowNW,
+
+          ...highNW, ...highNE,
+          ...highNE, ...highSE,
+          ...highSE, ...highSW,
+          ...highSW, ...highNW,          
+
+          ...lowNE, ...highNE,
+          ...lowNW, ...highNW,
+          ...lowSE, ...highSE,
+          ...lowSW, ...highSW,
+        ]),
+        color: vec4.fromValues(1, 1, 0, 1),
+      },
+    ]
   })
 }
 
