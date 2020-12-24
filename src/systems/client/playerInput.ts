@@ -9,14 +9,14 @@ import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
 
 export const keyMap = {
-  moveUp: 87, // W
-  moveDown: 83, // S
-  moveLeft: 68, // A
-  moveRight: 65, // D
-  harvestMode: 49, // 1
-  buildTurretMode: 50, // 2
-  buildWallMode: 51, // 3
-  moveBuilderMode: 52, // 4
+  moveUp: 'KeyW',
+  moveDown: 'KeyS',
+  moveLeft: 'KeyA',
+  moveRight: 'KeyD',
+  harvestMode: 'Digit1',
+  buildTurretMode: 'Digit2',
+  buildWallMode: 'Digit3',
+  moveBuilderMode: 'Digit4',
 }
 
 export enum CursorMode {

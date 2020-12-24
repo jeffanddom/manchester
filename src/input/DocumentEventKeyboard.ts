@@ -6,8 +6,8 @@
 import { IKeyboard } from '~/input/interfaces'
 
 export class DocumentEventKeyboard implements IKeyboard {
-  downKeys: Set<number>
-  upKeys: Set<number>
+  downKeys: Set<string>
+  upKeys: Set<string>
 
   constructor(document: Document) {
     this.downKeys = new Set()
@@ -18,12 +18,12 @@ export class DocumentEventKeyboard implements IKeyboard {
       this.upKeys.clear()
     })
     document.addEventListener('keydown', (event) => {
-      this.downKeys.add(event.which)
-      this.upKeys.delete(event.which)
+      this.downKeys.add(event.code)
+      this.upKeys.delete(event.code)
     })
     document.addEventListener('keyup', (event) => {
-      this.downKeys.delete(event.which)
-      this.upKeys.add(event.which)
+      this.downKeys.delete(event.code)
+      this.upKeys.add(event.code)
     })
   }
 

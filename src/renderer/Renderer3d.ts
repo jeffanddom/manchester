@@ -202,7 +202,11 @@ export class Renderer3d {
     }
   }
 
-  drawModel(key: string, pos: Immutable<vec2>, orientation: number): void {
+  /**
+   * Draw the specified model with the given 2D position and rotation. The
+   * position will be projected onto the XZ plane.
+   */
+  drawModel(key: string, posXY: Immutable<vec2>, rotXY: number): void {
     if (this.vaos[key] === undefined) {
       return
     }
@@ -215,8 +219,12 @@ export class Renderer3d {
       false,
       mat4.fromRotationTranslation(
         mat4.create(),
-        quat.fromEuler(quat.create(), 0, (-orientation * 180) / Math.PI, 0),
-        vec3.fromValues(pos[0], 0, pos[1]),
+        // We have to negate rotXY here. Positive rotations on the XY plane
+        // represent right-handed rotations around cross(+X, +Y), whereas
+        // positive rotations on the XZ plane represent right-handed rotations
+        // around cross(+X, -Z).
+        quat.rotateY(quat.create(), quat.create(), -rotXY),
+        vec3.fromValues(posXY[0], 0, posXY[1]),
       ),
     )
 

@@ -17,16 +17,16 @@ const CAMERA_SPEED = 500
 const ZOOM_SPEED = 2
 
 const keyMap = {
-  cameraNorth: 87, // w
-  cameraWest: 65, // a
-  cameraSouth: 83, // s
-  cameraEast: 68, // d
-  zoomIn: 69, // e
-  zoomOut: 81, // q
-  paint: 32, // <space>
-  toggleTerrain: 82, // r
-  toggleEntity: 70, // f
-  shift: 16, // left and right shift
+  cameraNorth: 'KeyW', // w
+  cameraWest: 'KeyA', // a
+  cameraSouth: 'KeyS', // s
+  cameraEast: 'KeyD', // d
+  zoomIn: 'KeyE', // e
+  zoomOut: 'KeyQ', // q
+  paint: 'Space', // <space>
+  toggleTerrain: 'KeyR', // r
+  toggleEntity: 'KeyF', // f
+  shift: 'ShiftLeft',
 }
 
 export enum BrushMode {

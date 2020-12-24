@@ -132,7 +132,7 @@ export class Client {
     this.serverInputsPerFrame = new RunningAverage(3 * 60)
 
     document.addEventListener('keyup', (event) => {
-      if (event.which === 192) {
+      if (event.code === 'backquote') {
         this.enableDebugDraw = !this.enableDebugDraw
       }
     })
