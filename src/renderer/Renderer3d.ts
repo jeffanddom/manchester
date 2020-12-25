@@ -1,7 +1,8 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { Model as ModelDef } from '~/models'
+import { TILE_SIZE } from '~/constants'
+import { Model as ModelDef, ModelPrimitive } from '~/models'
 import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as wireShader } from '~/renderer/shaders/wire'
 import { Immutable } from '~/types/immutable'
@@ -24,7 +25,7 @@ interface Shader {
 interface Model {
   vao: WebGLVertexArrayObject
   numVerts: number
-  primitive: 'LINES' | 'TRIANGLES'
+  primitive: ModelPrimitive
   shader: string
 }
 
@@ -42,7 +43,13 @@ interface WireCube {
   rot?: quat
 }
 
-export type WireObject = WireLines | WireCube
+interface WireModel {
+  type: 'MODEL'
+  id: string
+  color: vec4
+}
+
+export type WireObject = WireLines | WireCube | WireModel
 
 const wcHalfSize = 0.5
 const wcLowNW = [-wcHalfSize, -wcHalfSize, -wcHalfSize]
@@ -57,7 +64,7 @@ const wcHighSE = [wcHalfSize, wcHalfSize, wcHalfSize]
 export const wireCubeModel = {
   // "as const" convinces the typechecker that this property will not be
   // re-assigned.
-  primitive: 'LINES' as const,
+  primitive: ModelPrimitive.Lines,
 
   // prettier-ignore
   positions: new Float32Array([
@@ -76,6 +83,33 @@ export const wireCubeModel = {
     ...wcLowSE, ...wcHighSE,
     ...wcLowSW, ...wcHighSW,
   ]),
+}
+
+const wireTilePositions = []
+for (let i = -32; i < 32; i++) {
+  wireTilePositions.push(
+    -32 * TILE_SIZE,
+    0,
+    i * TILE_SIZE,
+    32 * TILE_SIZE,
+    0,
+    i * TILE_SIZE,
+  )
+}
+for (let i = -32; i < 32; i++) {
+  wireTilePositions.push(
+    i * TILE_SIZE,
+    0,
+    -32 * TILE_SIZE,
+    i * TILE_SIZE,
+    0,
+    32 * TILE_SIZE,
+  )
+}
+
+const wireTilesModel = {
+  positions: new Float32Array(wireTilePositions),
+  primitive: ModelPrimitive.Lines,
 }
 
 export interface IModelLoader {
@@ -111,6 +145,7 @@ export class Renderer3d implements IModelLoader {
 
     this.models = new Map()
     this.loadModel('wireCube', wireCubeModel, 'wire')
+    this.loadModel('wireTiles', wireTilesModel, 'wire')
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
@@ -296,10 +331,6 @@ export class Renderer3d implements IModelLoader {
       this.ctx.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
 
       switch (obj.type) {
-        case 'LINES':
-          this.drawLines(obj.positions)
-          break
-
         case 'CUBE':
           const rot = obj.rot ?? quat.create()
           const scale = obj.scale ?? 1
@@ -313,6 +344,14 @@ export class Renderer3d implements IModelLoader {
               vec3.fromValues(scale, scale, scale),
             ),
           )
+          break
+
+        case 'LINES':
+          this.drawLines(obj.positions)
+          break
+
+        case 'MODEL':
+          this.drawModel(obj.id, mat4.create())
           break
       }
     })
@@ -398,11 +437,11 @@ export class Renderer3d implements IModelLoader {
     this.ctx.bindVertexArray(model.vao)
 
     switch (model.primitive) {
-      case 'TRIANGLES':
-        this.ctx.drawArrays(this.ctx.TRIANGLES, 0, model.numVerts)
-        break
-      case 'LINES':
+      case ModelPrimitive.Lines:
         this.ctx.drawArrays(this.ctx.LINES, 0, model.numVerts)
+        break
+      case ModelPrimitive.Triangles:
+        this.ctx.drawArrays(this.ctx.TRIANGLES, 0, model.numVerts)
         break
     }
   }

@@ -1,4 +1,4 @@
-import { quat, vec2, vec3 } from 'gl-matrix'
+import { quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable3d } from '~/ClientView'
@@ -13,7 +13,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
-import { getModel, loadGrid } from '~/models'
+import { getModel } from '~/models'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
@@ -163,9 +163,6 @@ export class ClientSim {
       'standard',
     )
 
-    const gridModel = loadGrid()
-    this.modelLoader.loadModel('grid', gridModel, 'standard')
-
     for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
       this.modelLoader.loadModel(m, getModel(m), 'standard')
     }
@@ -186,6 +183,16 @@ export class ClientSim {
 
     this.tick(SIMULATION_PERIOD_S)
     this.tickDurations.sample(time.current() - start)
+
+    this.debugDraw.draw3d(() => [
+      {
+        object: {
+          type: 'MODEL',
+          id: 'wireTiles',
+          color: vec4.fromValues(0, 1, 1, 1),
+        },
+      },
+    ])
 
     this.debugDraw.draw2d(() => {
       const text = [
@@ -373,14 +380,23 @@ export class ClientSim {
   }
 
   getRenderables3d(): Iterable<Renderable3d> {
-    return [...this.entityManager.renderables].map(([entityId, modelId]) => {
+    // TODO: reimplement as lazy iterable?
+
+    const res: Renderable3d[] = []
+    if (this.terrainLayer !== undefined) {
+      res.push({ modelId: 'terrain', posXY: vec2.create(), rotXY: 0 })
+    }
+
+    for (const [entityId, modelId] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!
-      return {
+      res.push({
         modelId,
         posXY: transform.position,
         rotXY: transform.orientation,
-      }
-    })
+      })
+    }
+
+    return res
   }
 
   registerParticleEmitter(params: {

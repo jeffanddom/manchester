@@ -1,13 +1,16 @@
 import { vec3 } from 'gl-matrix'
 
-import { model as bullet } from './bullet'
-import { model as core } from './core'
-import { model as tank } from './tank'
-import { model as tree } from './tree'
-import { model as turret } from './turret'
-import { model as wall } from './wall'
+import { model as bullet } from '~/models/bullet'
+import { model as core } from '~/models/core'
+import { model as tank } from '~/models/tank'
+import { model as tree } from '~/models/tree'
+import { model as turret } from '~/models/turret'
+import { model as wall } from '~/models/wall'
 
-import { TILE_SIZE } from '~/constants'
+export enum ModelPrimitive {
+  Lines,
+  Triangles,
+}
 
 const models: {
   [key: string]: {
@@ -36,7 +39,7 @@ const materials: { [key: string]: [number, number, number, number] } = {
 
 type ModelTypes = keyof typeof models
 export type Model = {
-  primitive: 'TRIANGLES' | 'LINES'
+  primitive: ModelPrimitive
   positions: Float32Array
   colors?: Float32Array
   normals?: Float32Array
@@ -120,42 +123,6 @@ export const getModel: (modelType: ModelTypes) => Model = (modelType) => {
     positions: new Float32Array(vertices),
     colors: new Float32Array(colors),
     normals: new Float32Array(normals),
-    primitive: 'TRIANGLES',
-  }
-}
-
-export const loadGrid = (): Model => {
-  const vertices = []
-  const colors = []
-
-  const y = 0.01
-  for (let i = -32; i < 32; i++) {
-    vertices.push(
-      -32 * TILE_SIZE,
-      y,
-      i * TILE_SIZE,
-      32 * TILE_SIZE,
-      y,
-      i * TILE_SIZE,
-    )
-    colors.push(...materials.debug, ...materials.debug)
-  }
-  for (let i = -32; i < 32; i++) {
-    vertices.push(
-      i * TILE_SIZE,
-      y,
-      -32 * TILE_SIZE,
-      i * TILE_SIZE,
-      y,
-      32 * TILE_SIZE,
-    )
-    colors.push(...materials.debug, ...materials.debug)
-  }
-
-  return {
-    positions: new Float32Array(vertices),
-    colors: new Float32Array(colors),
-    normals: new Float32Array(),
-    primitive: 'LINES',
+    primitive: ModelPrimitive.Triangles,
   }
 }

@@ -60,14 +60,7 @@ export class ClientView {
     this.renderer3d.setWvTransform(params.world2ViewTransform)
 
     this.renderer3d.renderStandard((drawModel) => {
-      drawModel('terrain', vec2.create(), 0)
-
-      // GRID DEBUG
-      drawModel('grid', vec2.create(), 0)
-
       for (const { modelId, posXY, rotXY } of params.renderables3d) {
-        // const transform = this.entityManager.transforms.get(entityId)!
-        // drawModel(model, transform.position, transform.orientation)
         drawModel(modelId, posXY, rotXY)
       }
     })

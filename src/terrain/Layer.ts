@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Model } from '~/models'
+import { Model, ModelPrimitive } from '~/models'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
@@ -96,7 +96,7 @@ export class Layer {
       positions: this.vertices,
       colors: this.colors,
       normals: this.normals,
-      primitive: 'TRIANGLES',
+      primitive: ModelPrimitive.Triangles,
     }
   }
 }
