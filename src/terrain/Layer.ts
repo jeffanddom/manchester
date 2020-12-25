@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { Model, ModelPrimitive } from '~/models'
+import { ModelDef, ModelPrimitive } from '~/renderer/common'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
@@ -91,7 +91,7 @@ export class Layer {
     return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
   }
 
-  public getModel(): Model {
+  public getModel(): ModelDef {
     return {
       positions: this.vertices,
       colors: this.colors,

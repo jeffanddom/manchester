@@ -6,11 +6,7 @@ import { model as tank } from '~/models/tank'
 import { model as tree } from '~/models/tree'
 import { model as turret } from '~/models/turret'
 import { model as wall } from '~/models/wall'
-
-export enum ModelPrimitive {
-  Lines,
-  Triangles,
-}
+import { ModelDef, ModelPrimitive } from '~/renderer/common'
 
 const models: {
   [key: string]: {
@@ -38,16 +34,10 @@ const materials: { [key: string]: [number, number, number, number] } = {
 }
 
 type ModelTypes = keyof typeof models
-export type Model = {
-  primitive: ModelPrimitive
-  positions: Float32Array
-  colors?: Float32Array
-  normals?: Float32Array
-}
 
 const defaultColor = [1.0, 0, 1.0, 1.0]
 
-export const getModel: (modelType: ModelTypes) => Model = (modelType) => {
+export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
   const obj = models[modelType]
 
   const vertices: number[] = []
