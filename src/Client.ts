@@ -182,20 +182,9 @@ export class Client {
     const gridModel = loadGrid()
     this.renderer3d.loadModel('grid', gridModel, 'standard')
 
-    const wallModel = getModel('wall')
-    this.renderer3d.loadModel('wall', wallModel, 'standard')
-
-    const tankModel = getModel('tank')
-    this.renderer3d.loadModel('tank', tankModel, 'standard')
-
-    const turretModel = getModel('turret')
-    this.renderer3d.loadModel('turret', turretModel, 'standard')
-
-    const treeModel = getModel('tree')
-    this.renderer3d.loadModel('tree', treeModel, 'standard')
-
-    const bulletModel = getModel('bullet')
-    this.renderer3d.loadModel('bullet', bulletModel, 'standard')
+    for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
+      this.renderer3d.loadModel(m, getModel(m), 'standard')
+    }
 
     this.camera2d.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera2d.worldDimensions = this.terrainLayer.dimensions()

@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix'
 
 import { model as bullet } from './bullet'
+import { model as core } from './core'
 import { model as tank } from './tank'
 import { model as tree } from './tree'
 import { model as turret } from './turret'
@@ -15,20 +16,22 @@ const models: {
     translate?: vec3
   }
 } = {
-  wall: wall,
-  tank: tank,
-  turret: turret,
-  tree: tree,
   bullet: bullet,
+  core: core,
+  tank: tank,
+  tree: tree,
+  turret: turret,
+  wall: wall,
 }
 
 const materials: { [key: string]: [number, number, number, number] } = {
-  tree: [0, 100 / 255, 0, 1.0],
-  tank: [0, 0, 0, 1.0],
   bullet: [1.0, 0, 0, 1.0],
-  wall: [169 / 255, 169 / 255, 169 / 255, 1.0],
-  turret: [1.0, 250 / 255, 205 / 255, 1.0],
+  core: [1.0, 0.5, 0, 1.0],
   debug: [0, 1.0, 1.0, 1.0],
+  tank: [0, 0, 0, 1.0],
+  tree: [0, 100 / 255, 0, 1.0],
+  turret: [1.0, 250 / 255, 205 / 255, 1.0],
+  wall: [169 / 255, 169 / 255, 169 / 255, 1.0],
 }
 
 type ModelTypes = keyof typeof models

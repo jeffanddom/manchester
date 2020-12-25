@@ -19,6 +19,6 @@ export const makeCorePickup = (): EntityComponents => {
     offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
   }
-  e.renderable = 'not a real model'
+  e.renderable = 'core'
   return e
 }
