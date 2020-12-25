@@ -1,90 +1,161 @@
-import { vec3 } from 'gl-matrix'
-import { quat } from 'gl-matrix'
-import { vec4 } from 'gl-matrix'
-import { mat4 } from 'gl-matrix'
-import { vec2 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { Model } from '~/models'
+import { Model as ModelDef } from '~/models'
+import { shader as debugDrawShader } from '~/renderer/shaders/debugDraw'
+import { shader as standardShader } from '~/renderer/shaders/standard'
 import { Immutable } from '~/types/immutable'
 
 const gl = WebGL2RenderingContext
 
-const vertexShaderSrc = `
-attribute vec3 aVertexPosition;
-attribute vec4 aVertexColor;
-uniform mat4 model2world;
-uniform mat4 projection;
-uniform mat4 world2view;
-
-varying lowp vec4 vColor;
-
-void main() {
-  gl_Position = projection * world2view * model2world * vec4(aVertexPosition, 1.0);
-  vColor = aVertexColor;
+export interface ShaderDefinition {
+  vertexSrc: string
+  fragmentSrc: string
+  attribs: string[]
+  uniforms: string[]
 }
-`
 
-const fragmentShaderSrc = `
-varying lowp vec4 vColor;
-
-void main() {
-  gl_FragColor = vColor;
+interface Shader {
+  program: WebGLProgram
+  attribs: Map<string, GLint>
+  uniforms: Map<string, WebGLUniformLocation>
 }
-`
 
-export interface DebugLineModel {
-  points: Float32Array
-  color: vec4
+interface Model {
+  vao: WebGLVertexArrayObject
+  numVerts: number
+  primitive: string
+  shader: string
+}
+
+export enum RenderPass {
+  Standard,
+  DebugDraw,
 }
 
 export class Renderer3d {
   private canvas: HTMLCanvasElement
   private ctx: WebGL2RenderingContext
-  private program: WebGLProgram
-  private viewportDimensions: vec2
 
-  private vaos: {
-    [key: string]: {
-      vao: WebGLVertexArrayObject
-      numVerts: number
-      primitive: string
-    }
-  }
+  private shaders: Map<string, Shader>
+  private models: Map<string, Model>
+
+  private viewportDimensions: vec2
+  private world2ViewTransform: mat4
+  private currentShader: Shader | undefined
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
+
     this.ctx = canvas.getContext('webgl2')!
 
-    const vertexShader = this.ctx.createShader(gl.VERTEX_SHADER)!
-    this.ctx.shaderSource(vertexShader, vertexShaderSrc)
-    this.ctx.compileShader(vertexShader)
+    this.shaders = new Map()
+    this.loadShader('standard', standardShader)
+    this.loadShader('debugDraw', debugDrawShader)
 
-    const fragmentShader = this.ctx.createShader(gl.FRAGMENT_SHADER)!
-    this.ctx.shaderSource(fragmentShader, fragmentShaderSrc)
-    this.ctx.compileShader(fragmentShader)
-
-    const program = this.ctx.createProgram()!
-    this.ctx.attachShader(program, vertexShader)
-    this.ctx.attachShader(program, fragmentShader)
-    this.ctx.linkProgram(program)
-    this.ctx.useProgram(program)
-    this.program = program
-
-    this.ctx.enable(this.ctx.DEPTH_TEST)
-    this.ctx.enable(this.ctx.CULL_FACE)
-    this.ctx.cullFace(this.ctx.BACK)
-    this.ctx.frontFace(this.ctx.CCW)
-
-    this.vaos = {}
+    this.models = new Map()
 
     this.viewportDimensions = vec2.fromValues(
       this.canvas.width,
       this.canvas.height,
     )
     this.setViewportDimensions(this.viewportDimensions)
+
+    this.world2ViewTransform = mat4.create()
+    this.currentShader = undefined
   }
 
-  clear(_: string): void {
+  private loadShader(name: string, def: ShaderDefinition): void {
+    if (this.shaders.has(name)) {
+      throw new Error(`shader ${name} already defined`)
+    }
+
+    const vertexShader = this.ctx.createShader(gl.VERTEX_SHADER)!
+    this.ctx.shaderSource(vertexShader, def.vertexSrc)
+    this.ctx.compileShader(vertexShader)
+
+    const fragmentShader = this.ctx.createShader(gl.FRAGMENT_SHADER)!
+    this.ctx.shaderSource(fragmentShader, def.fragmentSrc)
+    this.ctx.compileShader(fragmentShader)
+
+    const program = this.ctx.createProgram()!
+    this.ctx.attachShader(program, vertexShader)
+    this.ctx.attachShader(program, fragmentShader)
+    this.ctx.linkProgram(program)
+
+    const attribs = new Map()
+    for (const a of def.attribs) {
+      if (attribs.has(a)) {
+        throw new Error(`shader ${name} attrib ${a} already defined`)
+      }
+
+      const loc = this.ctx.getAttribLocation(program, a)
+      if (loc < 0) {
+        throw new Error(`shader ${name} attrib ${a} not defined in source`)
+      }
+
+      attribs.set(a, loc)
+    }
+
+    const uniforms = new Map()
+    for (const u of def.uniforms) {
+      if (uniforms.has(u)) {
+        throw new Error(`shader ${name} uniform ${u} already defined`)
+      }
+
+      const loc = this.ctx.getUniformLocation(program, u)
+      if (loc === undefined) {
+        throw new Error(`shader ${name} uniform ${u} not defined in source`)
+      }
+
+      uniforms.set(u, loc)
+    }
+
+    this.shaders.set(name, {
+      program,
+      attribs,
+      uniforms,
+    })
+  }
+
+  private useShader(name: string): void {
+    this.currentShader = this.shaders.get(name)
+    if (this.currentShader === undefined) {
+      throw new Error(`shader ${name} not loaded`)
+    }
+    this.ctx.useProgram(this.currentShader.program)
+
+    // Setup some common uniforms
+
+    const projectionUniform = this.currentShader.uniforms.get('projection')
+    if (projectionUniform === undefined) {
+      throw new Error(`shader ${name} projection uniform undefined`)
+    }
+
+    this.ctx.uniformMatrix4fv(
+      projectionUniform,
+      false,
+      mat4.perspective(
+        mat4.create(),
+        this.getFov(),
+        this.viewportDimensions[0] / this.viewportDimensions[1],
+        0.1,
+        64,
+      ),
+    )
+
+    const world2ViewUniform = this.currentShader.uniforms.get('world2View')
+    if (world2ViewUniform === undefined) {
+      throw new Error(`shader ${name} world2View uniform undefined`)
+    }
+
+    this.ctx.uniformMatrix4fv(
+      world2ViewUniform,
+      false,
+      this.world2ViewTransform,
+    )
+  }
+
+  clear(): void {
     this.ctx.clearColor(0.0, 0.0, 0.0, 1.0)
     this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
   }
@@ -106,29 +177,36 @@ export class Renderer3d {
 
     // Update gl viewport
     this.ctx.viewport(0, 0, d[0], d[1])
-
-    // Update projection matrix
-    const projection = mat4.perspective(
-      mat4.create(),
-      this.getFov(),
-      d[0] / d[1],
-      0.1,
-      64,
-    )
-    this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'projection'),
-      false,
-      projection,
-    )
   }
 
   setWvTransform(w2v: mat4): void {
-    this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'world2view'),
-      false,
-      w2v,
+    mat4.copy(this.world2ViewTransform, w2v)
+  }
+
+  renderStandard(
+    renderBody: (
+      drawFunc: (
+        modelName: string,
+        posXY: Immutable<vec2>,
+        rotXY: number,
+      ) => void,
+    ) => void,
+  ): void {
+    this.useShader('standard')
+    this.ctx.enable(this.ctx.DEPTH_TEST)
+    this.ctx.enable(this.ctx.CULL_FACE)
+    this.ctx.cullFace(this.ctx.BACK)
+    this.ctx.frontFace(this.ctx.CCW)
+
+    renderBody(
+      (modelName: string, posXY: Immutable<vec2>, rotXY: number): void => {
+        this.drawModel(modelName, posXY, rotXY)
+      },
     )
   }
+
+  // TODO: implement renderDebug, which should use a different shader and
+  // depth test
 
   /**
    * Translate a screenspace position (relative to the upper-left corner of the
@@ -148,17 +226,23 @@ export class Renderer3d {
     )
   }
 
-  loadModel(key: string, model: Model): void {
-    const numVerts = model.vertices.length / 3
+  loadModel(modelName: string, model: ModelDef, shaderName: string): void {
+    const shader = this.shaders.get(shaderName)
+    if (shader === undefined) {
+      throw new Error(`shader undefined: ${shaderName}`)
+    }
 
-    const aVertexPosition = this.ctx.getAttribLocation(
-      this.program,
-      'aVertexPosition',
-    )
-    const aVertexColor = this.ctx.getAttribLocation(
-      this.program,
-      'aVertexColor',
-    )
+    const numVerts = model.positions.length / 3
+
+    const positionAttrib = shader.attribs.get('position')
+    if (positionAttrib === undefined) {
+      throw new Error(`shader ${shaderName} has no position attrib`)
+    }
+
+    const colorAttrib = shader.attribs.get('color')
+    if (colorAttrib === undefined) {
+      throw new Error(`shader ${shaderName} has no color attrib`)
+    }
 
     // Create terrain-specific VAO
     const vao = this.ctx.createVertexArray()!
@@ -166,25 +250,19 @@ export class Renderer3d {
 
     // Vertices
     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.ctx.createBuffer())
-    this.ctx.enableVertexAttribArray(aVertexPosition)
-    this.ctx.vertexAttribPointer(
-      aVertexPosition,
-      3,
-      this.ctx.FLOAT,
-      false,
-      0,
-      0,
-    )
+    this.ctx.enableVertexAttribArray(positionAttrib)
+    this.ctx.vertexAttribPointer(positionAttrib, 3, this.ctx.FLOAT, false, 0, 0)
     this.ctx.bufferData(
       this.ctx.ARRAY_BUFFER,
-      model.vertices,
+      model.positions,
       this.ctx.STATIC_DRAW,
     )
 
     // Colors
+    // TODO: some shaders might not accept vertex colors
     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.ctx.createBuffer())
-    this.ctx.enableVertexAttribArray(aVertexColor)
-    this.ctx.vertexAttribPointer(aVertexColor, 4, this.ctx.FLOAT, false, 0, 0)
+    this.ctx.enableVertexAttribArray(colorAttrib)
+    this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
     this.ctx.bufferData(
       this.ctx.ARRAY_BUFFER,
       new Float32Array(model.colors),
@@ -195,27 +273,43 @@ export class Renderer3d {
     this.ctx.bindVertexArray(null)
 
     // Set VAO
-    this.vaos[key] = {
+    this.models.set(modelName, {
       vao,
       numVerts,
       primitive: model.primitive,
-    }
+      shader: shaderName,
+    })
   }
 
   /**
    * Draw the specified model with the given 2D position and rotation. The
    * position will be projected onto the XZ plane.
    */
-  drawModel(key: string, posXY: Immutable<vec2>, rotXY: number): void {
-    if (this.vaos[key] === undefined) {
-      return
+  private drawModel(
+    modelName: string,
+    posXY: Immutable<vec2>,
+    rotXY: number,
+  ): void {
+    const model = this.models.get(modelName)
+    if (model === undefined) {
+      throw new Error(`model ${modelName} not defined`)
     }
 
-    const vao = this.vaos[key]
-    this.ctx.bindVertexArray(vao.vao)
+    if (this.currentShader === undefined) {
+      throw new Error(
+        `cannot render ${modelName} with no shader; did you remember to call setRenderPass()?`,
+      )
+    }
+
+    this.ctx.bindVertexArray(model.vao)
+
+    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+    if (model2WorldUniform === undefined) {
+      throw new Error(`shader has no model2World uniform`)
+    }
 
     this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'model2world'),
+      model2WorldUniform,
       false,
       mat4.fromRotationTranslation(
         mat4.create(),
@@ -229,7 +323,7 @@ export class Renderer3d {
     )
 
     let primitive
-    switch (vao.primitive) {
+    switch (model.primitive) {
       case 'TRIANGLES':
         primitive = this.ctx.TRIANGLES
         break
@@ -237,74 +331,86 @@ export class Renderer3d {
         primitive = this.ctx.LINES
         break
       default:
-        throw new Error(`invalid primitive: ${vao.primitive}`)
+        throw new Error(`invalid primitive: ${model.primitive}`)
     }
 
-    this.ctx.drawArrays(primitive, 0, vao.numVerts)
+    this.ctx.drawArrays(primitive, 0, model.numVerts)
   }
 
   /**
    * Draws a sequence of lines, all of the same color. `srcVerts` should be a
    * set of point pairs, with each point described by three contiguous floats.
    */
-  drawLines(srcVerts: Float32Array, color: vec4): void {
-    const posAttrib = this.ctx.getAttribLocation(
-      this.program,
-      'aVertexPosition',
-    )
-    const colorAttrib = this.ctx.getAttribLocation(this.program, 'aVertexColor')
-    const numPoints = srcVerts.length / 3
+  //   drawLines(srcVerts: Float32Array, color: vec4): void {
+  //     if (this.currentShader === undefined) {
+  //       throw new Error(
+  //         `cannot render lines with no shader; did you remember to call setRenderPass()?`,
+  //       )
+  //     }
 
-    // Make a color buffer in memory
-    const srcColors = new Float32Array(4 * numPoints)
-    for (let i = 0; i < numPoints; i++) {
-      for (let j = 0; j < 4; j++) {
-        srcColors[i * 4 + j] = color[j]
-      }
-    }
+  //     const positionAttrib = this.currentShader.attribs.get('position')
+  //     if (positionAttrib === undefined) {
+  //       throw new Error(`shader has no position attrib`)
+  //     }
 
-    // Start a new VAO
-    const vao = this.ctx.createVertexArray()
-    if (vao === null) {
-      throw new Error('could not create vertex array')
-    }
-    this.ctx.bindVertexArray(vao)
+  //     const colorAttrib = this.currentShader.attribs.get('color')
+  //     if (colorAttrib === undefined) {
+  //       throw new Error(`shader has no color attrib`)
+  //     }
 
-    // Setup position array
-    const posGlBuffer = this.ctx.createBuffer()
-    if (posGlBuffer === null) {
-      throw new Error('could not create buffer')
-    }
-    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, posGlBuffer)
-    this.ctx.enableVertexAttribArray(posAttrib)
-    this.ctx.vertexAttribPointer(posAttrib, 3, this.ctx.FLOAT, false, 0, 0)
-    this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcVerts, this.ctx.STATIC_DRAW)
+  //     const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+  //     if (model2WorldUniform === undefined) {
+  //       throw new Error(`shader has no model2World uniform`)
+  //     }
 
-    // Setup vertex color buffer
-    // TODO: we should use a different shader program that just lets us set
-    // color as a frag shader uniform.
-    const colorGlBuffer = this.ctx.createBuffer()
-    if (colorGlBuffer === null) {
-      throw new Error('could not create buffer')
-    }
-    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, colorGlBuffer)
-    this.ctx.enableVertexAttribArray(colorAttrib)
-    this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
-    this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcColors, this.ctx.STATIC_DRAW)
+  //     const numPoints = srcVerts.length / 3
 
-    // Our VAO is ready...set uniforms and execute the draw.
-    this.ctx.uniformMatrix4fv(
-      this.ctx.getUniformLocation(this.program, 'model2world'),
-      false,
-      mat4.create(),
-    )
-    this.ctx.drawArrays(this.ctx.LINES, 0, numPoints)
+  //     // Make a color buffer in memory
+  //     const srcColors = new Float32Array(4 * numPoints)
+  //     for (let i = 0; i < numPoints; i++) {
+  //       for (let j = 0; j < 4; j++) {
+  //         srcColors[i * 4 + j] = color[j]
+  //       }
+  //     }
 
-    // Unbind our objects and delete them
-    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
-    this.ctx.bindVertexArray(null)
-    this.ctx.deleteVertexArray(vao)
-    this.ctx.deleteBuffer(posGlBuffer)
-    this.ctx.deleteBuffer(colorGlBuffer)
-  }
+  //     // Start a new VAO
+  //     const vao = this.ctx.createVertexArray()
+  //     if (vao === null) {
+  //       throw new Error('could not create vertex array')
+  //     }
+  //     this.ctx.bindVertexArray(vao)
+
+  //     // Setup position array
+  //     const posGlBuffer = this.ctx.createBuffer()
+  //     if (posGlBuffer === null) {
+  //       throw new Error('could not create buffer')
+  //     }
+  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, posGlBuffer)
+  //     this.ctx.enableVertexAttribArray(positionAttrib)
+  //     this.ctx.vertexAttribPointer(positionAttrib, 3, this.ctx.FLOAT, false, 0, 0)
+  //     this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcVerts, this.ctx.STATIC_DRAW)
+
+  //     // Setup vertex color buffer
+  //     // TODO: we should use a different shader program that just lets us set
+  //     // color as a frag shader uniform.
+  //     const colorGlBuffer = this.ctx.createBuffer()
+  //     if (colorGlBuffer === null) {
+  //       throw new Error('could not create buffer')
+  //     }
+  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, colorGlBuffer)
+  //     this.ctx.enableVertexAttribArray(colorAttrib)
+  //     this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
+  //     this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcColors, this.ctx.STATIC_DRAW)
+
+  //     // Our VAO is ready...set uniforms and execute the draw.
+  //     this.ctx.uniformMatrix4fv(model2WorldUniform, false, mat4.create())
+  //     this.ctx.drawArrays(this.ctx.LINES, 0, numPoints)
+
+  //     // Unbind our objects and delete them
+  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
+  //     this.ctx.bindVertexArray(null)
+  //     this.ctx.deleteVertexArray(vao)
+  //     this.ctx.deleteBuffer(posGlBuffer)
+  //     this.ctx.deleteBuffer(colorGlBuffer)
+  //   }
 }

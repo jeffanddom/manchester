@@ -33,7 +33,7 @@ const materials: { [key: string]: [number, number, number, number] } = {
 
 type ModelTypes = keyof typeof models
 export type Model = {
-  vertices: Float32Array
+  positions: Float32Array
   colors: Float32Array
   normals: Float32Array
   primitive: 'TRIANGLES' | 'LINES'
@@ -114,7 +114,7 @@ export const getModel: (modelType: ModelTypes) => Model = (modelType) => {
   })
 
   return {
-    vertices: new Float32Array(vertices),
+    positions: new Float32Array(vertices),
     colors: new Float32Array(colors),
     normals: new Float32Array(normals),
     primitive: 'TRIANGLES',
@@ -150,7 +150,7 @@ export const loadGrid = (): Model => {
   }
 
   return {
-    vertices: new Float32Array(vertices),
+    positions: new Float32Array(vertices),
     colors: new Float32Array(colors),
     normals: new Float32Array(),
     primitive: 'LINES',

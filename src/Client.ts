@@ -11,6 +11,7 @@ import {
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/constants'
+import { DebugLineModel } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
@@ -23,7 +24,7 @@ import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { Renderer2d } from '~/renderer/Renderer2d'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
-import { DebugLineModel, Renderer3d } from '~/renderer/Renderer3d'
+import { Renderer3d } from '~/renderer/Renderer3d'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -182,25 +183,29 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber!
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer3d.loadModel('terrain', this.terrainLayer.getModel())
+    this.renderer3d.loadModel(
+      'terrain',
+      this.terrainLayer.getModel(),
+      'standard',
+    )
 
     const gridModel = loadGrid()
-    this.renderer3d.loadModel('grid', gridModel)
+    this.renderer3d.loadModel('grid', gridModel, 'standard')
 
     const wallModel = getModel('wall')
-    this.renderer3d.loadModel('wall', wallModel)
+    this.renderer3d.loadModel('wall', wallModel, 'standard')
 
     const tankModel = getModel('tank')
-    this.renderer3d.loadModel('tank', tankModel)
+    this.renderer3d.loadModel('tank', tankModel, 'standard')
 
     const turretModel = getModel('turret')
-    this.renderer3d.loadModel('turret', turretModel)
+    this.renderer3d.loadModel('turret', turretModel, 'standard')
 
     const treeModel = getModel('tree')
-    this.renderer3d.loadModel('tree', treeModel)
+    this.renderer3d.loadModel('tree', treeModel, 'standard')
 
     const bulletModel = getModel('bullet')
-    this.renderer3d.loadModel('bullet', bulletModel)
+    this.renderer3d.loadModel('bullet', bulletModel, 'standard')
 
     this.camera2d.minWorldPos = this.terrainLayer.minWorldPos()
     this.camera2d.worldDimensions = this.terrainLayer.dimensions()
@@ -294,11 +299,6 @@ export class Client {
             systems.playerInput(this, this.simulationFrame)
           }
 
-          // We're unsure if we should increment the frame here;
-          // turret shooting seems to indicate that it's actually
-          // firing one frame early
-          // this.simulationFrame++
-
           simulate(
             {
               entityManager: this.entityManager,
@@ -379,23 +379,25 @@ export class Client {
     this.renderFrameDurations.sample(now - this.lastRenderAt)
     this.lastRenderAt = now
 
-    this.renderer3d.clear('magenta')
+    if (this.state === GameState.Connecting) {
+      return
+    }
+
+    this.renderer3d.clear()
 
     this.renderer3d.setWvTransform(this.camera.getWvTransform())
-    this.renderer3d.drawModel('terrain', vec2.create(), 0)
 
-    // GRID DEBUG
-    this.renderer3d.drawModel('grid', vec2.create(), 0)
+    this.renderer3d.renderStandard((drawModel) => {
+      drawModel('terrain', vec2.create(), 0)
 
-    for (const [entityId, model] of this.entityManager.renderables) {
-      const transform = this.entityManager.transforms.get(entityId)!
+      // GRID DEBUG
+      drawModel('grid', vec2.create(), 0)
 
-      this.renderer3d.drawModel(
-        model,
-        transform.position,
-        transform.orientation,
-      )
-    }
+      for (const [entityId, model] of this.entityManager.renderables) {
+        const transform = this.entityManager.transforms.get(entityId)!
+        drawModel(model, transform.position, transform.orientation)
+      }
+    })
 
     // this.emitters!.forEach((e) =>
     //   e.getRenderables().forEach((r) => this.renderer.render(r)),

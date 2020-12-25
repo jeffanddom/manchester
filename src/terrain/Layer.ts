@@ -93,7 +93,7 @@ export class Layer {
 
   public getModel(): Model {
     return {
-      vertices: this.vertices,
+      positions: this.vertices,
       colors: this.colors,
       normals: this.normals,
       primitive: 'TRIANGLES',
