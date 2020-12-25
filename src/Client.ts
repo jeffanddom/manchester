@@ -1,8 +1,4 @@
-import { vec2 } from 'gl-matrix'
-import { mat2d } from 'gl-matrix'
-import { vec4 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
-import { quat } from 'gl-matrix'
+import { mat2d, quat, vec2, vec3 } from 'gl-matrix'
 
 import { Camera2d } from '~/camera/Camera2d'
 import { Camera3d } from '~/camera/Camera3d'
@@ -11,7 +7,7 @@ import {
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/constants'
-import { DebugLineModel } from '~/DebugDraw'
+import { DebugDrawObject } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
@@ -52,7 +48,7 @@ export class Client {
   camera2d: Camera2d
   camera: Camera3d
   debugDraw2dRenderables: Renderable2d[]
-  debugDraw3dModels: DebugLineModel[]
+  debugDraw3dModels: DebugDrawObject[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
   enableDebugDraw: boolean
@@ -302,6 +298,10 @@ export class Client {
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               registerParticleEmitter: this.registerParticleEmitter,
+              debugDraw: {
+                draw2d: this.debugDraw2d.bind(this),
+                draw3d: this.debugDraw3d.bind(this),
+              },
             },
             this.state,
             dt,
@@ -504,18 +504,28 @@ export class Client {
       return res
     })
 
+    const nextDebugDraw3d = []
     if (this.enableDebugDraw) {
       this.debugDraw2dRenderables.forEach((r) => {
         this.renderer2d.render(r)
       })
 
       for (const m of this.debugDraw3dModels) {
-        this.renderer3d.drawLines(m.points, m.color)
+        this.renderer3d.renderWire((drawFunc) => {
+          drawFunc(m.object)
+        })
+
+        if (m.lifetime !== undefined) {
+          if (m.lifetime > 1) {
+            m.lifetime -= 1
+            nextDebugDraw3d.push(m)
+          }
+        }
       }
     }
 
     this.debugDraw2dRenderables = []
-    this.debugDraw3dModels = []
+    this.debugDraw3dModels = nextDebugDraw3d
 
     this.renderDurations.sample(time.current() - now)
   }
@@ -541,7 +551,7 @@ export class Client {
     )
   }
 
-  debugDraw3d(makeModels: () => { points: Float32Array; color: vec4 }[]): void {
+  debugDraw3d(makeModels: () => DebugDrawObject[]): void {
     if (!this.enableDebugDraw) {
       return
     }

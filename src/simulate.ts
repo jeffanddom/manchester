@@ -1,5 +1,6 @@
 import { ParticleEmitter } from './particles/ParticleEmitter'
 
+import { DebugDraw } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
@@ -17,6 +18,7 @@ export type SimState = {
     entity: EntityId
     frame: number
   }) => void
+  debugDraw: DebugDraw
 }
 
 export const simulate = (

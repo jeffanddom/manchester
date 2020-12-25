@@ -119,59 +119,29 @@ const handleAttackInput = (client: Client, frame: number): void => {
       const playerPos = client.entityManager.transforms.get(playerId)!.position
       client.debugDraw3d(() => [
         {
-          // prettier-ignore
-          points: new Float32Array([
-            playerPos[0], 0.5, playerPos[1],
-            targetPos[0], 0.5, targetPos[1],
-          ]),
-          color: vec4.fromValues(1, 0, 0, 1),
+          object: {
+            type: 'LINES',
+            // prettier-ignore
+            positions: new Float32Array([
+              playerPos[0], 0, playerPos[1],
+              targetPos[0], 0, targetPos[1],
+            ]),
+            color: vec4.fromValues(1, 0, 0, 1),
+          },
         },
       ])
     }
   }
 
-  client.debugDraw3d(() => {
-    const halfSize = 0.5
-
-    const minX = targetPos[0] - halfSize
-    const maxX = targetPos[0] + halfSize
-    const minY = 0.01
-    const maxY = minY + halfSize * 2
-    const minZ = targetPos[1] - halfSize
-    const maxZ = targetPos[1] + halfSize
-
-    const lowNW = [minX, minY, minZ]
-    const lowNE = [maxX, minY, minZ]
-    const lowSW = [minX, minY, maxZ]
-    const lowSE = [maxX, minY, maxZ]
-    const highNW = [minX, maxY, minZ]
-    const highNE = [maxX, maxY, minZ]
-    const highSW = [minX, maxY, maxZ]
-    const highSE = [maxX, maxY, maxZ]
-
-    return [
-      {
-        // prettier-ignore
-        points: new Float32Array([
-          ...lowNW, ...lowNE,
-          ...lowNE, ...lowSE,
-          ...lowSE, ...lowSW,
-          ...lowSW, ...lowNW,
-
-          ...highNW, ...highNE,
-          ...highNE, ...highSE,
-          ...highSE, ...highSW,
-          ...highSW, ...highNW,          
-
-          ...lowNE, ...highNE,
-          ...lowNW, ...highNW,
-          ...lowSE, ...highSE,
-          ...lowSW, ...highSW,
-        ]),
+  client.debugDraw3d(() => [
+    {
+      object: {
+        type: 'CUBE',
+        pos: vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
         color: vec4.fromValues(1, 1, 0, 1),
       },
-    ]
-  })
+    },
+  ])
 }
 
 // const handleBuilderInput = (game: Game, entityManager: EntityManager): void => {

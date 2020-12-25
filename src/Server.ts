@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
+import { mockDebugDraw } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
@@ -209,6 +210,7 @@ export class Server {
               messages: frameMessages,
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
+              debugDraw: mockDebugDraw,
             },
             this.state,
             dt,

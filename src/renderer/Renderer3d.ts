@@ -1,8 +1,9 @@
+import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 import { Model as ModelDef } from '~/models'
-import { shader as debugDrawShader } from '~/renderer/shaders/debugDraw'
 import { shader as standardShader } from '~/renderer/shaders/standard'
+import { shader as wireShader } from '~/renderer/shaders/wire'
 import { Immutable } from '~/types/immutable'
 
 const gl = WebGL2RenderingContext
@@ -23,13 +24,58 @@ interface Shader {
 interface Model {
   vao: WebGLVertexArrayObject
   numVerts: number
-  primitive: string
+  primitive: 'LINES' | 'TRIANGLES'
   shader: string
 }
 
-export enum RenderPass {
-  Standard,
-  DebugDraw,
+interface WireLines {
+  type: 'LINES'
+  positions: Float32Array
+  color: vec4
+}
+
+interface WireCube {
+  type: 'CUBE'
+  pos: vec3
+  color: vec4
+  scale?: number
+  rot?: quat
+}
+
+export type WireObject = WireLines | WireCube
+
+const wcHalfSize = 0.5
+const wcLowNW = [-wcHalfSize, -wcHalfSize, -wcHalfSize]
+const wcLowNE = [wcHalfSize, -wcHalfSize, -wcHalfSize]
+const wcLowSW = [-wcHalfSize, -wcHalfSize, wcHalfSize]
+const wcLowSE = [wcHalfSize, -wcHalfSize, wcHalfSize]
+const wcHighNW = [-wcHalfSize, wcHalfSize, -wcHalfSize]
+const wcHighNE = [wcHalfSize, wcHalfSize, -wcHalfSize]
+const wcHighSW = [-wcHalfSize, wcHalfSize, wcHalfSize]
+const wcHighSE = [wcHalfSize, wcHalfSize, wcHalfSize]
+
+export const wireCubeModel = {
+  // "as const" convinces the typechecker that this property will not be
+  // re-assigned.
+  primitive: 'LINES' as const,
+
+  // prettier-ignore
+  positions: new Float32Array([
+    ...wcLowNW, ...wcLowNE,
+    ...wcLowNE, ...wcLowSE,
+    ...wcLowSE, ...wcLowSW,
+    ...wcLowSW, ...wcLowNW,
+
+    ...wcHighNW, ...wcHighNE,
+    ...wcHighNE, ...wcHighSE,
+    ...wcHighSE, ...wcHighSW,
+    ...wcHighSW, ...wcHighNW,          
+
+    ...wcLowNE, ...wcHighNE,
+    ...wcLowNW, ...wcHighNW,
+    ...wcLowSE, ...wcHighSE,
+    ...wcLowSW, ...wcHighSW,
+  ]),
 }
 
 export class Renderer3d {
@@ -50,9 +96,10 @@ export class Renderer3d {
 
     this.shaders = new Map()
     this.loadShader('standard', standardShader)
-    this.loadShader('debugDraw', debugDrawShader)
+    this.loadShader('wire', wireShader)
 
     this.models = new Map()
+    this.loadModel('wireCube', wireCubeModel, 'wire')
 
     this.viewportDimensions = vec2.fromValues(
       this.canvas.width,
@@ -103,7 +150,7 @@ export class Renderer3d {
       }
 
       const loc = this.ctx.getUniformLocation(program, u)
-      if (loc === undefined) {
+      if (loc === null) {
         throw new Error(`shader ${name} uniform ${u} not defined in source`)
       }
 
@@ -183,6 +230,10 @@ export class Renderer3d {
     mat4.copy(this.world2ViewTransform, w2v)
   }
 
+  /**
+   * Render using standard shader. Currently uses vertex colors, with no
+   * lighting or textures.
+   */
   renderStandard(
     renderBody: (
       drawFunc: (
@@ -194,19 +245,65 @@ export class Renderer3d {
   ): void {
     this.useShader('standard')
     this.ctx.enable(this.ctx.DEPTH_TEST)
+    this.ctx.depthFunc(this.ctx.LESS)
     this.ctx.enable(this.ctx.CULL_FACE)
     this.ctx.cullFace(this.ctx.BACK)
     this.ctx.frontFace(this.ctx.CCW)
 
     renderBody(
       (modelName: string, posXY: Immutable<vec2>, rotXY: number): void => {
-        this.drawModel(modelName, posXY, rotXY)
+        this.drawModel(
+          modelName,
+          mat4.fromRotationTranslation(
+            mat4.create(),
+            // We have to negate rotXY here. Positive rotations on the XY plane
+            // represent right-handed rotations around cross(+X, +Y), whereas
+            // positive rotations on the XZ plane represent right-handed rotations
+            // around cross(+X, -Z).
+            quat.rotateY(quat.create(), quat.create(), -rotXY),
+            vec3.fromValues(posXY[0], 0, posXY[1]),
+          ),
+        )
       },
     )
   }
 
-  // TODO: implement renderDebug, which should use a different shader and
-  // depth test
+  /**
+   * Render using the wire shader. Intended for debug draw.
+   */
+  renderWire(renderBody: (drawFunc: (obj: WireObject) => void) => void): void {
+    this.useShader('wire')
+    this.ctx.enable(this.ctx.DEPTH_TEST)
+    this.ctx.depthFunc(this.ctx.LEQUAL) // allow drawing over existing surfaces
+    this.ctx.enable(this.ctx.CULL_FACE)
+    this.ctx.cullFace(this.ctx.BACK)
+    this.ctx.frontFace(this.ctx.CCW)
+
+    renderBody((obj: WireObject): void => {
+      this.ctx.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
+
+      switch (obj.type) {
+        case 'LINES':
+          this.drawLines(obj.positions)
+          break
+
+        case 'CUBE':
+          const rot = obj.rot ?? quat.create()
+          const scale = obj.scale ?? 1
+
+          this.drawModel(
+            'wireCube',
+            mat4.fromRotationTranslationScale(
+              mat4.create(),
+              rot,
+              obj.pos,
+              vec3.fromValues(scale, scale, scale),
+            ),
+          )
+          break
+      }
+    })
+  }
 
   /**
    * Translate a screenspace position (relative to the upper-left corner of the
@@ -239,16 +336,11 @@ export class Renderer3d {
       throw new Error(`shader ${shaderName} has no position attrib`)
     }
 
-    const colorAttrib = shader.attribs.get('color')
-    if (colorAttrib === undefined) {
-      throw new Error(`shader ${shaderName} has no color attrib`)
-    }
-
     // Create terrain-specific VAO
     const vao = this.ctx.createVertexArray()!
     this.ctx.bindVertexArray(vao)
 
-    // Vertices
+    // Positions
     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.ctx.createBuffer())
     this.ctx.enableVertexAttribArray(positionAttrib)
     this.ctx.vertexAttribPointer(positionAttrib, 3, this.ctx.FLOAT, false, 0, 0)
@@ -259,15 +351,21 @@ export class Renderer3d {
     )
 
     // Colors
-    // TODO: some shaders might not accept vertex colors
-    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.ctx.createBuffer())
-    this.ctx.enableVertexAttribArray(colorAttrib)
-    this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
-    this.ctx.bufferData(
-      this.ctx.ARRAY_BUFFER,
-      new Float32Array(model.colors),
-      this.ctx.STATIC_DRAW,
-    )
+    if (model.colors !== undefined) {
+      const colorAttrib = shader.attribs.get('color')
+      if (colorAttrib === undefined) {
+        throw new Error(`shader ${shaderName} has no color attrib`)
+      }
+
+      this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.ctx.createBuffer())
+      this.ctx.enableVertexAttribArray(colorAttrib)
+      this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
+      this.ctx.bufferData(
+        this.ctx.ARRAY_BUFFER,
+        new Float32Array(model.colors),
+        this.ctx.STATIC_DRAW,
+      )
+    }
 
     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
     this.ctx.bindVertexArray(null)
@@ -285,132 +383,81 @@ export class Renderer3d {
    * Draw the specified model with the given 2D position and rotation. The
    * position will be projected onto the XZ plane.
    */
-  private drawModel(
-    modelName: string,
-    posXY: Immutable<vec2>,
-    rotXY: number,
-  ): void {
-    const model = this.models.get(modelName)
-    if (model === undefined) {
-      throw new Error(`model ${modelName} not defined`)
-    }
-
+  private drawModel(modelName: string, model2World: mat4): void {
     if (this.currentShader === undefined) {
       throw new Error(
         `cannot render ${modelName} with no shader; did you remember to call setRenderPass()?`,
       )
     }
 
-    this.ctx.bindVertexArray(model.vao)
-
     const model2WorldUniform = this.currentShader.uniforms.get('model2World')
     if (model2WorldUniform === undefined) {
       throw new Error(`shader has no model2World uniform`)
     }
+    this.ctx.uniformMatrix4fv(model2WorldUniform, false, model2World)
 
-    this.ctx.uniformMatrix4fv(
-      model2WorldUniform,
-      false,
-      mat4.fromRotationTranslation(
-        mat4.create(),
-        // We have to negate rotXY here. Positive rotations on the XY plane
-        // represent right-handed rotations around cross(+X, +Y), whereas
-        // positive rotations on the XZ plane represent right-handed rotations
-        // around cross(+X, -Z).
-        quat.rotateY(quat.create(), quat.create(), -rotXY),
-        vec3.fromValues(posXY[0], 0, posXY[1]),
-      ),
-    )
+    const model = this.models.get(modelName)
+    if (model === undefined) {
+      throw new Error(`model ${modelName} not defined`)
+    }
+    this.ctx.bindVertexArray(model.vao)
 
-    let primitive
     switch (model.primitive) {
       case 'TRIANGLES':
-        primitive = this.ctx.TRIANGLES
+        this.ctx.drawArrays(this.ctx.TRIANGLES, 0, model.numVerts)
         break
       case 'LINES':
-        primitive = this.ctx.LINES
+        this.ctx.drawArrays(this.ctx.LINES, 0, model.numVerts)
         break
-      default:
-        throw new Error(`invalid primitive: ${model.primitive}`)
     }
-
-    this.ctx.drawArrays(primitive, 0, model.numVerts)
   }
 
   /**
    * Draws a sequence of lines, all of the same color. `srcVerts` should be a
    * set of point pairs, with each point described by three contiguous floats.
    */
-  //   drawLines(srcVerts: Float32Array, color: vec4): void {
-  //     if (this.currentShader === undefined) {
-  //       throw new Error(
-  //         `cannot render lines with no shader; did you remember to call setRenderPass()?`,
-  //       )
-  //     }
+  drawLines(positions: Float32Array): void {
+    if (this.currentShader === undefined) {
+      throw new Error(
+        `cannot render lines with no shader; did you remember to call setRenderPass()?`,
+      )
+    }
 
-  //     const positionAttrib = this.currentShader.attribs.get('position')
-  //     if (positionAttrib === undefined) {
-  //       throw new Error(`shader has no position attrib`)
-  //     }
+    const numPoints = positions.length / 3
 
-  //     const colorAttrib = this.currentShader.attribs.get('color')
-  //     if (colorAttrib === undefined) {
-  //       throw new Error(`shader has no color attrib`)
-  //     }
+    // Start a new VAO
+    const vao = this.ctx.createVertexArray()
+    if (vao === null) {
+      throw new Error('could not create vertex array')
+    }
+    this.ctx.bindVertexArray(vao)
 
-  //     const model2WorldUniform = this.currentShader.uniforms.get('model2World')
-  //     if (model2WorldUniform === undefined) {
-  //       throw new Error(`shader has no model2World uniform`)
-  //     }
+    // Setup position array
+    const positionAttrib = this.currentShader.attribs.get('position')
+    if (positionAttrib === undefined) {
+      throw new Error(`shader has no position attrib`)
+    }
+    const posGlBuffer = this.ctx.createBuffer()
+    if (posGlBuffer === null) {
+      throw new Error('could not create buffer')
+    }
+    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, posGlBuffer)
+    this.ctx.enableVertexAttribArray(positionAttrib)
+    this.ctx.vertexAttribPointer(positionAttrib, 3, this.ctx.FLOAT, false, 0, 0)
+    this.ctx.bufferData(this.ctx.ARRAY_BUFFER, positions, this.ctx.STATIC_DRAW)
 
-  //     const numPoints = srcVerts.length / 3
+    // Our VAO is ready...set uniforms and execute the draw.
+    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+    if (model2WorldUniform === undefined) {
+      throw new Error(`shader has no model2World uniform`)
+    }
+    this.ctx.uniformMatrix4fv(model2WorldUniform, false, mat4.create())
+    this.ctx.drawArrays(this.ctx.LINES, 0, numPoints)
 
-  //     // Make a color buffer in memory
-  //     const srcColors = new Float32Array(4 * numPoints)
-  //     for (let i = 0; i < numPoints; i++) {
-  //       for (let j = 0; j < 4; j++) {
-  //         srcColors[i * 4 + j] = color[j]
-  //       }
-  //     }
-
-  //     // Start a new VAO
-  //     const vao = this.ctx.createVertexArray()
-  //     if (vao === null) {
-  //       throw new Error('could not create vertex array')
-  //     }
-  //     this.ctx.bindVertexArray(vao)
-
-  //     // Setup position array
-  //     const posGlBuffer = this.ctx.createBuffer()
-  //     if (posGlBuffer === null) {
-  //       throw new Error('could not create buffer')
-  //     }
-  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, posGlBuffer)
-  //     this.ctx.enableVertexAttribArray(positionAttrib)
-  //     this.ctx.vertexAttribPointer(positionAttrib, 3, this.ctx.FLOAT, false, 0, 0)
-  //     this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcVerts, this.ctx.STATIC_DRAW)
-
-  //     // Setup vertex color buffer
-  //     // TODO: we should use a different shader program that just lets us set
-  //     // color as a frag shader uniform.
-  //     const colorGlBuffer = this.ctx.createBuffer()
-  //     if (colorGlBuffer === null) {
-  //       throw new Error('could not create buffer')
-  //     }
-  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, colorGlBuffer)
-  //     this.ctx.enableVertexAttribArray(colorAttrib)
-  //     this.ctx.vertexAttribPointer(colorAttrib, 4, this.ctx.FLOAT, false, 0, 0)
-  //     this.ctx.bufferData(this.ctx.ARRAY_BUFFER, srcColors, this.ctx.STATIC_DRAW)
-
-  //     // Our VAO is ready...set uniforms and execute the draw.
-  //     this.ctx.uniformMatrix4fv(model2WorldUniform, false, mat4.create())
-  //     this.ctx.drawArrays(this.ctx.LINES, 0, numPoints)
-
-  //     // Unbind our objects and delete them
-  //     this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
-  //     this.ctx.bindVertexArray(null)
-  //     this.ctx.deleteVertexArray(vao)
-  //     this.ctx.deleteBuffer(posGlBuffer)
-  //     this.ctx.deleteBuffer(colorGlBuffer)
-  //   }
+    // Unbind our objects and delete them
+    this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, null)
+    this.ctx.bindVertexArray(null)
+    this.ctx.deleteVertexArray(vao)
+    this.ctx.deleteBuffer(posGlBuffer)
+  }
 }

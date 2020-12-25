@@ -33,10 +33,10 @@ const materials: { [key: string]: [number, number, number, number] } = {
 
 type ModelTypes = keyof typeof models
 export type Model = {
-  positions: Float32Array
-  colors: Float32Array
-  normals: Float32Array
   primitive: 'TRIANGLES' | 'LINES'
+  positions: Float32Array
+  colors?: Float32Array
+  normals?: Float32Array
 }
 
 const defaultColor = [1.0, 0, 1.0, 1.0]

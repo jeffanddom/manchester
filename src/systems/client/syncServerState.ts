@@ -1,4 +1,5 @@
 import { Client } from '~/Client'
+import { mockDebugDraw } from '~/DebugDraw'
 import { simulate } from '~/simulate'
 
 export const update = (c: Client, dt: number, frame: number): void => {
@@ -25,6 +26,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
         terrainLayer: c.terrainLayer,
         registerParticleEmitter: c.registerParticleEmitter,
         frame: frameMessage.frame,
+        debugDraw: mockDebugDraw,
       },
       c.state,
       dt,
@@ -48,6 +50,7 @@ export const update = (c: Client, dt: number, frame: number): void => {
         terrainLayer: c.terrainLayer,
         registerParticleEmitter: c.registerParticleEmitter,
         frame: f,
+        debugDraw: mockDebugDraw,
       },
       c.state,
       dt,
