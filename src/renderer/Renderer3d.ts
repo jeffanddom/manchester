@@ -8,7 +8,7 @@ import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as wireShader } from '~/renderer/shaders/wire'
 import { Immutable } from '~/types/immutable'
 
-export interface ShaderDefinition {
+interface ShaderDefinition {
   vertexSrc: string
   fragmentSrc: string
   attribs: string[]
