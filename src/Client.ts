@@ -1,6 +1,5 @@
 import { mat2d, quat, vec2, vec3 } from 'gl-matrix'
 
-import { Camera2d } from '~/camera/Camera2d'
 import { Camera3d } from '~/camera/Camera3d'
 import {
   MAX_PREDICTED_FRAMES,
@@ -45,7 +44,6 @@ export class Client {
   simulationFrame: number
   waitingForServer: boolean
 
-  camera2d: Camera2d
   camera: Camera3d
   debugDraw2dRenderables: Renderable2d[]
   debugDraw3dModels: DebugDrawObject[]
@@ -98,11 +96,6 @@ export class Client {
     this.simulationFrame = 0
     this.waitingForServer = false
 
-    this.camera2d = new Camera2d(
-      vec2.fromValues(config.canvas3d.width, config.canvas3d.height),
-      vec2.create(),
-      vec2.create(),
-    )
     this.camera = new Camera3d()
     this.emitters = []
     this.emitterHistory = new Set()
@@ -150,7 +143,6 @@ export class Client {
   }
 
   setViewportDimensions(d: vec2): void {
-    this.camera2d.setViewportDimensions(d)
     this.renderer3d.setViewportDimensions(d)
     this.renderer2d.setViewportDimensions(d)
   }
@@ -185,9 +177,6 @@ export class Client {
     for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
       this.renderer3d.loadModel(m, getModel(m), 'standard')
     }
-
-    this.camera2d.minWorldPos = this.terrainLayer.minWorldPos()
-    this.camera2d.worldDimensions = this.terrainLayer.dimensions()
   }
 
   setState(s: GameState): void {
@@ -302,8 +291,6 @@ export class Client {
           const playerId = this.entityManager.getPlayerId(this.playerNumber!)
           if (playerId) {
             const transform = this.entityManager.transforms.get(playerId)!
-            this.camera2d.setPosition(transform.position)
-            this.camera2d.update(dt)
 
             // Position the 3D camera at a fixed offset from the player, and
             // point the camera directly at the player.
