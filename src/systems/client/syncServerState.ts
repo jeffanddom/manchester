@@ -1,8 +1,8 @@
-import { Client } from '~/Client'
+import { ClientSim } from '~/ClientSim'
 import { mockDebugDraw } from '~/DebugDraw'
 import { simulate } from '~/simulate'
 
-export const update = (c: Client, dt: number, frame: number): void => {
+export const update = (c: ClientSim, dt: number, frame: number): void => {
   c.serverFrameUpdates = c.serverFrameUpdates
     .filter((m) => m.frame > c.committedFrame)
     .sort((a, b) => a.frame - b.frame)

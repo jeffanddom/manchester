@@ -29,7 +29,7 @@ import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class Client {
+export class ClientSim {
   entityManager: EntityManager
   localMessageHistory: ClientMessage[]
   playerInputState: {

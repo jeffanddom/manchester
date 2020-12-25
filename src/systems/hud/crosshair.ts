@@ -1,7 +1,7 @@
-import { Client } from '~/Client'
+import { ClientSim } from '~/ClientSim'
 import { CursorMode } from '~/systems/client/playerInput'
 
-export const update = (c: Client): void => {
+export const update = (c: ClientSim): void => {
   const mousePos = c.mouse!.getPos()
   if (mousePos) {
     // crosshair (TODO: this could probably be moved to HUD rendering, which

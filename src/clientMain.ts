@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import { Client } from '~/Client'
 import * as clientHotReload from '~/clientHotReload'
+import { ClientSim } from '~/ClientSim'
 import { ClientView } from '~/ClientView'
 import { DebugDraw } from '~/DebugDraw'
 import { GameState } from '~/Game'
@@ -13,7 +13,7 @@ import { createServerConnectionWs } from '~/network/ServerConnection'
 declare global {
   interface Window {
     debug: {
-      client: Client
+      client: ClientSim
       restartServer: () => Promise<void>
     }
   }
@@ -43,7 +43,7 @@ document.body.appendChild(canvas2d)
 // TODO: refactor this whole thing into a class...the way this currently works
 // is gross
 function makeClientObjects(): [
-  Client,
+  ClientSim,
   ClientView,
   IKeyboard,
   IMouse,
@@ -59,7 +59,7 @@ function makeClientObjects(): [
     debugDraw,
   })
 
-  const client = new Client({
+  const client = new ClientSim({
     keyboard,
     mouse,
     modelLoader: clientView.getModelLoader(),

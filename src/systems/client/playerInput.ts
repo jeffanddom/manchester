@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
-import { Client } from '~/Client'
+import { ClientSim } from '~/ClientSim'
 import { DirectionMove } from '~/input/interfaces'
 import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
@@ -26,7 +26,7 @@ export enum CursorMode {
   BUILD_WALL,
 }
 
-export const update = (client: Client, frame: number): void => {
+export const update = (client: ClientSim, frame: number): void => {
   // handleCursorMode(game)
   handleMoveInput(client, frame)
   handleAttackInput(client, frame)
@@ -47,7 +47,7 @@ export const update = (client: Client, frame: number): void => {
 //   }
 // }
 
-const handleMoveInput = (client: Client, frame: number): void => {
+const handleMoveInput = (client: ClientSim, frame: number): void => {
   let direction
   if (client.keyboard.downKeys.has(keyMap.moveUp)) {
     if (client.keyboard.downKeys.has(keyMap.moveLeft)) {
@@ -81,7 +81,7 @@ const handleMoveInput = (client: Client, frame: number): void => {
   }
 }
 
-const handleAttackInput = (client: Client, frame: number): void => {
+const handleAttackInput = (client: ClientSim, frame: number): void => {
   const mousePos = client.mouse.getPos()
   if (mousePos === undefined) {
     return
