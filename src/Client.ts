@@ -132,12 +132,6 @@ export class Client {
     this.framesAheadOfServer = new RunningAverage(3 * 60)
     this.serverInputsPerFrame = new RunningAverage(3 * 60)
 
-    document.addEventListener('keyup', (event) => {
-      if (event.code === 'backquote') {
-        this.enableDebugDraw = !this.enableDebugDraw
-      }
-    })
-
     // Common
     this.state = GameState.Connecting
     this.nextState = undefined
@@ -353,6 +347,10 @@ export class Client {
                 0,
               ),
             )
+          }
+
+          if (this.keyboard.upKeys.has('Backquote')) {
+            this.enableDebugDraw = !this.enableDebugDraw
           }
 
           this.keyboard?.update()
