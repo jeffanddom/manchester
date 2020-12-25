@@ -78,13 +78,24 @@ export const wireCubeModel = {
   ]),
 }
 
-export class Renderer3d {
+export interface IModelLoader {
+  loadModel: (modelName: string, model: ModelDef, shaderName: string) => void
+}
+
+export class StubModelLoader implements IModelLoader {
+  loadModel(_modelName: string, _model: ModelDef, _shaderName: string): void {
+    /* do nothing */
+  }
+}
+
+export class Renderer3d implements IModelLoader {
   private canvas: HTMLCanvasElement
   private ctx: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
   private models: Map<string, Model>
 
+  private fov: number
   private viewportDimensions: vec2
   private world2ViewTransform: mat4
   private currentShader: Shader | undefined
@@ -101,6 +112,7 @@ export class Renderer3d {
     this.models = new Map()
     this.loadModel('wireCube', wireCubeModel, 'wire')
 
+    this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
       this.canvas.width,
       this.canvas.height,
@@ -212,15 +224,16 @@ export class Renderer3d {
   }
 
   getFov(): number {
-    return (75 * Math.PI) / 180
+    return this.fov
   }
 
-  getFocalLength(): number {
-    return 1 / Math.tan(this.getFov() / 2)
+  // TODO: connect this with Camera3d#fov
+  setFov(fov: number): void {
+    this.fov = fov
   }
 
   setViewportDimensions(d: Immutable<vec2>): void {
-    this.viewportDimensions = vec2.clone(d)
+    vec2.copy(this.viewportDimensions, d)
 
     // Update gl viewport
     this.ctx.viewport(0, 0, d[0], d[1])
@@ -303,24 +316,6 @@ export class Renderer3d {
           break
       }
     })
-  }
-
-  /**
-   * Translate a screenspace position (relative to the upper-left corner of the
-   * viewport) to a viewspace position. The absolute value of the z-distance of
-   * this point is equivalent to the focal length.
-   *
-   * See: "Picking", chapter 6.6 Van Verth and Bishop, 2nd ed.
-   */
-  screenToView(screenPos: Immutable<vec2>): vec3 {
-    const w = this.viewportDimensions[0]
-    const h = this.viewportDimensions[1]
-
-    return vec3.fromValues(
-      (2 * (screenPos[0] - w / 2)) / h,
-      (-2 * (screenPos[1] - h / 2)) / h,
-      -this.getFocalLength(),
-    )
   }
 
   loadModel(modelName: string, model: ModelDef, shaderName: string): void {

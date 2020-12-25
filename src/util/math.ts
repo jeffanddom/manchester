@@ -133,3 +133,29 @@ export function vec3toFixedString(
     decimals,
   )})`
 }
+
+/**
+ * Translate a screenspace position (relative to the upper-left corner of the
+ * viewport) to a viewspace position. The absolute value of the z-distance of
+ * this point is equivalent to the focal length.
+ *
+ * See: "Picking", chapter 6.6 Van Verth and Bishop, 2nd ed.
+ */
+export function screenToView(
+  screenPos: Immutable<vec2>,
+  viewportDimensions: Immutable<vec2>,
+  focalLength: number,
+): vec3 {
+  const w = viewportDimensions[0]
+  const h = viewportDimensions[1]
+
+  return vec3.fromValues(
+    (2 * (screenPos[0] - w / 2)) / h,
+    (-2 * (screenPos[1] - h / 2)) / h,
+    -focalLength,
+  )
+}
+
+export function fovToFocalLength(fov: number): number {
+  return 1 / Math.tan(fov / 2)
+}

@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
-import { mat4 } from 'gl-matrix'
 
 import { Client } from '~/Client'
 import { DirectionMove } from '~/input/interfaces'
@@ -88,12 +87,8 @@ const handleAttackInput = (client: Client, frame: number): void => {
     return
   }
 
-  // Translate mouse position to world position
-  const mouseWorldPos = vec3.transformMat4(
-    vec3.create(),
-    client.renderer3d.screenToView(mousePos),
-    mat4.invert(mat4.create(), client.camera.getWvTransform()),
-  )
+  // Get mouse position on display plane, in worldspace coordinates
+  const mouseWorldPos = client.camera.screenToWorld(mousePos)
 
   // Get camera ray in world space
   const cameraWorldPos = client.camera.getPos()
@@ -117,7 +112,7 @@ const handleAttackInput = (client: Client, frame: number): void => {
     const playerId = client.entityManager.getPlayerId(client.playerNumber)
     if (playerId !== undefined) {
       const playerPos = client.entityManager.transforms.get(playerId)!.position
-      client.debugDraw3d(() => [
+      client.debugDraw.draw3d(() => [
         {
           object: {
             type: 'LINES',
@@ -133,7 +128,7 @@ const handleAttackInput = (client: Client, frame: number): void => {
     }
   }
 
-  client.debugDraw3d(() => [
+  client.debugDraw.draw3d(() => [
     {
       object: {
         type: 'CUBE',

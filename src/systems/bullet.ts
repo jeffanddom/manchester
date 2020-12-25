@@ -3,14 +3,14 @@ import { vec4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { DebugDraw } from '~/DebugDraw'
+import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import { radialTranslate2 } from '~/util/math'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 3)
 
 export const update = (
-  simState: { entityManager: EntityManager; debugDraw: DebugDraw },
+  simState: { entityManager: EntityManager; debugDraw: IDebugDrawWriter },
   dt: number,
 ): void => {
   for (const [id, bullet] of simState.entityManager.bullets) {

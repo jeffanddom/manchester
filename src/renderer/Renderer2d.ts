@@ -79,7 +79,7 @@ export class Renderer2d {
   }
 
   setViewportDimensions(dimensions: Immutable<vec2>): void {
-    this.viewportDimensions = vec2.clone(dimensions)
+    vec2.copy(this.viewportDimensions, dimensions)
   }
 
   getViewportDimensions(): Immutable<vec2> {

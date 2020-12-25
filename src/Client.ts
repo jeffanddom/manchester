@@ -1,12 +1,13 @@
-import { mat2d, quat, vec2, vec3 } from 'gl-matrix'
+import { quat, vec2, vec3 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
+import { Renderable3d } from '~/ClientView'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/constants'
-import { DebugDrawObject } from '~/DebugDraw'
+import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
@@ -17,13 +18,13 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { Renderer2d } from '~/renderer/Renderer2d'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
-import { Renderer3d } from '~/renderer/Renderer3d'
+import { IModelLoader } from '~/renderer/Renderer3d'
 import { simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
+import { Immutable } from '~/types/immutable'
 import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
@@ -45,28 +46,23 @@ export class Client {
   waitingForServer: boolean
 
   camera: Camera3d
-  debugDraw2dRenderables: Renderable2d[]
-  debugDraw3dModels: DebugDrawObject[]
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
-  enableDebugDraw: boolean
-  renderer3d: Renderer3d
-  renderer2d: Renderer2d
+
   lastUpdateAt: number
   lastTickAt: number
-  lastRenderAt: number
   serverUpdateFrameDurationAvg: number
   serverSimulationDurationAvg: number
 
   tickDurations: RunningAverage
   updateFrameDurations: RunningAverage
-  renderDurations: RunningAverage
-  renderFrameDurations: RunningAverage
   framesAheadOfServer: RunningAverage
   serverInputsPerFrame: RunningAverage
 
   keyboard: IKeyboard
   mouse: IMouse
+  modelLoader: IModelLoader
+  debugDraw: IDebugDrawWriter
 
   // Common game state
   state: GameState
@@ -78,11 +74,17 @@ export class Client {
   terrainLayer: terrain.Layer
 
   constructor(config: {
-    canvas3d: HTMLCanvasElement
-    canvas2d: HTMLCanvasElement
     keyboard: IKeyboard
     mouse: IMouse
+    modelLoader: IModelLoader
+    debugDraw: IDebugDrawWriter
+    viewportDimensions: Immutable<vec2>
   }) {
+    this.keyboard = config.keyboard
+    this.mouse = config.mouse
+    this.modelLoader = config.modelLoader
+    this.debugDraw = config.debugDraw
+
     this.entityManager = new EntityManager([
       [0, 0],
       [0, 0],
@@ -96,28 +98,19 @@ export class Client {
     this.simulationFrame = 0
     this.waitingForServer = false
 
-    this.camera = new Camera3d()
+    this.camera = new Camera3d({
+      viewportDimensions: config.viewportDimensions,
+    })
     this.emitters = []
     this.emitterHistory = new Set()
-    this.debugDraw2dRenderables = []
-    this.debugDraw3dModels = []
-    this.enableDebugDraw = true
-    this.renderer3d = new Renderer3d(config.canvas3d)
-    this.renderer2d = new Renderer2d(config.canvas2d)
-
-    this.keyboard = config.keyboard
-    this.mouse = config.mouse
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()
-    this.lastRenderAt = time.current()
     this.serverUpdateFrameDurationAvg = NaN
     this.serverSimulationDurationAvg = NaN
 
     this.tickDurations = new RunningAverage(3 * 60)
     this.updateFrameDurations = new RunningAverage(3 * 60)
-    this.renderDurations = new RunningAverage(3 * 60)
-    this.renderFrameDurations = new RunningAverage(3 * 60)
     this.framesAheadOfServer = new RunningAverage(3 * 60)
     this.serverInputsPerFrame = new RunningAverage(3 * 60)
 
@@ -143,8 +136,7 @@ export class Client {
   }
 
   setViewportDimensions(d: vec2): void {
-    this.renderer3d.setViewportDimensions(d)
-    this.renderer2d.setViewportDimensions(d)
+    this.camera.setViewportDimensions(d)
   }
 
   startPlay(): void {
@@ -165,17 +157,17 @@ export class Client {
     this.entityManager.currentPlayer = this.playerNumber!
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.renderer3d.loadModel(
+    this.modelLoader.loadModel(
       'terrain',
       this.terrainLayer.getModel(),
       'standard',
     )
 
     const gridModel = loadGrid()
-    this.renderer3d.loadModel('grid', gridModel, 'standard')
+    this.modelLoader.loadModel('grid', gridModel, 'standard')
 
     for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
-      this.renderer3d.loadModel(m, getModel(m), 'standard')
+      this.modelLoader.loadModel(m, getModel(m), 'standard')
     }
   }
 
@@ -194,6 +186,48 @@ export class Client {
 
     this.tick(SIMULATION_PERIOD_S)
     this.tickDurations.sample(time.current() - start)
+
+    this.debugDraw.draw2d(() => {
+      const text = [
+        `Player ${this.playerNumber}`,
+        // `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
+        // `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
+        `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
+        `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
+        `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
+        `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
+        `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
+          2,
+        )}`,
+        `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
+          2,
+        )}`,
+        this.waitingForServer ? 'WAITING FOR SERVER' : undefined,
+      ]
+
+      const x = this.camera.getViewportDimensions()[0] - 10
+      let y = 10
+      const res: Renderable2d[] = []
+      for (const t of text) {
+        if (t === undefined) {
+          continue
+        }
+
+        res.push({
+          primitive: Primitive2d.TEXT,
+          text: t,
+          pos: vec2.fromValues(x, y),
+          hAlign: TextAlign.Max,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        })
+
+        y += 20
+      }
+
+      return res
+    })
   }
 
   tick(dt: number): void {
@@ -276,10 +310,7 @@ export class Client {
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               registerParticleEmitter: this.registerParticleEmitter,
-              debugDraw: {
-                draw2d: this.debugDraw2d.bind(this),
-                draw3d: this.debugDraw3d.bind(this),
-              },
+              debugDraw: this.debugDraw,
             },
             this.state,
             dt,
@@ -325,13 +356,6 @@ export class Client {
             )
           }
 
-          if (this.keyboard.upKeys.has('Backquote')) {
-            this.enableDebugDraw = !this.enableDebugDraw
-          }
-
-          this.keyboard?.update()
-          this.mouse?.update()
-
           // server message cleanup
           this.serverFrameUpdates = this.serverFrameUpdates.filter(
             (m) => m.frame <= this.simulationFrame,
@@ -348,162 +372,15 @@ export class Client {
     }
   }
 
-  render(): void {
-    const now = time.current()
-    this.renderFrameDurations.sample(now - this.lastRenderAt)
-    this.lastRenderAt = now
-
-    if (this.state === GameState.Connecting) {
-      return
-    }
-
-    this.renderer3d.clear()
-
-    this.renderer3d.setWvTransform(this.camera.getWvTransform())
-
-    this.renderer3d.renderStandard((drawModel) => {
-      drawModel('terrain', vec2.create(), 0)
-
-      // GRID DEBUG
-      drawModel('grid', vec2.create(), 0)
-
-      for (const [entityId, model] of this.entityManager.renderables) {
-        const transform = this.entityManager.transforms.get(entityId)!
-        drawModel(model, transform.position, transform.orientation)
+  getRenderables3d(): Iterable<Renderable3d> {
+    return [...this.entityManager.renderables].map(([entityId, modelId]) => {
+      const transform = this.entityManager.transforms.get(entityId)!
+      return {
+        modelId,
+        posXY: transform.position,
+        rotXY: transform.orientation,
       }
     })
-
-    // this.emitters!.forEach((e) =>
-    //   e.getRenderables().forEach((r) => this.renderer.render(r)),
-    // )
-
-    // systems.crosshair(this)
-
-    // if (this.enableDebugDraw) {
-    //   this.debugDrawRenderables.forEach((r) => {
-    //     this.renderer.render(r)
-    //   })
-    // }
-    // this.debugDrawRenderables = []
-
-    // Viewspace rendering
-
-    this.renderer2d.clear()
-    this.renderer2d.setTransform(mat2d.identity(mat2d.create()))
-
-    // systems.playerHealthBar(
-    //   {
-    //     entityManager: this.entityManager,
-    //     playerNumber: this.playerNumber,
-    //   },
-    //   this.renderer,
-    // )
-    // // systems.inventoryDisplay(this, this.entityManager.getPlayer())
-
-    // if (this.state === GameState.YouDied) {
-    //   this.renderer.render({
-    //     primitive: Primitive.TEXT,
-    //     text: 'YOU DIED',
-    //     pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-    //     hAlign: TextAlign.Center,
-    //     vAlign: TextAlign.Center,
-    //     font: '48px serif',
-    //     style: 'red',
-    //   })
-    // }
-
-    // if (this.state === GameState.LevelComplete) {
-    //   this.renderer.render({
-    //     primitive: Primitive.TEXT,
-    //     text: 'YOU WIN',
-    //     pos: vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-    //     hAlign: TextAlign.Center,
-    //     vAlign: TextAlign.Center,
-    //     font: '48px serif',
-    //     style: 'black',
-    //   })
-
-    //   this.renderer.render({
-    //     primitive: Primitive.TEXT,
-    //     text: 'Press space to continue',
-    //     pos: vec2.add(
-    //       vec2.create(),
-    //       vec2.scale(vec2.create(), this.camera.viewportDimensions, 0.5),
-    //       vec2.fromValues(0, 50),
-    //     ),
-    //     hAlign: TextAlign.Center,
-    //     vAlign: TextAlign.Center,
-    //     font: '24px serif',
-    //     style: 'black',
-    //   })
-    // }
-
-    this.debugDraw2d(() => {
-      const text = [
-        `Player ${this.playerNumber}`,
-        `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
-        `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
-        `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
-        `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
-        `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-        `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
-        `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
-          2,
-        )}`,
-        `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
-          2,
-        )}`,
-        this.waitingForServer ? 'WAITING FOR SERVER' : undefined,
-      ]
-
-      const x = this.renderer2d.getViewportDimensions()[0] - 10
-      let y = 10
-      const res: Renderable2d[] = []
-      for (const t of text) {
-        if (t === undefined) {
-          continue
-        }
-
-        res.push({
-          primitive: Primitive2d.TEXT,
-          text: t,
-          pos: vec2.fromValues(x, y),
-          hAlign: TextAlign.Max,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        })
-
-        y += 20
-      }
-
-      return res
-    })
-
-    const nextDebugDraw3d = []
-    if (this.enableDebugDraw) {
-      this.debugDraw2dRenderables.forEach((r) => {
-        this.renderer2d.render(r)
-      })
-
-      for (const m of this.debugDraw3dModels) {
-        this.renderer3d.renderWire((drawFunc) => {
-          drawFunc(m.object)
-        })
-
-        if (m.lifetime !== undefined) {
-          if (m.lifetime > 1) {
-            m.lifetime -= 1
-            nextDebugDraw3d.push(m)
-          }
-        }
-      }
-    }
-
-    this.debugDraw2dRenderables = []
-    this.debugDraw3dModels = nextDebugDraw3d
-
-    this.renderDurations.sample(time.current() - now)
   }
 
   registerParticleEmitter(params: {
@@ -515,24 +392,6 @@ export class Client {
       this.emitterHistory.add(`${params.frame}:${params.entity}`)
       this.emitters.push(params.emitter)
     }
-  }
-
-  debugDraw2d(makeRenderables: () => Renderable2d[]): void {
-    if (!this.enableDebugDraw) {
-      return
-    }
-
-    this.debugDraw2dRenderables = this.debugDraw2dRenderables.concat(
-      makeRenderables(),
-    )
-  }
-
-  debugDraw3d(makeModels: () => DebugDrawObject[]): void {
-    if (!this.enableDebugDraw) {
-      return
-    }
-
-    this.debugDraw3dModels = this.debugDraw3dModels.concat(makeModels())
   }
 
   sendClientMessage(m: ClientMessage): void {
