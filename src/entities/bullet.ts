@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import * as bullet from '~/components/Bullet'
 import * as transform from '~/components/Transform'
+import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
   makeDefaultEntity,
@@ -31,8 +32,8 @@ export const makeBullet = ({
   e.damager = {
     damageValue: 1,
     hitbox: {
-      offset: vec2.fromValues(-2, -2),
-      dimensions: vec2.fromValues(4, 4),
+      offset: vec2.fromValues(-TILE_SIZE / 12, -TILE_SIZE / 12),
+      dimensions: vec2.fromValues(TILE_SIZE / 6, TILE_SIZE / 6),
     },
     immuneList: [owner],
   }
