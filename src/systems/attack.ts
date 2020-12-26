@@ -7,7 +7,8 @@ import { TILE_SIZE } from '~/constants'
 import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState, simulationPhaseDebugColor } from '~/simulate'
-import { aabbOverlap, radialTranslate2 } from '~/util/math'
+import * as aabb from '~/util/aabb2'
+import { radialTranslate2 } from '~/util/math'
 
 export const update = (simState: SimState): void => {
   simState.debugDraw.draw3d(() => {
@@ -15,17 +16,14 @@ export const update = (simState: SimState): void => {
 
     for (const [entityId, d] of simState.entityManager.damageables) {
       const xform = simState.entityManager.transforms.get(entityId)!
-      const aabb = damageableAabb(d, xform)
-      const width = aabb[1][0] - aabb[0][0]
-      const depth = aabb[1][1] - aabb[0][1]
-      const center = [aabb[0][0] + width / 2, aabb[0][1] + depth / 2]
+      const [center, size] = aabb.centerSize(damageableAabb(d, xform))
       objects.push({
         object: {
           type: 'MODEL',
           id: 'wireTile',
           color: simulationPhaseDebugColor(simState.phase),
           translate: vec3.fromValues(center[0], 0.05, center[1]),
-          scale: vec3.fromValues(width, 1, depth),
+          scale: vec3.fromValues(size[0], 1, size[1]),
         },
       })
     }
@@ -52,7 +50,7 @@ export const update = (simState: SimState): void => {
         damageableId,
       )!
 
-      return aabbOverlap(
+      return aabb.overlap(
         damageableAabb(damageable, targetTransform),
         attackerAabb,
       )

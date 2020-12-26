@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { aabbOverlap } from '../math'
+import * as aabb2 from '../../aabb2'
 import {
   ChildList,
   Quadrant,
@@ -11,7 +11,7 @@ import {
   nodeInsert,
   nodeQuery,
   quadrantOfAabb,
-} from '../quadtree/helpers'
+} from '../helpers'
 
 type TestItem = {
   id: string
@@ -148,8 +148,8 @@ describe('minBiasAabbOverlap', () => {
       [1, 3],
     ]
 
-    expect(aabbOverlap(a, b)).toBe(true)
-    expect(aabbOverlap(b, a)).toBe(true)
+    expect(aabb2.overlap(a, b)).toBe(true)
+    expect(aabb2.overlap(b, a)).toBe(true)
     expect(minBiasAabbOverlap(a, b)).toBe(false)
     expect(minBiasAabbOverlap(b, a)).toBe(false)
   })
@@ -164,8 +164,8 @@ describe('minBiasAabbOverlap', () => {
       [2, 2],
     ]
 
-    expect(aabbOverlap(a, b)).toBe(true)
-    expect(aabbOverlap(b, a)).toBe(true)
+    expect(aabb2.overlap(a, b)).toBe(true)
+    expect(aabb2.overlap(b, a)).toBe(true)
     expect(minBiasAabbOverlap(a, b)).toBe(false)
     expect(minBiasAabbOverlap(b, a)).toBe(false)
   })

@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { aabbOverlap } from '../math'
+import * as aabb2 from '~/util/aabb2'
 
 export interface QuadtreeItem<TId> {
   id: TId
@@ -55,7 +55,7 @@ export const minBiasAabbOverlap = (
   a: [vec2, vec2],
   b: [vec2, vec2],
 ): boolean => {
-  if (!aabbOverlap(a, b)) {
+  if (!aabb2.overlap(a, b)) {
     return false
   }
 

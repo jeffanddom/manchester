@@ -4,7 +4,7 @@ import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
-import { aabbOverlap } from '~/util/math'
+import * as aabb2 from '~/util/aabb2'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 enum DirectionCollision {
@@ -41,7 +41,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
       const otherTransform = simState.entityManager.transforms.get(queriedId)!
       const wallBox = tileBox(otherTransform.position)
 
-      if (aabbOverlap(playerBox, wallBox)) {
+      if (aabb2.overlap(playerBox, wallBox)) {
         // North
         if (
           previousPlayerBox[1][1] <= wallBox[0][1] &&

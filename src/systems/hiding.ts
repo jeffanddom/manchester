@@ -1,6 +1,6 @@
 import { aabb as hitboxAabb } from '~/components/Hitbox'
 import { EntityManager } from '~/entities/EntityManager'
-import { aabbOverlapArea } from '~/util/math'
+import * as aabb2 from '~/util/aabb2'
 
 const REQUIRED_OVERLAP = 0.5
 
@@ -22,7 +22,7 @@ export const update = (entityManager: EntityManager): void => {
     let overlap = 0
     let currentlyObscured = false
     for (const obscuringAabb of obscuringAabbs) {
-      overlap += aabbOverlapArea(obscuringAabb, obscurableAabb) / checkArea
+      overlap += aabb2.overlapArea(obscuringAabb, obscurableAabb) / checkArea
 
       if (overlap > REQUIRED_OVERLAP) {
         currentlyObscured = true

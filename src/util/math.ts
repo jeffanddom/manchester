@@ -43,25 +43,6 @@ export const radialTranslate2 = (
   )
 }
 
-export const aabbOverlap = (
-  a: Immutable<[vec2, vec2]>,
-  b: Immutable<[vec2, vec2]>,
-): boolean => {
-  return (
-    a[0][0] <= b[1][0] &&
-    a[1][0] >= b[0][0] &&
-    a[0][1] <= b[1][1] &&
-    a[1][1] >= b[0][1]
-  )
-}
-
-export const aabbOverlapArea = (a: [vec2, vec2], b: [vec2, vec2]): number => {
-  return (
-    Math.max(0, Math.min(a[1][0], b[1][0]) - Math.max(a[0][0], b[0][0])) *
-    Math.max(0, Math.min(a[1][1], b[1][1]) - Math.max(a[0][1], b[0][1]))
-  )
-}
-
 export const getAngle = (
   from: Immutable<vec2>,
   to: Immutable<vec2>,

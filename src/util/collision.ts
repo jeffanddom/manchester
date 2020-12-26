@@ -1,7 +1,7 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
-import { aabbOverlap } from '~/util/math'
+import * as aabb2 from '~/util/aabb2'
 
 const aabbFromSegment = (s: Immutable<[vec2, vec2]>): [vec2, vec2] => {
   const northwest = vec2.fromValues(
@@ -36,7 +36,7 @@ export const segmentSegment = (
   if (glMatrix.equals(divisor, 0)) {
     if (glMatrix.equals(un, 0)) {
       // colinear
-      return aabbOverlap(aabbFromSegment(s1), aabbFromSegment(s2))
+      return aabb2.overlap(aabbFromSegment(s1), aabbFromSegment(s2))
     } else {
       // parallel, no colinear
       return false
