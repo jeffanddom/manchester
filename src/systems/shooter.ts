@@ -35,7 +35,7 @@ export function clone(s: ShooterComponent): ShooterComponent {
     lastFiredFrame: s.lastFiredFrame,
     orientation: s.orientation,
     input: {
-      target: s.input.target ? vec2.clone(s.input.target) : null,
+      target: s.input.target !== null ? vec2.clone(s.input.target) : null,
       fire: s.input.fire,
     },
   }
@@ -86,7 +86,7 @@ export const update = (simState: SimState): void => {
       }),
     )
 
-    if (simState.registerParticleEmitter) {
+    if (simState.registerParticleEmitter !== undefined) {
       const muzzleFlash = new ParticleEmitter({
         spawnTtl: 0.1,
         position: bulletPos,

@@ -17,8 +17,12 @@ module.exports = {
   ],
   plugins: ['import'],
   rules: {
-    '@typescript-eslint/strict-boolean-expressions': 'error',
+    '@typescript-eslint/strict-boolean-expressions': [
+      2,
+      { allowString: false, allowNumber: false, allowNullableObject: false },
+    ],
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unnecessary-condition': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'import/order': [
       'error',

@@ -16,12 +16,12 @@ function removeSshHostConfig(sshConfig: string, localHost: string): string {
 
   for (let i = 0; i < lines.length; i++) {
     // Stop skipping if we reach a new Host or Match line
-    if (skip && lines[i].match(/^s*(Host|Match)/)) {
+    if (skip && lines[i].match(/^s*(Host|Match)/) !== null) {
       skip = false
     }
 
     // Start skipping if we see a Host line matching the localHost arg value
-    if (lines[i].match(new RegExp(`^\\s*Host\\s+${localHost}`))) {
+    if (lines[i].match(new RegExp(`^\\s*Host\\s+${localHost}`)) !== null) {
       skip = true
     }
 

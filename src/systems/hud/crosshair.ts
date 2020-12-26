@@ -3,7 +3,7 @@ import { CursorMode } from '~/systems/client/playerInput'
 
 export const update = (c: ClientSim): void => {
   const mousePos = c.mouse!.getPos()
-  if (mousePos) {
+  if (mousePos !== undefined) {
     // crosshair (TODO: this could probably be moved to HUD rendering, which
     // uses viewspace)
     // const topLeft = vec2.sub(

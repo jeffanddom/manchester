@@ -58,7 +58,7 @@ export const update = (simState: SimState): void => {
       }
 
       const damageable = simState.entityManager.damageables.get(damageableId)
-      if (!damageable) {
+      if (damageable === undefined) {
         return false
       }
 
@@ -91,7 +91,7 @@ export const update = (simState: SimState): void => {
     // Client only side-effects:
     // - explosion
     // - camera shake if player hit
-    if (simState.registerParticleEmitter) {
+    if (simState.registerParticleEmitter !== undefined) {
       const explosion = new ParticleEmitter({
         spawnTtl: 0.2,
         position: radialTranslate2(

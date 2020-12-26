@@ -71,7 +71,7 @@ export class PriorityQueue<T> {
     this._length -= 1
 
     // Push the top value downward, restoring the heap property.
-    while (true) {
+    for (;;) {
       // We should replace the lowest ranking child whose rank is lower than
       // the rank of the current value.
       let swapPos = vPos

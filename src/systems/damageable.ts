@@ -31,7 +31,7 @@ export const update = (
         TILE_SIZE / 2,
       )
 
-      if (simState.registerParticleEmitter) {
+      if (simState.registerParticleEmitter !== undefined) {
         const explosion = new ParticleEmitter({
           spawnTtl: 0.5,
           position: emitterPos,

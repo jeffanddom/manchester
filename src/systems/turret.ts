@@ -123,7 +123,7 @@ export const update = (
       return true
     })
 
-    if (!target) {
+    if (target === undefined) {
       continue
     }
 
@@ -164,7 +164,7 @@ export const update = (
       }),
     )
 
-    if (registerParticleEmitter) {
+    if (registerParticleEmitter !== undefined) {
       registerParticleEmitter({
         emitter: new ParticleEmitter({
           spawnTtl: 0.1,

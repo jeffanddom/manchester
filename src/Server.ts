@@ -203,7 +203,7 @@ export class Server {
           const start = time.current()
 
           // Remove this frame's client messages from the history, then process.
-          const frameMessages = this.clientMessagesByFrame.shift() || []
+          const frameMessages = this.clientMessagesByFrame.shift() ?? []
           simulate(
             {
               entityManager: this.entityManager,

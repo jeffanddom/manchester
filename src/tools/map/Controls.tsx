@@ -93,12 +93,12 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
 
   const startOpen = () => {
     const fnode = fileOpenRef.current
-    if (!fnode) {
+    if (fnode === null) {
       return
     }
 
     const files = fnode.files
-    if (!files || files.length === 0) {
+    if (files === null || files.length === 0) {
       return
     }
     const f = files[0]
@@ -149,7 +149,9 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
         </li>
         <li>
           Cursor position:{' '}
-          {state.tilePos ? `(${state.tilePos![0]}, ${state.tilePos![1]})` : ''}
+          {state.tilePos !== undefined
+            ? `(${state.tilePos![0]}, ${state.tilePos![1]})`
+            : ''}
         </li>
         <li>
           Brush: {BrushMode[state.brush.mode]} (

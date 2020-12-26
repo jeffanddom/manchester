@@ -16,7 +16,7 @@ const trimNewlineSuffix = (data: Buffer): Buffer => {
 // global watch state
 let building = false // a single-thread mutex around rebuild()
 let buildQueued = false
-let server: ChildProcessWithoutNullStreams
+let server: ChildProcessWithoutNullStreams | undefined
 
 const rebuild = async () => {
   // don't allow rebuild() to be called more than once

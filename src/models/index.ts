@@ -23,15 +23,17 @@ const models: {
   wall: wall,
 }
 
-const materials: { [key: string]: [number, number, number, number] } = {
-  bullet: [1.0, 0, 0, 1.0],
-  core: [1.0, 0.5, 0, 1.0],
-  debug: [0, 1.0, 1.0, 1.0],
-  tank: [0, 0, 0, 1.0],
-  tree: [0, 100 / 255, 0, 1.0],
-  turret: [1.0, 250 / 255, 205 / 255, 1.0],
-  wall: [169 / 255, 169 / 255, 169 / 255, 1.0],
-}
+const materials = new Map<string, [number, number, number, number]>(
+  Object.entries({
+    bullet: [1.0, 0, 0, 1.0],
+    core: [1.0, 0.5, 0, 1.0],
+    debug: [0, 1.0, 1.0, 1.0],
+    tank: [0, 0, 0, 1.0],
+    tree: [0, 100 / 255, 0, 1.0],
+    turret: [1.0, 250 / 255, 205 / 255, 1.0],
+    wall: [169 / 255, 169 / 255, 169 / 255, 1.0],
+  }),
+)
 
 type ModelTypes = keyof typeof models
 
@@ -49,7 +51,7 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
 
   let currentColor = defaultColor
   obj.obj.split('\n').forEach((line) => {
-    if (!line) {
+    if (line.length === 0) {
       return
     }
 
@@ -73,7 +75,7 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
     }
 
     if (components[0] === 'usemtl') {
-      currentColor = materials[components[1]] ?? defaultColor
+      currentColor = materials.get(components[1]) ?? defaultColor
     }
 
     if (components[0] === 'f') {

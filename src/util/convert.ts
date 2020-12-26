@@ -6,7 +6,7 @@ export const toIntEnum = <T extends { [key: number]: number | string }>(
   e: T,
   raw: number,
 ): T[keyof T] | null => {
-  if (e[raw] === undefined) {
+  if (!(raw in e)) {
     return null
   }
   return (raw as unknown) as T[keyof T]

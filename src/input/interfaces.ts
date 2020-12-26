@@ -24,7 +24,7 @@ export enum MouseButton {
 }
 
 export function mouseButtonFromRaw(raw: number): MouseButton | undefined {
-  if (MouseButton[raw] === undefined) {
+  if (!(raw in MouseButton)) {
     return undefined
   }
   return <MouseButton>raw

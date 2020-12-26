@@ -105,7 +105,7 @@ export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
     return
   }
 
-  if (node.children) {
+  if (node.children !== undefined) {
     for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
       nodeInsert(
         node.children[q],
@@ -123,7 +123,7 @@ export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
   items.push(item)
 
   let parentNodes = idMap.get(item.id)
-  if (!parentNodes) {
+  if (parentNodes === undefined) {
     parentNodes = []
     idMap.set(item.id, parentNodes)
   }
@@ -156,7 +156,7 @@ export const nodeQuery = <TItem>(
     return []
   }
 
-  if (node.items) {
+  if (node.items !== undefined) {
     return node.items.filter((i) => comparator(queryAabb, i))
   }
 

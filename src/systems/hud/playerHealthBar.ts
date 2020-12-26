@@ -5,7 +5,7 @@ export const update = (simState: {
   playerNumber: number
 }): void => {
   const playerId = simState.entityManager.getPlayerId(simState.playerNumber)
-  if (!playerId) {
+  if (playerId === undefined) {
     return
   }
 

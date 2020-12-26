@@ -142,7 +142,7 @@ export class Editor {
 
   updateCursor(): void {
     const mousePos = this.mouse.getPos()
-    if (mousePos) {
+    if (mousePos !== undefined) {
       this.cursorTilePos = this.v2t(mousePos)
     }
     this.events.emit('cursorMove', { tilePos: this.cursorTilePos })
@@ -152,7 +152,7 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        if (this.cursorTilePos) {
+        if (this.cursorTilePos !== null) {
           this.map.terrain[this.t2a(this.cursorTilePos)] = null
         }
 
@@ -177,7 +177,7 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        if (this.cursorTilePos) {
+        if (this.cursorTilePos !== null) {
           this.map.entities[this.t2a(this.cursorTilePos)] = null
         }
 
@@ -200,7 +200,7 @@ export class Editor {
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
-      if (this.cursorTilePos) {
+      if (this.cursorTilePos !== null) {
         const n = this.t2a(this.cursorTilePos)
 
         // TODO: send these to an event stream a la Redux, for undo etc.
@@ -238,7 +238,7 @@ export class Editor {
       this.renderGrid()
     }
 
-    if (this.cursorTilePos) {
+    if (this.cursorTilePos !== null) {
       this.renderTile(this.cursorTilePos, 'rgba(0, 255, 255, 0.5)')
     }
   }

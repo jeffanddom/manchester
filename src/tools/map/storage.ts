@@ -15,6 +15,8 @@ export const loadMap = (): Map | null => {
 
   try {
     const s: SaveState = JSON.parse(json)
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (s.previous === undefined) {
       console.log('no previous map data found')
       return null

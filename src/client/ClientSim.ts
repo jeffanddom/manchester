@@ -242,7 +242,7 @@ export class ClientSim {
 
   tick(dt: number): void {
     let serverMessages: ServerMessage[] = []
-    if (this.serverConnection) {
+    if (this.serverConnection !== null) {
       serverMessages = this.serverConnection.consume()
     }
 
@@ -308,9 +308,7 @@ export class ClientSim {
             this.simulationFrame - this.committedFrame,
           )
 
-          if (this.state === GameState.Running) {
-            systems.playerInput(this, this.simulationFrame)
-          }
+          systems.playerInput(this, this.simulationFrame)
 
           simulate(
             {
@@ -332,7 +330,7 @@ export class ClientSim {
           this.emitters.forEach((e) => e.update(dt))
 
           const playerId = this.entityManager.getPlayerId(this.playerNumber!)
-          if (playerId) {
+          if (playerId !== undefined) {
             const transform = this.entityManager.transforms.get(playerId)!
 
             // Position the 3D camera at a fixed offset from the player, and
@@ -460,11 +458,10 @@ export class ClientSim {
 
   getRenderables3d(): Iterable<Renderable3d> {
     // TODO: reimplement as lazy iterable?
-
     const res: Renderable3d[] = []
-    if (this.terrainLayer !== undefined) {
-      res.push({ modelId: 'terrain', posXY: vec2.create(), rotXY: 0 })
-    }
+
+    // Add terrain
+    res.push({ modelId: 'terrain', posXY: vec2.create(), rotXY: 0 })
 
     for (const [entityId, modelId] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!
