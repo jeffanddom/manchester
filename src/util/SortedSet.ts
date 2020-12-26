@@ -29,7 +29,7 @@ export class SortedSet<Tk> {
     return {
       next: (): IteratorResult<Tk> => {
         const mapResult = iterator.next()
-        if (mapResult.done) {
+        if (mapResult.done === true) {
           return mapResult
         }
         return { done: false, value: mapResult.value[0] }

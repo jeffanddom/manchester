@@ -199,19 +199,19 @@ export class EntityManager {
       this.hitboxes.set(id, e.hitbox)
     }
 
-    if (e.moveable) {
+    if (e.moveable ?? false) {
       this.moveables.add(id)
     }
 
-    if (e.playfieldClamped) {
+    if (e.playfieldClamped ?? false) {
       this.playfieldClamped.add(id)
     }
 
-    if (e.obscured) {
+    if (e.obscured ?? false) {
       this.obscureds.add(id)
     }
 
-    if (e.obscuring) {
+    if (e.obscuring ?? false) {
       this.obscurings.add(id)
     }
 
@@ -223,7 +223,7 @@ export class EntityManager {
       this.renderables.set(id, e.renderable)
     }
 
-    if (e.targetable) {
+    if (e.targetable ?? false) {
       this.targetables.add(id)
     }
 
@@ -247,7 +247,7 @@ export class EntityManager {
       this.types.set(id, e.type)
     }
 
-    if (e.wall) {
+    if (e.wall ?? false) {
       this.walls.add(id)
     }
 
