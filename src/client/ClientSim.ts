@@ -1,6 +1,7 @@
 import { quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
+import { discardUntil } from '~/cli/util'
 import { Renderable3d } from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
@@ -29,6 +30,11 @@ import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
+interface ServerFrameUpdate {
+  frame: number
+  inputs: ClientMessage[]
+}
+
 export class ClientSim {
   entityManager: EntityManager
   localMessageHistory: ClientMessage[]
@@ -37,10 +43,7 @@ export class ClientSim {
   }
   serverConnection: IServerConnection | null
   playerNumber: number | undefined
-  serverFrameUpdates: {
-    frame: number
-    inputs: ClientMessage[]
-  }[]
+  serverFrameUpdates: ServerFrameUpdate[]
   committedFrame: number
   simulationFrame: number
   waitingForServer: boolean
@@ -283,6 +286,7 @@ export class ClientSim {
                     frame: msg.frame,
                     inputs: msg.inputs,
                   })
+                  this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
 
                   this.serverInputsPerFrame.sample(msg.inputs.length)
                   this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
@@ -381,46 +385,62 @@ export class ClientSim {
   }
 
   syncServerState(dt: number): void {
-    this.serverFrameUpdates = this.serverFrameUpdates
-      .filter((m) => m.frame > this.committedFrame)
-      .sort((a, b) => a.frame - b.frame)
+    this.serverFrameUpdates = discardUntil(
+      this.serverFrameUpdates,
+      (u) => u.frame > this.committedFrame,
+    )
 
-    // Early-out if we haven't gotten server data to advance beyond our
-    // authoritative snapshot.
-    if (
-      this.serverFrameUpdates.length === 0 ||
-      this.serverFrameUpdates[0].frame !== this.committedFrame + 1
-    ) {
+    // Process all contiguous server frames
+    const toProcess: ServerFrameUpdate[] = []
+    const deferred: ServerFrameUpdate[] = []
+    for (const update of this.serverFrameUpdates) {
+      const wantFrame =
+        toProcess.length > 0
+          ? toProcess[toProcess.length - 1].frame + 1
+          : this.committedFrame + 1
+
+      if (update.frame === wantFrame) {
+        toProcess.push(update)
+      } else {
+        deferred.push(update)
+      }
+    }
+
+    // Early-out if there are no server updates we can process right now.
+    if (toProcess.length === 0) {
       return
     }
 
+    // Save future frames for later
+    this.serverFrameUpdates = deferred
+
     this.entityManager.undoPrediction()
 
-    this.serverFrameUpdates.forEach((frameMessage) => {
+    for (const update of toProcess) {
       simulate(
         {
           entityManager: this.entityManager,
-          messages: frameMessage.inputs,
+          messages: update.inputs,
           terrainLayer: this.terrainLayer,
           registerParticleEmitter: this.registerParticleEmitter,
-          frame: frameMessage.frame,
+          frame: update.frame,
           debugDraw: this.debugDraw,
           phase: SimulationPhase.ClientAuthoritative,
         },
         this.state,
         dt,
       )
-      this.committedFrame = frameMessage.frame
-    })
+      this.committedFrame = update.frame
+    }
 
     this.entityManager.commitPrediction()
 
-    this.localMessageHistory = this.localMessageHistory.filter(
+    this.localMessageHistory = discardUntil(
+      this.localMessageHistory,
       (m) => m.frame > this.committedFrame,
     )
 
-    // Re-application of prediction
-    // !! Linear slowdown dependent on the # of frames ahead of the server
+    // Repredict already-simulated frames
     for (let f = this.committedFrame + 1; f < this.simulationFrame; f++) {
       simulate(
         {
