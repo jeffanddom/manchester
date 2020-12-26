@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
@@ -8,7 +7,7 @@ import {
   TankAimClientMessage,
 } from '~/network/ClientMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { SimState, simulationPhaseDebugColor } from '~/simulate'
+import { SimState } from '~/simulate'
 import { getAngle, radialTranslate2 } from '~/util/math'
 
 export type ShooterComponent = {
@@ -86,18 +85,6 @@ export const update = (simState: SimState): void => {
         owner: id,
       }),
     )
-
-    simState.debugDraw.draw3d(() => [
-      {
-        object: {
-          type: 'CUBE',
-          pos: vec3.fromValues(bulletPos[0], 0.5, bulletPos[1]),
-          scale: 0.5,
-          color: simulationPhaseDebugColor(simState.phase),
-        },
-        lifetime: 60,
-      },
-    ])
 
     if (simState.registerParticleEmitter) {
       const muzzleFlash = new ParticleEmitter({

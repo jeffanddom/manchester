@@ -1,11 +1,11 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import * as basicModels from '~/renderer/basicModels'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as wireShader } from '~/renderer/shaders/wire'
+import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
 
 interface ShaderDefinition {
@@ -34,21 +34,17 @@ interface WireLines {
   color: vec4
 }
 
-interface WireCube {
-  type: 'CUBE'
-  pos: vec3
-  color: vec4
-  scale?: number
-  rot?: quat
-}
-
 interface WireModel {
   type: 'MODEL'
   id: string
   color: vec4
+  translate?: vec3
+  uniformScale?: number
+  scale?: vec3
+  rot?: quat
 }
 
-export type WireObject = WireLines | WireCube | WireModel
+export type WireObject = WireLines | WireModel
 
 export class Renderer3d implements IModelLoader {
   private canvas: HTMLCanvasElement
@@ -72,8 +68,10 @@ export class Renderer3d implements IModelLoader {
     this.loadShader('wire', wireShader)
 
     this.models = new Map()
-    this.loadModel('wireCube', basicModels.wireCubeModel, 'wire')
-    this.loadModel('wireTiles', basicModels.wireTilesModel, 'wire')
+
+    this.loadModel('wireCube', wireModels.cube, 'wire')
+    this.loadModel('wireTile', wireModels.tile, 'wire')
+    this.loadModel('wireTileGrid', wireModels.tileGrid, 'wire')
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
@@ -255,27 +253,29 @@ export class Renderer3d implements IModelLoader {
       this.gl.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
 
       switch (obj.type) {
-        case 'CUBE':
-          const rot = obj.rot ?? quat.create()
-          const scale = obj.scale ?? 1
-
-          this.drawModel(
-            'wireCube',
-            mat4.fromRotationTranslationScale(
-              mat4.create(),
-              rot,
-              obj.pos,
-              vec3.fromValues(scale, scale, scale),
-            ),
-          )
-          break
-
         case 'LINES':
           this.drawLines(obj.positions)
           break
 
         case 'MODEL':
-          this.drawModel(obj.id, mat4.create())
+          const scale = vec3.fromValues(1, 1, 1)
+          if (obj.scale !== undefined) {
+            vec3.copy(scale, obj.scale)
+          } else if (obj.uniformScale !== undefined) {
+            scale[0] = obj.uniformScale
+            scale[1] = obj.uniformScale
+            scale[2] = obj.uniformScale
+          }
+
+          this.drawModel(
+            obj.id,
+            mat4.fromRotationTranslationScale(
+              mat4.create(),
+              obj.rot ?? quat.create(),
+              obj.translate ?? vec3.create(),
+              scale,
+            ),
+          )
           break
       }
     })

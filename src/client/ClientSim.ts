@@ -191,7 +191,7 @@ export class ClientSim {
       {
         object: {
           type: 'MODEL',
-          id: 'wireTiles',
+          id: 'wireTileGrid',
           color: vec4.fromValues(0, 1, 1, 1),
         },
       },

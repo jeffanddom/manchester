@@ -1,18 +1,38 @@
+import { vec3 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
 import { TILE_SIZE } from '~/constants'
+import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
-import { SimState } from '~/simulate'
+import { SimState, simulationPhaseDebugColor } from '~/simulate'
 import { aabbOverlap, radialTranslate2 } from '~/util/math'
 
-export const update = (
-  simState: Pick<
-    SimState,
-    'entityManager' | 'registerParticleEmitter' | 'frame'
-  >,
-): void => {
+export const update = (simState: SimState): void => {
+  simState.debugDraw.draw3d(() => {
+    const objects: DebugDrawObject[] = []
+
+    for (const [entityId, d] of simState.entityManager.damageables) {
+      const xform = simState.entityManager.transforms.get(entityId)!
+      const aabb = damageableAabb(d, xform)
+      const width = aabb[1][0] - aabb[0][0]
+      const depth = aabb[1][1] - aabb[0][1]
+      const center = [aabb[0][0] + width / 2, aabb[0][1] + depth / 2]
+      objects.push({
+        object: {
+          type: 'MODEL',
+          id: 'wireTile',
+          color: simulationPhaseDebugColor(simState.phase),
+          translate: vec3.fromValues(center[0], 0.05, center[1]),
+          scale: vec3.fromValues(width, 1, depth),
+        },
+      })
+    }
+
+    return objects
+  })
+
   for (const [id, damager] of simState.entityManager.damagers) {
     const transform = simState.entityManager.transforms.get(id)!
     const attackerAabb = damagerAabb(damager, transform)

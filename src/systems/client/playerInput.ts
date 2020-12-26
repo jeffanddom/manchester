@@ -131,8 +131,9 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
   client.debugDraw.draw3d(() => [
     {
       object: {
-        type: 'CUBE',
-        pos: vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
+        type: 'MODEL',
+        id: 'wireCube',
+        translate: vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
         color: vec4.fromValues(1, 1, 0, 1),
       },
     },

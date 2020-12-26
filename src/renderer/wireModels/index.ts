@@ -11,7 +11,7 @@ const wcHighNE = [wcHalfSize, wcHalfSize, -wcHalfSize]
 const wcHighSW = [-wcHalfSize, wcHalfSize, wcHalfSize]
 const wcHighSE = [wcHalfSize, wcHalfSize, wcHalfSize]
 
-export const wireCubeModel = {
+export const cube = {
   // "as const" convinces the typechecker that this property will not be
   // re-assigned.
   primitive: ModelPrimitive.Lines,
@@ -57,7 +57,19 @@ for (let i = -32; i < 32; i++) {
   )
 }
 
-export const wireTilesModel = {
+export const tileGrid = {
   positions: new Float32Array(wireTilePositions),
+  primitive: ModelPrimitive.Lines,
+}
+
+export const tile = {
+  // prettier-ignore
+  positions: new Float32Array([
+    -0.5, 0, -0.5, 0.5, 0, -0.5,
+    0.5, 0, -0.5, 0.5, 0, 0.5,
+    0.5, 0, 0.5, -0.5, 0, 0.5,
+    -0.5, 0, 0.5, -0.5, 0, -0.5
+
+  ]),
   primitive: ModelPrimitive.Lines,
 }
