@@ -20,7 +20,7 @@ import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
-import { simulate } from '~/simulate'
+import { SimulationPhase, simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
@@ -299,7 +299,7 @@ export class ClientSim {
             break
           }
 
-          systems.syncServerState(this, dt, this.simulationFrame)
+          this.syncServerState(dt)
           this.framesAheadOfServer.sample(
             this.simulationFrame - this.committedFrame,
           )
@@ -318,6 +318,7 @@ export class ClientSim {
               frame: this.simulationFrame,
               registerParticleEmitter: this.registerParticleEmitter,
               debugDraw: this.debugDraw,
+              phase: SimulationPhase.ClientPrediction,
             },
             this.state,
             dt,
@@ -376,6 +377,64 @@ export class ClientSim {
           this.simulationFrame++
         }
         break
+    }
+  }
+
+  syncServerState(dt: number): void {
+    this.serverFrameUpdates = this.serverFrameUpdates
+      .filter((m) => m.frame > this.committedFrame)
+      .sort((a, b) => a.frame - b.frame)
+
+    // Early-out if we haven't gotten server data to advance beyond our
+    // authoritative snapshot.
+    if (
+      this.serverFrameUpdates.length === 0 ||
+      this.serverFrameUpdates[0].frame !== this.committedFrame + 1
+    ) {
+      return
+    }
+
+    this.entityManager.undoPrediction()
+
+    this.serverFrameUpdates.forEach((frameMessage) => {
+      simulate(
+        {
+          entityManager: this.entityManager,
+          messages: frameMessage.inputs,
+          terrainLayer: this.terrainLayer,
+          registerParticleEmitter: this.registerParticleEmitter,
+          frame: frameMessage.frame,
+          debugDraw: this.debugDraw,
+          phase: SimulationPhase.ClientAuthoritative,
+        },
+        this.state,
+        dt,
+      )
+      this.committedFrame = frameMessage.frame
+    })
+
+    this.entityManager.commitPrediction()
+
+    this.localMessageHistory = this.localMessageHistory.filter(
+      (m) => m.frame > this.committedFrame,
+    )
+
+    // Re-application of prediction
+    // !! Linear slowdown dependent on the # of frames ahead of the server
+    for (let f = this.committedFrame + 1; f < this.simulationFrame; f++) {
+      simulate(
+        {
+          entityManager: this.entityManager,
+          messages: this.localMessageHistory.filter((m) => m.frame === f),
+          terrainLayer: this.terrainLayer,
+          registerParticleEmitter: this.registerParticleEmitter,
+          frame: f,
+          debugDraw: this.debugDraw,
+          phase: SimulationPhase.ClientReprediction,
+        },
+        this.state,
+        dt,
+      )
     }
   }
 

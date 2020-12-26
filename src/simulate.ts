@@ -1,3 +1,5 @@
+import { vec4 } from 'gl-matrix'
+
 import { ParticleEmitter } from './particles/ParticleEmitter'
 
 import { IDebugDrawWriter } from '~/DebugDraw'
@@ -7,6 +9,26 @@ import { GameState } from '~/Game'
 import { ClientMessage } from '~/network/ClientMessage'
 import * as systems from '~/systems'
 import * as terrain from '~/terrain'
+
+export enum SimulationPhase {
+  ServerTick,
+  ClientPrediction,
+  ClientAuthoritative,
+  ClientReprediction,
+}
+
+export function simulationPhaseDebugColor(phase: SimulationPhase): vec4 {
+  switch (phase) {
+    case SimulationPhase.ServerTick:
+      return vec4.fromValues(0, 0, 0, 0)
+    case SimulationPhase.ClientPrediction:
+      return vec4.fromValues(1, 0, 0.8, 1)
+    case SimulationPhase.ClientReprediction:
+      return vec4.fromValues(0.8, 0.8, 0, 1)
+    case SimulationPhase.ClientAuthoritative:
+      return vec4.fromValues(0.2, 1, 0.2, 1)
+  }
+}
 
 export type SimState = {
   entityManager: EntityManager
@@ -19,6 +41,11 @@ export type SimState = {
     frame: number
   }) => void
   debugDraw: IDebugDrawWriter
+
+  // Let's be SUPER judicious about when we actually use the phase property.
+  // Ideally, we should only use it for diagnostics and debug, rather than for
+  // actual business logic.
+  phase: SimulationPhase
 }
 
 export const simulate = (

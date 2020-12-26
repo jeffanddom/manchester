@@ -8,7 +8,7 @@ import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { ServerMessageType } from '~/network/ServerMessage'
-import { simulate } from '~/simulate'
+import { SimulationPhase, simulate } from '~/simulate'
 import * as terrain from '~/terrain'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
@@ -211,6 +211,7 @@ export class Server {
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               debugDraw: mockDebugDraw,
+              phase: SimulationPhase.ServerTick,
             },
             this.state,
             dt,
