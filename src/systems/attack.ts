@@ -34,8 +34,24 @@ export const update = (simState: SimState): void => {
   for (const [id, damager] of simState.entityManager.damagers) {
     const transform = simState.entityManager.transforms.get(id)!
     const attackerAabb = damagerAabb(damager, transform)
-    const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
 
+    simState.debugDraw.draw3d(() => {
+      const [center, size] = aabb.centerSize(attackerAabb)
+      return [
+        {
+          object: {
+            type: 'MODEL',
+            id: 'wireTile',
+            color: simulationPhaseDebugColor(simState.phase),
+            translate: vec3.fromValues(center[0], 0.05, center[1]),
+            scale: vec3.fromValues(size[0], 1, size[1]),
+          },
+          lifetime: 3,
+        },
+      ]
+    })
+
+    const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
     const targetId = targetIds.find((damageableId) => {
       if (id === damageableId || damager.immuneList.includes(damageableId)) {
         return false
