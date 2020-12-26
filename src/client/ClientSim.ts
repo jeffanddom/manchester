@@ -1,7 +1,7 @@
 import { quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
-import { Renderable3d } from '~/client/ClientView'
+import { Renderable3d } from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,

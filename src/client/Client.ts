@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
+import { ClientRenderManager } from '~/client/ClientRenderManager'
 import { ClientSim } from '~/client/ClientSim'
-import { ClientView } from '~/client/ClientView'
 import { DebugDraw } from '~/DebugDraw'
 import { GameState } from '~/Game'
 import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
@@ -21,7 +21,7 @@ export class Client {
   keyboard: IKeyboard
   mouse: IMouse
   debugDraw: DebugDraw
-  view: ClientView
+  renderManager: ClientRenderManager
   sim: ClientSim
 
   constructor(params: {
@@ -58,7 +58,7 @@ export class Client {
     this.mouse = new DocumentEventMouse(this.document)
     this.debugDraw = new DebugDraw()
 
-    this.view = new ClientView({
+    this.renderManager = new ClientRenderManager({
       canvas3d: this.canvas3d,
       canvas2d: this.canvas2d,
       debugDraw: this.debugDraw,
@@ -67,7 +67,7 @@ export class Client {
     this.sim = new ClientSim({
       keyboard: this.keyboard,
       mouse: this.mouse,
-      modelLoader: this.view.getModelLoader(),
+      modelLoader: this.renderManager.getModelLoader(),
       debugDraw: this.debugDraw,
       viewportDimensions: this.viewportDimensions,
     })
@@ -84,7 +84,7 @@ export class Client {
     // Maybe: getRenderables3d() should not return renderables for models that
     // haven't been loaded yet!
     if (this.sim.state !== GameState.Connecting) {
-      this.view.update({
+      this.renderManager.update({
         world2ViewTransform: this.sim.camera.getWvTransform(),
         renderables3d: this.sim.getRenderables3d(),
       })
@@ -101,7 +101,7 @@ export class Client {
     this.canvas3d.height = this.canvas2d.height = this.viewportDimensions[1]
 
     this.sim.setViewportDimensions(this.viewportDimensions)
-    this.view.setViewportDimensions(this.viewportDimensions)
+    this.renderManager.setViewportDimensions(this.viewportDimensions)
   }
 
   connectToServer(): Promise<void> {
@@ -119,7 +119,7 @@ export class Client {
       this.mouse = new DocumentEventMouse(this.document)
       this.debugDraw = new DebugDraw()
 
-      this.view = new ClientView({
+      this.renderManager = new ClientRenderManager({
         canvas3d: this.canvas3d,
         canvas2d: this.canvas2d,
         debugDraw: this.debugDraw,
@@ -128,7 +128,7 @@ export class Client {
       this.sim = new ClientSim({
         keyboard: this.keyboard,
         mouse: this.mouse,
-        modelLoader: this.view.getModelLoader(),
+        modelLoader: this.renderManager.getModelLoader(),
         debugDraw: this.debugDraw,
         viewportDimensions: this.viewportDimensions,
       })

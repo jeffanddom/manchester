@@ -16,7 +16,7 @@ export interface Renderable3d {
   rotXY: number
 }
 
-export class ClientView {
+export class ClientRenderManager {
   renderer3d: Renderer3d
   renderer2d: Renderer2d
   debugDraw: IDebugDrawWriter & IDebugDrawReader
