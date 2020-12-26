@@ -56,7 +56,7 @@ export const update = (simState: SimState): void => {
       )
     })
 
-    if (!targetId) {
+    if (targetId === undefined) {
       continue
     }
 
