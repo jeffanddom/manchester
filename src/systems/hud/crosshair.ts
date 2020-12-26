@@ -1,4 +1,4 @@
-import { ClientSim } from '~/ClientSim'
+import { ClientSim } from '~/client/ClientSim'
 import { CursorMode } from '~/systems/client/playerInput'
 
 export const update = (c: ClientSim): void => {

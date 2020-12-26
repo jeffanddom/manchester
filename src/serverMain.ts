@@ -7,7 +7,7 @@ import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
 import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
-import { updateEntrypointHtmlForHotReload } from '~/clientHotReload'
+import { updateEntrypointHtmlForHotReload } from '~/client/hotReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { Server as GameServer } from '~/Server'

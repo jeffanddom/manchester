@@ -1,4 +1,4 @@
-import { ClientSim } from '~/ClientSim'
+import { ClientSim } from '~/client/ClientSim'
 import { mockDebugDraw } from '~/DebugDraw'
 import { simulate } from '~/simulate'
 

@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
-import { ClientSim } from '~/ClientSim'
+import { ClientSim } from '~/client/ClientSim'
 import { DirectionMove } from '~/input/interfaces'
 import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
