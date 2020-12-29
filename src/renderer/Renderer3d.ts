@@ -325,6 +325,19 @@ export class Renderer3d implements IModelLoader {
       )
     }
 
+    // Normals
+    const normalAttrib = shader.attribs.get('normal')
+    if (normalAttrib !== undefined && model.normals !== undefined) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.gl.createBuffer())
+      this.gl.enableVertexAttribArray(normalAttrib)
+      this.gl.vertexAttribPointer(normalAttrib, 3, this.gl.FLOAT, false, 0, 0)
+      this.gl.bufferData(
+        this.gl.ARRAY_BUFFER,
+        model.normals,
+        this.gl.STATIC_DRAW,
+      )
+    }
+
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null)
     this.gl.bindVertexArray(null)
 
