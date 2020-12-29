@@ -85,6 +85,31 @@ export async function updateConfig(opts: {
 }
 
 /**
+ * Removes the provided hostname from user's ~/.ssh/known_hosts file.
+ */
+export async function removeFromKnownHosts(
+  hostname: string,
+  config: { knownHostsPath: string },
+): Promise<void> {
+  const src = (await fs.promises.readFile(config.knownHostsPath)).toString()
+  const filtered = src
+    .split(os.EOL)
+    .filter((line) => !line.startsWith(hostname))
+    .join(os.EOL)
+
+  if (src === filtered) {
+    return
+  }
+
+  // write a backup
+  const backupPath = config.knownHostsPath + '.cloud-dev-backup'
+  await fs.promises.writeFile(backupPath, src)
+
+  // replace original file
+  await fs.promises.writeFile(config.knownHostsPath, filtered)
+}
+
+/**
  * TODO: this might be waiting the maximum amount of time, due to no input in
  * the "accept host key fingerprint" prompt
  */
