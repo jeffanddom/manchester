@@ -1,26 +1,20 @@
-import { vec3 } from 'gl-matrix'
-
-import { model as bullet } from '~/models/bullet'
-import { model as core } from '~/models/core'
-import { model as tank } from '~/models/tank'
-import { model as tree } from '~/models/tree'
-import { model as turret } from '~/models/turret'
-import { model as wall } from '~/models/wall'
+import bulletObj from '~/models/bullet.obj'
+import coreObj from '~/models/core.obj'
+import tankObj from '~/models/tank.obj'
+import treeObj from '~/models/tree.obj'
+import turretObj from '~/models/turret.obj'
+import wallObj from '~/models/wall.obj'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
 
 const models: {
-  [key: string]: {
-    obj: string
-    scale: number
-    translate?: vec3
-  }
+  [key: string]: string
 } = {
-  bullet: bullet,
-  core: core,
-  tank: tank,
-  tree: tree,
-  turret: turret,
-  wall: wall,
+  bullet: bulletObj,
+  core: coreObj,
+  tank: tankObj,
+  tree: treeObj,
+  turret: turretObj,
+  wall: wallObj,
 }
 
 const materials = new Map<string, [number, number, number, number]>(
@@ -42,6 +36,8 @@ const defaultColor = [1.0, 0, 1.0, 1.0]
 export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
   const obj = models[modelType]
 
+  console.log(modelType)
+
   const vertices: number[] = []
   const colors: number[] = []
   const normals: number[] = []
@@ -50,19 +46,20 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
   const objNormals: number[][] = []
 
   let currentColor = defaultColor
-  obj.obj.split('\n').forEach((line) => {
+  obj.split('\n').forEach((line) => {
     if (line.length === 0) {
       return
     }
 
+    console.log('parsing line...', line)
+
     const components = line.split(/\s+/)
-    const translate = obj.translate ?? [0, 0, 0]
 
     if (components[0] === 'v') {
       objVerts.push([
-        parseFloat(components[1]) * obj.scale + translate[0],
-        parseFloat(components[2]) * obj.scale + translate[1],
-        parseFloat(components[3]) * obj.scale + translate[2],
+        parseFloat(components[1]),
+        parseFloat(components[2]),
+        parseFloat(components[3]),
       ])
     }
 
