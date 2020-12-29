@@ -37,13 +37,13 @@ function removeSshHostConfig(sshConfig: string, localHost: string): string {
 
 function sshConfigTemplate(opts: {
   localHostAlias: string
-  remoteHost: string
+  remoteHostname: string
   remoteUser: string
   localPort: number
   remotePort: number
 }): string {
   return `Host ${opts.localHostAlias}
-  HostName ${opts.remoteHost}
+  HostName ${opts.remoteHostname}
   User ${opts.remoteUser}
   ForwardAgent yes
   LocalForward ${opts.remotePort} localhost:${opts.localPort}
@@ -61,7 +61,7 @@ function sshConfigTemplate(opts: {
 export async function updateConfig(opts: {
   sshConfigPath: string
   localHostAlias: string
-  remoteHost: string
+  remoteHostname: string
   remoteUser: string
   localPort: number
   remotePort: number
@@ -69,6 +69,7 @@ export async function updateConfig(opts: {
   const srcConfig = (await fs.promises.readFile(opts.sshConfigPath)).toString()
 
   // write a backup
+  // TODO: this backup scheme is not useful when calling cloud-dev repeatedly
   const backupPath = opts.sshConfigPath + '.cloud-dev-backup'
   await fs.promises.writeFile(backupPath, srcConfig)
 
@@ -85,16 +86,44 @@ export async function updateConfig(opts: {
 }
 
 /**
- * Removes the provided hostname from user's ~/.ssh/known_hosts file.
+ * WARNING: ONLY call this function for hosts where you can safely expect a
+ * newly-generated SSH key, such as a recently-provisioned EC2 host.
+ *
+ * Adds the provided content to the user's ~/.ssh/known_hosts file.
+ */
+export async function extendKnownHosts(
+  content: string,
+  config: { knownHostsPath: string },
+): Promise<void> {
+  const src = (await fs.promises.readFile(config.knownHostsPath)).toString()
+
+  // write a backup
+  // TODO: this backup scheme is not useful when calling cloud-dev repeatedly
+  const backupPath = config.knownHostsPath + '.cloud-dev-backup'
+  await fs.promises.writeFile(backupPath, src)
+
+  // replace original file
+  if (!src.endsWith(os.EOL)) {
+    content = os.EOL + content
+  }
+  if (!content.endsWith(os.EOL)) {
+    content += os.EOL
+  }
+  await fs.promises.writeFile(config.knownHostsPath, src + content)
+}
+
+/**
+ * Removes lines starting with any of the given prefixes from user's
+ * ~/.ssh/known_hosts file.
  */
 export async function removeFromKnownHosts(
-  hostname: string,
+  prefixes: string[],
   config: { knownHostsPath: string },
 ): Promise<void> {
   const src = (await fs.promises.readFile(config.knownHostsPath)).toString()
   const filtered = src
     .split(os.EOL)
-    .filter((line) => !line.startsWith(hostname))
+    .filter((line) => prefixes.find((p) => line.startsWith(p)) === undefined)
     .join(os.EOL)
 
   if (src === filtered) {
@@ -102,6 +131,7 @@ export async function removeFromKnownHosts(
   }
 
   // write a backup
+  // TODO: this backup scheme is not useful when calling cloud-dev repeatedly
   const backupPath = config.knownHostsPath + '.cloud-dev-backup'
   await fs.promises.writeFile(backupPath, src)
 
@@ -113,21 +143,35 @@ export async function removeFromKnownHosts(
  * TODO: this might be waiting the maximum amount of time, due to no input in
  * the "accept host key fingerprint" prompt
  */
-export async function waitForAvailability(host: string): Promise<void> {
+export async function waitForHostPubkeys(host: string): Promise<string> {
   const retries = 4
   let timeout = 1000
+  let result: string | undefined
+
   for (let i = 0; i < retries; i++) {
     await util.sleep(timeout)
     timeout *= 2
     try {
-      childProcess.execSync(`ssh ${host} echo noop`, {
-        stdio: 'ignore',
-      })
+      result = childProcess
+        .execSync(`ssh-keyscan ${host}`, {
+          stdio: [
+            'ignore', // stdin
+            'pipe', // stdout (will be captured in return value)
+            'ignore', // stderr (ssh-keyscan emits unhelpful comment strings)
+          ],
+        })
+        .toString()
       break
     } catch (err) {
       /* do nothing */
     }
   }
+
+  if (result === undefined) {
+    throw new Error(`could not fetch SSH identity from ${host}`)
+  }
+
+  return result
 }
 
 export async function exec(host: string, cmd: string): Promise<void> {

@@ -102,7 +102,7 @@ export async function launch(
 export async function waitForPublicDnsName(
   ec2: AWS.EC2,
   instanceId: string,
-): Promise<string> {
+): Promise<{ name: string; ip: string }> {
   const maxAttempts = 5
   let wait = 1500
   for (let i = 0; i < maxAttempts; i++) {
@@ -123,9 +123,11 @@ export async function waitForPublicDnsName(
     const instance = instances[0]
     if (
       instance.PublicDnsName !== undefined &&
-      instance.PublicDnsName.length > 0
+      instance.PublicDnsName.length > 0 &&
+      instance.PublicIpAddress !== undefined &&
+      instance.PublicIpAddress.length > 0
     ) {
-      return instance.PublicDnsName
+      return { name: instance.PublicDnsName, ip: instance.PublicIpAddress }
     }
 
     await util.sleep(wait)

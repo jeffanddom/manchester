@@ -30,7 +30,12 @@ class CloudDev {
   awsUsername?: string
   ebsVolumeId?: string
   instanceId?: string
-  remoteHostname?: string
+  remoteHost:
+    | {
+        name: string
+        ip: string
+      }
+    | undefined
 
   constructor() {
     this.ec2 = new AWS.EC2({ region: 'us-west-1' })
@@ -94,29 +99,35 @@ class CloudDev {
 
     // Fetch and print the public hostname.
     console.log(`waiting for public hostname...`)
-    this.remoteHostname = await awsUtils.waitForPublicDnsName(
+    this.remoteHost = await awsUtils.waitForPublicDnsName(
       this.ec2,
       this.instanceId,
     )
+    console.log(`hostname: ${this.remoteHost.name}`)
 
-    // Attach volume ot instnace
+    // Attach volume to instnace
     console.log(`attaching EBS volume...`)
     await awsUtils.attachVolume(this.ec2, this.instanceId, this.ebsVolumeId)
+
+    // wait for sshd to accept connections
+    console.log('waiting for SSH availability...')
+    const hostPubkeys = await sshUtils.waitForHostPubkeys(this.remoteHost.name)
+
+    console.log(`extending ${this.sshKnownHostsPath} with host pubkeys...`)
+    await sshUtils.extendKnownHosts(hostPubkeys, {
+      knownHostsPath: this.sshKnownHostsPath,
+    })
 
     // Update SSH config with new remote host
     console.log(`updating ${this.sshConfigPath}...`)
     await sshUtils.updateConfig({
       sshConfigPath: this.sshConfigPath,
       localHostAlias: this.localHostAlias,
-      remoteHost: this.remoteHostname,
+      remoteHostname: this.remoteHost.name,
       remoteUser: this.remoteUser,
       localPort: this.localPort,
       remotePort: this.remotePort,
     })
-
-    // wait for sshd to accept connections
-    console.log('waiting for SSH availability...')
-    await sshUtils.waitForAvailability(this.localHostAlias)
 
     // Mount the volume to the filesystem
     console.log(`mounting volume...`)
@@ -131,7 +142,7 @@ class CloudDev {
 
     console.log(`---
 cloud-dev is ready!
-* Remote hostname: ${this.remoteHostname}
+* Remote hostname: ${this.remoteHost.name}
 * SSH alias: ${this.localHostAlias}
   * Connect via: ssh ${this.localHostAlias}
   * Local port ${this.localPort} will be fowarded to remote port ${this.remotePort}
@@ -145,13 +156,16 @@ cloud-dev is ready!
       await awsUtils.terminate(this.ec2, this.instanceId)
     }
 
-    if (this.remoteHostname !== undefined) {
+    if (this.remoteHost !== undefined) {
       console.log(
-        `removing ${this.remoteHostname} from ${this.sshKnownHostsPath}...`,
+        `removing ${this.remoteHost.name} from ${this.sshKnownHostsPath}...`,
       )
-      sshUtils.removeFromKnownHosts(this.remoteHostname, {
-        knownHostsPath: this.sshKnownHostsPath,
-      })
+      await sshUtils.removeFromKnownHosts(
+        [this.remoteHost.name, this.remoteHost.ip],
+        {
+          knownHostsPath: this.sshKnownHostsPath,
+        },
+      )
     }
   }
 }
