@@ -1,7 +1,6 @@
 import { quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
-import { discardUntil } from '~/cli/util'
 import { Renderable3d } from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
@@ -26,6 +25,7 @@ import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
 import { Immutable } from '~/types/immutable'
+import { discardUntil } from '~/util/array'
 import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
