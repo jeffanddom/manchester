@@ -8,6 +8,8 @@
  * shutdown cleanup.
  */
 
+import * as fs from 'fs'
+
 import * as AWS from 'aws-sdk'
 
 import * as util from '../util'
@@ -130,11 +132,25 @@ class CloudDev {
     })
 
     // Mount the volume to the filesystem
+    const remoteUserdir = '/home/' + this.remoteUser
+    const mountpoint = remoteUserdir + '/data'
     console.log(`mounting volume...`)
-    await sshUtils.exec(
+    sshUtils.exec(
       this.localHostAlias,
-      'sudo mkdir /home/ubuntu/data && sudo mount /dev/nvme1n1 /home/ubuntu/data && sudo chown ubuntu:ubuntu /home/ubuntu/data',
+      `sudo mkdir ${mountpoint} && sudo mount /dev/nvme1n1 ${mountpoint} && sudo chown ${this.remoteUser}:${this.remoteUser} ${mountpoint}`,
     )
+
+    // Copy gitconfig
+    const gitconfigPath = process.env['HOME'] + '/.gitconfig'
+    if (fs.existsSync(gitconfigPath)) {
+      console.log(`uploading gitconfig...`)
+      sshUtils.upload({
+        remoteUser: this.remoteUser,
+        remoteHost: this.remoteHost.name,
+        localPath: gitconfigPath,
+        remotePath: remoteUserdir + '/.gitconfig',
+      })
+    }
 
     // Prevent the program from quitting when main() returns. We'll wait for an
     // OS signal instead.
@@ -151,6 +167,9 @@ cloud-dev is ready!
   }
 
   async cleanup(): Promise<void> {
+    // ensure visual space after "^C" termination character
+    console.log('')
+
     if (this.instanceId !== undefined) {
       console.log(`terminating ${this.instanceId}...`)
       await awsUtils.terminate(this.ec2, this.instanceId)

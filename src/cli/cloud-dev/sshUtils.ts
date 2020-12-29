@@ -174,8 +174,20 @@ export async function waitForHostPubkeys(host: string): Promise<string> {
   return result
 }
 
-export async function exec(host: string, cmd: string): Promise<void> {
+export function exec(host: string, cmd: string): void {
   childProcess.execSync(`ssh ${host} ${JSON.stringify(cmd)}`, {
     stdio: 'inherit',
   })
+}
+
+export function upload(config: {
+  remoteUser: string
+  remoteHost: string
+  localPath: string
+  remotePath: string
+}): void {
+  childProcess.execSync(
+    `scp -q ${config.localPath} ${config.remoteUser}@${config.remoteHost}:${config.remotePath}`,
+    { stdio: 'inherit' },
+  )
 }
