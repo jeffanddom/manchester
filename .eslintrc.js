@@ -21,7 +21,6 @@ module.exports = {
       2,
       { allowString: false, allowNumber: false, allowNullableObject: false },
     ],
-    '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
