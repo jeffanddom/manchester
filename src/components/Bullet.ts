@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
-
+import { TILE_SIZE } from '~/constants'
 import { Immutable } from '~/types/immutable'
 
-const BULLET_RANGE = 250
+const BULLET_RANGE = 10 * TILE_SIZE
 
 export type Bullet = {
   origin: vec2

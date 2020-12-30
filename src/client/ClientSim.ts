@@ -335,7 +335,7 @@ export class ClientSim {
 
             // Position the 3D camera at a fixed offset from the player, and
             // point the camera directly at the player.
-            const offset = vec3.fromValues(0, 7, 4)
+            const offset = vec3.fromValues(0, 12, 3)
             this.camera.setPos(
               vec3.add(
                 vec3.create(),

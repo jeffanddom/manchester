@@ -14,7 +14,7 @@ import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 import { SortedSet } from '~/util/SortedSet'
 
 const TURRET_ROT_SPEED = Math.PI / 2
-const RANGE = 300
+const RANGE = 12 * TILE_SIZE
 const COOLDOWN_PERIOD = 0.33
 
 export type TurretComponent = {
