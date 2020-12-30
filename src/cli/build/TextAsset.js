@@ -8,7 +8,7 @@ module.exports = class TextAsset extends Asset {
   }
 
   generate() {
-    const content = JSON.stringify(this.contents);
+    const content = JSON.stringify(this.contents)
 
     return [{ type: 'js', value: `module.exports = ${content}` }]
   }
