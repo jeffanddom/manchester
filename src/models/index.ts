@@ -36,8 +36,6 @@ const defaultColor = [1.0, 0, 1.0, 1.0]
 export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
   const obj = models[modelType]
 
-  console.log(modelType)
-
   const vertices: number[] = []
   const colors: number[] = []
   const normals: number[] = []
@@ -50,8 +48,6 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
     if (line.length === 0) {
       return
     }
-
-    console.log('parsing line...', line)
 
     const components = line.split(/\s+/)
 

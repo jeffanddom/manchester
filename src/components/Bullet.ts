@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+
 import { TILE_SIZE } from '~/constants'
 import { Immutable } from '~/types/immutable'
 
