@@ -22,6 +22,7 @@ export interface EntityComponents {
   playerNumber?: number
   playfieldClamped?: boolean
   renderable?: string
+  renderableV2?: string
   shooter?: ShooterComponent
   targetable?: boolean
   team?: Team

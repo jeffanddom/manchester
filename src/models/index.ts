@@ -1,5 +1,6 @@
 import bulletObj from '~/models/bullet.obj'
 import coreObj from '~/models/core.obj'
+import tankGltf from '~/models/tank.gltf'
 import tankObj from '~/models/tank.obj'
 import treeObj from '~/models/tree.obj'
 import turretObj from '~/models/turret.obj'
@@ -16,6 +17,12 @@ const models: {
   turret: turretObj,
   wall: wallObj,
 }
+
+const gltfs: Map<string, string> = new Map(
+  Object.entries({
+    tank: tankGltf,
+  }),
+)
 
 const materials = new Map<string, [number, number, number, number]>(
   Object.entries({
@@ -110,4 +117,12 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
     normals: new Float32Array(normals),
     primitive: ModelPrimitive.Triangles,
   }
+}
+
+export function getGltfJson(name: string): string {
+  const json = gltfs.get(name)
+  if (json === undefined) {
+    throw new Error(`no GLTF named ${name}`)
+  }
+  return json
 }

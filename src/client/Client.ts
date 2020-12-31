@@ -87,6 +87,7 @@ export class Client {
       this.renderManager.update({
         world2ViewTransform: this.sim.camera.getWvTransform(),
         renderables3d: this.sim.getRenderables3d(),
+        renderables3dV2: this.sim.getRenderables3dV2(),
       })
     }
 

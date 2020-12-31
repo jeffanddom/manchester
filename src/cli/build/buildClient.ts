@@ -17,7 +17,9 @@ const bundler = new Bundler(path.join(gameSrcPath, 'index.html'), {
   sourceMaps: true,
 })
 
-bundler.addAssetType('obj', require.resolve('./TextAsset'))
+for (const ext of ['obj', 'gltf']) {
+  bundler.addAssetType(ext, require.resolve('./TextAsset'))
+}
 
 bundler.bundle().then(() => {
   // do nothing

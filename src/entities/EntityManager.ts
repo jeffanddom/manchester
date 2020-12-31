@@ -50,6 +50,7 @@ export class EntityManager {
   playerNumbers: ComponentTable<number>
   playfieldClamped: EntitySet
   renderables: ComponentTable<string>
+  renderableV2s: ComponentTable<string>
   shooters: ComponentTable<ShooterComponent>
   targetables: EntitySet
   teams: ComponentTable<Team>
@@ -84,6 +85,7 @@ export class EntityManager {
     this.playerNumbers = new ComponentTable((c) => c)
     this.playfieldClamped = new EntitySet()
     this.renderables = new ComponentTable((c) => c)
+    this.renderableV2s = new ComponentTable((c) => c)
     this.shooters = new ComponentTable(shooterClone)
     this.targetables = new EntitySet()
     this.teams = new ComponentTable((c) => c)
@@ -104,6 +106,7 @@ export class EntityManager {
       this.playerNumbers,
       this.playfieldClamped,
       this.renderables,
+      this.renderableV2s,
       this.shooters,
       this.targetables,
       this.teams,
@@ -221,6 +224,10 @@ export class EntityManager {
 
     if (e.renderable !== undefined) {
       this.renderables.set(id, e.renderable)
+    }
+
+    if (e.renderableV2 !== undefined) {
+      this.renderableV2s.set(id, e.renderableV2)
     }
 
     if (e.targetable ?? false) {

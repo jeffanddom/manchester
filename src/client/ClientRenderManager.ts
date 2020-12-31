@@ -1,6 +1,4 @@
-import { mat4 } from 'gl-matrix'
-import { mat2d } from 'gl-matrix'
-import { vec2 } from 'gl-matrix'
+import { mat2d, mat4, vec2, vec4 } from 'gl-matrix'
 
 import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
 import { IModelLoader } from '~/renderer/ModelLoader'
@@ -14,6 +12,12 @@ export interface Renderable3d {
   modelId: string
   posXY: Immutable<vec2>
   rotXY: number
+}
+
+export interface Renderable3dV2 {
+  modelId: string
+  model2World: mat4
+  color: vec4
 }
 
 export class ClientRenderManager {
@@ -52,6 +56,7 @@ export class ClientRenderManager {
   update(params: {
     world2ViewTransform: mat4
     renderables3d: Iterable<Renderable3d>
+    renderables3dV2: Iterable<Renderable3dV2>
   }): void {
     const now = time.current()
     this.renderFrameDurations.sample(now - this.lastRenderAt)
@@ -63,6 +68,12 @@ export class ClientRenderManager {
     this.renderer3d.renderStandard((drawModel) => {
       for (const { modelId, posXY, rotXY } of params.renderables3d) {
         drawModel(modelId, posXY, rotXY)
+      }
+    })
+
+    this.renderer3d.renderV2((drawModel) => {
+      for (const { modelId, model2World, color } of params.renderables3dV2) {
+        drawModel(modelId, model2World, color)
       }
     })
 

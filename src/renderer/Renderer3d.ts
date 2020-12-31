@@ -1,9 +1,17 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { ModelDef, ModelPrimitive } from '~/renderer/common'
+import {
+  Mesh,
+  MeshPrimitive,
+  ModelDef,
+  ModelNode,
+  ModelPrimitive,
+} from '~/renderer/common'
+import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as standardShader } from '~/renderer/shaders/standard'
+import { shader as v2Shader } from '~/renderer/shaders/v2'
 import { shader as wireShader } from '~/renderer/shaders/wire'
 import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
@@ -58,6 +66,9 @@ export class Renderer3d implements IModelLoader {
   private world2ViewTransform: mat4
   private currentShader: Shader | undefined
 
+  // new renderer code
+  private modelRootNodes: Map<string, ModelNode>
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
 
@@ -65,6 +76,7 @@ export class Renderer3d implements IModelLoader {
 
     this.shaders = new Map()
     this.loadShader('standard', standardShader)
+    this.loadShader('v2', v2Shader)
     this.loadShader('wire', wireShader)
 
     this.models = new Map()
@@ -82,6 +94,8 @@ export class Renderer3d implements IModelLoader {
 
     this.world2ViewTransform = mat4.create()
     this.currentShader = undefined
+
+    this.modelRootNodes = new Map()
   }
 
   private loadShader(name: string, def: ShaderDefinition): void {
@@ -101,6 +115,12 @@ export class Renderer3d implements IModelLoader {
     this.gl.attachShader(program, vertexShader)
     this.gl.attachShader(program, fragmentShader)
     this.gl.linkProgram(program)
+
+    const linkStatus = this.gl.getProgramParameter(program, this.gl.LINK_STATUS)
+    if (linkStatus === 0) {
+      const info = this.gl.getProgramInfoLog(program)
+      throw 'Could not compile WebGL program. \n\n' + info
+    }
 
     const attribs = new Map()
     for (const a of def.attribs) {
@@ -239,6 +259,142 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
+   * Render using the V2 shader, specifying models with per-mesh transforms.
+   */
+  renderV2(
+    renderBody: (
+      drawFunc: (
+        modelName: string,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => void,
+    ) => void,
+  ): void {
+    this.useShader('v2')
+    this.gl.enable(this.gl.DEPTH_TEST)
+    this.gl.depthFunc(this.gl.LESS)
+    this.gl.enable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.BACK)
+    this.gl.frontFace(this.gl.CCW)
+
+    renderBody(
+      (
+        modelName: string,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => {
+        const root = this.modelRootNodes.get(modelName)
+        if (root === undefined) {
+          throw new Error(`unknown model ${modelName}`)
+        }
+        this.renderNode(root, model2World, color)
+      },
+    )
+  }
+
+  private renderNode(
+    node: ModelNode,
+    model2World: Immutable<mat4>,
+    color: Immutable<vec4>,
+  ): void {
+    if (node.transform !== undefined) {
+      model2World = mat4.multiply(mat4.create(), model2World, node.transform)
+    }
+
+    if (node.mesh !== undefined) {
+      this.renderMesh(node.mesh, model2World, color)
+    }
+
+    for (const c of node.children) {
+      this.renderNode(c, model2World, color)
+    }
+  }
+
+  private renderMesh(
+    mesh: Mesh,
+    model2World: Immutable<mat4>,
+    color: Immutable<vec4>,
+  ): void {
+    if (this.currentShader === undefined) {
+      throw new Error(`cannot render without current shader`)
+    }
+
+    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+    if (model2WorldUniform === undefined) {
+      throw new Error(`shader has no model2World uniform`)
+    }
+    const colorUniform = this.currentShader.uniforms.get('color')
+    if (colorUniform === undefined) {
+      throw new Error(`shader has no color uniform`)
+    }
+    const positionAttrib = this.currentShader.attribs.get('position')
+    if (positionAttrib === undefined) {
+      throw new Error(`shader has no position attrib`)
+    }
+    const normalAttrib = this.currentShader.attribs.get('normal')
+    if (normalAttrib === undefined) {
+      throw new Error(`shader has no normal attrib`)
+    }
+
+    // Uniforms
+    this.gl.uniformMatrix4fv(
+      model2WorldUniform,
+      false,
+      model2World as Float32Array,
+    )
+    this.gl.uniformMatrix4fv(colorUniform, false, color as Float32Array)
+
+    const vao = this.gl.createVertexArray()
+    this.gl.bindVertexArray(vao)
+
+    // Position attrib
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.positions.glBuffer)
+    this.gl.enableVertexAttribArray(positionAttrib)
+    this.gl.vertexAttribPointer(
+      positionAttrib,
+      mesh.positions.byteLength,
+      mesh.positions.glType,
+      false,
+      0,
+      0,
+    )
+
+    // Normal attrib
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.glBuffer)
+    this.gl.enableVertexAttribArray(normalAttrib)
+    this.gl.vertexAttribPointer(
+      normalAttrib,
+      mesh.normals.byteLength,
+      mesh.normals.glType,
+      false,
+      0,
+      0,
+    )
+
+    // Index buffer
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices.glBuffer)
+
+    switch (mesh.primitive) {
+      case MeshPrimitive.Triangles:
+        this.gl.drawElements(
+          this.gl.TRIANGLES,
+          mesh.indices.elementLength,
+          mesh.indices.glType,
+          0,
+        )
+        break
+    }
+
+    // TODO: figure out how to preserve VAO. Probably, the GLTF loading
+    // helpers should have access to shader attribute locations, but we need
+    // a way to make those consistent across shaders.
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null)
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null)
+    this.gl.bindVertexArray(null)
+    this.gl.deleteVertexArray(vao)
+  }
+
+  /**
    * Render using the wire shader. Intended for debug draw.
    */
   renderWire(renderBody: (drawFunc: (obj: WireObject) => void) => void): void {
@@ -351,14 +507,33 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
+   * Loads all nodes from a glTF document as ModelNodes.
+   */
+  loadGltf(json: string): void {
+    const doc = gltf.fromJson(json)
+    for (const scene of doc.scenes ?? []) {
+      for (const nodeId of scene.nodes ?? []) {
+        const modelNode = gltf.makeNode(this.gl, doc, nodeId)
+
+        // All root nodes in the renderer share the same namespace.
+        if (this.modelRootNodes.has(modelNode.name)) {
+          throw new Error(
+            `model root node with name ${modelNode.name} already exists`,
+          )
+        }
+
+        this.modelRootNodes.set(modelNode.name, modelNode)
+      }
+    }
+  }
+
+  /**
    * Draw the specified model with the given 2D position and rotation. The
    * position will be projected onto the XZ plane.
    */
   private drawModel(modelName: string, model2World: mat4): void {
     if (this.currentShader === undefined) {
-      throw new Error(
-        `cannot render ${modelName} with no shader; did you remember to call setRenderPass()?`,
-      )
+      throw new Error(`cannot render without current shader`)
     }
 
     const model2WorldUniform = this.currentShader.uniforms.get('model2World')
@@ -389,9 +564,7 @@ export class Renderer3d implements IModelLoader {
    */
   private drawLines(positions: Float32Array): void {
     if (this.currentShader === undefined) {
-      throw new Error(
-        `cannot render lines with no shader; did you remember to call setRenderPass()?`,
-      )
+      throw new Error(`cannot render without current shader`)
     }
 
     const numPoints = positions.length / 3

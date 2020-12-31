@@ -9,6 +9,14 @@ declare module 'gl-matrix' {
     export function fromTranslation(out: mat2d, v: Immutable<vec2>): mat2d
   }
 
+  export namespace mat4 {
+    export function multiply(
+      out: mat4,
+      a: Immutable<mat4>,
+      b: Immutable<mat4>,
+    ): mat4
+  }
+
   export namespace vec2 {
     export function add(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function clone(a: Immutable<vec2>): vec2

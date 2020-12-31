@@ -1,7 +1,7 @@
-import { quat, vec2, vec3, vec4 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Camera3d } from '~/camera/Camera3d'
-import { Renderable3d } from '~/client/ClientRenderManager'
+import { Renderable3d, Renderable3dV2 } from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
@@ -13,7 +13,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
-import { getModel } from '~/models'
+import { getGltfJson, getModel } from '~/models'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
@@ -169,6 +169,8 @@ export class ClientSim {
     for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
       this.modelLoader.loadModel(m, getModel(m), 'standard')
     }
+
+    this.modelLoader.loadGltf(getGltfJson('tank'))
   }
 
   setState(s: GameState): void {
@@ -469,6 +471,30 @@ export class ClientSim {
         modelId,
         posXY: transform.position,
         rotXY: transform.orientation,
+      })
+    }
+
+    return res
+  }
+
+  getRenderables3dV2(): Iterable<Renderable3dV2> {
+    // TODO: reimplement as lazy iterable?
+    const res: Renderable3dV2[] = []
+
+    for (const [entityId, modelId] of this.entityManager.renderableV2s) {
+      const transform = this.entityManager.transforms.get(entityId)!
+      res.push({
+        modelId,
+        model2World: mat4.fromRotationTranslation(
+          mat4.create(),
+          // We have to negate rotXY here. Positive rotations on the XY plane
+          // represent right-handed rotations around cross(+X, +Y), whereas
+          // positive rotations on the XZ plane represent right-handed rotations
+          // around cross(+X, -Z).
+          quat.rotateY(quat.create(), quat.create(), -transform.orientation),
+          vec3.fromValues(transform.position[0], 0, transform.position[1]),
+        ),
+        color: vec4.fromValues(0, 0.6, 0.6, 1),
       })
     }
 

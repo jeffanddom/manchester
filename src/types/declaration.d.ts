@@ -1,1 +1,2 @@
-declare module "*.obj"
+declare module '*.obj'
+declare module '*.gltf'
