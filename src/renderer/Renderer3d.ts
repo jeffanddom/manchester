@@ -342,7 +342,7 @@ export class Renderer3d implements IModelLoader {
       false,
       model2World as Float32Array,
     )
-    this.gl.uniformMatrix4fv(colorUniform, false, color as Float32Array)
+    this.gl.uniform4fv(colorUniform, color as Float32Array)
 
     const vao = this.gl.createVertexArray()
     this.gl.bindVertexArray(vao)
@@ -352,7 +352,7 @@ export class Renderer3d implements IModelLoader {
     this.gl.enableVertexAttribArray(positionAttrib)
     this.gl.vertexAttribPointer(
       positionAttrib,
-      mesh.positions.byteLength,
+      mesh.positions.componentsPerAttrib,
       mesh.positions.glType,
       false,
       0,
@@ -364,7 +364,7 @@ export class Renderer3d implements IModelLoader {
     this.gl.enableVertexAttribArray(normalAttrib)
     this.gl.vertexAttribPointer(
       normalAttrib,
-      mesh.normals.byteLength,
+      mesh.normals.componentsPerAttrib,
       mesh.normals.glType,
       false,
       0,
@@ -378,7 +378,7 @@ export class Renderer3d implements IModelLoader {
       case MeshPrimitive.Triangles:
         this.gl.drawElements(
           this.gl.TRIANGLES,
-          mesh.indices.elementLength,
+          mesh.indices.componentCount,
           mesh.indices.glType,
           0,
         )

@@ -90,28 +90,26 @@ function applyAccessor(
     stride?: number
   } = {},
 ): BufferArray {
-  const elementDegree = accessorTypeDegree(type)
-  const elementSize = elementDegree * accessorComponentTypeSize(componentType)
+  const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
+  const elementSize =
+    accessorTypeDegree(type) * accessorComponentTypeSize(componentType)
   if (opts.stride !== undefined && opts.stride !== elementSize) {
     throw new Error(`interleaved buffer views not yet supported`)
   }
 
-  const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
-  const totalBytes = count * elementDegree
-
   switch (componentType) {
     case AccessorComponentType.Byte:
-      return new Int8Array(bytes, offset, totalBytes)
+      return new Int8Array(bytes, offset, count)
     case AccessorComponentType.UnsignedByte:
-      return new Uint8Array(bytes, offset, totalBytes)
+      return new Uint8Array(bytes, offset, count)
     case AccessorComponentType.Short:
-      return new Int16Array(bytes, offset, totalBytes)
+      return new Int16Array(bytes, offset, count)
     case AccessorComponentType.UnsignedShort:
-      return new Uint16Array(bytes, offset, totalBytes)
+      return new Uint16Array(bytes, offset, count)
     case AccessorComponentType.UnsignedInt:
-      return new Uint32Array(bytes, offset, totalBytes)
+      return new Uint32Array(bytes, offset, count)
     case AccessorComponentType.Float:
-      return new Float32Array(bytes, offset, totalBytes)
+      return new Float32Array(bytes, offset, count)
   }
 }
 
@@ -328,7 +326,7 @@ function makeRendererBuffer(
   return {
     glBuffer,
     glType: accessorComponentTypeToGLType(gl, accessor.componentType),
-    elementLength: accessor.count,
-    byteLength: bufferData.byteLength,
+    componentCount: accessor.count,
+    componentsPerAttrib: accessorTypeDegree(accessor.type),
   }
 }

@@ -22,8 +22,8 @@ export enum MeshPrimitive {
 export interface Buffer {
   glBuffer: WebGLBuffer
   glType: GLenum // FLOAT, etc.
-  elementLength: number
-  byteLength: number
+  componentCount: number // total number of component values of type glType
+  componentsPerAttrib: number // number of component values per attribute
 }
 
 export interface TriangleMesh {
