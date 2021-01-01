@@ -91,25 +91,25 @@ function applyAccessor(
   } = {},
 ): BufferArray {
   const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
-  const elementSize =
-    accessorTypeDegree(type) * accessorComponentTypeSize(componentType)
+  const degree = accessorTypeDegree(type)
+  const elementSize = degree * accessorComponentTypeSize(componentType)
   if (opts.stride !== undefined && opts.stride !== elementSize) {
     throw new Error(`interleaved buffer views not yet supported`)
   }
 
   switch (componentType) {
     case AccessorComponentType.Byte:
-      return new Int8Array(bytes, offset, count)
+      return new Int8Array(bytes, offset, count * degree)
     case AccessorComponentType.UnsignedByte:
-      return new Uint8Array(bytes, offset, count)
+      return new Uint8Array(bytes, offset, count * degree)
     case AccessorComponentType.Short:
-      return new Int16Array(bytes, offset, count)
+      return new Int16Array(bytes, offset, count * degree)
     case AccessorComponentType.UnsignedShort:
-      return new Uint16Array(bytes, offset, count)
+      return new Uint16Array(bytes, offset, count * degree)
     case AccessorComponentType.UnsignedInt:
-      return new Uint32Array(bytes, offset, count)
+      return new Uint32Array(bytes, offset, count * degree)
     case AccessorComponentType.Float:
-      return new Float32Array(bytes, offset, count)
+      return new Float32Array(bytes, offset, count * degree)
   }
 }
 
