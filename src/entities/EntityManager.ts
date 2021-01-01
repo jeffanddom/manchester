@@ -6,6 +6,7 @@ import * as damageable from '~/components/Damageable'
 import { Damageable } from '~/components/Damageable'
 import * as damager from '~/components/Damager'
 import { Damager } from '~/components/Damager'
+import { EntityModel } from '~/components/EntityModel'
 import { Hitbox, clone as hitboxClone } from '~/components/Hitbox'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
@@ -50,7 +51,7 @@ export class EntityManager {
   playerNumbers: ComponentTable<number>
   playfieldClamped: EntitySet
   renderables: ComponentTable<string>
-  renderableV2s: ComponentTable<string>
+  entityModels: ComponentTable<EntityModel>
   shooters: ComponentTable<ShooterComponent>
   targetables: EntitySet
   teams: ComponentTable<Team>
@@ -78,6 +79,7 @@ export class EntityManager {
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new ComponentTable(damager.clone)
     this.dropTypes = new ComponentTable((c) => c)
+    this.entityModels = new ComponentTable((c) => c) // TODO: should we clone this?
     this.hitboxes = new ComponentTable(hitboxClone)
     this.moveables = new EntitySet()
     this.obscureds = new EntitySet()
@@ -85,7 +87,6 @@ export class EntityManager {
     this.playerNumbers = new ComponentTable((c) => c)
     this.playfieldClamped = new EntitySet()
     this.renderables = new ComponentTable((c) => c)
-    this.renderableV2s = new ComponentTable((c) => c)
     this.shooters = new ComponentTable(shooterClone)
     this.targetables = new EntitySet()
     this.teams = new ComponentTable((c) => c)
@@ -106,7 +107,7 @@ export class EntityManager {
       this.playerNumbers,
       this.playfieldClamped,
       this.renderables,
-      this.renderableV2s,
+      this.entityModels,
       this.shooters,
       this.targetables,
       this.teams,
@@ -226,8 +227,8 @@ export class EntityManager {
       this.renderables.set(id, e.renderable)
     }
 
-    if (e.renderableV2 !== undefined) {
-      this.renderableV2s.set(id, e.renderableV2)
+    if (e.entityModel !== undefined) {
+      this.entityModels.set(id, e.entityModel)
     }
 
     if (e.targetable ?? false) {

@@ -1,6 +1,7 @@
 import { Bullet } from '~/components/Bullet'
 import { Damageable } from '~/components/Damageable'
 import { Damager } from '~/components/Damager'
+import { EntityModel } from '~/components/EntityModel'
 import { Hitbox } from '~/components/Hitbox'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
@@ -22,7 +23,7 @@ export interface EntityComponents {
   playerNumber?: number
   playfieldClamped?: boolean
   renderable?: string
-  renderableV2?: string
+  entityModel?: EntityModel
   shooter?: ShooterComponent
   targetable?: boolean
   team?: Team

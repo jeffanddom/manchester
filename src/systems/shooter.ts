@@ -1,3 +1,5 @@
+import { mat4 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
@@ -54,6 +56,18 @@ export const update = (simState: SimState): void => {
     const shooter = simState.entityManager.shooters.get(id)!
     const transform = simState.entityManager.transforms.get(id)!
     const newAngle = getAngle(transform.position, message.targetPos)
+
+    const entityModel = simState.entityManager.entityModels.get(id)!
+    simState.entityManager.entityModels.update(id, {
+      modifiers: {
+        ...entityModel.modifiers,
+        'tank.body.turret': mat4.fromRotation(
+          mat4.create(),
+          newAngle,
+          vec3.fromValues(0, 0, 1), // FIXME: why is this Z and not Y axis rotation
+        ),
+      },
+    })
 
     if (
       !message.firing ||

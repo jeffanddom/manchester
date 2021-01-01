@@ -481,10 +481,11 @@ export class ClientSim {
     // TODO: reimplement as lazy iterable?
     const res: Renderable3dV2[] = []
 
-    for (const [entityId, modelId] of this.entityManager.renderableV2s) {
+    for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!
       res.push({
-        modelId,
+        modelId: entityModel.name,
+        modelModifiers: entityModel.modifiers,
         model2World: mat4.fromRotationTranslation(
           mat4.create(),
           // We have to negate rotXY here. Positive rotations on the XY plane

@@ -5,6 +5,7 @@ import {
   Mesh,
   MeshPrimitive,
   ModelDef,
+  ModelModifiers,
   ModelNode,
   ModelPrimitive,
 } from '~/renderer/common'
@@ -265,6 +266,7 @@ export class Renderer3d implements IModelLoader {
     renderBody: (
       drawFunc: (
         modelName: string,
+        modelModifiers: ModelModifiers,
         model2World: Immutable<mat4>,
         color: Immutable<vec4>,
       ) => void,
@@ -280,6 +282,7 @@ export class Renderer3d implements IModelLoader {
     renderBody(
       (
         modelName: string,
+        modelModifiers: ModelModifiers,
         model2World: Immutable<mat4>,
         color: Immutable<vec4>,
       ) => {
@@ -287,16 +290,28 @@ export class Renderer3d implements IModelLoader {
         if (root === undefined) {
           throw new Error(`unknown model ${modelName}`)
         }
-        this.renderNode(root, model2World, color)
+        this.renderNode(root, '', modelModifiers, model2World, color)
       },
     )
   }
 
   private renderNode(
     node: ModelNode,
+    parentPath: string,
+    modelModifiers: ModelModifiers,
     model2World: Immutable<mat4>,
     color: Immutable<vec4>,
   ): void {
+    const path = parentPath === '' ? node.name : `${parentPath}.${node.name}`
+
+    if (modelModifiers.hasOwnProperty(path)) {
+      model2World = mat4.multiply(
+        mat4.create(),
+        model2World,
+        modelModifiers[path],
+      )
+    }
+
     if (node.transform !== undefined) {
       model2World = mat4.multiply(mat4.create(), model2World, node.transform)
     }
@@ -306,7 +321,7 @@ export class Renderer3d implements IModelLoader {
     }
 
     for (const c of node.children) {
-      this.renderNode(c, model2World, color)
+      this.renderNode(c, path, modelModifiers, model2World, color)
     }
   }
 

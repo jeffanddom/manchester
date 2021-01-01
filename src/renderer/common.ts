@@ -1,8 +1,14 @@
 import { mat4 } from 'gl-matrix'
 
+import { Immutable } from '~/types/immutable'
+
 export enum ModelPrimitive {
   Lines,
   Triangles,
+}
+
+export type ModelModifiers = {
+  [key: string]: Immutable<mat4>
 }
 
 export type ModelDef = {

@@ -1,6 +1,7 @@
 import { mat2d, mat4, vec2, vec4 } from 'gl-matrix'
 
 import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
+import { ModelModifiers } from '~/renderer/common'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Renderer2d } from '~/renderer/Renderer2d'
 import { Renderer3d } from '~/renderer/Renderer3d'
@@ -16,6 +17,7 @@ export interface Renderable3d {
 
 export interface Renderable3dV2 {
   modelId: string
+  modelModifiers: ModelModifiers
   model2World: mat4
   color: vec4
 }
@@ -72,8 +74,13 @@ export class ClientRenderManager {
     })
 
     this.renderer3d.renderV2((drawModel) => {
-      for (const { modelId, model2World, color } of params.renderables3dV2) {
-        drawModel(modelId, model2World, color)
+      for (const {
+        modelId,
+        modelModifiers,
+        model2World,
+        color,
+      } of params.renderables3dV2) {
+        drawModel(modelId, modelModifiers, model2World, color)
       }
     })
 
