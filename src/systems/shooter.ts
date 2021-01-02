@@ -63,7 +63,10 @@ export const update = (simState: SimState): void => {
         ...entityModel.modifiers,
         'tank.body.turret:post': mat4.fromRotation(
           mat4.create(),
-          -newAngle, // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
+
+          // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
+          // It is applied against the tank's orientation to track the mouse at all angles.
+          transform.orientation - newAngle,
           vec3.fromValues(0, 1, 0),
         ),
       },
