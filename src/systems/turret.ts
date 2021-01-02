@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
 import * as damageable from '~/components/Damageable'
@@ -134,8 +136,22 @@ export const update = (
       to: getAngle(transform.position, target.transform!.position),
       amount: TURRET_ROT_SPEED * dt,
     })
+
     simState.entityManager.transforms.update(id, {
       orientation: newOrientation,
+    })
+
+    simState.entityManager.entityModels.update(id, {
+      modifiers: {
+        'turret.cannon_root:post': mat4.fromRotation(
+          mat4.create(),
+
+          // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
+          // It is applied against the tank's orientation to track the mouse at all angles.
+          -newOrientation,
+          vec3.fromValues(0, 1, 0),
+        ),
+      },
     })
 
     // III. Shoot at target

@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
@@ -42,5 +42,16 @@ export const update = (
     )
 
     simState.entityManager.transforms.update(id, { position, orientation })
+    simState.entityManager.entityModels.update(id, {
+      modifiers: {
+        'tank:post': mat4.fromRotation(
+          mat4.create(),
+
+          // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
+          -orientation,
+          vec3.fromValues(0, 1, 0),
+        ),
+      },
+    })
   })
 }

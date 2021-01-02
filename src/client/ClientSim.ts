@@ -166,11 +166,13 @@ export class ClientSim {
       'standard',
     )
 
-    for (const m of ['bullet', 'core', 'tank', 'tree', 'turret', 'wall']) {
+    for (const m of ['bullet', 'core', 'tree', 'wall']) {
       this.modelLoader.loadModel(m, getModel(m), 'standard')
     }
 
-    this.modelLoader.loadGltf(getGltfDocument('tank'))
+    for (const m of ['tank', 'turret']) {
+      this.modelLoader.loadGltf(getGltfDocument(m))
+    }
   }
 
   setState(s: GameState): void {
@@ -488,11 +490,7 @@ export class ClientSim {
         modelModifiers: entityModel.modifiers,
         model2World: mat4.fromRotationTranslation(
           mat4.create(),
-          // We have to negate rotXY here. Positive rotations on the XY plane
-          // represent right-handed rotations around cross(+X, +Y), whereas
-          // positive rotations on the XZ plane represent right-handed rotations
-          // around cross(+X, -Z).
-          quat.rotateY(quat.create(), quat.create(), -transform.orientation),
+          quat.identity(quat.create()),
           vec3.fromValues(transform.position[0], 0, transform.position[1]),
         ),
         color: vec4.fromValues(0, 0.6, 0.6, 1),

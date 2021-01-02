@@ -31,7 +31,7 @@ export const makeTurret = (): EntityComponents => {
     offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
   }
-  e.renderable = 'turret'
+  e.entityModel = { name: 'turret', modifiers: {} }
 
   return e
 }

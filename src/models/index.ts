@@ -3,6 +3,7 @@ import coreObj from '~/models/core.obj'
 import tankGltf from '~/models/tank.gltf'
 import tankObj from '~/models/tank.obj'
 import treeObj from '~/models/tree.obj'
+import turretGltf from '~/models/turret.gltf'
 import turretObj from '~/models/turret.obj'
 import wallObj from '~/models/wall.obj'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
@@ -22,6 +23,7 @@ const models: {
 const gltfs: Map<string, gltf.Document> = new Map(
   Object.entries({
     tank: tankGltf as gltf.Document,
+    turret: turretGltf as gltf.Document,
   }),
 )
 
