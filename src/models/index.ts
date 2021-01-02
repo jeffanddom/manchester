@@ -6,6 +6,7 @@ import treeObj from '~/models/tree.obj'
 import turretObj from '~/models/turret.obj'
 import wallObj from '~/models/wall.obj'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
+import * as gltf from '~/renderer/gltf'
 
 const models: {
   [key: string]: string
@@ -18,9 +19,9 @@ const models: {
   wall: wallObj,
 }
 
-const gltfs: Map<string, string> = new Map(
+const gltfs: Map<string, gltf.Document> = new Map(
   Object.entries({
-    tank: tankGltf,
+    tank: tankGltf as gltf.Document,
   }),
 )
 
@@ -119,10 +120,10 @@ export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
   }
 }
 
-export function getGltfJson(name: string): string {
-  const json = gltfs.get(name)
-  if (json === undefined) {
+export function getGltfDocument(name: string): gltf.Document {
+  const doc = gltfs.get(name)
+  if (doc === undefined) {
     throw new Error(`no GLTF named ${name}`)
   }
-  return json
+  return doc
 }

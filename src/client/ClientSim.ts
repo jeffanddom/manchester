@@ -13,7 +13,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
-import { getGltfJson, getModel } from '~/models'
+import { getGltfDocument, getModel } from '~/models'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
@@ -170,7 +170,7 @@ export class ClientSim {
       this.modelLoader.loadModel(m, getModel(m), 'standard')
     }
 
-    this.modelLoader.loadGltf(getGltfJson('tank'))
+    this.modelLoader.loadGltf(getGltfDocument('tank'))
   }
 
   setState(s: GameState): void {

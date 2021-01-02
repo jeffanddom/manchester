@@ -1,8 +1,9 @@
 import { ModelDef } from '~/renderer/common'
+import * as gltf from '~/renderer/gltf'
 
 export interface IModelLoader {
   loadModel: (modelName: string, model: ModelDef, shaderName: string) => void
-  loadGltf: (json: string) => void
+  loadGltf: (doc: gltf.Document) => void
 }
 
 export class StubModelLoader implements IModelLoader {
@@ -10,7 +11,7 @@ export class StubModelLoader implements IModelLoader {
     /* do nothing */
   }
 
-  loadGltf(_json: string): void {
+  loadGltf(_doc: gltf.Document): void {
     /* do nothing */
   }
 }

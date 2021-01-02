@@ -12,7 +12,7 @@ esbuild.buildSync({
   entryPoints: [path.join(gameSrcPath, 'client', 'main.ts')],
   loader: {
     '.obj': 'text',
-    '.gltf': 'text', // TODO: change to JSON
+    '.gltf': 'json',
   },
   minify: false,
   outdir: clientBuildOutputPath,

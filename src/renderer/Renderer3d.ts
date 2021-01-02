@@ -524,8 +524,7 @@ export class Renderer3d implements IModelLoader {
   /**
    * Loads all nodes from a glTF document as ModelNodes.
    */
-  loadGltf(json: string): void {
-    const doc = gltf.fromJson(json)
+  loadGltf(doc: gltf.Document): void {
     for (const scene of doc.scenes ?? []) {
       for (const nodeId of scene.nodes ?? []) {
         const modelNode = gltf.makeNode(this.gl, doc, nodeId)
