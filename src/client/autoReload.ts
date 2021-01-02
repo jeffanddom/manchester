@@ -54,7 +54,7 @@ export const updateEntrypointHtmlForAutoReload = (opts: {
   html: string
 }): string => {
   return opts.html.replace(
-    '<!-- DEV SERVER HOT RELOAD PLACEHOLDER -->',
+    '<!-- DEV SERVER AUTORELOAD PLACEHOLDER -->',
     `
 <script>
   window.buildkey = '${opts.buildkey}'
