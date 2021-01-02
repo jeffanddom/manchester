@@ -10,19 +10,19 @@ import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
 import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
-import { Server as GameServer } from '~/server/Server'
+import { ServerSim } from '~/server/ServerSim'
 
 // TODO: read from envvar
 const playerCount = 1
 const clientBufferSize = 7
 
-let gameServer = new GameServer({
+let gameSim = new ServerSim({
   playerCount,
   minFramesBehindClient: clientBufferSize,
 })
 
 setInterval(
-  () => gameServer.update(SIMULATION_PERIOD_S),
+  () => gameSim.update(SIMULATION_PERIOD_S),
   (1000 * SIMULATION_PERIOD_S) / 2,
 )
 
@@ -44,8 +44,8 @@ apiRouter
   .get('/buildkey', async (ctx) => (ctx.body = buildkey))
   .get('/restart', async (ctx) => {
     console.log('restarting game server')
-    gameServer.shutdown()
-    gameServer = new GameServer({
+    gameSim.shutdown()
+    gameSim = new ServerSim({
       playerCount,
       minFramesBehindClient: clientBufferSize,
     })
@@ -66,7 +66,7 @@ apiRouter
       `websocket connection established with ${ctx.req.socket.remoteAddress}`,
     )
 
-    gameServer.connectClient(new ClientConnectionWs(socket))
+    gameSim.connectClient(new ClientConnectionWs(socket))
   })
 
 const router = new KoaRouter()

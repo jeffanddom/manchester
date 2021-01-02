@@ -13,7 +13,7 @@ import * as terrain from '~/terrain'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class Server {
+export class ServerSim {
   entityManager: EntityManager
 
   // A buffer of unprocessed client messages received from clients. The messages
