@@ -3,11 +3,7 @@ import * as path from 'path'
 
 import * as esbuild from 'esbuild'
 
-import {
-  clientBuildOutputPath,
-  gameSrcPath,
-  serverBuildOutputPath,
-} from './common'
+import { clientBuildOutputPath, gameSrcPath } from './common'
 
 console.log('Creating bundle...')
 
