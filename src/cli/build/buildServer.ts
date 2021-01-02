@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import * as Bundler from 'parcel-bundler'
+import * as esbuild from 'esbuild'
 
 import { buildkeyPath, gameSrcPath, serverBuildOutputPath } from './common'
 
@@ -24,18 +24,15 @@ fs.mkdirSync(path.normalize(path.join(buildkeyPath, '..')), { recursive: true })
 fs.writeFileSync(buildkeyPath, buildkey)
 console.log(`buildkey '${buildkey}' written to ${buildkeyPath}`)
 
-const bundler = new Bundler(path.join(gameSrcPath, 'serverMain.ts'), {
-  target: 'node',
-  // bundleNodeModules: true,
-  outDir: serverBuildOutputPath,
-  outFile: 'server.js', // The name of the outputFile
-  watch: false, // explicitly disable watching...we want the supervisor to control this
-  cache: true,
-  cacheDir: '.cache',
-  minify: false,
-  sourceMaps: true,
-})
-
-bundler.bundle().then(() => {
-  // do nothing
+// NOTE: this will emit a somewhat silly error due to a transitive dependency
+// issue deep within koa. koa 2 uses koa-convert, which declares an outdated
+// version of koa-compose, which in turn imports any-promise, which uses a
+// require() statement with a non-static argument, hence the warning.
+esbuild.buildSync({
+  bundle: true,
+  entryPoints: [path.join(gameSrcPath, 'server', 'main.ts')],
+  outdir: serverBuildOutputPath,
+  platform: 'node',
+  sourcemap: true,
+  target: 'es2019',
 })

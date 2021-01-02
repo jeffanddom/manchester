@@ -1,26 +1,30 @@
+import * as fs from 'fs'
 import * as path from 'path'
 
-import * as Bundler from 'parcel-bundler'
+import * as esbuild from 'esbuild'
 
-import { clientBuildOutputPath, gameSrcPath } from './common'
+import {
+  clientBuildOutputPath,
+  gameSrcPath,
+  serverBuildOutputPath,
+} from './common'
 
 console.log('Creating bundle...')
 
-const bundler = new Bundler(path.join(gameSrcPath, 'index.html'), {
-  outDir: clientBuildOutputPath,
-  outFile: 'index.html', // The name of the outputFile
-  watch: false, // explicitly disable watching...we want the supervisor to control this
-  cache: true,
-  cacheDir: '.cache',
+esbuild.buildSync({
+  bundle: true,
+  entryPoints: [path.join(gameSrcPath, 'client', 'main.ts')],
+  loader: {
+    '.obj': 'text',
+    '.gltf': 'text', // TODO: change to JSON
+  },
   minify: false,
-  target: 'browser', // Browser/node/electron, defaults to browser
-  sourceMaps: true,
+  outdir: clientBuildOutputPath,
+  sourcemap: true,
+  target: ['chrome88', 'firefox84', 'safari14'],
 })
 
-for (const ext of ['obj', 'gltf']) {
-  bundler.addAssetType(ext, require.resolve('./TextAsset'))
-}
-
-bundler.bundle().then(() => {
-  // do nothing
-})
+fs.copyFileSync(
+  path.join(gameSrcPath, 'client', 'index.html'),
+  path.join(clientBuildOutputPath, 'index.html'),
+)

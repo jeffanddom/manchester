@@ -67,7 +67,7 @@ const rebuild = async () => {
     server.kill()
   }
 
-  server = spawn('node', [path.join(serverBuildOutputPath, 'server.js')])
+  server = spawn('node', [path.join(serverBuildOutputPath, 'main.js')])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )
@@ -91,7 +91,7 @@ const ignore = new Set([
 ])
 chokidar
   .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
-  .on('all', (event, filename) => {
+  .on('all', (_event, filename) => {
     if (ignore.has(filename)) {
       return
     }

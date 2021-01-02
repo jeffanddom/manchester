@@ -6,11 +6,15 @@ import KoaRouter from 'koa-router'
 import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
-import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
+import {
+  buildkeyPath,
+  clientBuildOutputPath,
+  serverBuildOutputPath,
+} from '~/cli/build/common'
 import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
-import { Server as GameServer } from '~/Server'
+import { Server as GameServer } from '~/server/Server'
 
 // TODO: read from envvar
 const playerCount = 1
