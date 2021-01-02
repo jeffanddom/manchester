@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    hotReload: {
+    autoReload: {
       enabled: boolean
       poll: (initialBuildkey: string) => void
       interval?: number
@@ -9,18 +9,18 @@ declare global {
 }
 
 export const init = (opts: { enabled: boolean } = { enabled: true }): void => {
-  window.hotReload = { enabled: opts.enabled, poll }
+  window.autoReload = { enabled: opts.enabled, poll }
 }
 
 // This function will execute outside of the main client bundle, which means
 // you should avoid using dependencies not available globally in the browser,
 // as well as async/await.
 export const poll = (initialBuildkey: string): void => {
-  if (window.hotReload.interval !== undefined) {
+  if (window.autoReload.interval !== undefined) {
     return
   }
 
-  window.hotReload.interval = setInterval(() => {
+  window.autoReload.interval = setInterval(() => {
     fetch('/api/buildkey')
       .then((response) => {
         if (response.status != 200) {
@@ -49,7 +49,7 @@ export const poll = (initialBuildkey: string): void => {
   }, 5000)
 }
 
-export const updateEntrypointHtmlForHotReload = (opts: {
+export const updateEntrypointHtmlForAutoReload = (opts: {
   buildkey: string
   html: string
 }): string => {
@@ -60,8 +60,8 @@ export const updateEntrypointHtmlForHotReload = (opts: {
   window.buildkey = '${opts.buildkey}'
   console.log('buildkey: ' + window.buildkey)
 
-  if (window.hotReload.enabled) {
-    window.hotReload.poll(window.buildkey)
+  if (window.autoReload.enabled) {
+    window.autoReload.poll(window.buildkey)
   }
 </script>
 `,

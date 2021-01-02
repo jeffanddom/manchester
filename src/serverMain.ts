@@ -7,7 +7,7 @@ import koaSend from 'koa-send'
 import * as WebSocket from 'ws'
 
 import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
-import { updateEntrypointHtmlForHotReload } from '~/client/hotReload'
+import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { Server as GameServer } from '~/Server'
@@ -33,7 +33,7 @@ const buildkey = fs.readFileSync(buildkeyPath).toString()
 const entrypointPage = fs
   .readFileSync(path.join(clientBuildOutputPath, 'index.html'))
   .toString('utf8')
-const entrypointWithHotReload = updateEntrypointHtmlForHotReload({
+const entrypointWithAutoReload = updateEntrypointHtmlForAutoReload({
   buildkey,
   html: entrypointPage,
 })
@@ -73,7 +73,7 @@ const router = new KoaRouter()
 router.use('/api', apiRouter.routes())
 router
   .get('/', async (ctx, next) => {
-    ctx.body = entrypointWithHotReload
+    ctx.body = entrypointWithAutoReload
     return await next()
   })
   // FIXME: this route catches requests with the `/api` prefix that apiRouter
