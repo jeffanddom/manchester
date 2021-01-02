@@ -304,16 +304,26 @@ export class Renderer3d implements IModelLoader {
   ): void {
     const path = parentPath === '' ? node.name : `${parentPath}.${node.name}`
 
-    if (modelModifiers.hasOwnProperty(path)) {
+    const prePath = `${path}:pre`
+    if (modelModifiers.hasOwnProperty(prePath)) {
       model2World = mat4.multiply(
         mat4.create(),
         model2World,
-        modelModifiers[path],
+        modelModifiers[prePath],
       )
     }
 
     if (node.transform !== undefined) {
       model2World = mat4.multiply(mat4.create(), model2World, node.transform)
+    }
+
+    const postPath = `${path}:post`
+    if (modelModifiers.hasOwnProperty(postPath)) {
+      model2World = mat4.multiply(
+        mat4.create(),
+        model2World,
+        modelModifiers[postPath],
+      )
     }
 
     if (node.mesh !== undefined) {
