@@ -1,10 +1,8 @@
 import bulletObj from '~/models/bullet.obj'
 import coreObj from '~/models/core.obj'
 import tankGltf from '~/models/tank.gltf'
-import tankObj from '~/models/tank.obj'
 import treeObj from '~/models/tree.obj'
 import turretGltf from '~/models/turret.gltf'
-import turretObj from '~/models/turret.obj'
 import wallObj from '~/models/wall.obj'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
 import * as gltf from '~/renderer/gltf'
@@ -14,9 +12,7 @@ const models: {
 } = {
   bullet: bulletObj,
   core: coreObj,
-  tank: tankObj,
   tree: treeObj,
-  turret: turretObj,
   wall: wallObj,
 }
 
