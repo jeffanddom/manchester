@@ -6,7 +6,7 @@
       "dom"
     ],
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true, // required for using Koa
+    "allowSyntheticDefaultImports": true, // required for modules with default exports
     "alwaysStrict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,

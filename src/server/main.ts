@@ -1,9 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import Koa from 'koa'
-import KoaRouter from 'koa-router'
-import koaSend from 'koa-send'
+import * as hapi from '@hapi/hapi'
+import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
 import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
@@ -12,78 +11,125 @@ import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
 
-// TODO: read from envvar
-const playerCount = 1
-const clientBufferSize = 7
+async function buildVersion(): Promise<string> {
+  return (await fs.promises.readFile(buildkeyPath)).toString()
+}
 
-let gameSim = new ServerSim({
-  playerCount,
-  minFramesBehindClient: clientBufferSize,
-})
+async function entrypointTemplate(): Promise<string> {
+  return (
+    await fs.promises.readFile(path.join(clientBuildOutputPath, 'index.html'))
+  ).toString('utf8')
+}
 
-setInterval(
-  () => gameSim.update(SIMULATION_PERIOD_S),
-  (1000 * SIMULATION_PERIOD_S) / 2,
-)
+async function main(): Promise<void> {
+  // TODO: read from envvar
+  const playerCount = 1
+  const clientBufferSize = 7
+  const port = 3000
 
-const httpServer = new Koa()
-const port = 3000
-
-const buildkey = fs.readFileSync(buildkeyPath).toString()
-const entrypointPage = fs
-  .readFileSync(path.join(clientBuildOutputPath, 'index.html'))
-  .toString('utf8')
-const entrypointWithAutoReload = updateEntrypointHtmlForAutoReload({
-  buildkey,
-  html: entrypointPage,
-})
-
-const wsServer = new WebSocket.Server({ noServer: true })
-const apiRouter = new KoaRouter()
-apiRouter
-  .get('/buildkey', async (ctx) => (ctx.body = buildkey))
-  .get('/restart', async (ctx) => {
-    console.log('restarting game server')
-    gameSim.shutdown()
-    gameSim = new ServerSim({
-      playerCount,
-      minFramesBehindClient: clientBufferSize,
-    })
-    ctx.body = 'ok'
-  })
-  .get('/connect', async (ctx) => {
-    if (ctx.get('Upgrade') !== 'websocket') {
-      ctx.throw(400, 'invalid websocket connection request')
-    }
-
-    ctx.respond = false
-
-    const socket = await new Promise((resolve: (ws: WebSocket) => void) => {
-      wsServer.handleUpgrade(ctx.req, ctx.req.socket, Buffer.alloc(0), resolve)
-    })
-
-    console.log(
-      `websocket connection established with ${ctx.req.socket.remoteAddress}`,
-    )
-
-    gameSim.connectClient(new ClientConnectionWs(socket))
+  let gameSim = new ServerSim({
+    playerCount,
+    minFramesBehindClient: clientBufferSize,
   })
 
-const router = new KoaRouter()
-router.use('/api', apiRouter.routes())
-router
-  .get('/', async (ctx, next) => {
-    ctx.body = entrypointWithAutoReload
-    return await next()
-  })
-  // FIXME: this route catches requests with the `/api` prefix that apiRouter
-  // doesn't handle. This is suprising and weird.
-  .get('/(.*)', async (ctx) =>
-    koaSend(ctx, ctx.path, {
-      root: clientBuildOutputPath,
-    }),
+  setInterval(
+    () => gameSim.update(SIMULATION_PERIOD_S),
+    (1000 * SIMULATION_PERIOD_S) / 2,
   )
 
-console.log(`Starting dev server on port ${port}, buildkey ${buildkey}`)
-httpServer.use(router.routes()).use(router.allowedMethods())
-httpServer.listen(port)
+  const wsServer = new WebSocket.Server({ noServer: true })
+  const httpServer = new hapi.Server({
+    port,
+    host: 'localhost',
+  })
+
+  await httpServer.register(inert)
+
+  httpServer.route({
+    method: 'GET',
+    path: '/',
+    handler: async () => {
+      const [bv, template] = await Promise.all([
+        buildVersion(),
+        entrypointTemplate(),
+      ])
+      return updateEntrypointHtmlForAutoReload({ buildkey: bv, html: template })
+    },
+  })
+
+  httpServer.route({
+    method: 'GET',
+    path: '/api/buildkey',
+    handler: async () => {
+      return await buildVersion()
+    },
+  })
+
+  httpServer.route({
+    method: 'GET',
+    path: '/api/restart',
+    handler: () => {
+      console.log('restarting game server')
+      gameSim.shutdown()
+      gameSim = new ServerSim({
+        playerCount,
+        minFramesBehindClient: clientBufferSize,
+      })
+      return ''
+    },
+  })
+
+  httpServer.route({
+    method: 'GET',
+    path: '/api/connect',
+    handler: async (request, h) => {
+      if (request.headers['upgrade'] !== 'websocket') {
+        return h
+          .response({
+            error: 'invalid websocket connection request',
+          })
+          .code(400)
+      }
+
+      const nodeReq = request.raw.req
+      const tcpSocket = nodeReq.socket
+      const webSocket = await new Promise(
+        (resolve: (ws: WebSocket) => void) => {
+          wsServer.handleUpgrade(nodeReq, tcpSocket, Buffer.alloc(0), resolve)
+        },
+      )
+
+      console.log(
+        `websocket connection established with ${tcpSocket.remoteAddress}`,
+      )
+
+      gameSim.connectClient(new ClientConnectionWs(webSocket))
+
+      // The WebSocket server now controls the socket, so let Hapi stop worrying
+      // about it.
+      return h.abandon
+    },
+  })
+
+  httpServer.route({
+    method: 'GET',
+    path: '/{param*}',
+    handler: {
+      directory: {
+        path: clientBuildOutputPath,
+        redirectToSlash: true,
+      },
+    },
+  })
+
+  const bv = await buildVersion()
+  console.log(`Starting dev server on port ${port}, build version ${bv}`)
+  await httpServer.start()
+}
+
+main()
+
+process.on('unhandledRejection', (err) => {
+  console.log(err)
+  process.exit(1)
+})

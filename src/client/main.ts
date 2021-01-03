@@ -38,7 +38,7 @@ document.addEventListener('keyup', (event) => {
       return
     }
 
-    restartHotkeyTimeout = setTimeout(() => {
+    restartHotkeyTimeout = window.setTimeout(() => {
       restartHotkeyTimeout = undefined
     }, 500)
 

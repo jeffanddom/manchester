@@ -20,7 +20,7 @@ export const poll = (initialBuildkey: string): void => {
     return
   }
 
-  window.autoReload.interval = setInterval(() => {
+  window.autoReload.interval = window.setInterval(() => {
     fetch('/api/buildkey')
       .then((response) => {
         if (response.status != 200) {

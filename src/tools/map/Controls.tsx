@@ -60,7 +60,7 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
     let savingTimeout: number | null = null
     editor.events.addListener('changed', () => {
       if (savingTimeout === null) {
-        savingTimeout = setTimeout(() => {
+        savingTimeout = window.setTimeout(() => {
           savingTimeout = null
           saveMap(editor.map)
           console.log('saved state')
