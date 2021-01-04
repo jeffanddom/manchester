@@ -5,19 +5,23 @@ import * as hapi from '@hapi/hapi'
 import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
-import { buildkeyPath, clientBuildOutputPath } from '~/cli/build/common'
+import {
+  buildVersionPath,
+  clientBuildOutputPath,
+  serverBuildOutputPath,
+} from '~/cli/build/common'
 import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
 
 async function buildVersion(): Promise<string> {
-  return (await fs.promises.readFile(buildkeyPath)).toString()
+  return (await fs.promises.readFile(buildVersionPath)).toString()
 }
 
 async function entrypointTemplate(): Promise<string> {
   return (
-    await fs.promises.readFile(path.join(clientBuildOutputPath, 'index.html'))
+    await fs.promises.readFile(path.join(serverBuildOutputPath, 'index.html'))
   ).toString('utf8')
 }
 
@@ -53,13 +57,16 @@ async function main(): Promise<void> {
         buildVersion(),
         entrypointTemplate(),
       ])
-      return updateEntrypointHtmlForAutoReload({ buildkey: bv, html: template })
+      return updateEntrypointHtmlForAutoReload({
+        buildVersion: bv,
+        html: template,
+      })
     },
   })
 
   httpServer.route({
     method: 'GET',
-    path: '/api/buildkey',
+    path: '/api/buildVersion',
     handler: async () => {
       return await buildVersion()
     },

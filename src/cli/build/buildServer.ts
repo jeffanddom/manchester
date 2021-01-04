@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import * as esbuild from 'esbuild'
 
-import { buildkeyPath, gameSrcPath, serverBuildOutputPath } from './common'
+import { buildVersionPath, gameSrcPath, serverBuildOutputPath } from './common'
 
 function getMtimeMs(filepath: string): number {
   const stats = fs.statSync(filepath)
@@ -18,11 +18,13 @@ function getMtimeMs(filepath: string): number {
 
 console.log('Creating bundle...')
 
-// Write build key
-const buildkey = getMtimeMs(gameSrcPath).toString()
-fs.mkdirSync(path.normalize(path.join(buildkeyPath, '..')), { recursive: true })
-fs.writeFileSync(buildkeyPath, buildkey)
-console.log(`buildkey '${buildkey}' written to ${buildkeyPath}`)
+// Write build version
+const buildVersion = getMtimeMs(gameSrcPath).toString()
+fs.mkdirSync(path.normalize(path.join(buildVersionPath, '..')), {
+  recursive: true,
+})
+fs.writeFileSync(buildVersionPath, buildVersion)
+console.log(`build version '${buildVersion}' written to ${buildVersionPath}`)
 
 esbuild.buildSync({
   bundle: true,
@@ -32,3 +34,9 @@ esbuild.buildSync({
   sourcemap: true,
   target: 'es2019',
 })
+
+// Generate new entrypoint HTML with hardcoded build version
+fs.copyFileSync(
+  path.join(gameSrcPath, 'client', 'index.html'),
+  path.join(serverBuildOutputPath, 'index.html'),
+)

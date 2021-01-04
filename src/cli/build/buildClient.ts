@@ -1,4 +1,3 @@
-import * as fs from 'fs'
 import * as path from 'path'
 
 import * as esbuild from 'esbuild'
@@ -19,8 +18,3 @@ esbuild.buildSync({
   sourcemap: true,
   target: ['chrome88', 'firefox84', 'safari14'],
 })
-
-fs.copyFileSync(
-  path.join(gameSrcPath, 'client', 'index.html'),
-  path.join(clientBuildOutputPath, 'index.html'),
-)

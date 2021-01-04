@@ -2,7 +2,7 @@ declare global {
   interface Window {
     autoReload: {
       enabled: boolean
-      poll: (initialBuildkey: string) => void
+      poll: (initialBuildVersion: string) => void
       interval?: number
     }
   }
@@ -15,53 +15,56 @@ export const init = (opts: { enabled: boolean } = { enabled: true }): void => {
 // This function will execute outside of the main client bundle, which means
 // you should avoid using dependencies not available globally in the browser,
 // as well as async/await.
-export const poll = (initialBuildkey: string): void => {
+export const poll = (initialBuildVersion: string): void => {
   if (window.autoReload.interval !== undefined) {
     return
   }
 
   window.autoReload.interval = window.setInterval(() => {
-    fetch('/api/buildkey')
+    fetch('/api/buildVersion')
       .then((response) => {
         if (response.status != 200) {
           throw new Error(
-            'buildkey fetch: invalid status ' + response.status.toString(),
+            'build version fetch: invalid status ' + response.status.toString(),
           )
         }
 
         return response.text()
       })
-      .then((newBuildkey) => {
-        if (newBuildkey.length > 0 && newBuildkey !== initialBuildkey) {
+      .then((newBuildVersion) => {
+        if (
+          newBuildVersion.length > 0 &&
+          newBuildVersion !== initialBuildVersion
+        ) {
           console.log(
-            'detected buildkey change from ' +
-              initialBuildkey.toString() +
+            'detected build version change from ' +
+              initialBuildVersion.toString() +
               ' to ' +
-              newBuildkey.toString() +
+              newBuildVersion.toString() +
               ', reloading...',
           )
           window.location.reload()
         }
       })
       .catch((err) => {
-        console.log('buildkey fetch: error:', err)
+        console.log('build version fetch: error:', err)
       })
   }, 3000)
 }
 
 export const updateEntrypointHtmlForAutoReload = (opts: {
-  buildkey: string
+  buildVersion: string
   html: string
 }): string => {
   return opts.html.replace(
     '<!-- DEV SERVER AUTORELOAD PLACEHOLDER -->',
     `
 <script>
-  window.buildkey = '${opts.buildkey}'
-  console.log('buildkey: ' + window.buildkey)
+  window.buildVersion = '${opts.buildVersion}'
+  console.log('build version: ' + window.buildVersion)
 
   if (window.autoReload.enabled) {
-    window.autoReload.poll(window.buildkey)
+    window.autoReload.poll(window.buildVersion)
   }
 </script>
 `,

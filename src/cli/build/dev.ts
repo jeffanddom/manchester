@@ -86,16 +86,9 @@ const rebuild = async () => {
 }
 
 let debounce = false
-const ignore = new Set([
-  'build/buildkey', // this file is modified by the build process itself
-])
 chokidar
   .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
-  .on('all', (_event, filename) => {
-    if (ignore.has(filename)) {
-      return
-    }
-
+  .on('all', (_event, _filename) => {
     if (debounce) {
       return
     }
