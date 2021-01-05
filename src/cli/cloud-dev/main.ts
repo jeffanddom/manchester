@@ -137,7 +137,7 @@ class CloudDev {
     console.log(`mounting volume...`)
     sshUtils.exec(
       this.localHostAlias,
-      `sudo mkdir ${mountpoint} && sudo mount /dev/nvme1n1 ${mountpoint} && sudo chown ${this.remoteUser}:${this.remoteUser} ${mountpoint}`,
+      `sudo mkdir -p ${mountpoint} && sudo mount /dev/nvme1n1 ${mountpoint} && sudo chown ${this.remoteUser}:${this.remoteUser} ${mountpoint}`,
     )
 
     // Copy gitconfig
