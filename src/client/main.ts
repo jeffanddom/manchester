@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import * as autoReload from '~/client/autoReload'
 import { Client } from '~/client/Client'
+import * as autoReload from '~/web/autoReload'
 
 declare global {
   interface Window {
@@ -46,8 +46,8 @@ document.addEventListener('keyup', (event) => {
   }
 })
 
-// Ensure auto-reloading for dev
-autoReload.init({ enabled: true })
+// Start auto-reload polling
+autoReload.poll()
 
 // Development-related globals
 window.client = client

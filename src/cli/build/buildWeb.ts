@@ -1,10 +1,28 @@
+import * as fs from 'fs'
 import * as path from 'path'
 
 import * as esbuild from 'esbuild'
 
-import { gameSrcPath, webEntrypoints, webOutputPath } from './common'
+import {
+  gameSrcPath,
+  webEntrypoints,
+  webEphemeralPath,
+  webOutputPath,
+} from './common'
 
-console.log('Creating bundle...')
+let buildVersion = '(none)'
+if (process.argv.length > 2) {
+  buildVersion = process.argv[2]
+}
+
+console.log(`Creating bundle for build version ${buildVersion}...`)
+
+// Write build version
+fs.mkdirSync(webEphemeralPath, { recursive: true })
+fs.writeFileSync(
+  path.join(webEphemeralPath, 'buildVersion.ts'),
+  `export const buildVersion = '${buildVersion}'`,
+)
 
 esbuild.buildSync({
   bundle: true,
@@ -20,3 +38,16 @@ esbuild.buildSync({
   sourcemap: true,
   target: ['chrome88', 'firefox84', 'safari14'],
 })
+
+// Copy index.html files
+Promise.all(
+  webEntrypoints.map(async (srcPath) => {
+    await fs.promises.mkdir(path.join(webOutputPath, srcPath), {
+      recursive: true,
+    })
+    await fs.promises.copyFile(
+      path.join(gameSrcPath, srcPath, 'index.html'),
+      path.join(webOutputPath, srcPath, 'index.html'),
+    )
+  }),
+)

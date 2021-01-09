@@ -17,6 +17,10 @@ export const gameSrcPath = path.join(projectRootPath, 'src')
 export const buildOutputPath = path.join(projectRootPath, 'out')
 export const webOutputPath = path.join(buildOutputPath, 'web')
 export const serverOutputPath = path.join(buildOutputPath, 'server')
-export const buildVersionPath = path.join(serverOutputPath, 'buildVersion')
+export const webEphemeralPath = path.join(gameSrcPath, 'web', 'ephemeral')
+export const serverBuildVersionPath = path.join(
+  serverOutputPath,
+  'buildVersion',
+)
 
 export const webEntrypoints = ['client', 'tools/rendertoy']

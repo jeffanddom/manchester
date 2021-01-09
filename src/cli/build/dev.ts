@@ -1,9 +1,10 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
+import * as fs from 'fs'
 import * as path from 'path'
 
 import * as chokidar from 'chokidar'
 
-import { gameSrcPath, serverOutputPath } from './common'
+import { gameSrcPath, serverOutputPath, webEphemeralPath } from './common'
 
 // Removes a newline from the end of a buffer, if it exists.
 const trimNewlineSuffix = (data: Buffer): Buffer => {
@@ -11,6 +12,17 @@ const trimNewlineSuffix = (data: Buffer): Buffer => {
     return data.subarray(0, data.length - 1)
   }
   return data
+}
+
+function getMtimeMs(filepath: string): number {
+  const stats = fs.statSync(filepath)
+  if (stats.isDirectory()) {
+    const files = fs.readdirSync(filepath)
+    const mtimes = files.map((f) => getMtimeMs(path.join(filepath, f)))
+    return mtimes.reduce((accum, t) => Math.max(accum, t), -1)
+  }
+
+  return stats.mtimeMs
 }
 
 // global watch state
@@ -26,8 +38,9 @@ const rebuild = async () => {
   }
 
   building = true
+  const buildVersion = getMtimeMs(gameSrcPath).toString()
 
-  console.log('Spawning build jobs...')
+  console.log(`Spawning build jobs for build version ${buildVersion}...`)
 
   // Rebuild client artifacts
   const clientBuild = new Promise((resolve) => {
@@ -35,6 +48,7 @@ const rebuild = async () => {
       'ts-node',
       '--transpile-only',
       path.join(gameSrcPath, 'cli', 'build', 'buildWeb.ts'),
+      buildVersion,
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -50,6 +64,7 @@ const rebuild = async () => {
       'ts-node',
       '--transpile-only',
       path.join(gameSrcPath, 'cli', 'build', 'buildServer.ts'),
+      buildVersion,
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -88,7 +103,11 @@ const rebuild = async () => {
 let debounce = false
 chokidar
   .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
-  .on('all', (_event, _filename) => {
+  .on('all', (_event, filename) => {
+    if (filename.startsWith(webEphemeralPath)) {
+      return
+    }
+
     if (debounce) {
       return
     }

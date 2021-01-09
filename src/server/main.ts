@@ -1,31 +1,16 @@
 import * as fs from 'fs'
-import * as path from 'path'
 
 import * as hapi from '@hapi/hapi'
 import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
-import {
-  buildVersionPath,
-  serverOutputPath,
-  webEntrypoints,
-  webOutputPath,
-} from '~/cli/build/common'
-import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
+import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
 
 async function buildVersion(): Promise<string> {
-  return (await fs.promises.readFile(buildVersionPath)).toString()
-}
-
-async function entrypointTemplate(srcPath: string): Promise<string> {
-  return (
-    await fs.promises.readFile(
-      path.join(serverOutputPath, srcPath, 'index.html'),
-    )
-  ).toString('utf8')
+  return (await fs.promises.readFile(serverBuildVersionPath)).toString()
 }
 
 async function main(): Promise<void> {
@@ -51,23 +36,6 @@ async function main(): Promise<void> {
   })
 
   await httpServer.register(inert)
-
-  for (const entrypoint of webEntrypoints) {
-    httpServer.route({
-      method: 'GET',
-      path: '/' + entrypoint,
-      handler: async () => {
-        const [bv, template] = await Promise.all([
-          buildVersion(),
-          entrypointTemplate(entrypoint),
-        ])
-        return updateEntrypointHtmlForAutoReload({
-          buildVersion: bv,
-          html: template,
-        })
-      },
-    })
-  }
 
   httpServer.route({
     method: 'GET',
@@ -131,12 +99,14 @@ async function main(): Promise<void> {
     },
   })
 
+  // Static assets
   httpServer.route({
     method: 'GET',
     path: '/{param*}',
     handler: {
       directory: {
         path: webOutputPath,
+        index: 'index.html',
       },
     },
   })

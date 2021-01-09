@@ -10,7 +10,7 @@
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",
-    "clean": "rm -rf out .cache dist out"
+    "clean": "rm -rf out src/web/ephemeral"
   },
   "repository": {
     "type": "git",
