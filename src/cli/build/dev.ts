@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import * as chokidar from 'chokidar'
 
-import { gameSrcPath, serverBuildOutputPath } from './common'
+import { gameSrcPath, serverOutputPath } from './common'
 
 // Removes a newline from the end of a buffer, if it exists.
 const trimNewlineSuffix = (data: Buffer): Buffer => {
@@ -34,7 +34,7 @@ const rebuild = async () => {
     const build = spawn('npx', [
       'ts-node',
       '--transpile-only',
-      path.join(gameSrcPath, 'cli', 'build', 'buildClient.ts'),
+      path.join(gameSrcPath, 'cli', 'build', 'buildWeb.ts'),
     ])
     build.on('close', resolve)
     build.stdout.on('data', (data) =>
@@ -67,7 +67,7 @@ const rebuild = async () => {
     server.kill()
   }
 
-  server = spawn('node', [path.join(serverBuildOutputPath, 'main.js')])
+  server = spawn('node', [path.join(serverOutputPath, 'main.js')])
   server.stdout.on('data', (data) =>
     console.log(trimNewlineSuffix(data).toString()),
   )

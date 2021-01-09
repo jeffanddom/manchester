@@ -3,7 +3,12 @@ import * as path from 'path'
 
 import * as esbuild from 'esbuild'
 
-import { buildVersionPath, gameSrcPath, serverBuildOutputPath } from './common'
+import {
+  buildVersionPath,
+  gameSrcPath,
+  serverOutputPath,
+  webEntrypoints,
+} from './common'
 
 function getMtimeMs(filepath: string): number {
   const stats = fs.statSync(filepath)
@@ -29,14 +34,21 @@ console.log(`build version '${buildVersion}' written to ${buildVersionPath}`)
 esbuild.buildSync({
   bundle: true,
   entryPoints: [path.join(gameSrcPath, 'server', 'main.ts')],
-  outdir: serverBuildOutputPath,
+  outdir: serverOutputPath,
   platform: 'node',
   sourcemap: true,
   target: 'es2019',
 })
 
 // Generate new entrypoint HTML with hardcoded build version
-fs.copyFileSync(
-  path.join(gameSrcPath, 'client', 'index.html'),
-  path.join(serverBuildOutputPath, 'index.html'),
+Promise.all(
+  webEntrypoints.map(async (srcPath) => {
+    await fs.promises.mkdir(path.join(serverOutputPath, srcPath), {
+      recursive: true,
+    })
+    await fs.promises.copyFile(
+      path.join(gameSrcPath, srcPath, 'index.html'),
+      path.join(serverOutputPath, srcPath, 'index.html'),
+    )
+  }),
 )

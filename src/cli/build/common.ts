@@ -15,6 +15,8 @@ const findProjectRoot = (): string => {
 export const projectRootPath = findProjectRoot()
 export const gameSrcPath = path.join(projectRootPath, 'src')
 export const buildOutputPath = path.join(projectRootPath, 'out')
-export const clientBuildOutputPath = path.join(buildOutputPath, 'client')
-export const serverBuildOutputPath = path.join(buildOutputPath, 'server')
-export const buildVersionPath = path.join(serverBuildOutputPath, 'buildVersion')
+export const webOutputPath = path.join(buildOutputPath, 'web')
+export const serverOutputPath = path.join(buildOutputPath, 'server')
+export const buildVersionPath = path.join(serverOutputPath, 'buildVersion')
+
+export const webEntrypoints = ['client', 'tools/rendertoy']

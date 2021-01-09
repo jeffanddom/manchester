@@ -7,8 +7,9 @@ import * as WebSocket from 'ws'
 
 import {
   buildVersionPath,
-  clientBuildOutputPath,
-  serverBuildOutputPath,
+  serverOutputPath,
+  webEntrypoints,
+  webOutputPath,
 } from '~/cli/build/common'
 import { updateEntrypointHtmlForAutoReload } from '~/client/autoReload'
 import { SIMULATION_PERIOD_S } from '~/constants'
@@ -19,9 +20,11 @@ async function buildVersion(): Promise<string> {
   return (await fs.promises.readFile(buildVersionPath)).toString()
 }
 
-async function entrypointTemplate(): Promise<string> {
+async function entrypointTemplate(srcPath: string): Promise<string> {
   return (
-    await fs.promises.readFile(path.join(serverBuildOutputPath, 'index.html'))
+    await fs.promises.readFile(
+      path.join(serverOutputPath, srcPath, 'index.html'),
+    )
   ).toString('utf8')
 }
 
@@ -49,18 +52,28 @@ async function main(): Promise<void> {
 
   await httpServer.register(inert)
 
+  for (const entrypoint of webEntrypoints) {
+    httpServer.route({
+      method: 'GET',
+      path: '/' + entrypoint,
+      handler: async () => {
+        const [bv, template] = await Promise.all([
+          buildVersion(),
+          entrypointTemplate(entrypoint),
+        ])
+        return updateEntrypointHtmlForAutoReload({
+          buildVersion: bv,
+          html: template,
+        })
+      },
+    })
+  }
+
   httpServer.route({
     method: 'GET',
     path: '/',
-    handler: async () => {
-      const [bv, template] = await Promise.all([
-        buildVersion(),
-        entrypointTemplate(),
-      ])
-      return updateEntrypointHtmlForAutoReload({
-        buildVersion: bv,
-        html: template,
-      })
+    handler: async (req, h) => {
+      return h.redirect('/client')
     },
   })
 
@@ -123,8 +136,7 @@ async function main(): Promise<void> {
     path: '/{param*}',
     handler: {
       directory: {
-        path: clientBuildOutputPath,
-        redirectToSlash: true,
+        path: webOutputPath,
       },
     },
   })
