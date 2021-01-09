@@ -23,6 +23,27 @@ export enum MouseButton {
   RIGHT = 2,
 }
 
+/**
+ * Events such as pointerdown and pointerup provide the "buttons" bitmask.
+ */
+export function mouseButtonsFromBitmask(buttons: number): Set<MouseButton> {
+  const res = new Set<MouseButton>()
+
+  if ((buttons & 1) !== 0) {
+    res.add(MouseButton.LEFT)
+  }
+
+  if ((buttons & 2) !== 0) {
+    res.add(MouseButton.RIGHT)
+  }
+
+  if ((buttons & 4) !== 0) {
+    res.add(MouseButton.MIDDLE)
+  }
+
+  return res
+}
+
 export function mouseButtonFromRaw(raw: number): MouseButton | undefined {
   if (!(raw in MouseButton)) {
     return undefined

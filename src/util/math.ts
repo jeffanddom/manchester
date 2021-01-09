@@ -51,7 +51,7 @@ export const getAngle = (
   return Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
 }
 
-const normalizeAngle = (theta: number): number => {
+export const normalizeAngle = (theta: number): number => {
   if (theta > Math.PI) {
     return theta - 2 * Math.PI
   } else if (theta < -Math.PI) {
