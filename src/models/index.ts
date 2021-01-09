@@ -16,7 +16,7 @@ const models: {
   wall: wallObj,
 }
 
-const gltfs: Map<string, gltf.Document> = new Map(
+export const gltfs: Map<string, gltf.Document> = new Map(
   Object.entries({
     tank: tankGltf as gltf.Document,
     turret: turretGltf as gltf.Document,
