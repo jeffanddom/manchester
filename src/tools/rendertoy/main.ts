@@ -48,6 +48,7 @@ class Camera {
   }
 
   public world2View(): mat4 {
+    // TODO: this setup appears to get us into gimbal lock.
     const origin = vec3.create()
     const cameraPos = vec3.fromValues(0, 0, this.dist)
     vec3.rotateY(cameraPos, cameraPos, origin, this.angularOffset[0])
@@ -58,11 +59,14 @@ class Camera {
     vec3.normalize(lookTo, lookTo)
     const rot = quat.rotationTo(quat.create(), lookFrom, lookTo)
 
-    vec3.add(
-      cameraPos,
-      cameraPos,
-      vec3.fromValues(this.viewTranslation[0], this.viewTranslation[1], 0),
+    const translate = vec3.fromValues(
+      this.viewTranslation[0],
+      this.viewTranslation[1],
+      0,
     )
+    vec3.transformQuat(translate, translate, rot)
+
+    vec3.add(cameraPos, cameraPos, translate)
 
     const m = mat4.create()
     mat4.fromRotationTranslation(m, rot, cameraPos)
