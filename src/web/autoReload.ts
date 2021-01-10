@@ -5,9 +5,7 @@
 // @ts-ignore
 import { buildVersion } from '~/web/ephemeral/buildVersion'
 
-const pollPeriod = 3 * 1000
-
-export function poll(): void {
+export function poll(period: number = 3 * 1000): void {
   console.log(`starting reload poll, build version is ${buildVersion}`)
 
   window.setInterval(() => {
@@ -32,5 +30,5 @@ export function poll(): void {
       .catch((err) => {
         console.log('build version fetch: error:', err)
       })
-  }, pollPeriod)
+  }, period)
 }
