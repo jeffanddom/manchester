@@ -26,6 +26,9 @@ fs.writeFileSync(
 
 esbuild.buildSync({
   bundle: true,
+  define: {
+    'process.env.NODE_ENV': '"production"', // for react-dom
+  },
   entryPoints: webEntrypoints.map((srcPath) =>
     path.join(gameSrcPath, srcPath, 'main.ts'),
   ),

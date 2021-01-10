@@ -1,94 +1,99 @@
-import { quat } from 'gl-matrix'
-import { mat4, vec3, vec4 } from 'gl-matrix'
+import CodeMirror from 'codemirror'
+import { mat4, vec2, vec4 } from 'gl-matrix'
 
-import { MouseButton, mouseButtonsFromBitmask } from '~/input/interfaces'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/theme/monokai.css'
+import 'codemirror/mode/clike/clike.js'
+
 import * as models from '~/models'
-import { Renderer3d } from '~/renderer/Renderer3d'
-import * as math from '~/util/math'
+import {
+  Renderer3d,
+  ShaderCompileError,
+  ShaderLinkError,
+} from '~/renderer/Renderer3d'
+import { shader as defaultShader } from '~/renderer/shaders/v2'
+import { Camera } from '~/tools/rendertoy/Camera'
+import * as time from '~/util/time'
 import * as autoReload from '~/web/autoReload'
 
-class Camera {
-  private dist: number
-  private angularOffset: [number, number]
-  private viewTranslation: [number, number]
-
-  constructor(canvas: HTMLCanvasElement) {
-    this.dist = 3
-    this.angularOffset = [0, 0]
-    this.viewTranslation = [0, 0]
-
-    // stop right clicks from opening the context menu
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault())
-
-    canvas.addEventListener('wheel', (event) => {
-      event.preventDefault()
-      this.dist += event.deltaY * 0.05
-      this.dist = math.clamp(this.dist, [1, 10])
-    })
-
-    canvas.addEventListener('pointermove', (event) => {
-      const buttons = mouseButtonsFromBitmask(event.buttons)
-
-      if (buttons.has(MouseButton.LEFT)) {
-        const scale = 0.005
-        this.angularOffset[0] = math.normalizeAngle(
-          this.angularOffset[0] + event.movementX * -scale,
-        )
-        this.angularOffset[1] = math.normalizeAngle(
-          this.angularOffset[1] + event.movementY * -scale,
-        )
-      }
-
-      if (buttons.has(MouseButton.RIGHT)) {
-        const scale = 0.0025
-        this.viewTranslation[0] += event.movementX * scale
-        this.viewTranslation[1] += event.movementY * scale
-      }
-    })
-  }
-
-  public world2View(): mat4 {
-    // TODO: this setup appears to get us into gimbal lock.
-    const origin = vec3.create()
-    const cameraPos = vec3.fromValues(0, 0, this.dist)
-    vec3.rotateY(cameraPos, cameraPos, origin, this.angularOffset[0])
-    vec3.rotateX(cameraPos, cameraPos, origin, this.angularOffset[1])
-
-    const lookFrom = vec3.fromValues(0, 0, -1)
-    const lookTo = vec3.negate(vec3.create(), cameraPos)
-    vec3.normalize(lookTo, lookTo)
-    const rot = quat.rotationTo(quat.create(), lookFrom, lookTo)
-
-    const translate = vec3.fromValues(
-      this.viewTranslation[0],
-      this.viewTranslation[1],
-      0,
-    )
-    vec3.transformQuat(translate, translate, rot)
-
-    vec3.add(cameraPos, cameraPos, translate)
-
-    const m = mat4.create()
-    mat4.fromRotationTranslation(m, rot, cameraPos)
-    return mat4.invert(m, m)
-  }
+// Setup shader editors
+const codeMirrorOptions: CodeMirror.EditorConfiguration = {
+  mode: 'clike', // there is no GLSL built-in mode, but clike comes closest
+  theme: 'monokai',
+  lineNumbers: true,
+  lineWrapping: true,
+  tabSize: 2,
+  indentWithTabs: false,
 }
 
+const vsEditor = CodeMirror(document.getElementById('editor-vs')!, {
+  ...codeMirrorOptions,
+  value: defaultShader.vertexSrc,
+})
+
+const fsEditor = CodeMirror(document.getElementById('editor-fs')!, {
+  ...codeMirrorOptions,
+  value: defaultShader.fragmentSrc,
+})
+
+let lastCodeUpdate: number | undefined
+vsEditor.on('change', () => (lastCodeUpdate = time.current()))
+fsEditor.on('change', () => (lastCodeUpdate = time.current()))
+
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = canvas.parentElement!.clientWidth
+canvas.height = canvas.parentElement!.clientHeight
 
 const renderer = new Renderer3d(canvas)
 for (const [, doc] of models.gltfs) {
   renderer.loadGltf(doc)
 }
 
+window.addEventListener('resize', () => {
+  console.log('resize')
+  canvas.width = canvas.parentElement!.clientWidth
+  canvas.height = canvas.parentElement!.clientHeight
+  renderer.setViewportDimensions(vec2.fromValues(canvas.width, canvas.height))
+})
+
 const camera = new Camera(canvas)
+
+function recompile(): void {
+  try {
+    renderer.loadShader(
+      'v2',
+      {
+        ...defaultShader,
+        vertexSrc: vsEditor.getValue(),
+        fragmentSrc: fsEditor.getValue(),
+      },
+      { allowOverride: true },
+    )
+  } catch (err) {
+    if (err instanceof ShaderCompileError) {
+      if (err.vertexShaderLog !== undefined) {
+        console.log('vertex shader error:\n', err.vertexShaderLog)
+      }
+      if (err.fragmentShaderLog !== undefined) {
+        console.log('fragment shader error:\n', err.vertexShaderLog)
+      }
+    } else if (err instanceof ShaderLinkError) {
+      console.log('link error:\n', err.toString())
+    } else {
+      throw err
+    }
+  }
+}
 
 function update(): void {
   requestAnimationFrame(update)
 
   renderer.setWvTransform(camera.world2View())
+
+  if (lastCodeUpdate !== undefined && time.current() - lastCodeUpdate > 2) {
+    lastCodeUpdate = undefined
+    recompile()
+  }
 
   renderer.renderV2((drawFunc) => {
     drawFunc('tank', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
@@ -96,4 +101,4 @@ function update(): void {
 }
 
 requestAnimationFrame(update)
-autoReload.poll()
+autoReload.poll(1000)

@@ -1457,6 +1457,18 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/codemirror@^0.0.106":
+  version "0.0.106"
+  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-0.0.106.tgz#0e4adcf51c4ff201ac25adba22771938dbcf1d72"
+  integrity sha512-o2bJWaI56+J1IuzUyb1KKNLs0Tm1sqdosGeSneicQZpg9s59++8Nz70KOD6IACiZWI6b+H0H+UE+JRkgTUO3Ww==
+  dependencies:
+    "@types/tern" "*"
+
+"@types/estree@*":
+  version "0.0.45"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.45.tgz#e9387572998e5ecdac221950dab3e8c3b16af884"
+  integrity sha512-jnqIUKDUqJbDIUxm0Uj7bnlMnRm1T/eZ9N+AVMqhPgzrba2GhGG5o/jCTwmdPK709nEZsGoMzXEDUjcXHa3W0g==
+
 "@types/events@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
@@ -1656,6 +1668,13 @@
     "@types/hoist-non-react-statics" "*"
     "@types/react" "*"
     csstype "^3.0.2"
+
+"@types/tern@*":
+  version "0.23.3"
+  resolved "https://registry.yarnpkg.com/@types/tern/-/tern-0.23.3.tgz#4b54538f04a88c9ff79de1f6f94f575a7f339460"
+  integrity sha512-imDtS4TAoTcXk0g7u4kkWqedB3E4qpjXzCpD2LU5M5NAXHzCDsypyvXSaG7mM8DKYkCRa7tFp4tS/lp/Wo7Q3w==
+  dependencies:
+    "@types/estree" "*"
 
 "@types/ws@^7.2.6":
   version "7.4.0"
@@ -2291,6 +2310,11 @@ co@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/co/-/co-4.6.0.tgz#6ea6bdf3d853ae54ccb8e47bfa0bf3f9031fb184"
   integrity sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=
+
+codemirror@^5.59.1:
+  version "5.59.1"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.59.1.tgz#cd6465555a87f8a2243eb41ffb460c777e15212c"
+  integrity sha512-d0SSW/PCCD4LoSCBPdnP0BzmZB1v3emomCUtVlIWgZHJ06yVeBOvBtOH7vYz707pfAvEeWbO9aP6akh8vl1V3w==
 
 collect-v8-coverage@^1.0.0:
   version "1.0.1"

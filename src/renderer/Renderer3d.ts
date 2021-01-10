@@ -55,6 +55,19 @@ interface WireModel {
 
 export type WireObject = WireLines | WireModel
 
+export class ShaderCompileError extends Error {
+  public vertexShaderLog: string | undefined
+  public fragmentShaderLog: string | undefined
+
+  constructor(opts: { vertexShaderLog?: string; fragmentShaderLog?: string }) {
+    super('shader compile error')
+    this.vertexShaderLog = opts.vertexShaderLog
+    this.fragmentShaderLog = opts.fragmentShaderLog
+  }
+}
+
+export class ShaderLinkError extends Error {}
+
 export class Renderer3d implements IModelLoader {
   private canvas: HTMLCanvasElement
   private gl: WebGL2RenderingContext
@@ -99,8 +112,12 @@ export class Renderer3d implements IModelLoader {
     this.modelRootNodes = new Map()
   }
 
-  private loadShader(name: string, def: ShaderDefinition): void {
-    if (this.shaders.has(name)) {
+  public loadShader(
+    name: string,
+    def: ShaderDefinition,
+    options: { allowOverride?: boolean } = {},
+  ): void {
+    if (this.shaders.has(name) && !(options.allowOverride ?? false)) {
       throw new Error(`shader ${name} already defined`)
     }
 
@@ -112,10 +129,30 @@ export class Renderer3d implements IModelLoader {
     this.gl.shaderSource(fragmentShader, def.fragmentSrc)
     this.gl.compileShader(fragmentShader)
 
+    const vsError =
+      this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS) === false
+    const fsError =
+      this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS) ===
+      false
+    if (vsError || fsError) {
+      throw new ShaderCompileError({
+        vertexShaderLog: vsError
+          ? this.gl.getShaderInfoLog(vertexShader)!
+          : undefined,
+        fragmentShaderLog: fsError
+          ? this.gl.getShaderInfoLog(fragmentShader)!
+          : undefined,
+      })
+    }
+
     const program = this.gl.createProgram()!
     this.gl.attachShader(program, vertexShader)
     this.gl.attachShader(program, fragmentShader)
     this.gl.linkProgram(program)
+
+    if (this.gl.getProgramParameter(program, this.gl.LINK_STATUS) === false) {
+      throw new ShaderLinkError(this.gl.getProgramInfoLog(program)!)
+    }
 
     const linkStatus = this.gl.getProgramParameter(program, this.gl.LINK_STATUS)
     if (linkStatus === 0) {

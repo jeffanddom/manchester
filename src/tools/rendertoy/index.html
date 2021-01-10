@@ -2,29 +2,71 @@
 <html>
 
 <head>
+  <title>Rendertoy</title>
+  <link href="/tools/rendertoy/main.css" rel="stylesheet">
   <style>
     html {
       height: 100%;
       background-color: lightgray;
     }
 
-    body,
-    canvas {
+    body {
       width: 100%;
       height: 100%;
-      text-align: center;
       margin: 0 auto;
       padding: 0;
       display: block;
-      cursor: pointer;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .container {
+      height: 100%;
+      display: grid;
+      grid-template-columns: [col-start] 60% [col-split] 40% [col-end];
+      grid-template-rows: [row-start] 50% [row-split] 50% [row-end];
+    }
+
+    .grid-canvas {
+      grid-column-start: col-start;
+      grid-column-end: col-split;
+      grid-row-start: row-start;
+      grid-row-end: row-end;
+    }
+
+    .grid-vs {
+      grid-column-start: col-split;
+      grid-column-end: col-end;
+      grid-row-start: row-start;
+      grid-row-end: row-split;
+    }
+
+    .grid-fs {
+      grid-column-start: col-split;
+      grid-column-end: col-end;
+      grid-row-start: row-split;
+      grid-row-end: row-end;
     }
   </style>
 </head>
 
 <body>
-  <div>
-    <canvas id='renderer'></canvas>
+  <div class='container'>
+    <div class='grid-canvas'><canvas id='renderer'></canvas></div>
+    <div class='grid-vs'>
+      <h3>Vertex shader</h3>
+      <div id='editor-vs' class='editor'></div>
+    </div>
+    <div class='grid-fs'>
+      <h3>Fragment shader</h3>
+      <div id='editor-fs' class='editor'></div>
+    </div>
   </div>
 
   <script src="/tools/rendertoy/main.js"></script>
