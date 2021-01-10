@@ -272,11 +272,16 @@ export class Renderer3d implements IModelLoader {
     ) => void,
   ): void {
     this.useShader('standard')
+
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LESS)
+
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
     this.gl.frontFace(this.gl.CCW)
+
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
     renderBody(
       (modelName: string, posXY: Immutable<vec2>, rotXY: number): void => {
@@ -310,11 +315,16 @@ export class Renderer3d implements IModelLoader {
     ) => void,
   ): void {
     this.useShader('v2')
+
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LESS)
+
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
     this.gl.frontFace(this.gl.CCW)
+
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
     renderBody(
       (
@@ -461,11 +471,16 @@ export class Renderer3d implements IModelLoader {
    */
   renderWire(renderBody: (drawFunc: (obj: WireObject) => void) => void): void {
     this.useShader('wire')
+
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing surfaces
+
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
     this.gl.frontFace(this.gl.CCW)
+
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
     renderBody((obj: WireObject): void => {
       this.gl.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
