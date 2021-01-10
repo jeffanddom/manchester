@@ -10,6 +10,7 @@ import {
   Renderer3d,
   ShaderCompileError,
   ShaderLinkError,
+  WireObject,
 } from '~/renderer/Renderer3d'
 import { shader as defaultShader } from '~/renderer/shaders/v2'
 import { Camera } from '~/tools/rendertoy/Camera'
@@ -85,6 +86,30 @@ function recompile(): void {
   }
 }
 
+const axes: WireObject[] = []
+for (let axis = 0; axis < 3; axis++) {
+  const pos = new Float32Array([0, 0, 0, 0, 0, 0])
+  const color = vec4.fromValues(0, 0, 0, 1)
+
+  // positive axis
+  pos[3 + axis] = 1000
+  color[axis] = 0.75
+  axes.push({
+    type: 'LINES',
+    positions: pos.slice(),
+    color: vec4.clone(color),
+  })
+
+  // negative axis
+  pos[3 + axis] *= -1
+  color[3] = 0.4
+  axes.push({
+    type: 'LINES',
+    positions: pos.slice(),
+    color: vec4.clone(color),
+  })
+}
+
 function update(): void {
   requestAnimationFrame(update)
 
@@ -97,6 +122,12 @@ function update(): void {
 
   renderer.renderV2((drawFunc) => {
     drawFunc('tank', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
+  })
+
+  renderer.renderWire((drawFunc) => {
+    for (const obj of axes) {
+      drawFunc(obj)
+    }
   })
 }
 
