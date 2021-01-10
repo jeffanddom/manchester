@@ -4,6 +4,8 @@ import * as path from 'path'
 
 import * as chokidar from 'chokidar'
 
+import * as time from '../../util/time'
+
 import { gameSrcPath, serverOutputPath, webEphemeralPath } from './common'
 
 // Removes a newline from the end of a buffer, if it exists.
@@ -41,6 +43,7 @@ const rebuild = async () => {
   const buildVersion = getMtimeMs(gameSrcPath).toString()
 
   console.log(`Spawning build jobs for build version ${buildVersion}...`)
+  const start = time.current()
 
   // Rebuild client artifacts
   const clientBuild = new Promise((resolve) => {
@@ -76,6 +79,9 @@ const rebuild = async () => {
   })
 
   await Promise.all([clientBuild, serverBuild])
+
+  const elapsed = time.current() - start
+  console.log(`Build completed in ${elapsed.toFixed(3)}ms`)
 
   // Restart server
   if (server !== undefined) {
