@@ -469,11 +469,18 @@ export class Renderer3d implements IModelLoader {
   /**
    * Render using the wire shader. Intended for debug draw.
    */
-  renderWire(renderBody: (drawFunc: (obj: WireObject) => void) => void): void {
+  renderWire(
+    renderBody: (drawFunc: (obj: WireObject) => void) => void,
+    options: { disableDepthTest?: boolean } = {},
+  ): void {
     this.useShader('wire')
 
-    this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing surfaces
+    if (options.disableDepthTest === true) {
+      this.gl.disable(this.gl.DEPTH_TEST)
+    } else {
+      this.gl.enable(this.gl.DEPTH_TEST)
+      this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing surfaces
+    }
 
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
