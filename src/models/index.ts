@@ -1,5 +1,6 @@
 import bulletObj from '~/models/bullet.obj'
 import coreObj from '~/models/core.obj'
+import sphereGltf from '~/models/sphere.gltf'
 import tankGltf from '~/models/tank.gltf'
 import treeObj from '~/models/tree.obj'
 import turretGltf from '~/models/turret.gltf'
@@ -18,6 +19,7 @@ const models: {
 
 export const gltfs: Map<string, gltf.Document> = new Map(
   Object.entries({
+    sphere: sphereGltf as gltf.Document,
     tank: tankGltf as gltf.Document,
     turret: turretGltf as gltf.Document,
   }),
