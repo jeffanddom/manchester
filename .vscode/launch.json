@@ -21,12 +21,23 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
-      "url": "http://localhost:3000",
+      "name": "Debug game client",
+      "url": "http://localhost:3000/client",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
       "sourceMapPathOverrides": {
-        "../*": "${webRoot}/*"
+        "../../*": "${webRoot}/*"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug tools/rendertoy",
+      "url": "http://localhost:3000/tools/rendertoy",
+      "webRoot": "${workspaceFolder}/src",
+      "breakOnLoad": true,
+      "sourceMapPathOverrides": {
+        "../../../*": "${webRoot}/*"
       }
     }
   ]
