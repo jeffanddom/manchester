@@ -51,7 +51,6 @@ for (const [, doc] of models.gltfs) {
 }
 
 window.addEventListener('resize', () => {
-  console.log('resize')
   canvas.width = canvas.parentElement!.clientWidth
   canvas.height = canvas.parentElement!.clientHeight
   renderer.setViewportDimensions(vec2.fromValues(canvas.width, canvas.height))
@@ -76,7 +75,7 @@ function recompile(): void {
         console.log('vertex shader error:\n', err.vertexShaderLog)
       }
       if (err.fragmentShaderLog !== undefined) {
-        console.log('fragment shader error:\n', err.vertexShaderLog)
+        console.log('fragment shader error:\n', err.fragmentShaderLog)
       }
     } else if (err instanceof ShaderLinkError) {
       console.log('link error:\n', err.toString())

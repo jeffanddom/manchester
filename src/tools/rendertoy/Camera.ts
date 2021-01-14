@@ -33,10 +33,6 @@ export class Camera {
         this.angularOffset[1] = math.normalizeAngle(
           this.angularOffset[1] + event.movementY * -scale,
         )
-
-        console.log(
-          `x: ${event.movementX} (${this.angularOffset[0]}), y: ${event.movementY} (${this.angularOffset[1]})`,
-        )
       }
 
       if (buttons.has(MouseButton.RIGHT)) {
