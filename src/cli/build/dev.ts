@@ -3,10 +3,20 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import * as chokidar from 'chokidar'
+import * as esbuild from 'esbuild'
 
 import * as time from '../../util/time'
 
-import { gameSrcPath, serverOutputPath, webEphemeralPath } from './common'
+import {
+  copyWebHtml,
+  gameSrcPath,
+  serverBuildOpts,
+  serverOutputPath,
+  updateWebBuildVersion,
+  webBuildOpts,
+  webEphemeralPath,
+  writeServerBuildVersion,
+} from './common'
 
 // Removes a newline from the end of a buffer, if it exists.
 const trimNewlineSuffix = (data: Buffer): Buffer => {
@@ -27,103 +37,121 @@ function getMtimeMs(filepath: string): number {
   return stats.mtimeMs
 }
 
-// global watch state
-let building = false // a single-thread mutex around rebuild()
-let buildQueued = false
-let server: ChildProcessWithoutNullStreams | undefined
+class DevDaemon {
+  private building: boolean
+  private buildQueued: boolean
 
-const rebuild = async () => {
-  // don't allow rebuild() to be called more than once
-  if (building) {
-    buildQueued = true
-    return
+  private server: ChildProcessWithoutNullStreams | undefined
+  private incrementalBuilds:
+    | {
+        server: esbuild.BuildIncremental
+        web: esbuild.BuildIncremental
+      }
+    | undefined
+
+  constructor() {
+    this.building = false
+    this.buildQueued = false
   }
 
-  building = true
-  const buildVersion = getMtimeMs(gameSrcPath).toString()
+  public start(): void {
+    let debounce = false
 
-  console.log(`Spawning build jobs for build version ${buildVersion}...`)
-  const start = time.current()
+    chokidar
+      .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
+      .on('all', (_event, filename) => {
+        if (filename.startsWith(webEphemeralPath)) {
+          return
+        }
 
-  // Rebuild client artifacts
-  const clientBuild = new Promise((resolve) => {
-    const build = spawn('npx', [
-      'ts-node',
-      '--transpile-only',
-      path.join(gameSrcPath, 'cli', 'build', 'buildWeb.ts'),
-      buildVersion,
-    ])
-    build.on('close', resolve)
-    build.stdout.on('data', (data) =>
-      console.log('client build: ' + trimNewlineSuffix(data).toString()),
-    )
-    build.stderr.on('data', (data) =>
-      console.log('client build err: ' + trimNewlineSuffix(data).toString()),
-    )
-  })
+        if (debounce) {
+          return
+        }
 
-  const serverBuild = new Promise((resolve) => {
-    const build = spawn('npx', [
-      'ts-node',
-      '--transpile-only',
-      path.join(gameSrcPath, 'cli', 'build', 'buildServer.ts'),
-      buildVersion,
-    ])
-    build.on('close', resolve)
-    build.stdout.on('data', (data) =>
-      console.log('server build: ' + trimNewlineSuffix(data).toString()),
-    )
-    build.stderr.on('data', (data) =>
-      console.log('server build err: ' + trimNewlineSuffix(data).toString()),
-    )
-  })
+        debounce = true
 
-  await Promise.all([clientBuild, serverBuild])
+        setTimeout(() => {
+          debounce = false
+          this.rebuild()
+        }, 500)
+      })
 
-  const elapsed = time.current() - start
-  console.log(`Build completed in ${elapsed.toFixed(3)}ms`)
-
-  // Restart server
-  if (server !== undefined) {
-    server.kill()
+    this.rebuild()
   }
 
-  server = spawn('node', [path.join(serverOutputPath, 'main.js')])
-  server.stdout.on('data', (data) =>
-    console.log(trimNewlineSuffix(data).toString()),
-  )
-  server.stderr.on('data', (data) =>
-    console.log(trimNewlineSuffix(data).toString()),
-  )
+  private async rebuild(): Promise<void> {
+    // don't allow rebuild() to be called more than once
+    if (this.building) {
+      this.buildQueued = true
+      return
+    }
 
-  // allow rebuild() to be called again
-  building = false
+    this.building = true
+    const buildVersion = getMtimeMs(gameSrcPath).toString()
 
-  // Immediately trigger a rebuild if one was requested during this build.
-  if (buildQueued) {
-    buildQueued = false
-    rebuild()
+    console.log(`Spawning build jobs for build version ${buildVersion}...`)
+    const start = time.current()
+
+    await this.rebuildAssets(buildVersion)
+
+    const elapsed = time.current() - start
+    console.log(`Build completed in ${elapsed.toFixed(3)}s`)
+
+    this.restartServer()
+
+    // allow rebuild() to be called again
+    this.building = false
+
+    // Immediately trigger a rebuild if one was requested during this build.
+    if (this.buildQueued) {
+      this.buildQueued = false
+      this.rebuild()
+    }
+  }
+
+  private async rebuildAssets(buildVersion: string): Promise<void> {
+    // Make build version available to web build.
+    await updateWebBuildVersion(buildVersion)
+
+    if (this.incrementalBuilds !== undefined) {
+      await Promise.all([
+        this.incrementalBuilds.server.rebuild(),
+        this.incrementalBuilds.web.rebuild(),
+      ])
+    } else {
+      const [server, web] = await Promise.all([
+        esbuild.build({
+          ...serverBuildOpts,
+          incremental: true,
+        }),
+        esbuild.build({
+          ...webBuildOpts,
+          incremental: true,
+        }),
+      ])
+      this.incrementalBuilds = { server, web }
+    }
+
+    // Post-build tasks:
+    // - copy index.html for web programs
+    // - make build version available to server.
+    await Promise.all([copyWebHtml(), writeServerBuildVersion(buildVersion)])
+  }
+
+  private restartServer(): void {
+    if (this.server !== undefined) {
+      this.server.kill()
+    }
+
+    this.server = spawn('node', [path.join(serverOutputPath, 'main.js')])
+    this.server.stdout.on('data', (data) =>
+      console.log(trimNewlineSuffix(data).toString()),
+    )
+    this.server.stderr.on('data', (data) =>
+      console.log(trimNewlineSuffix(data).toString()),
+    )
   }
 }
 
-let debounce = false
-chokidar
-  .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
-  .on('all', (_event, filename) => {
-    if (filename.startsWith(webEphemeralPath)) {
-      return
-    }
-
-    if (debounce) {
-      return
-    }
-
-    debounce = true
-
-    setTimeout(() => {
-      debounce = false
-      rebuild()
-    }, 500)
-  })
-
-rebuild()
+const daemon = new DevDaemon()
+daemon.start()

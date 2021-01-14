@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+import * as esbuild from 'esbuild'
+
 const findProjectRoot = (): string => {
   let dir = __dirname
   while (dir.length > 1) {
@@ -24,3 +26,66 @@ export const serverBuildVersionPath = path.join(
 )
 
 export const webEntrypoints = ['client', 'tools/rendertoy']
+
+export const webBuildOpts: esbuild.BuildOptions = {
+  bundle: true,
+  define: {
+    'process.env.NODE_ENV': '"production"', // for react-dom
+  },
+  entryPoints: webEntrypoints.map((srcPath) =>
+    path.join(gameSrcPath, srcPath, 'main.ts'),
+  ),
+  loader: {
+    '.obj': 'text',
+    '.gltf': 'json',
+  },
+  minify: false,
+  outdir: webOutputPath,
+  sourcemap: true,
+  target: ['chrome88', 'firefox84', 'safari14'],
+}
+
+export const serverBuildOpts: esbuild.BuildOptions = {
+  bundle: true,
+  entryPoints: [path.join(gameSrcPath, 'server', 'main.ts')],
+  outdir: serverOutputPath,
+  platform: 'node',
+  sourcemap: true,
+  target: 'es2019',
+}
+
+export async function updateWebBuildVersion(
+  buildVersion: string,
+): Promise<void> {
+  await fs.promises.mkdir(webEphemeralPath, { recursive: true })
+  await fs.promises.writeFile(
+    path.join(webEphemeralPath, 'buildVersion.ts'),
+    `export const buildVersion = '${buildVersion}'`,
+  )
+}
+
+export async function copyWebHtml(): Promise<void> {
+  await Promise.all(
+    webEntrypoints.map(async (srcPath) => {
+      await fs.promises.mkdir(path.join(webOutputPath, srcPath), {
+        recursive: true,
+      })
+      await fs.promises.copyFile(
+        path.join(gameSrcPath, srcPath, 'index.html'),
+        path.join(webOutputPath, srcPath, 'index.html'),
+      )
+    }),
+  )
+}
+
+export async function writeServerBuildVersion(
+  buildVersion: string,
+): Promise<void> {
+  await fs.promises.mkdir(
+    path.normalize(path.join(serverBuildVersionPath, '..')),
+    {
+      recursive: true,
+    },
+  )
+  await fs.promises.writeFile(serverBuildVersionPath, buildVersion)
+}
