@@ -67,14 +67,6 @@ export function accessorTypeDegree(t: AccessorType): number {
   }
 }
 
-type BufferArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Uint32Array
-  | Float32Array
-
 /**
  * Takes an ArrayBuffer and returns a typed array corresponding to the provided
  * accessor and buffer view parameters.
@@ -89,7 +81,7 @@ function applyAccessor(
     bufferViewOffset?: number
     stride?: number
   } = {},
-): BufferArray {
+): renderer.BufferArray {
   const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
   const degree = accessorTypeDegree(type)
   const elementSize = degree * accessorComponentTypeSize(componentType)
@@ -177,7 +169,7 @@ function makeMesh(
   gl: WebGL2RenderingContext,
   doc: Document,
   meshId: number,
-): renderer.Mesh {
+): renderer.DataMesh {
   const meshes = doc.meshes ?? []
   if (meshes.length < meshId) {
     throw new Error(`mesh ${meshId}: not defined in glTF document`)
@@ -217,9 +209,7 @@ function makeMesh(
 
   const positions = makeBuffer(gl, doc, positionAccessorId)
   const normals = makeBuffer(gl, doc, normalAccessorId)
-  const indices = makeBuffer(gl, doc, indexAccessorId, {
-    isIndexBuffer: true,
-  })
+  const indices = makeBuffer(gl, doc, indexAccessorId)
 
   return {
     positions,
@@ -233,8 +223,7 @@ function makeBuffer(
   gl: WebGL2RenderingContext,
   doc: Document,
   accessorId: number,
-  opts: { isIndexBuffer: boolean } = { isIndexBuffer: false },
-): renderer.Buffer {
+): renderer.Buffer<renderer.BufferArray> {
   const accessors = doc.accessors ?? []
   if (accessors.length < accessorId) {
     throw new Error(`accessor ${accessorId}: not defined in glTF document`)
@@ -309,23 +298,8 @@ function makeBuffer(
     bufferOpts,
   )
 
-  // Write data to a GL buffer
-  const glBuffer = gl.createBuffer()
-  if (glBuffer === null) {
-    throw new Error('unable to create GL buffer')
-  }
-
-  // Specifying the precise target matters because it sets a property on the
-  // buffer object.
-  const target = opts.isIndexBuffer ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER
-
-  gl.bindVertexArray(null)
-  gl.bindBuffer(target, glBuffer)
-  gl.bufferData(target, bufferData, gl.STATIC_DRAW)
-
   return {
-    bufferData,
-    glBuffer,
+    buffer: bufferData,
     glType: accessorComponentTypeToGLType(gl, accessor.componentType),
     componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),

@@ -2,6 +2,14 @@ import { mat4 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 
+export type BufferArray =
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Uint32Array
+  | Float32Array
+
 export enum ModelPrimitive {
   Lines,
   Triangles,
@@ -26,33 +34,40 @@ export enum MeshPrimitive {
   Lines,
 }
 
-export interface Buffer {
-  bufferData: ArrayBuffer
-  glBuffer: WebGLBuffer
+export interface Buffer<T> {
+  buffer: T
   glType: GLenum // FLOAT, etc.
   componentCount: number // total number of component values of type glType
   componentsPerAttrib: number // number of component values per attribute
 }
 
-export interface TriangleMesh {
-  positions: Buffer
-  normals: Buffer
-  indices: Buffer
+export interface TriangleMesh<T> {
+  positions: Buffer<T>
+  normals: Buffer<T>
+  indices: Buffer<T>
   primitive: MeshPrimitive.Triangles
 }
 
-export interface LineMesh {
-  positions: Buffer
-  normals: Buffer
-  indices: Buffer
+export interface LineMesh<T> {
+  positions: Buffer<T>
+  normals: Buffer<T>
+  indices: Buffer<T>
   primitive: MeshPrimitive.Lines
 }
 
-export type Mesh = TriangleMesh | LineMesh
+export type DataMesh = TriangleMesh<BufferArray> | LineMesh<BufferArray>
+export type RenderMesh = TriangleMesh<WebGLBuffer> | LineMesh<WebGLBuffer>
 
 export interface ModelNode {
   name: string
-  mesh?: Mesh
+  mesh?: DataMesh
   transform?: mat4
   children: ModelNode[]
+}
+
+export interface RenderNode {
+  name: string
+  mesh?: RenderMesh
+  transform?: mat4
+  children: RenderNode[]
 }
