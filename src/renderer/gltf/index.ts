@@ -215,9 +215,9 @@ function makeMesh(
     throw new Error(`mesh ${meshId}: primitive has no accessor index`)
   }
 
-  const positions = makeRendererBuffer(gl, doc, positionAccessorId)
-  const normals = makeRendererBuffer(gl, doc, normalAccessorId)
-  const indices = makeRendererBuffer(gl, doc, indexAccessorId, {
+  const positions = makeBuffer(gl, doc, positionAccessorId)
+  const normals = makeBuffer(gl, doc, normalAccessorId)
+  const indices = makeBuffer(gl, doc, indexAccessorId, {
     isIndexBuffer: true,
   })
 
@@ -229,7 +229,7 @@ function makeMesh(
   }
 }
 
-function makeRendererBuffer(
+function makeBuffer(
   gl: WebGL2RenderingContext,
   doc: Document,
   accessorId: number,
@@ -324,6 +324,7 @@ function makeRendererBuffer(
   gl.bufferData(target, bufferData, gl.STATIC_DRAW)
 
   return {
+    bufferData,
     glBuffer,
     glType: accessorComponentTypeToGLType(gl, accessor.componentType),
     componentCount: accessor.count,

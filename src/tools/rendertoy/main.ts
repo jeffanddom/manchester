@@ -5,7 +5,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/clike/clike.js'
 
-import * as models from '~/models'
+import * as models from '~/assets/models'
 import {
   Renderer3d,
   ShaderCompileError,

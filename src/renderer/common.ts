@@ -23,9 +23,11 @@ export type ModelDef = {
 // TODO: maybe add primitives for lines, points, etc.
 export enum MeshPrimitive {
   Triangles,
+  Lines,
 }
 
 export interface Buffer {
+  bufferData: ArrayBuffer
   glBuffer: WebGLBuffer
   glType: GLenum // FLOAT, etc.
   componentCount: number // total number of component values of type glType
@@ -39,7 +41,14 @@ export interface TriangleMesh {
   primitive: MeshPrimitive.Triangles
 }
 
-export type Mesh = TriangleMesh
+export interface LineMesh {
+  positions: Buffer
+  normals: Buffer
+  indices: Buffer
+  primitive: MeshPrimitive.Lines
+}
+
+export type Mesh = TriangleMesh | LineMesh
 
 export interface ModelNode {
   name: string

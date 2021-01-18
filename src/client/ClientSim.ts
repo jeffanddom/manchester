@@ -1,5 +1,6 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
+import { getGltfDocument, parseObj } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable3d, Renderable3dV2 } from '~/client/ClientRenderManager'
 import {
@@ -13,7 +14,6 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
-import { getGltfDocument, getModel } from '~/models'
 import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
@@ -167,7 +167,7 @@ export class ClientSim {
     )
 
     for (const m of ['bullet', 'core', 'tree', 'wall']) {
-      this.modelLoader.loadModel(m, getModel(m), 'standard')
+      this.modelLoader.loadModel(m, parseObj(m), 'standard')
     }
 
     for (const m of ['tank', 'turret']) {

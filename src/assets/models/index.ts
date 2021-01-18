@@ -1,10 +1,10 @@
-import bulletObj from '~/models/bullet.obj'
-import coreObj from '~/models/core.obj'
-import sphereGltf from '~/models/sphere.gltf'
-import tankGltf from '~/models/tank.gltf'
-import treeObj from '~/models/tree.obj'
-import turretGltf from '~/models/turret.gltf'
-import wallObj from '~/models/wall.obj'
+import bulletObj from '~/assets/models/bullet.obj'
+import coreObj from '~/assets/models/core.obj'
+import sphereGltf from '~/assets/models/sphere.gltf'
+import tankGltf from '~/assets/models/tank.gltf'
+import treeObj from '~/assets/models/tree.obj'
+import turretGltf from '~/assets/models/turret.gltf'
+import wallObj from '~/assets/models/wall.obj'
 import { ModelDef, ModelPrimitive } from '~/renderer/common'
 import * as gltf from '~/renderer/gltf'
 
@@ -41,7 +41,7 @@ type ModelTypes = keyof typeof models
 
 const defaultColor = [1.0, 0, 1.0, 1.0]
 
-export const getModel: (modelType: ModelTypes) => ModelDef = (modelType) => {
+export const parseObj: (modelType: ModelTypes) => ModelDef = (modelType) => {
   const obj = models[modelType]
 
   const vertices: number[] = []
