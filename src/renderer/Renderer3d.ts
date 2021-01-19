@@ -2,15 +2,17 @@ import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 import {
-  Mesh,
   MeshPrimitive,
   ModelDef,
   ModelModifiers,
   ModelNode,
   ModelPrimitive,
+  RenderMesh,
+  RenderNode,
 } from '~/renderer/common'
 import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
+import { getGLPassthroughMesh } from '~/renderer/processors/passthroughMeshProcessor'
 import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as v2Shader } from '~/renderer/shaders/v2'
 import { shader as wireShader } from '~/renderer/shaders/wire'
@@ -82,6 +84,7 @@ export class Renderer3d implements IModelLoader {
 
   // new renderer code
   private modelRootNodes: Map<string, ModelNode>
+  private renderRootNodes: Map<string, RenderNode>
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -110,6 +113,7 @@ export class Renderer3d implements IModelLoader {
     this.currentShader = undefined
 
     this.modelRootNodes = new Map()
+    this.renderRootNodes = new Map()
   }
 
   public loadShader(
@@ -333,7 +337,7 @@ export class Renderer3d implements IModelLoader {
         model2World: Immutable<mat4>,
         color: Immutable<vec4>,
       ) => {
-        const root = this.modelRootNodes.get(modelName)
+        const root = this.renderRootNodes.get(modelName)
         if (root === undefined) {
           throw new Error(`unknown model ${modelName}`)
         }
@@ -343,7 +347,7 @@ export class Renderer3d implements IModelLoader {
   }
 
   private renderNode(
-    node: ModelNode,
+    node: RenderNode,
     parentPath: string,
     modelModifiers: ModelModifiers,
     model2World: Immutable<mat4>,
@@ -383,7 +387,7 @@ export class Renderer3d implements IModelLoader {
   }
 
   private renderMesh(
-    mesh: Mesh,
+    mesh: RenderMesh,
     model2World: Immutable<mat4>,
     color: Immutable<vec4>,
   ): void {
@@ -420,7 +424,7 @@ export class Renderer3d implements IModelLoader {
     this.gl.bindVertexArray(vao)
 
     // Position attrib
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.positions.glBuffer)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.positions.buffer)
     this.gl.enableVertexAttribArray(positionAttrib)
     this.gl.vertexAttribPointer(
       positionAttrib,
@@ -432,7 +436,7 @@ export class Renderer3d implements IModelLoader {
     )
 
     // Normal attrib
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.glBuffer)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
     this.gl.enableVertexAttribArray(normalAttrib)
     this.gl.vertexAttribPointer(
       normalAttrib,
@@ -444,7 +448,7 @@ export class Renderer3d implements IModelLoader {
     )
 
     // Index buffer
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices.glBuffer)
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices.buffer)
 
     switch (mesh.primitive) {
       case MeshPrimitive.Triangles:
@@ -604,8 +608,14 @@ export class Renderer3d implements IModelLoader {
             `model root node with name ${modelNode.name} already exists`,
           )
         }
-
         this.modelRootNodes.set(modelNode.name, modelNode)
+
+        // // build triangle buffer
+        const triangleRenderNode = getGLPassthroughMesh(modelNode, this.gl)
+        this.renderRootNodes.set(triangleRenderNode.name, triangleRenderNode)
+
+        // // build line buffer
+        // const lineRenderNode = getGetLineMesh(modelNode)
       }
     }
   }
