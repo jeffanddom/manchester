@@ -28,26 +28,6 @@ export function accessorComponentTypeSize(t: AccessorComponentType): number {
   }
 }
 
-export function accessorComponentTypeToGLType(
-  gl: WebGL2RenderingContext,
-  t: AccessorComponentType,
-): GLenum {
-  switch (t) {
-    case AccessorComponentType.Byte:
-      return gl.BYTE
-    case AccessorComponentType.UnsignedByte:
-      return gl.UNSIGNED_BYTE
-    case AccessorComponentType.Short:
-      return gl.SHORT
-    case AccessorComponentType.UnsignedShort:
-      return gl.UNSIGNED_SHORT
-    case AccessorComponentType.UnsignedInt:
-      return gl.UNSIGNED_INT
-    case AccessorComponentType.Float:
-      return gl.FLOAT
-  }
-}
-
 export function accessorTypeDegree(t: AccessorType): number {
   switch (t) {
     case AccessorType.Scalar:
@@ -109,11 +89,7 @@ export function fromJson(json: string): Document {
   return JSON.parse(json) as Document
 }
 
-export function makeNode(
-  gl: WebGL2RenderingContext,
-  doc: Document,
-  nodeId: number,
-): renderer.ModelNode {
+export function makeNode(doc: Document, nodeId: number): renderer.ModelNode {
   const nodes = doc.nodes ?? []
   if (nodes.length < nodeId) {
     throw new Error(`node ${nodeId} not defined in glTF document`)
@@ -132,7 +108,7 @@ export function makeNode(
 
   // Mesh
   if (gltfNode.mesh !== undefined) {
-    modelNode.mesh = makeMesh(gl, doc, gltfNode.mesh)
+    modelNode.mesh = makeMesh(doc, gltfNode.mesh)
   }
 
   // Transform
@@ -159,17 +135,13 @@ export function makeNode(
 
   // Children
   modelNode.children = (gltfNode.children ?? []).map((childNodeId) =>
-    makeNode(gl, doc, childNodeId),
+    makeNode(doc, childNodeId),
   )
 
   return modelNode
 }
 
-function makeMesh(
-  gl: WebGL2RenderingContext,
-  doc: Document,
-  meshId: number,
-): renderer.DataMesh {
+function makeMesh(doc: Document, meshId: number): renderer.DataMesh {
   const meshes = doc.meshes ?? []
   if (meshes.length < meshId) {
     throw new Error(`mesh ${meshId}: not defined in glTF document`)
@@ -207,9 +179,9 @@ function makeMesh(
     throw new Error(`mesh ${meshId}: primitive has no accessor index`)
   }
 
-  const positions = makeBuffer(gl, doc, positionAccessorId)
-  const normals = makeBuffer(gl, doc, normalAccessorId)
-  const indices = makeBuffer(gl, doc, indexAccessorId)
+  const positions = makeBuffer(doc, positionAccessorId)
+  const normals = makeBuffer(doc, normalAccessorId)
+  const indices = makeBuffer(doc, indexAccessorId)
 
   return {
     positions,
@@ -220,7 +192,6 @@ function makeMesh(
 }
 
 function makeBuffer(
-  gl: WebGL2RenderingContext,
   doc: Document,
   accessorId: number,
 ): renderer.Buffer<renderer.BufferArray> {
@@ -300,7 +271,7 @@ function makeBuffer(
 
   return {
     buffer: bufferData,
-    glType: accessorComponentTypeToGLType(gl, accessor.componentType),
+    glType: accessor.componentType as GLenum,
     componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),
   }

@@ -37,7 +37,7 @@ export const getGLPassthroughMesh: (
   return node
 }
 
-const getGlBuffer: (
+export const getGlBuffer: (
   buffer: Buffer<BufferArray>,
   gl: WebGL2RenderingContext,
   opts?: { isIndexBuffer: boolean },

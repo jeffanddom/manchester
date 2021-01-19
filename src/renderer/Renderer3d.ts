@@ -1,6 +1,8 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
+import { getGLLineMesh } from './processors/lineMeshProcessor'
+
 import {
   MeshPrimitive,
   ModelDef,
@@ -459,6 +461,14 @@ export class Renderer3d implements IModelLoader {
           0,
         )
         break
+      case MeshPrimitive.Lines:
+        this.gl.drawElements(
+          this.gl.LINES,
+          mesh.indices.componentCount,
+          mesh.indices.glType,
+          0,
+        )
+        break
     }
 
     // TODO: figure out how to preserve VAO. Probably, the GLTF loading
@@ -600,7 +610,7 @@ export class Renderer3d implements IModelLoader {
   loadGltf(doc: gltf.Document): void {
     for (const scene of doc.scenes ?? []) {
       for (const nodeId of scene.nodes ?? []) {
-        const modelNode = gltf.makeNode(this.gl, doc, nodeId)
+        const modelNode = gltf.makeNode(doc, nodeId)
 
         // All root nodes in the renderer share the same namespace.
         if (this.modelRootNodes.has(modelNode.name)) {
@@ -610,12 +620,13 @@ export class Renderer3d implements IModelLoader {
         }
         this.modelRootNodes.set(modelNode.name, modelNode)
 
-        // // build triangle buffer
+        // build triangle buffer
         const triangleRenderNode = getGLPassthroughMesh(modelNode, this.gl)
-        this.renderRootNodes.set(triangleRenderNode.name, triangleRenderNode)
+        // this.renderRootNodes.set(triangleRenderNode.name, triangleRenderNode)
 
-        // // build line buffer
-        // const lineRenderNode = getGetLineMesh(modelNode)
+        // build line buffer
+        const lineRenderNode = getGLLineMesh(modelNode, this.gl)
+        this.renderRootNodes.set(triangleRenderNode.name, lineRenderNode)
       }
     }
   }
