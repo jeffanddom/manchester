@@ -7,16 +7,7 @@ import {
   RenderMesh,
   RenderNode,
 } from '~/renderer/interfaces'
-
-function intersection<T>(a: Set<T>, b: Set<T>): Set<T> {
-  const result: Set<T> = new Set()
-  for (const elem of b) {
-    if (a.has(elem)) {
-      result.add(elem)
-    }
-  }
-  return result
-}
+import * as set from '~/util/set'
 
 function triMeshToLineMesh(triIndices: BufferArray): number[] {
   // fill Map<vertex index, triangle (pointer?)> -> m
@@ -44,7 +35,9 @@ function triMeshToLineMesh(triIndices: BufferArray): number[] {
       [b, c],
       [c, a],
     ]) {
-      if (intersection(trisByVert.get(v1)!, trisByVert.get(v2)!).size === 1) {
+      if (
+        set.intersection(trisByVert.get(v1)!, trisByVert.get(v2)!).size === 1
+      ) {
         lineIndices.push(v1)
         lineIndices.push(v2)
       }
