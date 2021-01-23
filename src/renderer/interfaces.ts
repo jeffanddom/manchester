@@ -49,18 +49,10 @@ export interface LineMesh<T> {
 }
 
 export type DataMesh = TriangleMesh<BufferArray> | LineMesh<BufferArray>
-export type RenderMesh = TriangleMesh<WebGLBuffer> | LineMesh<WebGLBuffer>
 
 export interface ModelNode {
   name: string
   mesh?: DataMesh
   transform?: mat4
   children: ModelNode[]
-}
-
-export interface RenderNode {
-  name: string
-  mesh?: RenderMesh
-  transform?: mat4
-  children: RenderNode[]
 }

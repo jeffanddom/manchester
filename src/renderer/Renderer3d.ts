@@ -1,7 +1,7 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { makeRenderNode } from './glUtils'
+import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
 
 import {
@@ -9,8 +9,6 @@ import {
   ModelModifiers,
   ModelNode,
   ModelPrimitive,
-  RenderMesh,
-  RenderNode,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as standardShader } from '~/renderer/shaders/standard'

@@ -1,11 +1,23 @@
+import { mat4 } from 'gl-matrix'
+
 import {
   Buffer,
   BufferArray,
   DataMesh,
+  LineMesh,
   ModelNode,
-  RenderMesh,
-  RenderNode,
+  TriangleMesh,
 } from '../renderer/interfaces'
+
+// TODO: this should just hold VAOs with pre-bound buffers
+export type RenderMesh = TriangleMesh<WebGLBuffer> | LineMesh<WebGLBuffer>
+
+export interface RenderNode {
+  name: string
+  mesh?: RenderMesh
+  transform?: mat4
+  children: RenderNode[]
+}
 
 export function makeRenderNode(
   src: ModelNode,
