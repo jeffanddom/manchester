@@ -19,13 +19,6 @@ export type ModelModifiers = {
   [key: string]: Immutable<mat4>
 }
 
-export type ModelDef = {
-  primitive: ModelPrimitive
-  positions: Float32Array
-  colors?: Float32Array
-  normals?: Float32Array
-}
-
 // NEW MODEL/MESH STUFF IS BELOW
 
 // TODO: maybe add primitives for lines, points, etc.

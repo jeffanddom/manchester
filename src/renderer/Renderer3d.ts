@@ -1,12 +1,12 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
+import { ModelDef } from './interfacesOld'
 import { getGLLineMesh } from './processors/lineMeshProcessor'
 
 import * as gltf from '~/renderer/gltf'
 import {
   MeshPrimitive,
-  ModelDef,
   ModelModifiers,
   ModelNode,
   ModelPrimitive,

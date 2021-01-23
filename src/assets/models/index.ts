@@ -6,7 +6,8 @@ import treeObj from '~/assets/models/tree.obj'
 import turretGltf from '~/assets/models/turret.gltf'
 import wallObj from '~/assets/models/wall.obj'
 import * as gltf from '~/renderer/gltf'
-import { ModelDef, ModelPrimitive } from '~/renderer/interfaces'
+import { ModelPrimitive } from '~/renderer/interfaces'
+import { ModelDef } from '~/renderer/interfacesOld'
 
 const models: {
   [key: string]: string
