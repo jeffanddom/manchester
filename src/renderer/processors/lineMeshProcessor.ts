@@ -1,51 +1,12 @@
-import { getGlBuffer } from './passthroughMeshProcessor'
+import { getSolidwireEdges } from '../geometryUtils'
+import { getGlBuffer } from '../glUtils'
 
 import {
-  BufferArray,
   MeshPrimitive,
   ModelNode,
   RenderMesh,
   RenderNode,
 } from '~/renderer/interfaces'
-import * as set from '~/util/set'
-
-function triMeshToLineMesh(triIndices: BufferArray): number[] {
-  // fill Map<vertex index, triangle (pointer?)> -> m
-  const trisByVert: Map<number, Set<number>> = new Map()
-  for (let i = 0; i < triIndices.length; i++) {
-    const vert = triIndices[i]
-
-    let list = trisByVert.get(vert)
-    if (list === undefined) {
-      list = new Set()
-      trisByVert.set(vert, list)
-    }
-
-    const tri = Math.floor(i / 3)
-    list.add(tri)
-  }
-
-  const lineIndices: number[] = []
-  for (let t = 0; t < triIndices.length / 3; t++) {
-    const a = triIndices[t * 3 + 0]
-    const b = triIndices[t * 3 + 1]
-    const c = triIndices[t * 3 + 2]
-    for (const [v1, v2] of [
-      [a, b],
-      [b, c],
-      [c, a],
-    ]) {
-      if (
-        set.intersection(trisByVert.get(v1)!, trisByVert.get(v2)!).size === 1
-      ) {
-        lineIndices.push(v1)
-        lineIndices.push(v2)
-      }
-    }
-  }
-
-  return lineIndices
-}
 
 export const getGLLineMesh = (
   m: ModelNode,
@@ -65,7 +26,7 @@ export const getGLLineMesh = (
       throw `mesh primitive is not triangle: ${m.mesh.primitive}`
     }
 
-    const lineIndices = triMeshToLineMesh(m.mesh.indices.buffer)
+    const lineIndices = getSolidwireEdges(m.mesh.indices.buffer)
 
     const newMesh: RenderMesh = {
       positions: getGlBuffer(m.mesh.positions, gl),

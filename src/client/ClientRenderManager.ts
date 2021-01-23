@@ -80,7 +80,7 @@ export class ClientRenderManager {
         model2World,
         color,
       } of params.renderables3dV2) {
-        drawModel(modelId, modelModifiers, model2World, color)
+        drawModel(modelId + '-line', modelModifiers, model2World, color)
       }
     })
 

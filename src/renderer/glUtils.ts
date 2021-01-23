@@ -40,7 +40,7 @@ function makeRenderMesh(src: DataMesh, gl: WebGL2RenderingContext): RenderMesh {
   }
 }
 
-function getGlBuffer(
+export function getGlBuffer(
   buffer: Buffer<BufferArray>,
   gl: WebGL2RenderingContext,
   opts?: { isIndexBuffer: boolean },
