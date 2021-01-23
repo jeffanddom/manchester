@@ -6,6 +6,7 @@ import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/clike/clike.js'
 
 import * as models from '~/assets/models'
+import * as gltf from '~/renderer/gltf'
 import {
   Renderer3d,
   ShaderCompileError,
@@ -47,7 +48,7 @@ canvas.height = canvas.parentElement!.clientHeight
 
 const renderer = new Renderer3d(canvas)
 for (const [, doc] of models.gltfs) {
-  renderer.loadGltf(doc)
+  gltf.loadAllModels(renderer, doc)
 }
 
 window.addEventListener('resize', () => {

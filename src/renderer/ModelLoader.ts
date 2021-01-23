@@ -1,10 +1,9 @@
+import { ModelNode } from './interfaces'
 import { ModelDef } from './interfacesOld'
-
-import * as gltf from '~/renderer/gltf'
 
 export interface IModelLoader {
   loadModelDef: (modelName: string, model: ModelDef, shaderName: string) => void
-  loadGltf: (doc: gltf.Document) => void
+  loadModel: (name: string, root: ModelNode) => void
 }
 
 export class StubModelLoader implements IModelLoader {
@@ -16,7 +15,7 @@ export class StubModelLoader implements IModelLoader {
     /* do nothing */
   }
 
-  loadGltf(_doc: gltf.Document): void {
+  loadModel(_name: string, _root: ModelNode): void {
     /* do nothing */
   }
 }

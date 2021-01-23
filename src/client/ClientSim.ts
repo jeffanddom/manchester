@@ -18,6 +18,7 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
 import { SimulationPhase, simulate } from '~/simulate'
@@ -171,7 +172,7 @@ export class ClientSim {
     }
 
     for (const m of ['tank', 'turret']) {
-      this.modelLoader.loadGltf(getGltfDocument(m))
+      gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
     }
   }
 

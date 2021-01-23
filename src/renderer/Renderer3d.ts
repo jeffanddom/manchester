@@ -1,11 +1,9 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { triModelToSolidwire } from './geometryUtils'
 import { makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
 
-import * as gltf from '~/renderer/gltf'
 import {
   MeshPrimitive,
   ModelModifiers,
@@ -609,25 +607,6 @@ export class Renderer3d implements IModelLoader {
       throw new Error(`model with name ${name} already exists`)
     }
     this.renderRootNodes.set(name, makeRenderNode(root, this.gl))
-  }
-
-  /**
-   * MOVE OUTSIDE OF RENDERER
-   * Renderer should not know about glTF.
-   *
-   * Loads all nodes from a glTF document as ModelNodes.
-   */
-  loadGltf(doc: gltf.Document): void {
-    for (const scene of doc.scenes ?? []) {
-      for (const nodeId of scene.nodes ?? []) {
-        const modelNode = gltf.makeNode(doc, nodeId)
-
-        this.loadModel(modelNode.name, modelNode)
-
-        // build line buffer
-        this.loadModel(modelNode.name + '-line', triModelToSolidwire(modelNode))
-      }
-    }
   }
 
   /**

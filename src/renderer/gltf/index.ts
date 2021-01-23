@@ -1,5 +1,8 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
+import { triModelToSolidwire } from '../geometryUtils'
+import { IModelLoader } from '../ModelLoader'
+
 import {
   AccessorComponentType,
   AccessorType,
@@ -274,5 +277,18 @@ function makeBuffer(
     glType: accessor.componentType as GLenum,
     componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),
+  }
+}
+
+export function loadAllModels(loader: IModelLoader, doc: Document): void {
+  for (const scene of doc.scenes ?? []) {
+    for (const nodeId of scene.nodes ?? []) {
+      const modelNode = makeNode(doc, nodeId)
+
+      loader.loadModel(modelNode.name, modelNode)
+
+      // build line buffer
+      loader.loadModel(modelNode.name + '-line', triModelToSolidwire(modelNode))
+    }
   }
 }
