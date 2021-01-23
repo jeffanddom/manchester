@@ -1,6 +1,6 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
-import { triModelToSolidwire } from '../geometryUtils'
+import { triModelToWiresolidLineModel } from '../geometryUtils'
 import { IModelLoader } from '../ModelLoader'
 
 import {
@@ -288,7 +288,10 @@ export function loadAllModels(loader: IModelLoader, doc: Document): void {
       loader.loadModel(modelNode.name, modelNode)
 
       // build line buffer
-      loader.loadModel(modelNode.name + '-line', triModelToSolidwire(modelNode))
+      loader.loadModel(
+        modelNode.name + '-line',
+        triModelToWiresolidLineModel(modelNode),
+      )
     }
   }
 }

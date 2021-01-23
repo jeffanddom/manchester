@@ -12,11 +12,11 @@ import * as set from '~/util/set'
 
 /**
  * Given an array of triangle indices (an element array buffer for a triangle
- * primitive), returns an array of index pairs that define the solidwire edges.
+ * primitive), returns an array of index pairs that define the wiresolid edges.
  * This is the set of all triangle edges, minus those that are shared by
  * co-planar triangles.
  */
-export function getSolidwireEdges(triIndices: BufferArray): number[] {
+export function getWiresolidEdges(triIndices: BufferArray): number[] {
   const trisByVert: Map<number, Set<number>> = new Map()
   for (let i = 0; i < triIndices.length; i++) {
     const vert = triIndices[i]
@@ -53,7 +53,7 @@ export function getSolidwireEdges(triIndices: BufferArray): number[] {
   return lineIndices
 }
 
-export function triModelToSolidwire(src: ModelNode): ModelNode {
+export function triModelToWiresolidLineModel(src: ModelNode): ModelNode {
   const res: ModelNode = {
     name: src.name,
     children: [],
@@ -67,20 +67,20 @@ export function triModelToSolidwire(src: ModelNode): ModelNode {
     if (src.mesh.primitive !== MeshPrimitive.Triangles) {
       throw `invalid mesh primitive: ${src.mesh.primitive}`
     }
-    res.mesh = triMeshToSolidwire(src.mesh)
+    res.mesh = triMeshToWiresolidLineMesh(src.mesh)
   }
 
   for (const child of src.children) {
-    res.children.push(triModelToSolidwire(child))
+    res.children.push(triModelToWiresolidLineModel(child))
   }
 
   return res
 }
 
-function triMeshToSolidwire(
+function triMeshToWiresolidLineMesh(
   src: TriangleMesh<BufferArray>,
 ): LineMesh<BufferArray> {
-  const indices = getSolidwireEdges(src.indices.buffer)
+  const indices = getWiresolidEdges(src.indices.buffer)
 
   // TODO: some position and normal entries might go unused as a result of
   // common edge elimination, but we preserve them all in the resulting buffers.
