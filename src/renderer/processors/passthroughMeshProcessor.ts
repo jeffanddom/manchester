@@ -4,7 +4,7 @@ import {
   ModelNode,
   RenderMesh,
   RenderNode,
-} from '~/renderer/common'
+} from '~/renderer/interfaces'
 
 export const getGLPassthroughMesh: (
   m: ModelNode,

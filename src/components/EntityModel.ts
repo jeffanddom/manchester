@@ -1,4 +1,4 @@
-import { ModelModifiers } from '~/renderer/common'
+import { ModelModifiers } from '~/renderer/interfaces'
 
 export interface EntityModel {
   name: string

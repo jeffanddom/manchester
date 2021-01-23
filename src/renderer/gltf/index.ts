@@ -1,6 +1,5 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
-import * as renderer from '~/renderer/common'
 import {
   AccessorComponentType,
   AccessorType,
@@ -8,6 +7,7 @@ import {
   PrimitiveAttribute,
   PrimitiveMode,
 } from '~/renderer/gltf/types'
+import * as renderer from '~/renderer/interfaces'
 
 export { Document } from '~/renderer/gltf/types'
 

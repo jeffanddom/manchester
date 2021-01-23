@@ -6,7 +6,7 @@ import {
   ModelNode,
   RenderMesh,
   RenderNode,
-} from '~/renderer/common'
+} from '~/renderer/interfaces'
 
 function intersection<T>(a: Set<T>, b: Set<T>): Set<T> {
   const result: Set<T> = new Set()

@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { ModelDef, ModelPrimitive } from '~/renderer/common'
+import { ModelDef, ModelPrimitive } from '~/renderer/interfaces'
 import { Type } from '~/terrain/Type'
 
 export class Layer {

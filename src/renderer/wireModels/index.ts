@@ -1,5 +1,5 @@
 import { TILE_SIZE } from '~/constants'
-import { ModelPrimitive } from '~/renderer/common'
+import { ModelPrimitive } from '~/renderer/interfaces'
 
 const wcHalfSize = 0.5
 const wcLowNW = [-wcHalfSize, -wcHalfSize, -wcHalfSize]

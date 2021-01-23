@@ -1,7 +1,7 @@
 import { mat2d, mat4, vec2, vec4 } from 'gl-matrix'
 
 import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
-import { ModelModifiers } from '~/renderer/common'
+import { ModelModifiers } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Renderer2d } from '~/renderer/Renderer2d'
 import { Renderer3d } from '~/renderer/Renderer3d'

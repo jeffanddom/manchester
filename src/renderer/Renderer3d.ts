@@ -3,6 +3,7 @@ import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 import { getGLLineMesh } from './processors/lineMeshProcessor'
 
+import * as gltf from '~/renderer/gltf'
 import {
   MeshPrimitive,
   ModelDef,
@@ -11,8 +12,7 @@ import {
   ModelPrimitive,
   RenderMesh,
   RenderNode,
-} from '~/renderer/common'
-import * as gltf from '~/renderer/gltf'
+} from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { getGLPassthroughMesh } from '~/renderer/processors/passthroughMeshProcessor'
 import { shader as standardShader } from '~/renderer/shaders/standard'

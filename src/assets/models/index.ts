@@ -5,8 +5,8 @@ import tankGltf from '~/assets/models/tank.gltf'
 import treeObj from '~/assets/models/tree.obj'
 import turretGltf from '~/assets/models/turret.gltf'
 import wallObj from '~/assets/models/wall.obj'
-import { ModelDef, ModelPrimitive } from '~/renderer/common'
 import * as gltf from '~/renderer/gltf'
+import { ModelDef, ModelPrimitive } from '~/renderer/interfaces'
 
 const models: {
   [key: string]: string

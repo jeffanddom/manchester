@@ -1,5 +1,5 @@
-import { ModelDef } from '~/renderer/common'
 import * as gltf from '~/renderer/gltf'
+import { ModelDef } from '~/renderer/interfaces'
 
 export interface IModelLoader {
   loadModel: (modelName: string, model: ModelDef, shaderName: string) => void
