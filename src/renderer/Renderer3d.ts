@@ -1,9 +1,9 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
+import { triModelToSolidwire } from './geometryUtils'
 import { makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
-import { getGLLineMesh } from './processors/lineMeshProcessor'
 
 import * as gltf from '~/renderer/gltf'
 import {
@@ -604,11 +604,11 @@ export class Renderer3d implements IModelLoader {
     })
   }
 
-  loadModel(root: ModelNode): void {
-    if (this.renderRootNodes.has(root.name)) {
-      throw new Error(`model with name ${root.name} already exists`)
+  loadModel(name: string, root: ModelNode): void {
+    if (this.renderRootNodes.has(name)) {
+      throw new Error(`model with name ${name} already exists`)
     }
-    this.renderRootNodes.set(root.name, makeRenderNode(root, this.gl))
+    this.renderRootNodes.set(name, makeRenderNode(root, this.gl))
   }
 
   /**
@@ -622,11 +622,10 @@ export class Renderer3d implements IModelLoader {
       for (const nodeId of scene.nodes ?? []) {
         const modelNode = gltf.makeNode(doc, nodeId)
 
-        this.loadModel(modelNode)
+        this.loadModel(modelNode.name, modelNode)
 
         // build line buffer
-        const lineRenderNode = getGLLineMesh(modelNode, this.gl)
-        this.renderRootNodes.set(modelNode.name + '-line', lineRenderNode)
+        this.loadModel(modelNode.name + '-line', triModelToSolidwire(modelNode))
       }
     }
   }
