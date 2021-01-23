@@ -113,23 +113,27 @@ class DevDaemon {
     // Make build version available to web build.
     await updateWebBuildVersion(buildVersion)
 
-    if (this.incrementalBuilds !== undefined) {
-      await Promise.all([
-        this.incrementalBuilds.server.rebuild(),
-        this.incrementalBuilds.web.rebuild(),
-      ])
-    } else {
-      const [server, web] = await Promise.all([
-        esbuild.build({
-          ...serverBuildOpts,
-          incremental: true,
-        }),
-        esbuild.build({
-          ...webBuildOpts,
-          incremental: true,
-        }),
-      ])
-      this.incrementalBuilds = { server, web }
+    try {
+      if (this.incrementalBuilds !== undefined) {
+        await Promise.all([
+          this.incrementalBuilds.server.rebuild(),
+          this.incrementalBuilds.web.rebuild(),
+        ])
+      } else {
+        const [server, web] = await Promise.all([
+          esbuild.build({
+            ...serverBuildOpts,
+            incremental: true,
+          }),
+          esbuild.build({
+            ...webBuildOpts,
+            incremental: true,
+          }),
+        ])
+        this.incrementalBuilds = { server, web }
+      }
+    } catch (err) {
+      console.log(`build error: ${err.toString()}`)
     }
 
     // Post-build tasks:
