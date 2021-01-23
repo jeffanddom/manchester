@@ -1,6 +1,7 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
+import { makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
 import { getGLLineMesh } from './processors/lineMeshProcessor'
 
@@ -14,7 +15,6 @@ import {
   RenderNode,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
-import { getGLPassthroughMesh } from '~/renderer/processors/passthroughMeshProcessor'
 import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as v2Shader } from '~/renderer/shaders/v2'
 import { shader as wireShader } from '~/renderer/shaders/wire'
@@ -77,16 +77,13 @@ export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
-  private models: Map<string, Model>
+  private models: Map<string, Model> // DEPRECATED
+  private renderRootNodes: Map<string, RenderNode>
 
   private fov: number
   private viewportDimensions: vec2
   private world2ViewTransform: mat4
   private currentShader: Shader | undefined
-
-  // new renderer code
-  private modelRootNodes: Map<string, ModelNode>
-  private renderRootNodes: Map<string, RenderNode>
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -98,11 +95,12 @@ export class Renderer3d implements IModelLoader {
     this.loadShader('v2', v2Shader)
     this.loadShader('wire', wireShader)
 
-    this.models = new Map()
+    this.models = new Map() // DEPRECATED
+    this.loadModelDef('wireCube', wireModels.cube, 'wire')
+    this.loadModelDef('wireTile', wireModels.tile, 'wire')
+    this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'wire')
 
-    this.loadModel('wireCube', wireModels.cube, 'wire')
-    this.loadModel('wireTile', wireModels.tile, 'wire')
-    this.loadModel('wireTileGrid', wireModels.tileGrid, 'wire')
+    this.renderRootNodes = new Map()
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
@@ -113,9 +111,6 @@ export class Renderer3d implements IModelLoader {
 
     this.world2ViewTransform = mat4.create()
     this.currentShader = undefined
-
-    this.modelRootNodes = new Map()
-    this.renderRootNodes = new Map()
   }
 
   public loadShader(
@@ -265,6 +260,8 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
+   * DEPRECATED
+   *
    * Render using standard shader. Currently uses vertex colors, with no
    * lighting or textures.
    */
@@ -535,7 +532,10 @@ export class Renderer3d implements IModelLoader {
     })
   }
 
-  loadModel(modelName: string, model: ModelDef, shaderName: string): void {
+  /**
+   * DEPRECATED
+   */
+  loadModelDef(modelName: string, model: ModelDef, shaderName: string): void {
     const shader = this.shaders.get(shaderName)
     if (shader === undefined) {
       throw new Error(`shader undefined: ${shaderName}`)
@@ -604,7 +604,17 @@ export class Renderer3d implements IModelLoader {
     })
   }
 
+  loadModel(root: ModelNode): void {
+    if (this.renderRootNodes.has(root.name)) {
+      throw new Error(`model with name ${root.name} already exists`)
+    }
+    this.renderRootNodes.set(root.name, makeRenderNode(root, this.gl))
+  }
+
   /**
+   * MOVE OUTSIDE OF RENDERER
+   * Renderer should not know about glTF.
+   *
    * Loads all nodes from a glTF document as ModelNodes.
    */
   loadGltf(doc: gltf.Document): void {
@@ -612,21 +622,11 @@ export class Renderer3d implements IModelLoader {
       for (const nodeId of scene.nodes ?? []) {
         const modelNode = gltf.makeNode(doc, nodeId)
 
-        // All root nodes in the renderer share the same namespace.
-        if (this.modelRootNodes.has(modelNode.name)) {
-          throw new Error(
-            `model root node with name ${modelNode.name} already exists`,
-          )
-        }
-        this.modelRootNodes.set(modelNode.name, modelNode)
-
-        // build triangle buffer
-        const triangleRenderNode = getGLPassthroughMesh(modelNode, this.gl)
-        // this.renderRootNodes.set(triangleRenderNode.name, triangleRenderNode)
+        this.loadModel(modelNode)
 
         // build line buffer
         const lineRenderNode = getGLLineMesh(modelNode, this.gl)
-        this.renderRootNodes.set(triangleRenderNode.name, lineRenderNode)
+        this.renderRootNodes.set(modelNode.name + '-line', lineRenderNode)
       }
     }
   }

@@ -160,14 +160,14 @@ export class ClientSim {
     this.entityManager.currentPlayer = this.playerNumber!
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.modelLoader.loadModel(
+    this.modelLoader.loadModelDef(
       'terrain',
       this.terrainLayer.getModel(),
       'standard',
     )
 
     for (const m of ['bullet', 'core', 'tree', 'wall']) {
-      this.modelLoader.loadModel(m, parseObj(m), 'standard')
+      this.modelLoader.loadModelDef(m, parseObj(m), 'standard')
     }
 
     for (const m of ['tank', 'turret']) {
