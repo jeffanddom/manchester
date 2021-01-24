@@ -92,12 +92,20 @@ class DevDaemon {
     console.log(`Spawning build jobs for build version ${buildVersion}...`)
     const start = time.current()
 
-    await this.rebuildAssets(buildVersion)
+    let buildSuccess = false
+    try {
+      await this.rebuildAssets(buildVersion)
+      buildSuccess = true
+    } catch (err) {
+      console.log(`asset build error: ${err.toString()}`)
+    }
 
     const elapsed = time.current() - start
     console.log(`Build completed in ${elapsed.toFixed(3)}s`)
 
-    this.restartServer()
+    if (buildSuccess) {
+      this.restartServer()
+    }
 
     // allow rebuild() to be called again
     this.building = false
@@ -113,27 +121,23 @@ class DevDaemon {
     // Make build version available to web build.
     await updateWebBuildVersion(buildVersion)
 
-    try {
-      if (this.incrementalBuilds !== undefined) {
-        await Promise.all([
-          this.incrementalBuilds.server.rebuild(),
-          this.incrementalBuilds.web.rebuild(),
-        ])
-      } else {
-        const [server, web] = await Promise.all([
-          esbuild.build({
-            ...serverBuildOpts,
-            incremental: true,
-          }),
-          esbuild.build({
-            ...webBuildOpts,
-            incremental: true,
-          }),
-        ])
-        this.incrementalBuilds = { server, web }
-      }
-    } catch (err) {
-      console.log(`build error: ${err.toString()}`)
+    if (this.incrementalBuilds !== undefined) {
+      await Promise.all([
+        this.incrementalBuilds.server.rebuild(),
+        this.incrementalBuilds.web.rebuild(),
+      ])
+    } else {
+      const [server, web] = await Promise.all([
+        esbuild.build({
+          ...serverBuildOpts,
+          incremental: true,
+        }),
+        esbuild.build({
+          ...webBuildOpts,
+          incremental: true,
+        }),
+      ])
+      this.incrementalBuilds = { server, web }
     }
 
     // Post-build tasks:
