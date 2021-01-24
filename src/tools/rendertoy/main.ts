@@ -5,9 +5,7 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/clike/clike.js'
 
-import * as models from '~/assets/models'
 import { makeCubeModel, triModelAddEdgeOn } from '~/renderer/geometryUtils'
-import * as gltf from '~/renderer/gltf'
 import {
   Renderer3d,
   ShaderCompileError,
