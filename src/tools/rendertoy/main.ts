@@ -13,10 +13,26 @@ import {
   ShaderLinkError,
   WireObject,
 } from '~/renderer/Renderer3d'
-import { shader as defaultShader } from '~/renderer/shaders/v2'
+import { shader as solidShader } from '~/renderer/shaders/solid'
+import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import { Camera } from '~/tools/rendertoy/Camera'
 import * as time from '~/util/time'
 import * as autoReload from '~/web/autoReload'
+
+type RenderMode = 'solid' | 'wiresolid'
+let renderMode: RenderMode = 'solid'
+
+if (
+  (document.querySelector('#controls input:checked') as HTMLInputElement)
+    .value === 'wiresolid'
+) {
+  renderMode = 'wiresolid'
+}
+
+const shaders = {
+  solid: solidShader,
+  wiresolid: wiresolidShader,
+}
 
 // Setup shader editors
 const codeMirrorOptions: CodeMirror.EditorConfiguration = {
@@ -30,12 +46,12 @@ const codeMirrorOptions: CodeMirror.EditorConfiguration = {
 
 const vsEditor = CodeMirror(document.getElementById('editor-vs')!, {
   ...codeMirrorOptions,
-  value: defaultShader.vertexSrc,
+  value: shaders[renderMode].vertexSrc,
 })
 
 const fsEditor = CodeMirror(document.getElementById('editor-fs')!, {
   ...codeMirrorOptions,
-  value: defaultShader.fragmentSrc,
+  value: shaders[renderMode].fragmentSrc,
 })
 
 let lastCodeUpdate: number | undefined
@@ -45,6 +61,15 @@ fsEditor.on('change', () => (lastCodeUpdate = time.current()))
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
 canvas.width = canvas.parentElement!.clientWidth
 canvas.height = canvas.parentElement!.clientHeight
+
+const modelControls = document.getElementById('controls')
+modelControls?.addEventListener('change', (e) => {
+  const value = (e.target! as HTMLInputElement).value
+  renderMode = value as RenderMode
+
+  vsEditor.setValue(shaders[renderMode].vertexSrc)
+  fsEditor.setValue(shaders[renderMode].fragmentSrc)
+})
 
 const renderer = new Renderer3d(canvas)
 for (const [, doc] of models.gltfs) {
@@ -62,9 +87,9 @@ const camera = new Camera(canvas)
 function recompile(): void {
   try {
     renderer.loadShader(
-      'v2',
+      renderMode,
       {
-        ...defaultShader,
+        ...shaders[renderMode],
         vertexSrc: vsEditor.getValue(),
         fragmentSrc: fsEditor.getValue(),
       },
@@ -113,6 +138,7 @@ for (let axis = 0; axis < 3; axis++) {
 function update(): void {
   requestAnimationFrame(update)
 
+  renderer.clear()
   renderer.setWvTransform(camera.world2View())
 
   if (lastCodeUpdate !== undefined && time.current() - lastCodeUpdate > 2) {
@@ -120,10 +146,28 @@ function update(): void {
     recompile()
   }
 
-  renderer.renderV2((drawFunc) => {
-    drawFunc('tank', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
-  })
+  // Draw primary model
+  switch (renderMode) {
+    case 'solid':
+      renderer.renderV2((draw) => {
+        draw('tank', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
+      })
+      break
 
+    case 'wiresolid':
+      renderer.renderV2(
+        (draw) => {
+          draw('tank', {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
+        },
+        { wiresolid: true },
+      )
+      break
+
+    default:
+      throw `invalid render mode: ${renderMode}`
+  }
+
+  // Draw axes
   renderer.renderWire((drawFunc) => {
     for (const obj of axes) {
       drawFunc(obj)

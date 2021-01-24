@@ -5,6 +5,7 @@ import {
   BufferArray,
   DataMesh,
   LineMesh,
+  MeshPrimitive,
   ModelNode,
   TriangleMesh,
 } from '../renderer/interfaces'
@@ -44,11 +45,28 @@ export function makeRenderNode(
 }
 
 function makeRenderMesh(src: DataMesh, gl: WebGL2RenderingContext): RenderMesh {
-  return {
-    positions: getGlBuffer(src.positions, gl),
-    normals: getGlBuffer(src.normals, gl),
-    indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
-    primitive: src.primitive,
+  switch (src.primitive) {
+    case MeshPrimitive.Triangles:
+      const res: RenderMesh = {
+        positions: getGlBuffer(src.positions, gl),
+        normals: getGlBuffer(src.normals, gl),
+        indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
+        primitive: MeshPrimitive.Triangles,
+      }
+
+      if (src.edgeOn !== undefined) {
+        res.edgeOn = getGlBuffer(src.edgeOn, gl)
+      }
+
+      return res
+
+    case MeshPrimitive.Lines:
+      return {
+        positions: getGlBuffer(src.positions, gl),
+        normals: getGlBuffer(src.normals, gl),
+        indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
+        primitive: MeshPrimitive.Lines,
+      }
   }
 }
 

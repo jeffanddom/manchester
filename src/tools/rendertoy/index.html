@@ -7,7 +7,8 @@
   <style>
     html {
       height: 100%;
-      background-color: lightgray;
+      background-color: black;
+      color: lightgray;
     }
 
     body {
@@ -53,10 +54,21 @@
       grid-row-start: row-split;
       grid-row-end: row-end;
     }
+
+    #controls {
+      position: fixed;
+    }    
   </style>
 </head>
 
 <body>
+  <div id="controls">
+    <input type="radio" value="solid" id="solid" name="mode">
+    <label for="solid">Solid</label>
+    <input type="radio" value="wiresolid" id="wiresolid" name="mode" checked>
+    <label for="wiresolid">Wiresolid</label>
+  </div>  
+  
   <div class='container'>
     <div class='grid-canvas'><canvas id='renderer'></canvas></div>
     <div class='grid-vs'>

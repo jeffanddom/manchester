@@ -1,6 +1,9 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
-import { triModelToWiresolidLineModel } from '../geometryUtils'
+import {
+  triModelAddEdgeOn,
+  triModelToWiresolidLineModel,
+} from '../geometryUtils'
 import { IModelLoader } from '../ModelLoader'
 
 import {
@@ -285,7 +288,11 @@ export function loadAllModels(loader: IModelLoader, doc: Document): void {
     for (const nodeId of scene.nodes ?? []) {
       const modelNode = makeNode(doc, nodeId)
 
-      loader.loadModel(modelNode.name, modelNode)
+      // TODO: Currently, we addd all possible variants for models, but long-run
+      // we shouldn't do that.
+
+      // augment with edgeOn attribs
+      loader.loadModel(modelNode.name, triModelAddEdgeOn(modelNode))
 
       // build line buffer
       loader.loadModel(

@@ -11,9 +11,10 @@ import {
   ModelPrimitive,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
+import { shader as solidShader } from '~/renderer/shaders/solid'
 import { shader as standardShader } from '~/renderer/shaders/standard'
-import { shader as v2Shader } from '~/renderer/shaders/v2'
 import { shader as wireShader } from '~/renderer/shaders/wire'
+import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
 
@@ -88,8 +89,9 @@ export class Renderer3d implements IModelLoader {
 
     this.shaders = new Map()
     this.loadShader('standard', standardShader)
-    this.loadShader('v2', v2Shader)
+    this.loadShader('solid', solidShader)
     this.loadShader('wire', wireShader)
+    this.loadShader('wiresolid', wiresolidShader)
 
     this.models = new Map() // DEPRECATED
     this.loadModelDef('wireCube', wireModels.cube, 'wire')
@@ -312,8 +314,15 @@ export class Renderer3d implements IModelLoader {
         color: Immutable<vec4>,
       ) => void,
     ) => void,
+    opts?: {
+      wiresolid: boolean
+    },
   ): void {
-    this.useShader('v2')
+    if (opts !== undefined && opts.wiresolid) {
+      this.useShader('wiresolid')
+    } else {
+      this.useShader('solid')
+    }
 
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LESS)
@@ -407,6 +416,9 @@ export class Renderer3d implements IModelLoader {
       throw new Error(`shader has no normal attrib`)
     }
 
+    // Optional attribs
+    const edgeOnAttrib = this.currentShader.attribs.get('edgeOn')
+
     // Uniforms
     this.gl.uniformMatrix4fv(
       model2WorldUniform,
@@ -441,6 +453,24 @@ export class Renderer3d implements IModelLoader {
       0,
       0,
     )
+
+    // edgeOn attrib
+    if (
+      edgeOnAttrib !== undefined &&
+      mesh.primitive == MeshPrimitive.Triangles &&
+      mesh.edgeOn !== undefined
+    ) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.edgeOn.buffer)
+      this.gl.enableVertexAttribArray(edgeOnAttrib)
+      this.gl.vertexAttribPointer(
+        edgeOnAttrib,
+        mesh.edgeOn.componentsPerAttrib,
+        mesh.edgeOn.glType,
+        false,
+        0,
+        0,
+      )
+    }
 
     // Index buffer
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices.buffer)

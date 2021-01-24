@@ -35,17 +35,18 @@ export interface Buffer<T> {
 }
 
 export interface TriangleMesh<T> {
+  primitive: MeshPrimitive.Triangles
   positions: Buffer<T>
   normals: Buffer<T>
   indices: Buffer<T>
-  primitive: MeshPrimitive.Triangles
+  edgeOn?: Buffer<T>
 }
 
 export interface LineMesh<T> {
+  primitive: MeshPrimitive.Lines
   positions: Buffer<T>
   normals: Buffer<T>
   indices: Buffer<T>
-  primitive: MeshPrimitive.Lines
 }
 
 export type DataMesh = TriangleMesh<BufferArray> | LineMesh<BufferArray>
