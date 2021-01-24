@@ -36,7 +36,7 @@ out vec4 FragColor;
 void main() {
   vec3 normal = normalize(Normal);
   float light = dot(normal, normalize(vec3(1, 0.5, 0))) * 0.4 + 0.6;
-  if (max(max(EdgeOn.x, EdgeOn.y), EdgeOn.z) > 0.9) {
+  if (max(max(EdgeOn.x, EdgeOn.y), EdgeOn.z) > 0.995) {
     FragColor = vec4(light * vec3(1,1,1), color.a);
   } else {
     FragColor = vec4(0,0,0,1.0);

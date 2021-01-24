@@ -6,6 +6,7 @@ import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/clike/clike.js'
 
 import * as models from '~/assets/models'
+import { makeCubeModel, triModelAddEdgeOn } from '~/renderer/geometryUtils'
 import * as gltf from '~/renderer/gltf'
 import {
   Renderer3d,
@@ -72,9 +73,8 @@ modelControls?.addEventListener('change', (e) => {
 })
 
 const renderer = new Renderer3d(canvas)
-for (const [, doc] of models.gltfs) {
-  gltf.loadAllModels(renderer, doc)
-}
+
+renderer.loadModel('model', triModelAddEdgeOn(makeCubeModel()))
 
 window.addEventListener('resize', () => {
   canvas.width = canvas.parentElement!.clientWidth
@@ -150,14 +150,14 @@ function update(): void {
   switch (renderMode) {
     case 'solid':
       renderer.renderV2((draw) => {
-        draw('tank', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
+        draw('model', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
       })
       break
 
     case 'wiresolid':
       renderer.renderV2(
         (draw) => {
-          draw('tank', {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
+          draw('model', {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
         },
         { wiresolid: true },
       )

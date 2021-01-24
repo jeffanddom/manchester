@@ -11,6 +11,106 @@ import {
 
 import * as set from '~/util/set'
 
+export function makeCubeModel(): ModelNode {
+  // prettier-ignore
+  const positions = new Float32Array([
+    1, 1, -1, 
+    1, 1, 1,  
+    1, -1, 1, 
+    1, -1, -1,
+    -1, 1, 1,
+    -1, 1, -1,
+    -1, -1, -1,
+    -1, -1, 1,
+    -1, 1, 1,
+    1, 1, 1,
+    1, 1, -1,
+    -1, 1, -1,
+    -1, -1, -1,
+    1, -1, -1,
+    1, -1, 1,
+    -1, -1, 1,
+    1, 1, 1,
+    -1, 1, 1,
+    -1, -1, 1,
+    1, -1, 1,
+    -1, 1, -1,
+    1, 1, -1,
+    1, -1, -1,
+    -1, -1, -1,
+  ])
+
+  // prettier-ignore
+  const normals = new Float32Array([
+    1, 0, 0,
+    1, 0, 0,
+    1, 0, 0,
+    1, 0, 0,
+    -1, 0, 0,
+    -1, 0, 0,
+    -1, 0, 0,
+    -1, 0, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, -1, 0,
+    0, -1, 0,
+    0, -1, 0,
+    0, -1, 0,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1,
+  ])
+
+  // prettier-ignore
+  const indices = new Uint16Array([
+    0, 1, 2,
+    0, 2, 3,
+    4, 5, 6,
+    4, 6, 7,
+    8, 9, 10,
+    8, 10, 11,
+    12, 13, 14,
+    12, 14, 15,
+    16, 17, 18,
+    16, 18, 19,
+    20, 21, 22,
+    20, 22, 23,
+  ])
+
+  return {
+    name: 'cube',
+    mesh: {
+      primitive: MeshPrimitive.Triangles,
+      positions: {
+        buffer: positions,
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: positions.length,
+        componentsPerAttrib: 3,
+      },
+      normals: {
+        buffer: normals,
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: normals.length,
+        componentsPerAttrib: 3,
+      },
+      indices: {
+        buffer: indices,
+        glType: 5123 as GLenum, // gl.USHORT
+        componentCount: indices.length,
+        componentsPerAttrib: 1,
+      },
+    },
+    children: [],
+  }
+}
+
 /**
  * Generate a new triangle-based ModelNode in which all meshes are augmented
  * with the edgeOn attribute. The attribute is a vec3. With the frag shader, at
