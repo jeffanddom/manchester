@@ -33,14 +33,16 @@ in vec3 EdgeOn;
 
 out vec4 FragColor;
 
+float lerpAlpha() {
+  vec3 inv = vec3(1) - EdgeOn;
+  vec3 delta = fwidth(inv);
+  vec3 a3 = smoothstep(vec3(0.0), delta * 1.25, inv);
+  return min(min(a3.x, a3.y), a3.z);
+}
+
 void main() {
   vec3 normal = normalize(Normal);
-  float light = dot(normal, normalize(vec3(1, 0.5, 0))) * 0.4 + 0.6;
-  if (max(max(EdgeOn.x, EdgeOn.y), EdgeOn.z) > 0.995) {
-    FragColor = vec4(light * vec3(1,1,1), color.a);
-  } else {
-    FragColor = vec4(0,0,0,1.0);
-  }
+  FragColor = vec4(mix(color.rgb, vec3(0.0), lerpAlpha()), 1);
 }
 `,
 

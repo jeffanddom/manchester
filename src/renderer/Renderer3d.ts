@@ -56,14 +56,22 @@ interface WireModel {
 
 export type WireObject = WireLines | WireModel
 
-export class ShaderCompileError extends Error {
-  public vertexShaderLog: string | undefined
-  public fragmentShaderLog: string | undefined
+export class VertexShaderError extends Error {
+  constructor(log: string) {
+    super('vertex shader compile error: ' + log)
+  }
+}
 
+export class FragmentShaderError extends Error {
+  constructor(log: string) {
+    super('fragment shader compile error: ' + log)
+  }
+}
+
+export class ShaderCompileError extends Error {
   constructor(opts: { vertexShaderLog?: string; fragmentShaderLog?: string }) {
-    super('shader compile error')
-    this.vertexShaderLog = opts.vertexShaderLog
-    this.fragmentShaderLog = opts.fragmentShaderLog
+    const log = (opts.vertexShaderLog ?? '') + (opts.fragmentShaderLog ?? '')
+    super(`shader compile error: ${log}`)
   }
 }
 
@@ -123,25 +131,20 @@ export class Renderer3d implements IModelLoader {
     const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER)!
     this.gl.shaderSource(vertexShader, def.vertexSrc)
     this.gl.compileShader(vertexShader)
+    if (
+      this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS) === false
+    ) {
+      throw new VertexShaderError(this.gl.getShaderInfoLog(vertexShader)!)
+    }
 
     const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER)!
     this.gl.shaderSource(fragmentShader, def.fragmentSrc)
     this.gl.compileShader(fragmentShader)
-
-    const vsError =
-      this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS) === false
-    const fsError =
+    if (
       this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS) ===
       false
-    if (vsError || fsError) {
-      throw new ShaderCompileError({
-        vertexShaderLog: vsError
-          ? this.gl.getShaderInfoLog(vertexShader)!
-          : undefined,
-        fragmentShaderLog: fsError
-          ? this.gl.getShaderInfoLog(fragmentShader)!
-          : undefined,
-      })
+    ) {
+      throw new FragmentShaderError(this.gl.getShaderInfoLog(fragmentShader)!)
     }
 
     const program = this.gl.createProgram()!
