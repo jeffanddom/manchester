@@ -1,7 +1,12 @@
 import CodeMirror from 'codemirror'
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
-import { triModelAddEdgeOn } from '~/renderer/geometryUtils'
+import { getGltfDocument } from '~/assets/models'
+import {
+  triModelAddEdgeOn,
+  triModelToWiresolidLineModel,
+} from '~/renderer/geometryUtils'
+import * as gltf from '~/renderer/gltf'
 import { MeshPrimitive, ModelNode } from '~/renderer/interfaces'
 import {
   FragmentShaderError,
@@ -20,19 +25,54 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/clike/clike.js'
 
-type RenderMode = 'solid' | 'wiresolid'
-let renderMode: RenderMode = 'solid'
+type RenderMode = 'solid' | 'wiresolid' | 'wiresolidLine'
+type Shader = 'solid' | 'wiresolid'
+
+const shaders: Record<
+  Shader,
+  {
+    vertexSrc: string
+    fragmentSrc: string
+    attribs: string[]
+    uniforms: string[]
+  }
+> = {
+  solid: solidShader,
+  wiresolid: wiresolidShader,
+}
+
+let currentRenderMode: RenderMode = 'solid'
+let currentShader: Shader = 'solid'
+function setCurrentRenderMode(mode: RenderMode): void {
+  const shadersByMode: Record<RenderMode, Shader> = {
+    solid: 'solid',
+    wiresolid: 'wiresolid',
+    wiresolidLine: 'solid',
+  }
+
+  currentRenderMode = mode
+  currentShader = shadersByMode[mode]
+}
+
+switch (
+  (document.querySelector('#controls input:checked') as HTMLInputElement).value
+) {
+  case 'solid':
+    setCurrentRenderMode('solid')
+    break
+  case 'wiresolid':
+    setCurrentRenderMode('wiresolid')
+    break
+  case 'wiresolidLine':
+    setCurrentRenderMode('wiresolidLine')
+    break
+}
 
 if (
   (document.querySelector('#controls input:checked') as HTMLInputElement)
     .value === 'wiresolid'
 ) {
-  renderMode = 'wiresolid'
-}
-
-const shaders = {
-  solid: solidShader,
-  wiresolid: wiresolidShader,
+  setCurrentRenderMode('wiresolid')
 }
 
 // Setup shader editors
@@ -47,12 +87,12 @@ const codeMirrorOptions: CodeMirror.EditorConfiguration = {
 
 const vsEditor = CodeMirror(document.getElementById('editor-vs')!, {
   ...codeMirrorOptions,
-  value: shaders[renderMode].vertexSrc,
+  value: shaders[currentShader].vertexSrc,
 })
 
 const fsEditor = CodeMirror(document.getElementById('editor-fs')!, {
   ...codeMirrorOptions,
-  value: shaders[renderMode].fragmentSrc,
+  value: shaders[currentShader].fragmentSrc,
 })
 
 let lastCodeUpdate: number | undefined
@@ -66,15 +106,18 @@ canvas.height = canvas.parentElement!.clientHeight
 const modelControls = document.getElementById('controls')
 modelControls?.addEventListener('change', (e) => {
   const value = (e.target! as HTMLInputElement).value
-  renderMode = value as RenderMode
+  setCurrentRenderMode(value as RenderMode)
 
-  vsEditor.setValue(shaders[renderMode].vertexSrc)
-  fsEditor.setValue(shaders[renderMode].fragmentSrc)
+  vsEditor.setValue(shaders[currentShader].vertexSrc)
+  fsEditor.setValue(shaders[currentShader].fragmentSrc)
 })
 
 const renderer = new Renderer3d(canvas)
 
-renderer.loadModel('model', triModelAddEdgeOn(cubeModel()))
+// renderer.loadModel('model', triModelAddEdgeOn(cubeModel()))
+const modelNode = gltf.getModels(getGltfDocument('tank'))[0]
+renderer.loadModel('model', triModelAddEdgeOn(modelNode))
+renderer.loadModel('model-line', triModelToWiresolidLineModel(modelNode))
 
 window.addEventListener('resize', () => {
   canvas.width = canvas.parentElement!.clientWidth
@@ -87,9 +130,9 @@ const camera = new Camera(canvas)
 function recompile(): void {
   try {
     renderer.loadShader(
-      renderMode,
+      currentShader,
       {
-        ...shaders[renderMode],
+        ...shaders[currentShader],
         vertexSrc: vsEditor.getValue(),
         fragmentSrc: fsEditor.getValue(),
       },
@@ -144,7 +187,7 @@ function update(): void {
   }
 
   // Draw primary model
-  switch (renderMode) {
+  switch (currentRenderMode) {
     case 'solid':
       renderer.renderV2((draw) => {
         draw('model', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
@@ -160,8 +203,17 @@ function update(): void {
       )
       break
 
+    case 'wiresolidLine':
+      renderer.renderV2((draw) => {
+        draw('model', {}, mat4.create(), vec4.fromValues(0, 0, 0, 1))
+      })
+      renderer.renderV2((draw) => {
+        draw('model-line', {}, mat4.create(), vec4.fromValues(1, 1, 1.0, 1))
+      })
+      break
+
     default:
-      throw `invalid render mode: ${renderMode}`
+      throw `invalid render mode: ${currentRenderMode}`
   }
 
   // Draw axes

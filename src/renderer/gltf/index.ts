@@ -14,6 +14,7 @@ import {
   PrimitiveMode,
 } from '~/renderer/gltf/types'
 import * as renderer from '~/renderer/interfaces'
+import { ModelNode } from '~/renderer/interfaces'
 
 export { Document } from '~/renderer/gltf/types'
 
@@ -281,6 +282,16 @@ function makeBuffer(
     componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),
   }
+}
+
+export function getModels(doc: Document): ModelNode[] {
+  const models: ModelNode[] = []
+  for (const scene of doc.scenes ?? []) {
+    for (const nodeId of scene.nodes ?? []) {
+      models.push(makeNode(doc, nodeId))
+    }
+  }
+  return models
 }
 
 export function loadAllModels(loader: IModelLoader, doc: Document): void {
