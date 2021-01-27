@@ -2,7 +2,10 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { getGltfDocument, parseObj } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
-import { Renderable3d, Renderable3dV2 } from '~/client/ClientRenderManager'
+import {
+  Renderable3dOld,
+  Renderable3dSolid,
+} from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
@@ -164,11 +167,11 @@ export class ClientSim {
     this.modelLoader.loadModelDef(
       'terrain',
       this.terrainLayer.getModel(),
-      'standard',
+      'old',
     )
 
     for (const m of ['bullet', 'core', 'tree', 'wall']) {
-      this.modelLoader.loadModelDef(m, parseObj(m), 'standard')
+      this.modelLoader.loadModelDef(m, parseObj(m), 'old')
     }
 
     for (const m of ['tank', 'turret']) {
@@ -461,9 +464,9 @@ export class ClientSim {
     }
   }
 
-  getRenderables3d(): Iterable<Renderable3d> {
+  getRenderables3dOld(): Iterable<Renderable3dOld> {
     // TODO: reimplement as lazy iterable?
-    const res: Renderable3d[] = []
+    const res: Renderable3dOld[] = []
 
     // Add terrain
     res.push({ modelId: 'terrain', posXY: vec2.create(), rotXY: 0 })
@@ -480,9 +483,9 @@ export class ClientSim {
     return res
   }
 
-  getRenderables3dV2(): Iterable<Renderable3dV2> {
+  getRenderables3dSolid(): Iterable<Renderable3dSolid> {
     // TODO: reimplement as lazy iterable?
-    const res: Renderable3dV2[] = []
+    const res: Renderable3dSolid[] = []
 
     for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!

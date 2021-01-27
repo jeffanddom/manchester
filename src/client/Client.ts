@@ -86,8 +86,8 @@ export class Client {
     if (this.sim.state !== GameState.Connecting) {
       this.renderManager.update({
         world2ViewTransform: this.sim.camera.getWvTransform(),
-        renderables3d: this.sim.getRenderables3d(),
-        renderables3dV2: this.sim.getRenderables3dV2(),
+        renderables3dOld: this.sim.getRenderables3dOld(),
+        renderables3dSolid: this.sim.getRenderables3dSolid(),
       })
     }
 

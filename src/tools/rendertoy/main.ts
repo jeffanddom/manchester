@@ -189,13 +189,13 @@ function update(): void {
   // Draw primary model
   switch (currentRenderMode) {
     case 'solid':
-      renderer.renderV2((draw) => {
+      renderer.renderSolid((draw) => {
         draw('model', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
       })
       break
 
     case 'wiresolid':
-      renderer.renderV2(
+      renderer.renderSolid(
         (draw) => {
           draw('model', {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
         },
@@ -204,10 +204,10 @@ function update(): void {
       break
 
     case 'wiresolidLine':
-      renderer.renderV2((draw) => {
+      renderer.renderSolid((draw) => {
         draw('model', {}, mat4.create(), vec4.fromValues(0, 0, 0, 1))
       })
-      renderer.renderV2((draw) => {
+      renderer.renderSolid((draw) => {
         draw('model-line', {}, mat4.create(), vec4.fromValues(1, 1, 1.0, 1))
       })
       break

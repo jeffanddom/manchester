@@ -1,5 +1,5 @@
 /**
- * V2 provides monochrome models with vertex normals.
+ * The solid shader provides monochrome models with vertex normals.
  */
 
 export const shader = {

@@ -9,13 +9,13 @@ import { Immutable } from '~/types/immutable'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export interface Renderable3d {
+export interface Renderable3dOld {
   modelId: string
   posXY: Immutable<vec2>
   rotXY: number
 }
 
-export interface Renderable3dV2 {
+export interface Renderable3dSolid {
   modelId: string
   modelModifiers: ModelModifiers
   model2World: mat4
@@ -57,8 +57,8 @@ export class ClientRenderManager {
 
   update(params: {
     world2ViewTransform: mat4
-    renderables3d: Iterable<Renderable3d>
-    renderables3dV2: Iterable<Renderable3dV2>
+    renderables3dOld: Iterable<Renderable3dOld>
+    renderables3dSolid: Iterable<Renderable3dSolid>
   }): void {
     const now = time.current()
     this.renderFrameDurations.sample(now - this.lastRenderAt)
@@ -67,19 +67,19 @@ export class ClientRenderManager {
     this.renderer3d.clear()
     this.renderer3d.setWvTransform(params.world2ViewTransform)
 
-    this.renderer3d.renderStandard((drawModel) => {
-      for (const { modelId, posXY, rotXY } of params.renderables3d) {
+    this.renderer3d.renderOld((drawModel) => {
+      for (const { modelId, posXY, rotXY } of params.renderables3dOld) {
         drawModel(modelId, posXY, rotXY)
       }
     })
 
-    this.renderer3d.renderV2((drawModel) => {
+    this.renderer3d.renderSolid((drawModel) => {
       for (const {
         modelId,
         modelModifiers,
         model2World,
         color,
-      } of params.renderables3dV2) {
+      } of params.renderables3dSolid) {
         drawModel(modelId + '-line', modelModifiers, model2World, color)
       }
     })

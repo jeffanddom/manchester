@@ -11,8 +11,8 @@ import {
   ModelPrimitive,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
+import { shader as oldShader } from '~/renderer/shaders/old'
 import { shader as solidShader } from '~/renderer/shaders/solid'
-import { shader as standardShader } from '~/renderer/shaders/standard'
 import { shader as wireShader } from '~/renderer/shaders/wire'
 import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import * as wireModels from '~/renderer/wireModels'
@@ -96,7 +96,7 @@ export class Renderer3d implements IModelLoader {
     this.gl = canvas.getContext('webgl2')!
 
     this.shaders = new Map()
-    this.loadShader('standard', standardShader)
+    this.loadShader('old', oldShader)
     this.loadShader('solid', solidShader)
     this.loadShader('wire', wireShader)
     this.loadShader('wiresolid', wiresolidShader)
@@ -263,10 +263,10 @@ export class Renderer3d implements IModelLoader {
   /**
    * DEPRECATED
    *
-   * Render using standard shader. Currently uses vertex colors, with no
+   * Render using old shader. Currently uses vertex colors, with no
    * lighting or textures.
    */
-  renderStandard(
+  renderOld(
     renderBody: (
       drawFunc: (
         modelName: string,
@@ -275,7 +275,7 @@ export class Renderer3d implements IModelLoader {
       ) => void,
     ) => void,
   ): void {
-    this.useShader('standard')
+    this.useShader('old')
 
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LESS)
@@ -306,9 +306,9 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
-   * Render using the V2 shader, specifying models with per-mesh transforms.
+   * Render using the solid shader, specifying models with per-mesh transforms.
    */
-  renderV2(
+  renderSolid(
     renderBody: (
       drawFunc: (
         modelName: string,
