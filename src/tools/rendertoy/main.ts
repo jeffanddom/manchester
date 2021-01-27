@@ -204,16 +204,8 @@ function update(): void {
       break
 
     case 'wiresolidLine':
-      renderer.renderSolid((draw) => {
-        draw(currentModel, {}, mat4.create(), vec4.fromValues(0, 0, 0, 1))
-      })
-      renderer.renderSolid((draw) => {
-        draw(
-          currentModel + '-line',
-          {},
-          mat4.create(),
-          vec4.fromValues(1, 1, 1.0, 1),
-        )
+      renderer.renderWiresolidLine((draw) => {
+        draw(currentModel, {}, mat4.create(), vec4.fromValues(1, 1, 1, 1))
       })
       break
 

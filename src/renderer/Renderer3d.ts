@@ -353,6 +353,94 @@ export class Renderer3d implements IModelLoader {
     )
   }
 
+  /**
+   * Render a wiresolid effect with a line mesh for the wireframe. A corresponding
+   * line mesh model must be loaded.
+   */
+  renderWiresolidLine(
+    renderBody: (
+      drawFunc: (
+        modelName: string,
+        modelModifiers: ModelModifiers,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => void,
+    ) => void,
+  ): void {
+    const instances: {
+      modelName: string
+      modelModifiers: ModelModifiers
+      model2World: Immutable<mat4>
+      color: Immutable<vec4>
+    }[] = []
+
+    renderBody(
+      (
+        modelName: string,
+        modelModifiers: ModelModifiers,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => {
+        instances.push({ modelName, modelModifiers, model2World, color })
+      },
+    )
+
+    this.useShader('wire')
+
+    this.gl.enable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.BACK)
+    this.gl.frontFace(this.gl.CCW)
+
+    // First pass: write to the depth buffer only
+
+    this.gl.colorMask(false, false, false, false)
+
+    this.gl.enable(this.gl.DEPTH_TEST)
+    this.gl.depthFunc(this.gl.LESS)
+
+    this.gl.disable(this.gl.BLEND)
+
+    for (const instance of instances) {
+      const root = this.renderRootNodes.get(instance.modelName)
+      if (root === undefined) {
+        throw new Error(`unknown model ${instance.modelName}`)
+      }
+
+      this.renderNode(
+        root,
+        '',
+        instance.modelModifiers,
+        instance.model2World,
+        instance.color,
+      )
+    }
+
+    // Second pass: draw lines to color buffer
+
+    this.gl.colorMask(true, true, true, true)
+
+    this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing opaque faces
+
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+
+    for (const instance of instances) {
+      const lineModel = instance.modelName + '-line'
+      const root = this.renderRootNodes.get(lineModel)
+      if (root === undefined) {
+        throw new Error(`unknown model ${lineModel}`)
+      }
+
+      this.renderNode(
+        root,
+        '',
+        instance.modelModifiers,
+        instance.model2World,
+        instance.color,
+      )
+    }
+  }
+
   private renderNode(
     node: RenderNode,
     parentPath: string,
@@ -414,12 +502,9 @@ export class Renderer3d implements IModelLoader {
     if (positionAttrib === undefined) {
       throw new Error(`shader has no position attrib`)
     }
-    const normalAttrib = this.currentShader.attribs.get('normal')
-    if (normalAttrib === undefined) {
-      throw new Error(`shader has no normal attrib`)
-    }
 
     // Optional attribs
+    const normalAttrib = this.currentShader.attribs.get('normal')
     const edgeOnAttrib = this.currentShader.attribs.get('edgeOn')
 
     // Uniforms
@@ -446,16 +531,18 @@ export class Renderer3d implements IModelLoader {
     )
 
     // Normal attrib
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
-    this.gl.enableVertexAttribArray(normalAttrib)
-    this.gl.vertexAttribPointer(
-      normalAttrib,
-      mesh.normals.componentsPerAttrib,
-      mesh.normals.glType,
-      false,
-      0,
-      0,
-    )
+    if (normalAttrib !== undefined) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
+      this.gl.enableVertexAttribArray(normalAttrib)
+      this.gl.vertexAttribPointer(
+        normalAttrib,
+        mesh.normals.componentsPerAttrib,
+        mesh.normals.glType,
+        false,
+        0,
+        0,
+      )
+    }
 
     // edgeOn attrib
     if (
