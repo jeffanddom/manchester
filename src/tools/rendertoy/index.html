@@ -63,12 +63,17 @@
 
 <body>
   <div id="controls">
-    <input type="radio" value="solid" id="solid" name="mode">
-    <label for="solid">Solid</label>
-    <input type="radio" value="wiresolid" id="wiresolid" name="mode" checked>
-    <label for="wiresolid">Wiresolid</label>
-    <input type="radio" value="wiresolidLine" id="wiresolidLine" name="mode">
-    <label for="wiresolidLine">Wiresolid (Line)</label>    
+    <select id="modeSelect">
+      <option value="solid" selected>Solid</option>
+      <option value="wiresolid">Wiresolid (edge shader)</option>
+      <option value="wiresolidLine">Wiresolid (line mesh)</option>
+    </select>
+    <select id="modelSelect">
+      <option value="tank" selected>Tank</option>
+      <option value="turret" selected>Turret</option>
+      <option value="cubeBasic">Cube (basic)</option>
+      <option value="cubeComplex">Cube (complex)</option>
+    </select>      
   </div>
   
   <div class='container'>

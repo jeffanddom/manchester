@@ -3,6 +3,7 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { getGltfDocument } from '~/assets/models'
 import {
+  makeCubeModel,
   triModelAddEdgeOn,
   triModelToWiresolidLineModel,
 } from '~/renderer/geometryUtils'
@@ -54,9 +55,7 @@ function setCurrentRenderMode(mode: RenderMode): void {
   currentShader = shadersByMode[mode]
 }
 
-switch (
-  (document.querySelector('#controls input:checked') as HTMLInputElement).value
-) {
+switch ((document.getElementById('modeSelect') as HTMLSelectElement).value) {
   case 'solid':
     setCurrentRenderMode('solid')
     break
@@ -68,12 +67,21 @@ switch (
     break
 }
 
-if (
-  (document.querySelector('#controls input:checked') as HTMLInputElement)
-    .value === 'wiresolid'
-) {
-  setCurrentRenderMode('wiresolid')
-}
+document.getElementById('modeSelect')!.addEventListener('change', (e) => {
+  const value = (e.target! as HTMLSelectElement).value
+  setCurrentRenderMode(value as RenderMode)
+
+  vsEditor.setValue(shaders[currentShader].vertexSrc)
+  fsEditor.setValue(shaders[currentShader].fragmentSrc)
+})
+
+let currentModel: string = (document.getElementById(
+  'modelSelect',
+) as HTMLSelectElement).value
+
+document.getElementById('modelSelect')!.addEventListener('change', (e) => {
+  currentModel = (e.target! as HTMLSelectElement).value
+})
 
 // Setup shader editors
 const codeMirrorOptions: CodeMirror.EditorConfiguration = {
@@ -103,21 +111,8 @@ const canvas = document.getElementById('renderer') as HTMLCanvasElement
 canvas.width = canvas.parentElement!.clientWidth
 canvas.height = canvas.parentElement!.clientHeight
 
-const modelControls = document.getElementById('controls')
-modelControls?.addEventListener('change', (e) => {
-  const value = (e.target! as HTMLInputElement).value
-  setCurrentRenderMode(value as RenderMode)
-
-  vsEditor.setValue(shaders[currentShader].vertexSrc)
-  fsEditor.setValue(shaders[currentShader].fragmentSrc)
-})
-
 const renderer = new Renderer3d(canvas)
-
-// renderer.loadModel('model', triModelAddEdgeOn(cubeModel()))
-const modelNode = gltf.getModels(getGltfDocument('tank'))[0]
-renderer.loadModel('model', triModelAddEdgeOn(modelNode))
-renderer.loadModel('model-line', triModelToWiresolidLineModel(modelNode))
+loadModels(renderer)
 
 window.addEventListener('resize', () => {
   canvas.width = canvas.parentElement!.clientWidth
@@ -190,14 +185,19 @@ function update(): void {
   switch (currentRenderMode) {
     case 'solid':
       renderer.renderSolid((draw) => {
-        draw('model', {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
+        draw(currentModel, {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
       })
       break
 
     case 'wiresolid':
       renderer.renderSolid(
         (draw) => {
-          draw('model', {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
+          draw(
+            currentModel,
+            {},
+            mat4.create(),
+            vec4.fromValues(0.7, 0.7, 1.0, 1),
+          )
         },
         { wiresolid: true },
       )
@@ -205,10 +205,15 @@ function update(): void {
 
     case 'wiresolidLine':
       renderer.renderSolid((draw) => {
-        draw('model', {}, mat4.create(), vec4.fromValues(0, 0, 0, 1))
+        draw(currentModel, {}, mat4.create(), vec4.fromValues(0, 0, 0, 1))
       })
       renderer.renderSolid((draw) => {
-        draw('model-line', {}, mat4.create(), vec4.fromValues(1, 1, 1.0, 1))
+        draw(
+          currentModel + '-line',
+          {},
+          mat4.create(),
+          vec4.fromValues(1, 1, 1.0, 1),
+        )
       })
       break
 
@@ -227,7 +232,7 @@ function update(): void {
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
-function cubeModel(): ModelNode {
+function makeCubeComplex(): ModelNode {
   // positions for front face
   const nodes = [
     vec3.fromValues(-1, 1, 1), // NW
@@ -312,4 +317,25 @@ function cubeModel(): ModelNode {
     },
     children: [],
   }
+}
+
+function loadModels(renderer: Renderer3d) {
+  const tank = gltf.getModels(getGltfDocument('tank'))[0]
+  renderer.loadModel('tank', triModelAddEdgeOn(tank))
+  renderer.loadModel('tank-line', triModelToWiresolidLineModel(tank))
+
+  const turret = gltf.getModels(getGltfDocument('turret'))[0]
+  renderer.loadModel('turret', triModelAddEdgeOn(turret))
+  renderer.loadModel('turret-line', triModelToWiresolidLineModel(turret))
+
+  const cubeBasic = makeCubeModel()
+  renderer.loadModel('cubeBasic', triModelAddEdgeOn(cubeBasic))
+  renderer.loadModel('cubeBasic-line', triModelToWiresolidLineModel(cubeBasic))
+
+  const cubeComplex = makeCubeComplex()
+  renderer.loadModel('cubeComplex', triModelAddEdgeOn(cubeComplex))
+  renderer.loadModel(
+    'cubeComplex-line',
+    triModelToWiresolidLineModel(cubeComplex),
+  )
 }
