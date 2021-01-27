@@ -13,7 +13,7 @@ import {
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as oldShader } from '~/renderer/shaders/old'
 import { shader as solidShader } from '~/renderer/shaders/solid'
-import { shader as wireShader } from '~/renderer/shaders/wire'
+import { shader as unlitShader } from '~/renderer/shaders/unlit'
 import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
@@ -98,13 +98,13 @@ export class Renderer3d implements IModelLoader {
     this.shaders = new Map()
     this.loadShader('old', oldShader)
     this.loadShader('solid', solidShader)
-    this.loadShader('wire', wireShader)
+    this.loadShader('unlit', unlitShader)
     this.loadShader('wiresolid', wiresolidShader)
 
     this.models = new Map() // DEPRECATED
-    this.loadModelDef('wireCube', wireModels.cube, 'wire')
-    this.loadModelDef('wireTile', wireModels.tile, 'wire')
-    this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'wire')
+    this.loadModelDef('wireCube', wireModels.cube, 'unlit')
+    this.loadModelDef('wireTile', wireModels.tile, 'unlit')
+    this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'unlit')
 
     this.renderRootNodes = new Map()
 
@@ -385,7 +385,7 @@ export class Renderer3d implements IModelLoader {
       },
     )
 
-    this.useShader('wire')
+    this.useShader('unlit')
 
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
@@ -594,13 +594,13 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
-   * Render using the wire shader. Intended for debug draw.
+   * Render using the unlit shader. Intended for debug draw.
    */
-  renderWire(
+  renderUnlit(
     renderBody: (drawFunc: (obj: WireObject) => void) => void,
     options: { disableDepthTest?: boolean } = {},
   ): void {
-    this.useShader('wire')
+    this.useShader('unlit')
 
     if (options.disableDepthTest === true) {
       this.gl.disable(this.gl.DEPTH_TEST)

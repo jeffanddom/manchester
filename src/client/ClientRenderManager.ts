@@ -85,7 +85,7 @@ export class ClientRenderManager {
     })
 
     // World-space debug draw
-    this.renderer3d.renderWire((drawFunc) => {
+    this.renderer3d.renderUnlit((drawFunc) => {
       for (const r of this.debugDraw.get3d()) {
         drawFunc(r.object)
       }

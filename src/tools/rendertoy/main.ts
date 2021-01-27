@@ -214,7 +214,7 @@ function update(): void {
   }
 
   // Draw axes
-  renderer.renderWire((drawFunc) => {
+  renderer.renderUnlit((drawFunc) => {
     for (const obj of axes) {
       drawFunc(obj)
     }
