@@ -19,7 +19,7 @@ export interface Renderable3dSolid {
   modelId: string
   modelModifiers: ModelModifiers
   model2World: mat4
-  color: vec4
+  color: Immutable<vec4>
 }
 
 export class ClientRenderManager {
@@ -67,20 +67,20 @@ export class ClientRenderManager {
     this.renderer3d.clear()
     this.renderer3d.setWvTransform(params.world2ViewTransform)
 
-    this.renderer3d.renderOld((drawModel) => {
-      for (const { modelId, posXY, rotXY } of params.renderables3dOld) {
-        drawModel(modelId, posXY, rotXY)
-      }
-    })
+    // this.renderer3d.renderOld((drawModel) => {
+    //   for (const { modelId, posXY, rotXY } of params.renderables3dOld) {
+    //     drawModel(modelId, posXY, rotXY)
+    //   }
+    // })
 
-    this.renderer3d.renderSolid((drawModel) => {
+    this.renderer3d.renderWiresolid((drawModel) => {
       for (const {
         modelId,
         modelModifiers,
         model2World,
         color,
       } of params.renderables3dSolid) {
-        drawModel(modelId + '-line', modelModifiers, model2World, color)
+        drawModel(modelId, modelModifiers, model2World, color)
       }
     })
 

@@ -41,8 +41,8 @@ export class Client {
       'style',
       'position: absolute; top: 0; left: 0; z-index: 0',
     )
-    this.canvas3d.width = this.viewportDimensions[0]
-    this.canvas3d.height = this.viewportDimensions[1]
+    this.canvas3d.width = this.viewportDimensions[0] * 2
+    this.canvas3d.height = this.viewportDimensions[1] * 2
     this.document.body.appendChild(this.canvas3d)
 
     this.canvas2d = document.createElement('canvas')
@@ -98,8 +98,10 @@ export class Client {
 
   syncViewportDimensions(d: Immutable<vec2>): void {
     vec2.copy(this.viewportDimensions, d)
-    this.canvas3d.width = this.canvas2d.width = this.viewportDimensions[0]
-    this.canvas3d.height = this.canvas2d.height = this.viewportDimensions[1]
+    this.canvas3d.width = this.viewportDimensions[0]
+    this.canvas3d.height = this.viewportDimensions[1]
+    this.canvas2d.width = this.viewportDimensions[0]
+    this.canvas2d.height = this.viewportDimensions[1]
 
     this.sim.setViewportDimensions(this.viewportDimensions)
     this.renderManager.setViewportDimensions(this.viewportDimensions)

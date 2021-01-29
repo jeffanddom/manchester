@@ -102,15 +102,15 @@ vsEditor.on('change', () => (lastCodeUpdate = time.current()))
 fsEditor.on('change', () => (lastCodeUpdate = time.current()))
 
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
-canvas.width = canvas.parentElement!.clientWidth
-canvas.height = canvas.parentElement!.clientHeight
+canvas.width = canvas.parentElement!.clientWidth * 2
+canvas.height = canvas.parentElement!.clientHeight * 2
 
 const renderer = new Renderer3d(canvas)
 models.load(renderer)
 
 window.addEventListener('resize', () => {
-  canvas.width = canvas.parentElement!.clientWidth
-  canvas.height = canvas.parentElement!.clientHeight
+  canvas.width = canvas.parentElement!.clientWidth * 2
+  canvas.height = canvas.parentElement!.clientHeight * 2
   renderer.setViewportDimensions(vec2.fromValues(canvas.width, canvas.height))
 })
 
@@ -184,17 +184,9 @@ function update(): void {
       break
 
     case 'wiresolid':
-      renderer.renderSolid(
-        (draw) => {
-          draw(
-            currentModel,
-            {},
-            mat4.create(),
-            vec4.fromValues(0.7, 0.7, 1.0, 1),
-          )
-        },
-        { wiresolid: true },
-      )
+      renderer.renderWiresolid((draw) => {
+        draw(currentModel, {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
+      })
       break
 
     case 'wiresolidLine':

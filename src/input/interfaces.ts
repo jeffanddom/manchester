@@ -55,5 +55,6 @@ export interface IMouse {
   getPos: () => vec2 | undefined
   isDown: (b: MouseButton) => boolean
   isUp: (b: MouseButton) => boolean
+  getScroll: () => number
   update: () => void
 }

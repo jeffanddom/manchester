@@ -42,7 +42,8 @@ float lerpAlpha() {
 
 void main() {
   vec3 normal = normalize(Normal);
-  FragColor = vec4(mix(color.rgb, vec3(0.0), lerpAlpha()), 1);
+  float light = dot(normal, normalize(vec3(1, 0.5, 0))) * 0.4 + 0.6;
+  FragColor = vec4(light * mix(color.rgb, vec3(0.0), lerpAlpha()), 1);
 }
 `,
 

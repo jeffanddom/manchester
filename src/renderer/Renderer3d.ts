@@ -317,15 +317,49 @@ export class Renderer3d implements IModelLoader {
         color: Immutable<vec4>,
       ) => void,
     ) => void,
-    opts?: {
-      wiresolid: boolean
-    },
   ): void {
-    if (opts !== undefined && opts.wiresolid) {
-      this.useShader('wiresolid')
-    } else {
-      this.useShader('solid')
-    }
+    this.useShader('solid')
+
+    this.gl.enable(this.gl.DEPTH_TEST)
+    this.gl.depthFunc(this.gl.LESS)
+
+    this.gl.enable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.BACK)
+    this.gl.frontFace(this.gl.CCW)
+
+    this.gl.enable(this.gl.BLEND)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+
+    renderBody(
+      (
+        modelName: string,
+        modelModifiers: ModelModifiers,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => {
+        const root = this.renderRootNodes.get(modelName)
+        if (root === undefined) {
+          throw new Error(`unknown model ${modelName}`)
+        }
+        this.renderNode(root, '', modelModifiers, model2World, color)
+      },
+    )
+  }
+
+  /**
+   * Render using the wiresolid shader, specifying models with per-mesh transforms.
+   */
+  renderWiresolid(
+    renderBody: (
+      drawFunc: (
+        modelName: string,
+        modelModifiers: ModelModifiers,
+        model2World: Immutable<mat4>,
+        color: Immutable<vec4>,
+      ) => void,
+    ) => void,
+  ): void {
+    this.useShader('wiresolid')
 
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LESS)

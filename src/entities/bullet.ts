@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, vec4 } from 'gl-matrix'
 
 import * as bullet from '~/components/Bullet'
 import * as transform from '~/components/Transform'
@@ -27,7 +27,11 @@ export const makeBullet = ({
   e.transform.orientation = orientation
 
   e.bullet = bullet.make(e.transform.position)
-  e.renderable = 'bullet'
+  e.entityModel = {
+    name: 'bullet',
+    color: vec4.fromValues(1, 0, 0, 1),
+    modifiers: {},
+  }
 
   e.damager = {
     damageValue: 1,

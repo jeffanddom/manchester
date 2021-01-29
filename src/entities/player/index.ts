@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, vec4 } from 'gl-matrix'
 
 import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
@@ -26,7 +26,11 @@ export const makePlayer = (): EntityComponents => {
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
   })
   e.inventory = []
-  e.entityModel = { name: 'tank', modifiers: {} }
+  e.entityModel = {
+    name: 'tank',
+    color: vec4.fromValues(1, 1, 1, 1),
+    modifiers: {},
+  }
   e.hitbox = {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),

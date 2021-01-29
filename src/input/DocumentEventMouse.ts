@@ -6,11 +6,13 @@ export class DocumentEventMouse implements IMouse {
   private pos: vec2 | undefined
   private down: Set<MouseButton>
   private up: Set<MouseButton>
+  private scroll: number
 
   constructor(document: Document) {
     this.pos = undefined
     this.down = new Set()
     this.up = new Set()
+    this.scroll = 0
 
     document.addEventListener('mousemove', (event) => {
       this.pos = vec2.fromValues(event.offsetX, event.offsetY)
@@ -33,6 +35,11 @@ export class DocumentEventMouse implements IMouse {
       }
     })
 
+    document.addEventListener('wheel', (event) => {
+      event.preventDefault()
+      this.scroll = event.deltaY
+    })
+
     // clear state if the mouse leaves the root element, or if the window loses
     // focus
     document.addEventListener('mouseout', (_event) => {
@@ -50,6 +57,10 @@ export class DocumentEventMouse implements IMouse {
     return this.pos
   }
 
+  getScroll(): number {
+    return this.scroll
+  }
+
   isDown(b: MouseButton): boolean {
     return this.down.has(b)
   }
@@ -60,5 +71,6 @@ export class DocumentEventMouse implements IMouse {
 
   update(): void {
     this.up.clear()
+    this.scroll = 0
   }
 }

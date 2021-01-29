@@ -1,6 +1,6 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
-import { getGltfDocument, parseObj } from '~/assets/models'
+import { getGltfDocument } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
 import {
   Renderable3dOld,
@@ -53,6 +53,7 @@ export class ClientSim {
   waitingForServer: boolean
 
   camera: Camera3d
+  zoomLevel: number
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
 
@@ -108,6 +109,7 @@ export class ClientSim {
     this.camera = new Camera3d({
       viewportDimensions: config.viewportDimensions,
     })
+    this.zoomLevel = 12
     this.emitters = []
     this.emitterHistory = new Set()
 
@@ -170,11 +172,7 @@ export class ClientSim {
       'old',
     )
 
-    for (const m of ['bullet', 'core', 'tree', 'wall']) {
-      this.modelLoader.loadModelDef(m, parseObj(m), 'old')
-    }
-
-    for (const m of ['tank', 'turret']) {
+    for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall']) {
       gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
     }
   }
@@ -200,10 +198,13 @@ export class ClientSim {
         object: {
           type: 'MODEL',
           id: 'wireTileGrid',
-          color: vec4.fromValues(0, 1, 1, 1),
+          color: vec4.fromValues(1, 1, 0, 0.3),
         },
       },
     ])
+
+    this.zoomLevel += this.mouse.getScroll() * 0.05
+    this.zoomLevel = math.clamp(this.zoomLevel, [3, 12])
 
     this.debugDraw.draw2d(() => {
       const text = [
@@ -343,7 +344,7 @@ export class ClientSim {
 
             // Position the 3D camera at a fixed offset from the player, and
             // point the camera directly at the player.
-            const offset = vec3.fromValues(0, 12, 3)
+            const offset = vec3.fromValues(0, this.zoomLevel, 3)
             this.camera.setPos(
               vec3.add(
                 vec3.create(),
@@ -497,7 +498,7 @@ export class ClientSim {
           quat.identity(quat.create()),
           vec3.fromValues(transform.position[0], 0, transform.position[1]),
         ),
-        color: vec4.fromValues(0, 0.6, 0.6, 1),
+        color: entityModel.color,
       })
     }
 

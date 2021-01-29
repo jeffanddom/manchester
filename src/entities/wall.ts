@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, vec4 } from 'gl-matrix'
 
 import * as damageable from '~/components/Damageable'
 import * as transform from '~/components/Transform'
@@ -18,7 +18,11 @@ export const makeWall = (): EntityComponents => {
   e.transform = transform.make()
   e.wall = true
   e.targetable = true
-  e.renderable = 'wall'
+  e.entityModel = {
+    name: 'wall',
+    color: vec4.fromValues(0.5, 0.5, 1, 1),
+    modifiers: {},
+  }
   e.damageable = damageable.make(WALL_HEALTH, {
     offset: vec2.fromValues(-TILE_SIZE * 0.5, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE, TILE_SIZE),
