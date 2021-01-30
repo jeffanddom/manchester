@@ -1,7 +1,34 @@
-import { vec3 } from 'gl-matrix'
-import { mat2d, vec2 } from 'gl-matrix'
+import { mat2d, vec2, vec3 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
+
+export type SphereCoord = vec3 // [r, theta, phi]
+
+export function sphereCoordFromValues(
+  r: number, // radius
+  theta: number, // inclination
+  phi: number, // azimuth
+): SphereCoord {
+  return vec3.fromValues(r, theta, phi)
+}
+
+/**
+ * This function treats +Y as the vertical axis, and +X/+Z as the ground plane.
+ * In other words, theta is the rotation away from +Y toward the +X/+Z plane,
+ * and phi is the rotation around +Y with zero as +Z.
+ *
+ * https://en.wikipedia.org/wiki/Spherical_coordinate_system#Cartesian_coordinates
+ */
+export function sphereCoordToVec3(
+  out: vec3,
+  coord: Immutable<SphereCoord>,
+): vec3 {
+  const rSinTheta = coord[0] * Math.sin(coord[1])
+  out[0] = rSinTheta * Math.sin(coord[2]) // r * sin(theta) * sin(phi)
+  out[1] = coord[0] * Math.cos(coord[1]) // r * cos(theta)
+  out[2] = rSinTheta * Math.cos(coord[2]) // r *  sin(theta) * cos(phi)
+  return out
+}
 
 export const clamp = (
   v: number,
