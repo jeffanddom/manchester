@@ -30,11 +30,16 @@ export function sphereCoordToVec3(
   return out
 }
 
-export const clamp = (
-  v: number,
-  range: Immutable<[number, number]>,
-): number => {
-  return Math.min(Math.max(range[0], v), range[1])
+export const clamp = (v: number, min: number, max: number): number => {
+  if (v < min) {
+    return min
+  }
+
+  if (v > max) {
+    return max
+  }
+
+  return v
 }
 
 export const clamp2 = (

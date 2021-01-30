@@ -133,7 +133,7 @@ export class Editor {
     } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
       zoom -= ZOOM_SPEED * dt
     }
-    zoom = math.clamp(zoom, [0.5, 3])
+    zoom = math.clamp(zoom, 0.5, 3)
     this.events.emit('zoom', { zoom: zoom })
 
     this.camera.setZoom(zoom)

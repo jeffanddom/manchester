@@ -17,7 +17,7 @@ export class Camera {
     canvas.addEventListener('wheel', (event) => {
       event.preventDefault()
       this.cameraSpherePos[0] += event.deltaY * 0.025
-      this.cameraSpherePos[0] = math.clamp(this.cameraSpherePos[0], [1, 10])
+      this.cameraSpherePos[0] = math.clamp(this.cameraSpherePos[0], 1, 10)
     })
 
     canvas.addEventListener('pointermove', (event) => {
@@ -31,10 +31,11 @@ export class Camera {
 
         // Keep inclination away from poles.
         this.cameraSpherePos[1] += event.movementY * -scale
-        this.cameraSpherePos[1] = math.clamp(this.cameraSpherePos[1], [
+        this.cameraSpherePos[1] = math.clamp(
+          this.cameraSpherePos[1],
           0.0005,
           Math.PI - 0.0005,
-        ])
+        )
       }
 
       if (buttons.has(MouseButton.RIGHT)) {

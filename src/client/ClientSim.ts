@@ -204,7 +204,7 @@ export class ClientSim {
     ])
 
     this.zoomLevel += this.mouse.getScroll() * 0.05
-    this.zoomLevel = math.clamp(this.zoomLevel, [3, 12])
+    this.zoomLevel = math.clamp(this.zoomLevel, 3, 12)
 
     this.debugDraw.draw2d(() => {
       const text = [
