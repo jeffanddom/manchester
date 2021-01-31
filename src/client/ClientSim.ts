@@ -169,7 +169,7 @@ export class ClientSim {
     this.modelLoader.loadModelDef(
       'terrain',
       this.terrainLayer.getModel(),
-      'old',
+      'vcolor',
     )
 
     for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall']) {

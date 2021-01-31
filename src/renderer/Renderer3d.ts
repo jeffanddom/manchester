@@ -11,9 +11,9 @@ import {
   ModelPrimitive,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
-import { shader as oldShader } from '~/renderer/shaders/old'
 import { shader as solidShader } from '~/renderer/shaders/solid'
 import { shader as unlitShader } from '~/renderer/shaders/unlit'
+import { shader as vcolor } from '~/renderer/shaders/vcolor'
 import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
@@ -108,7 +108,7 @@ export class Renderer3d implements IModelLoader {
     this.gl = canvas.getContext('webgl2')!
 
     this.shaders = new Map()
-    this.loadShader('old', oldShader)
+    this.loadShader('vcolor', vcolor)
     this.loadShader('solid', solidShader)
     this.loadShader('unlit', unlitShader)
     this.loadShader('wiresolid', wiresolidShader)
@@ -309,15 +309,12 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
-   * DEPRECATED
-   *
-   * Render using old shader. Currently uses vertex colors, with no
-   * lighting or textures.
+   * Render with vertex coloring.
    */
-  renderOld(
+  renderVColor(
     objects: { modelName: string; posXY: Immutable<vec2>; rotXY: number }[],
   ): void {
-    this.useShader('old')
+    this.useShader('vcolor')
     this.applySettings({
       alphaEnabled: true,
       colorEnabled: true,

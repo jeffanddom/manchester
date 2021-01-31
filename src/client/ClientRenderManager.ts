@@ -67,7 +67,7 @@ export class ClientRenderManager {
     this.renderer3d.clear()
     this.renderer3d.setWvTransform(params.world2ViewTransform)
 
-    this.renderer3d.renderOld(params.renderables3dOld)
+    this.renderer3d.renderVColor(params.renderables3dOld)
     this.renderer3d.renderWiresolid(params.renderables3dSolid)
 
     // World-space debug draw
