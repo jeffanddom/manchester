@@ -39,6 +39,7 @@ export interface TriangleMesh<T> {
   positions: Buffer<T>
   normals: Buffer<T>
   indices: Buffer<T>
+  colors?: Buffer<T>
   edgeOn?: Buffer<T>
 }
 
@@ -47,6 +48,7 @@ export interface LineMesh<T> {
   positions: Buffer<T>
   normals: Buffer<T>
   indices: Buffer<T>
+  colors?: Buffer<T>
 }
 
 export type DataMesh = TriangleMesh<BufferArray> | LineMesh<BufferArray>

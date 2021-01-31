@@ -312,7 +312,11 @@ export class Renderer3d implements IModelLoader {
    * Render with vertex coloring.
    */
   renderVColor(
-    objects: { modelName: string; posXY: Immutable<vec2>; rotXY: number }[],
+    objects: {
+      modelName: string
+      modelModifiers: ModelModifiers
+      model2World: Immutable<mat4>
+    }[],
   ): void {
     this.useShader('vcolor')
     this.applySettings({
@@ -321,19 +325,12 @@ export class Renderer3d implements IModelLoader {
       depthTestMode: DepthTestMode.LessThan,
     })
 
-    for (const { modelName, posXY, rotXY } of objects) {
-      this.drawModel(
-        modelName,
-        mat4.fromRotationTranslation(
-          mat4.create(),
-          // We have to negate rotXY here. Positive rotations on the XY plane
-          // represent right-handed rotations around cross(+X, +Y), whereas
-          // positive rotations on the XZ plane represent right-handed rotations
-          // around cross(+X, -Z).
-          quat.rotateY(quat.create(), quat.create(), -rotXY),
-          vec3.fromValues(posXY[0], 0, posXY[1]),
-        ),
-      )
+    for (const { modelName, modelModifiers, model2World } of objects) {
+      const root = this.renderRootNodes.get(modelName)
+      if (root === undefined) {
+        throw new Error(`unknown model ${modelName}`)
+      }
+      this.renderNode(root, '', modelModifiers, model2World)
     }
   }
 
@@ -442,7 +439,7 @@ export class Renderer3d implements IModelLoader {
     parentPath: string,
     modelModifiers: ModelModifiers,
     model2World: Immutable<mat4>,
-    color: Immutable<vec4>,
+    color?: Immutable<vec4>,
   ): void {
     const path = parentPath === '' ? node.name : `${parentPath}.${node.name}`
 
@@ -480,7 +477,7 @@ export class Renderer3d implements IModelLoader {
   private renderMesh(
     mesh: RenderMesh,
     model2World: Immutable<mat4>,
-    color: Immutable<vec4>,
+    color?: Immutable<vec4>,
   ): void {
     if (this.currentShader === undefined) {
       throw new Error(`cannot render without current shader`)
@@ -490,18 +487,19 @@ export class Renderer3d implements IModelLoader {
     if (model2WorldUniform === undefined) {
       throw new Error(`shader has no model2World uniform`)
     }
-    const colorUniform = this.currentShader.uniforms.get('color')
-    if (colorUniform === undefined) {
-      throw new Error(`shader has no color uniform`)
-    }
+
     const positionAttrib = this.currentShader.attribs.get('position')
     if (positionAttrib === undefined) {
       throw new Error(`shader has no position attrib`)
     }
 
+    // Optional uniforms
+    const colorUniform = this.currentShader.uniforms.get('color')
+
     // Optional attribs
-    const normalAttrib = this.currentShader.attribs.get('normal')
+    const colorAttrib = this.currentShader.attribs.get('color')
     const edgeOnAttrib = this.currentShader.attribs.get('edgeOn')
+    const normalAttrib = this.currentShader.attribs.get('normal')
 
     // Uniforms
     this.gl.uniformMatrix4fv(
@@ -509,7 +507,13 @@ export class Renderer3d implements IModelLoader {
       false,
       model2World as Float32Array,
     )
-    this.gl.uniform4fv(colorUniform, color as Float32Array)
+
+    if (colorUniform !== undefined) {
+      if (color === undefined) {
+        throw `value for color uniform not provided`
+      }
+      this.gl.uniform4fv(colorUniform, color as Float32Array)
+    }
 
     const vao = this.gl.createVertexArray()
     this.gl.bindVertexArray(vao)
@@ -526,14 +530,14 @@ export class Renderer3d implements IModelLoader {
       0,
     )
 
-    // Normal attrib
-    if (normalAttrib !== undefined) {
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
-      this.gl.enableVertexAttribArray(normalAttrib)
+    // color attrib
+    if (colorAttrib !== undefined && mesh.colors !== undefined) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.colors.buffer)
+      this.gl.enableVertexAttribArray(colorAttrib)
       this.gl.vertexAttribPointer(
-        normalAttrib,
-        mesh.normals.componentsPerAttrib,
-        mesh.normals.glType,
+        colorAttrib,
+        mesh.colors.componentsPerAttrib,
+        mesh.colors.glType,
         false,
         0,
         0,
@@ -552,6 +556,20 @@ export class Renderer3d implements IModelLoader {
         edgeOnAttrib,
         mesh.edgeOn.componentsPerAttrib,
         mesh.edgeOn.glType,
+        false,
+        0,
+        0,
+      )
+    }
+
+    // Normal attrib
+    if (normalAttrib !== undefined) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
+      this.gl.enableVertexAttribArray(normalAttrib)
+      this.gl.vertexAttribPointer(
+        normalAttrib,
+        mesh.normals.componentsPerAttrib,
+        mesh.normals.glType,
         false,
         0,
         0,

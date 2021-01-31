@@ -84,11 +84,10 @@ export class Client {
     // Maybe: getRenderables3d() should not return renderables for models that
     // haven't been loaded yet!
     if (this.sim.state !== GameState.Connecting) {
-      this.renderManager.update({
-        world2ViewTransform: this.sim.camera.getWvTransform(),
-        renderables3dOld: this.sim.getRenderables3dOld(),
-        renderables3dSolid: this.sim.getRenderables3dSolid(),
-      })
+      this.renderManager.update(
+        this.sim.getRenderables(),
+        this.sim.camera.getWvTransform(),
+      )
     }
 
     this.keyboard.update()

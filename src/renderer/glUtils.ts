@@ -46,7 +46,7 @@ export function makeRenderNode(
 
 function makeRenderMesh(src: DataMesh, gl: WebGL2RenderingContext): RenderMesh {
   switch (src.primitive) {
-    case MeshPrimitive.Triangles:
+    case MeshPrimitive.Triangles: {
       const res: RenderMesh = {
         positions: getGlBuffer(src.positions, gl),
         normals: getGlBuffer(src.normals, gl),
@@ -54,19 +54,31 @@ function makeRenderMesh(src: DataMesh, gl: WebGL2RenderingContext): RenderMesh {
         primitive: MeshPrimitive.Triangles,
       }
 
+      if (src.colors !== undefined) {
+        res.colors = getGlBuffer(src.colors, gl)
+      }
+
       if (src.edgeOn !== undefined) {
         res.edgeOn = getGlBuffer(src.edgeOn, gl)
       }
 
       return res
+    }
 
-    case MeshPrimitive.Lines:
-      return {
+    case MeshPrimitive.Lines: {
+      const res: RenderMesh = {
         positions: getGlBuffer(src.positions, gl),
         normals: getGlBuffer(src.normals, gl),
         indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
         primitive: MeshPrimitive.Lines,
       }
+
+      if (src.colors !== undefined) {
+        res.colors = getGlBuffer(src.colors, gl)
+      }
+
+      return res
+    }
   }
 }
 

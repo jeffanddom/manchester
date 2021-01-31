@@ -2,10 +2,7 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { getGltfDocument } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
-import {
-  Renderable3dOld,
-  Renderable3dSolid,
-} from '~/client/ClientRenderManager'
+import { Renderable, RenderableType } from '~/client/ClientRenderManager'
 import {
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
@@ -166,11 +163,7 @@ export class ClientSim {
     this.entityManager.currentPlayer = this.playerNumber!
 
     this.terrainLayer = initMap(this.entityManager, this.map)
-    this.modelLoader.loadModelDef(
-      'terrain',
-      this.terrainLayer.getModel(),
-      'vcolor',
-    )
+    this.modelLoader.loadModel('terrain', this.terrainLayer.getModel())
 
     for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall']) {
       gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
@@ -444,30 +437,20 @@ export class ClientSim {
     }
   }
 
-  getRenderables3dOld(): Renderable3dOld[] {
-    const res: Renderable3dOld[] = []
-
-    // Add terrain
-    res.push({ modelName: 'terrain', posXY: vec2.create(), rotXY: 0 })
-
-    for (const [entityId, modelId] of this.entityManager.renderables) {
-      const transform = this.entityManager.transforms.get(entityId)!
-      res.push({
-        modelName: modelId,
-        posXY: transform.position,
-        rotXY: transform.orientation,
-      })
-    }
-
-    return res
-  }
-
-  getRenderables3dSolid(): Renderable3dSolid[] {
-    const res: Renderable3dSolid[] = []
+  getRenderables(): Renderable[] {
+    const res: Renderable[] = [
+      {
+        type: RenderableType.VColor,
+        modelName: 'terrain',
+        modelModifiers: {},
+        model2World: mat4.create(),
+      },
+    ]
 
     for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!
       res.push({
+        type: RenderableType.UniformColor,
         modelName: entityModel.name,
         modelModifiers: entityModel.modifiers,
         model2World: mat4.fromRotationTranslation(

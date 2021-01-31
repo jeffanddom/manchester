@@ -1,8 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
-import { ModelPrimitive } from '~/renderer/interfaces'
-import { ModelDef } from '~/renderer/interfacesOld'
+import { MeshPrimitive, ModelNode } from '~/renderer/interfaces'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
@@ -10,9 +9,10 @@ export class Layer {
   private tileDimensions: vec2
   private terrain: (Type | null)[]
 
-  private vertices: Float32Array
+  private positions: Float32Array
   private colors: Float32Array
   private normals: Float32Array
+  private indices: Uint16Array
 
   public constructor({
     tileOrigin: origin,
@@ -26,9 +26,10 @@ export class Layer {
     this.tileOrigin = origin
     this.tileDimensions = dimensions
     this.terrain = tiles
-    this.vertices = new Float32Array(this.terrain.length * 18)
-    this.colors = new Float32Array(this.terrain.length * 24)
-    this.normals = new Float32Array(this.terrain.length * 18)
+    this.positions = new Float32Array(this.terrain.length * 4 * 3)
+    this.colors = new Float32Array(this.terrain.length * 4 * 4)
+    this.normals = new Float32Array(this.terrain.length * 4 * 3)
+    this.indices = new Uint16Array(this.terrain.length * 6)
 
     for (let i = 0; i < this.terrain.length; i++) {
       const y = Math.floor(i / this.tileDimensions[1])
@@ -40,11 +41,13 @@ export class Layer {
       const sw = [pos[0], 0, pos[1] + TILE_SIZE]
       const se = [pos[0] + TILE_SIZE, 0, pos[1] + TILE_SIZE]
 
+      this.positions.set([...nw, ...ne, ...sw, ...se], i * 4 * 3)
+
       // prettier-ignore
-      this.vertices.set(
-        [...nw, ...se, ...ne,
-        ...nw, ...sw, ...se], i * 18
-      )
+      this.indices.set([
+        i * 4, i * 4 + 3, i * 4 + 1, // nw->se->ne
+        i * 4, i * 4 + 2, i * 4 + 3, // nw->sw->se
+      ], i * 6)
 
       const colors: { [key: number]: [number, number, number, number] } = {
         [Type.Grass]: [126 / 255, 200 / 255, 80 / 255, 1.0],
@@ -52,12 +55,7 @@ export class Layer {
         [Type.River]: [43 / 255, 87 / 255, 112 / 255, 1.0],
       }
       const c = colors[tiles[i] ?? Type.Grass]
-
-      // prettier-ignore
-      this.colors.set([
-        ...c, ...c, ...c,
-        ...c, ...c, ...c,
-      ], i * 24)
+      this.colors.set([...c, ...c, ...c, ...c], i * 4 * 4)
 
       // prettier-ignore
       this.normals.set(
@@ -66,9 +64,7 @@ export class Layer {
           0, 1, 0,
           0, 1, 0,
           0, 1, 0,
-          0, 1, 0,
-          0, 1, 0,
-        ], i * 18
+        ], i * 4 * 3
       )
     }
   }
@@ -92,12 +88,37 @@ export class Layer {
     return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
   }
 
-  public getModel(): ModelDef {
+  public getModel(): ModelNode {
     return {
-      positions: this.vertices,
-      colors: this.colors,
-      normals: this.normals,
-      primitive: ModelPrimitive.Triangles,
+      name: 'root',
+      mesh: {
+        primitive: MeshPrimitive.Triangles,
+        positions: {
+          buffer: this.positions,
+          glType: 5126 as GLenum, // gl.FLOAT
+          componentCount: this.positions.length,
+          componentsPerAttrib: 3,
+        },
+        colors: {
+          buffer: this.colors,
+          glType: 5126 as GLenum, // gl.FLOAT
+          componentCount: this.colors.length,
+          componentsPerAttrib: 4,
+        },
+        normals: {
+          buffer: this.normals,
+          glType: 5126 as GLenum, // gl.FLOAT
+          componentCount: this.normals.length,
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          buffer: new Uint16Array(this.indices),
+          glType: 5123 as GLenum, // gl.USHORT
+          componentCount: this.indices.length,
+          componentsPerAttrib: 1,
+        },
+      },
+      children: [],
     }
   }
 }

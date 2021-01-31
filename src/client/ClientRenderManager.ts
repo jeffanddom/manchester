@@ -9,18 +9,27 @@ import { Immutable } from '~/types/immutable'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export interface Renderable3dOld {
-  modelName: string
-  posXY: Immutable<vec2>
-  rotXY: number
+export enum RenderableType {
+  VColor, // per-vertex coloring
+  UniformColor, // uniform coloring
 }
 
-export interface Renderable3dSolid {
+interface RenderableBase {
   modelName: string
   modelModifiers: ModelModifiers
   model2World: mat4
+}
+
+interface RenderableVColor extends RenderableBase {
+  type: RenderableType.VColor
+}
+
+interface RenderableUniformColor extends RenderableBase {
+  type: RenderableType.UniformColor
   color: Immutable<vec4>
 }
+
+export type Renderable = RenderableVColor | RenderableUniformColor
 
 export class ClientRenderManager {
   renderer3d: Renderer3d
@@ -55,20 +64,29 @@ export class ClientRenderManager {
     this.renderer3d.setViewportDimensions(d)
   }
 
-  update(params: {
-    world2ViewTransform: mat4
-    renderables3dOld: Renderable3dOld[]
-    renderables3dSolid: Renderable3dSolid[]
-  }): void {
+  update(renderables: Renderable[], world2ViewTransform: mat4): void {
     const now = time.current()
     this.renderFrameDurations.sample(now - this.lastRenderAt)
     this.lastRenderAt = now
 
     this.renderer3d.clear()
-    this.renderer3d.setWvTransform(params.world2ViewTransform)
+    this.renderer3d.setWvTransform(world2ViewTransform)
 
-    this.renderer3d.renderVColor(params.renderables3dOld)
-    this.renderer3d.renderWiresolid(params.renderables3dSolid)
+    const vcolor: RenderableVColor[] = []
+    const uniformColor: RenderableUniformColor[] = []
+    for (const r of renderables) {
+      switch (r.type) {
+        case RenderableType.VColor:
+          vcolor.push(r)
+          break
+        case RenderableType.UniformColor:
+          uniformColor.push(r)
+          break
+      }
+    }
+
+    this.renderer3d.renderVColor(vcolor)
+    this.renderer3d.renderWiresolid(uniformColor)
 
     // World-space debug draw
     this.renderer3d.renderUnlit(this.debugDraw.get3d().map((obj) => obj.object))
