@@ -18,6 +18,12 @@ import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
 import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
 
+enum DepthTestMode {
+  Off,
+  LessThan,
+  LessThanOrEqual,
+}
+
 interface ShaderDefinition {
   vertexSrc: string
   fragmentSrc: string
@@ -52,6 +58,12 @@ interface WireModel {
   uniformScale?: number
   scale?: vec3
   rot?: quat
+}
+
+interface RenderSettings {
+  colorEnabled: boolean
+  depthTestMode: DepthTestMode
+  alphaEnabled: boolean
 }
 
 export type WireObject = WireLines | WireModel
@@ -231,6 +243,42 @@ export class Renderer3d implements IModelLoader {
     this.gl.uniformMatrix4fv(world2ViewUniform, false, this.world2ViewTransform)
   }
 
+  private applySettings(settings: RenderSettings): void {
+    // Currently, all render modes use backface culling.
+    this.gl.enable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.BACK)
+    this.gl.frontFace(this.gl.CCW)
+
+    if (settings.colorEnabled) {
+      this.gl.colorMask(true, true, true, true)
+    } else {
+      this.gl.colorMask(false, false, false, false)
+    }
+
+    switch (settings.depthTestMode) {
+      case DepthTestMode.Off:
+        this.gl.disable(this.gl.DEPTH_TEST)
+        break
+
+      case DepthTestMode.LessThan:
+        this.gl.enable(this.gl.DEPTH_TEST)
+        this.gl.depthFunc(this.gl.LESS)
+        break
+
+      case DepthTestMode.LessThanOrEqual:
+        this.gl.enable(this.gl.DEPTH_TEST)
+        this.gl.depthFunc(this.gl.LEQUAL)
+        break
+    }
+
+    if (settings.alphaEnabled) {
+      this.gl.enable(this.gl.BLEND)
+      this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    } else {
+      this.gl.disable(this.gl.BLEND)
+    }
+  }
+
   clear(): void {
     this.gl.clearColor(0.0, 0.0, 0.0, 1.0)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
@@ -276,16 +324,11 @@ export class Renderer3d implements IModelLoader {
     ) => void,
   ): void {
     this.useShader('old')
-
-    this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LESS)
-
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
-
-    this.gl.enable(this.gl.BLEND)
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    this.applySettings({
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThan,
+      alphaEnabled: true,
+    })
 
     renderBody(
       (modelName: string, posXY: Immutable<vec2>, rotXY: number): void => {
@@ -319,16 +362,11 @@ export class Renderer3d implements IModelLoader {
     ) => void,
   ): void {
     this.useShader('solid')
-
-    this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LESS)
-
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
-
-    this.gl.enable(this.gl.BLEND)
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    this.applySettings({
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThan,
+      alphaEnabled: true,
+    })
 
     renderBody(
       (
@@ -360,16 +398,11 @@ export class Renderer3d implements IModelLoader {
     ) => void,
   ): void {
     this.useShader('wiresolid')
-
-    this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LESS)
-
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
-
-    this.gl.enable(this.gl.BLEND)
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    this.applySettings({
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThan,
+      alphaEnabled: true,
+    })
 
     renderBody(
       (
@@ -421,18 +454,12 @@ export class Renderer3d implements IModelLoader {
 
     this.useShader('unlit')
 
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
-
     // First pass: write to the depth buffer only
-
-    this.gl.colorMask(false, false, false, false)
-
-    this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LESS)
-
-    this.gl.disable(this.gl.BLEND)
+    this.applySettings({
+      colorEnabled: false,
+      depthTestMode: DepthTestMode.LessThan,
+      alphaEnabled: false,
+    })
 
     for (const instance of instances) {
       const root = this.renderRootNodes.get(instance.modelName)
@@ -450,13 +477,11 @@ export class Renderer3d implements IModelLoader {
     }
 
     // Second pass: draw lines to color buffer
-
-    this.gl.colorMask(true, true, true, true)
-
-    this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing opaque faces
-
-    this.gl.enable(this.gl.BLEND)
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    this.applySettings({
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing opaque faces
+      alphaEnabled: true,
+    })
 
     for (const instance of instances) {
       const lineModel = instance.modelName + '-line'
