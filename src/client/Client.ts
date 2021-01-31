@@ -80,9 +80,6 @@ export class Client {
       this.debugDraw.setEnabled(!this.debugDraw.isEnabled())
     }
 
-    // TODO: figure out a better way to prevent unloaded models from rendering.
-    // Maybe: getRenderables3d() should not return renderables for models that
-    // haven't been loaded yet!
     if (this.sim.state !== GameState.Connecting) {
       this.renderManager.update(
         this.sim.getRenderables(),
