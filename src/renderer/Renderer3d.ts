@@ -52,7 +52,7 @@ interface WireLines {
 
 interface WireModel {
   type: 'MODEL'
-  id: string
+  modelName: string
   color: vec4
   translate?: vec3
   uniformScale?: number
@@ -61,9 +61,9 @@ interface WireModel {
 }
 
 interface RenderSettings {
+  alphaEnabled: boolean
   colorEnabled: boolean
   depthTestMode: DepthTestMode
-  alphaEnabled: boolean
 }
 
 export type WireObject = WireLines | WireModel
@@ -315,109 +315,83 @@ export class Renderer3d implements IModelLoader {
    * lighting or textures.
    */
   renderOld(
-    renderBody: (
-      drawFunc: (
-        modelName: string,
-        posXY: Immutable<vec2>,
-        rotXY: number,
-      ) => void,
-    ) => void,
+    objects: { modelName: string; posXY: Immutable<vec2>; rotXY: number }[],
   ): void {
     this.useShader('old')
     this.applySettings({
+      alphaEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
-      alphaEnabled: true,
     })
 
-    renderBody(
-      (modelName: string, posXY: Immutable<vec2>, rotXY: number): void => {
-        this.drawModel(
-          modelName,
-          mat4.fromRotationTranslation(
-            mat4.create(),
-            // We have to negate rotXY here. Positive rotations on the XY plane
-            // represent right-handed rotations around cross(+X, +Y), whereas
-            // positive rotations on the XZ plane represent right-handed rotations
-            // around cross(+X, -Z).
-            quat.rotateY(quat.create(), quat.create(), -rotXY),
-            vec3.fromValues(posXY[0], 0, posXY[1]),
-          ),
-        )
-      },
-    )
+    for (const { modelName, posXY, rotXY } of objects) {
+      this.drawModel(
+        modelName,
+        mat4.fromRotationTranslation(
+          mat4.create(),
+          // We have to negate rotXY here. Positive rotations on the XY plane
+          // represent right-handed rotations around cross(+X, +Y), whereas
+          // positive rotations on the XZ plane represent right-handed rotations
+          // around cross(+X, -Z).
+          quat.rotateY(quat.create(), quat.create(), -rotXY),
+          vec3.fromValues(posXY[0], 0, posXY[1]),
+        ),
+      )
+    }
   }
 
   /**
    * Render using the solid shader, specifying models with per-mesh transforms.
    */
   renderSolid(
-    renderBody: (
-      drawFunc: (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => void,
-    ) => void,
+    objects: {
+      modelName: string
+      modelModifiers: ModelModifiers
+      model2World: Immutable<mat4>
+      color: Immutable<vec4>
+    }[],
   ): void {
     this.useShader('solid')
     this.applySettings({
+      alphaEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
-      alphaEnabled: true,
     })
 
-    renderBody(
-      (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => {
-        const root = this.renderRootNodes.get(modelName)
-        if (root === undefined) {
-          throw new Error(`unknown model ${modelName}`)
-        }
-        this.renderNode(root, '', modelModifiers, model2World, color)
-      },
-    )
+    for (const { modelName, modelModifiers, model2World, color } of objects) {
+      const root = this.renderRootNodes.get(modelName)
+      if (root === undefined) {
+        throw new Error(`unknown model ${modelName}`)
+      }
+      this.renderNode(root, '', modelModifiers, model2World, color)
+    }
   }
 
   /**
    * Render using the wiresolid shader, specifying models with per-mesh transforms.
    */
   renderWiresolid(
-    renderBody: (
-      drawFunc: (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => void,
-    ) => void,
+    objects: {
+      modelName: string
+      modelModifiers: ModelModifiers
+      model2World: Immutable<mat4>
+      color: Immutable<vec4>
+    }[],
   ): void {
     this.useShader('wiresolid')
     this.applySettings({
+      alphaEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
-      alphaEnabled: true,
     })
 
-    renderBody(
-      (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => {
-        const root = this.renderRootNodes.get(modelName)
-        if (root === undefined) {
-          throw new Error(`unknown model ${modelName}`)
-        }
-        this.renderNode(root, '', modelModifiers, model2World, color)
-      },
-    )
+    for (const { modelName, modelModifiers, model2World, color } of objects) {
+      const root = this.renderRootNodes.get(modelName)
+      if (root === undefined) {
+        throw new Error(`unknown model ${modelName}`)
+      }
+      this.renderNode(root, '', modelModifiers, model2World, color)
+    }
   }
 
   /**
@@ -425,78 +399,44 @@ export class Renderer3d implements IModelLoader {
    * line mesh model must be loaded.
    */
   renderWiresolidLine(
-    renderBody: (
-      drawFunc: (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => void,
-    ) => void,
-  ): void {
-    const instances: {
+    objects: {
       modelName: string
       modelModifiers: ModelModifiers
       model2World: Immutable<mat4>
       color: Immutable<vec4>
-    }[] = []
-
-    renderBody(
-      (
-        modelName: string,
-        modelModifiers: ModelModifiers,
-        model2World: Immutable<mat4>,
-        color: Immutable<vec4>,
-      ) => {
-        instances.push({ modelName, modelModifiers, model2World, color })
-      },
-    )
-
+    }[],
+  ): void {
     this.useShader('unlit')
 
     // First pass: write to the depth buffer only
     this.applySettings({
+      alphaEnabled: false,
       colorEnabled: false,
       depthTestMode: DepthTestMode.LessThan,
-      alphaEnabled: false,
     })
 
-    for (const instance of instances) {
-      const root = this.renderRootNodes.get(instance.modelName)
+    for (const { modelName, modelModifiers, model2World, color } of objects) {
+      const root = this.renderRootNodes.get(modelName)
       if (root === undefined) {
-        throw new Error(`unknown model ${instance.modelName}`)
+        throw new Error(`unknown model ${modelName}`)
       }
-
-      this.renderNode(
-        root,
-        '',
-        instance.modelModifiers,
-        instance.model2World,
-        instance.color,
-      )
+      this.renderNode(root, '', modelModifiers, model2World, color)
     }
 
     // Second pass: draw lines to color buffer
     this.applySettings({
+      alphaEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing opaque faces
-      alphaEnabled: true,
     })
 
-    for (const instance of instances) {
-      const lineModel = instance.modelName + '-line'
+    for (const { modelName, modelModifiers, model2World, color } of objects) {
+      const lineModel = modelName + '-line'
       const root = this.renderRootNodes.get(lineModel)
       if (root === undefined) {
         throw new Error(`unknown model ${lineModel}`)
       }
-
-      this.renderNode(
-        root,
-        '',
-        instance.modelModifiers,
-        instance.model2World,
-        instance.color,
-      )
+      this.renderNode(root, '', modelModifiers, model2World, color)
     }
   }
 
@@ -655,27 +595,16 @@ export class Renderer3d implements IModelLoader {
   /**
    * Render using the unlit shader. Intended for debug draw.
    */
-  renderUnlit(
-    renderBody: (drawFunc: (obj: WireObject) => void) => void,
-    options: { disableDepthTest?: boolean } = {},
-  ): void {
+  renderUnlit(objects: WireObject[]): void {
     this.useShader('unlit')
 
-    if (options.disableDepthTest === true) {
-      this.gl.disable(this.gl.DEPTH_TEST)
-    } else {
-      this.gl.enable(this.gl.DEPTH_TEST)
-      this.gl.depthFunc(this.gl.LEQUAL) // allow drawing over existing surfaces
-    }
+    this.applySettings({
+      alphaEnabled: true,
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
+    })
 
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
-
-    this.gl.enable(this.gl.BLEND)
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
-
-    renderBody((obj: WireObject): void => {
+    for (const obj of objects) {
       this.gl.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
 
       switch (obj.type) {
@@ -694,7 +623,7 @@ export class Renderer3d implements IModelLoader {
           }
 
           this.drawModel(
-            obj.id,
+            obj.modelName,
             mat4.fromRotationTranslationScale(
               mat4.create(),
               obj.rot ?? quat.create(),
@@ -704,7 +633,7 @@ export class Renderer3d implements IModelLoader {
           )
           break
       }
-    })
+    }
   }
 
   /**

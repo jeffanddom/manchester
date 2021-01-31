@@ -178,33 +178,43 @@ function update(): void {
   // Draw primary model
   switch (currentRenderMode) {
     case 'solid':
-      renderer.renderSolid((draw) => {
-        draw(currentModel, {}, mat4.create(), vec4.fromValues(0.5, 0.5, 1.0, 1))
-      })
+      renderer.renderSolid([
+        {
+          modelName: currentModel,
+          modelModifiers: {},
+          model2World: mat4.create(),
+          color: vec4.fromValues(0.5, 0.5, 1, 1),
+        },
+      ])
       break
 
     case 'wiresolid':
-      renderer.renderWiresolid((draw) => {
-        draw(currentModel, {}, mat4.create(), vec4.fromValues(0.7, 0.7, 1.0, 1))
-      })
+      renderer.renderWiresolid([
+        {
+          modelName: currentModel,
+          modelModifiers: {},
+          model2World: mat4.create(),
+          color: vec4.fromValues(0.7, 0.7, 1, 1),
+        },
+      ])
       break
 
     case 'wiresolidLine':
-      renderer.renderWiresolidLine((draw) => {
-        draw(currentModel, {}, mat4.create(), vec4.fromValues(1, 1, 1, 1))
-      })
+      renderer.renderWiresolidLine([
+        {
+          modelName: currentModel,
+          modelModifiers: {},
+          model2World: mat4.create(),
+          color: vec4.fromValues(1, 1, 1, 1),
+        },
+      ])
       break
 
     default:
       throw `invalid render mode: ${currentRenderMode}`
   }
 
-  // Draw axes
-  renderer.renderUnlit((drawFunc) => {
-    for (const obj of axes) {
-      drawFunc(obj)
-    }
-  })
+  renderer.renderUnlit(axes)
 }
 
 requestAnimationFrame(update)

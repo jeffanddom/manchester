@@ -132,7 +132,7 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
     {
       object: {
         type: 'MODEL',
-        id: 'wireCube',
+        modelName: 'wireCube',
         translate: vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
         color: vec4.fromValues(1, 1, 0, 1),
       },

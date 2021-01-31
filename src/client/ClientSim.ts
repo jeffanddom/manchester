@@ -197,7 +197,7 @@ export class ClientSim {
       {
         object: {
           type: 'MODEL',
-          id: 'wireTileGrid',
+          modelName: 'wireTileGrid',
           color: vec4.fromValues(1, 1, 0, 0.3),
         },
       },
@@ -444,17 +444,16 @@ export class ClientSim {
     }
   }
 
-  getRenderables3dOld(): Iterable<Renderable3dOld> {
-    // TODO: reimplement as lazy iterable?
+  getRenderables3dOld(): Renderable3dOld[] {
     const res: Renderable3dOld[] = []
 
     // Add terrain
-    res.push({ modelId: 'terrain', posXY: vec2.create(), rotXY: 0 })
+    res.push({ modelName: 'terrain', posXY: vec2.create(), rotXY: 0 })
 
     for (const [entityId, modelId] of this.entityManager.renderables) {
       const transform = this.entityManager.transforms.get(entityId)!
       res.push({
-        modelId,
+        modelName: modelId,
         posXY: transform.position,
         rotXY: transform.orientation,
       })
@@ -463,14 +462,13 @@ export class ClientSim {
     return res
   }
 
-  getRenderables3dSolid(): Iterable<Renderable3dSolid> {
-    // TODO: reimplement as lazy iterable?
+  getRenderables3dSolid(): Renderable3dSolid[] {
     const res: Renderable3dSolid[] = []
 
     for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!
       res.push({
-        modelId: entityModel.name,
+        modelName: entityModel.name,
         modelModifiers: entityModel.modifiers,
         model2World: mat4.fromRotationTranslation(
           mat4.create(),

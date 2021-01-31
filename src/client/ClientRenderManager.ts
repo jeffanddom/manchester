@@ -10,13 +10,13 @@ import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export interface Renderable3dOld {
-  modelId: string
+  modelName: string
   posXY: Immutable<vec2>
   rotXY: number
 }
 
 export interface Renderable3dSolid {
-  modelId: string
+  modelName: string
   modelModifiers: ModelModifiers
   model2World: mat4
   color: Immutable<vec4>
@@ -57,8 +57,8 @@ export class ClientRenderManager {
 
   update(params: {
     world2ViewTransform: mat4
-    renderables3dOld: Iterable<Renderable3dOld>
-    renderables3dSolid: Iterable<Renderable3dSolid>
+    renderables3dOld: Renderable3dOld[]
+    renderables3dSolid: Renderable3dSolid[]
   }): void {
     const now = time.current()
     this.renderFrameDurations.sample(now - this.lastRenderAt)
@@ -67,29 +67,11 @@ export class ClientRenderManager {
     this.renderer3d.clear()
     this.renderer3d.setWvTransform(params.world2ViewTransform)
 
-    // this.renderer3d.renderOld((drawModel) => {
-    //   for (const { modelId, posXY, rotXY } of params.renderables3dOld) {
-    //     drawModel(modelId, posXY, rotXY)
-    //   }
-    // })
-
-    this.renderer3d.renderWiresolid((drawModel) => {
-      for (const {
-        modelId,
-        modelModifiers,
-        model2World,
-        color,
-      } of params.renderables3dSolid) {
-        drawModel(modelId, modelModifiers, model2World, color)
-      }
-    })
+    this.renderer3d.renderOld(params.renderables3dOld)
+    this.renderer3d.renderWiresolid(params.renderables3dSolid)
 
     // World-space debug draw
-    this.renderer3d.renderUnlit((drawFunc) => {
-      for (const r of this.debugDraw.get3d()) {
-        drawFunc(r.object)
-      }
-    })
+    this.renderer3d.renderUnlit(this.debugDraw.get3d().map((obj) => obj.object))
 
     // Screenspace debug draw
     this.renderer2d.clear()

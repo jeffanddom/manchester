@@ -20,7 +20,7 @@ export const update = (simState: SimState): void => {
       objects.push({
         object: {
           type: 'MODEL',
-          id: 'wireTile',
+          modelName: 'wireTile',
           color: simulationPhaseDebugColor(simState.phase),
           translate: vec3.fromValues(center[0], 0.05, center[1]),
           scale: vec3.fromValues(size[0], 1, size[1]),
@@ -41,7 +41,7 @@ export const update = (simState: SimState): void => {
         {
           object: {
             type: 'MODEL',
-            id: 'wireTile',
+            modelName: 'wireTile',
             color: simulationPhaseDebugColor(simState.phase),
             translate: vec3.fromValues(center[0], 0.05, center[1]),
             scale: vec3.fromValues(size[0], 1, size[1]),
