@@ -203,7 +203,7 @@ export class ClientSim {
       },
     ])
 
-    this.zoomLevel += this.mouse.getScroll() * 0.05
+    this.zoomLevel += this.mouse.getScroll() * 0.025
     this.zoomLevel = math.clamp(this.zoomLevel, 3, 12)
 
     this.debugDraw.draw2d(() => {
@@ -341,38 +341,17 @@ export class ClientSim {
           const playerId = this.entityManager.getPlayerId(this.playerNumber!)
           if (playerId !== undefined) {
             const transform = this.entityManager.transforms.get(playerId)!
+            const targetPos = vec3.fromValues(
+              transform.position[0],
+              0,
+              transform.position[1],
+            )
 
             // Position the 3D camera at a fixed offset from the player, and
             // point the camera directly at the player.
             const offset = vec3.fromValues(0, this.zoomLevel, 3)
-            this.camera.setPos(
-              vec3.add(
-                vec3.create(),
-                vec3.fromValues(
-                  transform.position[0],
-                  0,
-                  transform.position[1],
-                ),
-                offset,
-              ),
-            )
-            this.camera.setOrientation(
-              quat.fromEuler(
-                quat.create(),
-                // We want the value of b, which is a negative-value downward
-                // rotation around the x-axis.
-                // c ------------------
-                // | \  b
-                // | a \
-                // |     \
-                // |       \
-                // |         \
-                // ----------- p ------
-                math.r2d(Math.atan2(offset[2], offset[1]) - Math.PI / 2),
-                0,
-                0,
-              ),
-            )
+            this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
+            this.camera.setTarget(targetPos)
           }
 
           // server message cleanup

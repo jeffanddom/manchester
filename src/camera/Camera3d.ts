@@ -1,34 +1,30 @@
-import { mat4, quat, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 import * as math from '~/util/math'
 
 export class Camera3d {
   private pos: vec3
-  private orientation: quat
   private viewportDimensions: vec2
   private fov: number
+  private target: vec3
 
   constructor(params: { viewportDimensions: Immutable<vec2> }) {
     this.pos = vec3.create()
-    this.orientation = quat.create()
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
     this.fov = (75 * Math.PI) / 180
+    this.target = vec3.create()
   }
 
   getPos(): Immutable<vec3> {
     return this.pos
   }
 
-  getOrientation(): Immutable<quat> {
-    return this.orientation
-  }
-
   getWvTransform(): mat4 {
     const res = mat4.create()
     return mat4.invert(
       res,
-      mat4.fromRotationTranslation(res, this.orientation, this.pos),
+      mat4.targetTo(res, this.pos, this.target, vec3.fromValues(0, 1, 0)),
     )
   }
 
@@ -57,8 +53,8 @@ export class Camera3d {
     this.pos = vec3.clone(v)
   }
 
-  setOrientation(q: Immutable<quat>): void {
-    this.orientation = quat.clone(q)
+  setTarget(pos: Immutable<vec3>): void {
+    vec3.copy(this.target, pos)
   }
 
   setViewportDimensions(v: vec2): void {

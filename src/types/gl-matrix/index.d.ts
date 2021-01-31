@@ -36,6 +36,7 @@ declare module 'gl-matrix' {
 
   export namespace vec3 {
     export function clone(a: Immutable<vec3>): vec3
+    export function copy(out: vec3, src: Immutable<vec3>): vec3
     export function sub(out: vec3, a: Immutable<vec3>, b: Immutable<vec3>): vec3
     export function subtract(
       out: vec3,
