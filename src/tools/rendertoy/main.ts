@@ -7,8 +7,9 @@ import {
   FragmentShaderError,
   Renderer3d,
   ShaderLinkError,
+  UnlitObject,
+  UnlitObjectType,
   VertexShaderError,
-  WireObject,
 } from '~/renderer/Renderer3d'
 import { shader as solidShader } from '~/renderer/shaders/solid'
 import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
@@ -140,7 +141,7 @@ function recompile(): void {
   }
 }
 
-const axes: WireObject[] = []
+const axes: UnlitObject[] = []
 for (let axis = 0; axis < 3; axis++) {
   const pos = new Float32Array([0, 0, 0, 0, 0, 0])
   const color = vec4.fromValues(0, 0, 0, 1)
@@ -149,7 +150,7 @@ for (let axis = 0; axis < 3; axis++) {
   pos[3 + axis] = 1000
   color[axis] = 0.75
   axes.push({
-    type: 'LINES',
+    type: UnlitObjectType.Lines,
     positions: pos.slice(),
     color: vec4.clone(color),
   })
@@ -158,7 +159,7 @@ for (let axis = 0; axis < 3; axis++) {
   pos[3 + axis] *= -1
   color[3] = 0.4
   axes.push({
-    type: 'LINES',
+    type: UnlitObjectType.Lines,
     positions: pos.slice(),
     color: vec4.clone(color),
   })
@@ -214,7 +215,7 @@ function update(): void {
       throw `invalid render mode: ${currentRenderMode}`
   }
 
-  renderer.renderUnlitOld(axes)
+  renderer.renderUnlit(axes)
 }
 
 requestAnimationFrame(update)
