@@ -188,7 +188,7 @@ export class ClientSim {
 
     this.debugDraw.draw3d(() => [
       {
-        object: {
+        objectOld: {
           type: 'MODEL',
           modelName: 'wireTileGrid',
           color: vec4.fromValues(1, 1, 0, 0.3),

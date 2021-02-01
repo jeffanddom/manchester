@@ -111,6 +111,69 @@ export function makeCubeModel(): ModelNode {
   }
 }
 
+export function makeLineCubeModel(): ModelNode {
+  // prettier-ignore
+  const positions = new Float32Array([
+    // front
+    -0.5, 0.5, -0.5, // nw
+    0.5, 0.5, -0.5, //  ne
+    0.5, -0.5, -0.5, // se
+    -0.5, -0.5, -0.5, // sw    
+
+    // back
+    -0.5, 0.5, 0.5, // nw
+    0.5, 0.5, 0.5, //  ne
+    0.5, -0.5, 0.5, // se
+    -0.5, -0.5, 0.5, // sw        
+  ])
+
+  // prettier-ignore
+  const indices = new Uint16Array([
+    0, 1,
+    1, 2,
+    2, 3,
+    3, 0,
+
+    4, 5,
+    5, 6,
+    6, 7,
+    7, 4,
+
+    0, 4,
+    1, 5,
+    2, 6,
+    3, 7,
+  ])
+
+  return {
+    name: 'root',
+    mesh: {
+      primitive: MeshPrimitive.Lines,
+      positions: {
+        buffer: positions,
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: positions.length,
+        componentsPerAttrib: 3,
+      },
+      normals: {
+        // The normal values don't matter. We should consider a refactor where
+        // normals aren't assumed to be required.
+        buffer: new Float32Array(8 * 3),
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: 8 * 3,
+        componentsPerAttrib: 3,
+      },
+      indices: {
+        buffer: indices,
+        glType: 5123 as GLenum, // gl.USHORT
+        componentCount: indices.length,
+        componentsPerAttrib: 1,
+      },
+    },
+    children: [],
+  }
+}
+
 /**
  * Generate a new triangle-based ModelNode in which all meshes are augmented
  * with the edgeOn attribute. The attribute is a vec3. With the frag shader, at

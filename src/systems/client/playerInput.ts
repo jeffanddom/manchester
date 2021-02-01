@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
@@ -6,6 +7,7 @@ import { ClientSim } from '~/client/ClientSim'
 import { DirectionMove } from '~/input/interfaces'
 import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
+import { UnlitObjectType } from '~/renderer/Renderer3d'
 
 export const keyMap = {
   moveUp: 'KeyW',
@@ -114,7 +116,7 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
       const playerPos = client.entityManager.transforms.get(playerId)!.position
       client.debugDraw.draw3d(() => [
         {
-          object: {
+          objectOld: {
             type: 'LINES',
             // prettier-ignore
             positions: new Float32Array([
@@ -131,9 +133,12 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
   client.debugDraw.draw3d(() => [
     {
       object: {
-        type: 'MODEL',
-        modelName: 'wireCube',
-        translate: vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
+        type: UnlitObjectType.Model,
+        modelName: 'linecube',
+        model2World: mat4.fromTranslation(
+          mat4.create(),
+          vec3.fromValues(targetPos[0], 0.5, targetPos[1]),
+        ),
         color: vec4.fromValues(1, 1, 0, 1),
       },
     },

@@ -4,7 +4,7 @@ import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
 import { ModelModifiers } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Renderer2d } from '~/renderer/Renderer2d'
-import { Renderer3d } from '~/renderer/Renderer3d'
+import { Renderer3d, UnlitObject, WireObject } from '~/renderer/Renderer3d'
 import { Immutable } from '~/types/immutable'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
@@ -89,7 +89,20 @@ export class ClientRenderManager {
     this.renderer3d.renderWiresolid(uniformColor)
 
     // World-space debug draw
-    this.renderer3d.renderUnlit(this.debugDraw.get3d().map((obj) => obj.object))
+    const unlit: UnlitObject[] = []
+    const unlitOld: WireObject[] = []
+    for (const obj of this.debugDraw.get3d()) {
+      if (obj.object !== undefined) {
+        unlit.push(obj.object)
+      }
+
+      if (obj.objectOld !== undefined) {
+        unlitOld.push(obj.objectOld)
+      }
+    }
+
+    this.renderer3d.renderUnlit(unlit)
+    this.renderer3d.renderUnlitOld(unlitOld)
 
     // Screenspace debug draw
     this.renderer2d.clear()

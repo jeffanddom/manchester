@@ -18,7 +18,7 @@ export const update = (simState: SimState): void => {
       const xform = simState.entityManager.transforms.get(entityId)!
       const [center, size] = aabb.centerSize(damageableAabb(d, xform))
       objects.push({
-        object: {
+        objectOld: {
           type: 'MODEL',
           modelName: 'wireTile',
           color: simulationPhaseDebugColor(simState.phase),
@@ -39,7 +39,7 @@ export const update = (simState: SimState): void => {
       const [center, size] = aabb.centerSize(attackerAabb)
       return [
         {
-          object: {
+          objectOld: {
             type: 'MODEL',
             modelName: 'wireTile',
             color: simulationPhaseDebugColor(simState.phase),

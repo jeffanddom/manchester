@@ -1,8 +1,9 @@
 import { Renderable2d } from '~/renderer/Renderer2d'
-import { WireObject } from '~/renderer/Renderer3d'
+import { UnlitObject, WireObject } from '~/renderer/Renderer3d'
 
 export interface DebugDrawObject {
-  object: WireObject
+  object?: UnlitObject
+  objectOld?: WireObject
   lifetime?: number // lifetime in frames (minimum 1, default 1)
 }
 

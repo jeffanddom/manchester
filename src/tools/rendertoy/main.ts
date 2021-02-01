@@ -214,7 +214,7 @@ function update(): void {
       throw `invalid render mode: ${currentRenderMode}`
   }
 
-  renderer.renderUnlit(axes)
+  renderer.renderUnlitOld(axes)
 }
 
 requestAnimationFrame(update)

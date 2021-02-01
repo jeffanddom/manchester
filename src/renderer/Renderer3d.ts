@@ -1,6 +1,7 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
+import { makeLineCubeModel } from './geometryUtils'
 import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
 
@@ -60,13 +61,34 @@ interface WireModel {
   rot?: quat
 }
 
+export type WireObject = WireLines | WireModel
+
+export enum UnlitObjectType {
+  Lines,
+  Model,
+}
+
+interface UnlitLines {
+  type: UnlitObjectType.Lines
+  positions: Float32Array
+  color: vec4
+}
+
+interface UnlitModel {
+  type: UnlitObjectType.Model
+  modelName: string
+  model2World: mat4
+  color: vec4
+  modelModifiers?: ModelModifiers
+}
+
+export type UnlitObject = UnlitLines | UnlitModel
+
 interface RenderSettings {
   alphaEnabled: boolean
   colorEnabled: boolean
   depthTestMode: DepthTestMode
 }
-
-export type WireObject = WireLines | WireModel
 
 export class VertexShaderError extends Error {
   constructor(log: string) {
@@ -114,11 +136,11 @@ export class Renderer3d implements IModelLoader {
     this.loadShader('wiresolid', wiresolidShader)
 
     this.models = new Map() // DEPRECATED
-    this.loadModelDef('wireCube', wireModels.cube, 'unlit')
     this.loadModelDef('wireTile', wireModels.tile, 'unlit')
     this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'unlit')
 
     this.renderRootNodes = new Map()
+    this.loadModel('linecube', makeLineCubeModel())
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
@@ -610,7 +632,46 @@ export class Renderer3d implements IModelLoader {
   /**
    * Render using the unlit shader. Intended for debug draw.
    */
-  renderUnlit(objects: WireObject[]): void {
+  /**
+   * Render using the unlit shader. Intended for debug draw.
+   */
+  renderUnlit(objects: UnlitObject[]): void {
+    this.useShader('unlit')
+
+    this.applySettings({
+      alphaEnabled: true,
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
+    })
+
+    for (const obj of objects) {
+      switch (obj.type) {
+        case UnlitObjectType.Lines:
+          this.gl.uniform4fv(
+            this.currentShader!.uniforms.get('color')!,
+            obj.color,
+          )
+          this.drawLines(obj.positions)
+          break
+
+        case UnlitObjectType.Model:
+          const model = this.renderRootNodes.get(obj.modelName)
+          if (model === undefined) {
+            throw `model ${obj.modelName} not found`
+          }
+          this.renderNode(
+            model,
+            '',
+            obj.modelModifiers ?? {},
+            obj.model2World,
+            obj.color,
+          )
+          break
+      }
+    }
+  }
+
+  renderUnlitOld(objects: WireObject[]): void {
     this.useShader('unlit')
 
     this.applySettings({
