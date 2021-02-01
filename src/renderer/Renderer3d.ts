@@ -1,7 +1,7 @@
 import { vec4 } from 'gl-matrix'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
-import { makeLineCubeModel } from './geometryUtils'
+import { makeLineCubeModel, makeLineTileModel } from './geometryUtils'
 import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
 import { ModelDef } from './interfacesOld'
 
@@ -136,11 +136,11 @@ export class Renderer3d implements IModelLoader {
     this.loadShader('wiresolid', wiresolidShader)
 
     this.models = new Map() // DEPRECATED
-    this.loadModelDef('wireTile', wireModels.tile, 'unlit')
     this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'unlit')
 
     this.renderRootNodes = new Map()
     this.loadModel('linecube', makeLineCubeModel())
+    this.loadModel('linetile', makeLineTileModel())
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(

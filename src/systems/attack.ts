@@ -1,4 +1,6 @@
 import { vec3 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix'
+import { quat } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
@@ -6,6 +8,7 @@ import { aabb as damagerAabb } from '~/components/Damager'
 import { TILE_SIZE } from '~/constants'
 import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
+import { UnlitObjectType } from '~/renderer/Renderer3d'
 import { SimState, simulationPhaseDebugColor } from '~/simulate'
 import * as aabb from '~/util/aabb2'
 import { radialTranslate2 } from '~/util/math'
@@ -18,12 +21,16 @@ export const update = (simState: SimState): void => {
       const xform = simState.entityManager.transforms.get(entityId)!
       const [center, size] = aabb.centerSize(damageableAabb(d, xform))
       objects.push({
-        objectOld: {
-          type: 'MODEL',
-          modelName: 'wireTile',
+        object: {
+          type: UnlitObjectType.Model,
+          modelName: 'linetile',
+          model2World: mat4.fromRotationTranslationScale(
+            mat4.create(),
+            quat.create(),
+            vec3.fromValues(center[0], 0.05, center[1]),
+            vec3.fromValues(size[0], 1, size[1]),
+          ),
           color: simulationPhaseDebugColor(simState.phase),
-          translate: vec3.fromValues(center[0], 0.05, center[1]),
-          scale: vec3.fromValues(size[0], 1, size[1]),
         },
       })
     }
@@ -39,12 +46,16 @@ export const update = (simState: SimState): void => {
       const [center, size] = aabb.centerSize(attackerAabb)
       return [
         {
-          objectOld: {
-            type: 'MODEL',
-            modelName: 'wireTile',
+          object: {
+            type: UnlitObjectType.Model,
+            modelName: 'linetile',
+            model2World: mat4.fromRotationTranslationScale(
+              mat4.create(),
+              quat.create(),
+              vec3.fromValues(center[0], 0.05, center[1]),
+              vec3.fromValues(size[0], 1, size[1]),
+            ),
             color: simulationPhaseDebugColor(simState.phase),
-            translate: vec3.fromValues(center[0], 0.05, center[1]),
-            scale: vec3.fromValues(size[0], 1, size[1]),
           },
           lifetime: 3,
         },
