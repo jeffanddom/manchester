@@ -158,9 +158,9 @@ export function makeLineCubeModel(): ModelNode {
       normals: {
         // The normal values don't matter. We should consider a refactor where
         // normals aren't assumed to be required.
-        buffer: new Float32Array(8 * 3),
+        buffer: new Float32Array(positions.length),
         glType: 5126 as GLenum, // gl.Float
-        componentCount: 8 * 3,
+        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       indices: {
@@ -204,13 +204,68 @@ export function makeLineTileModel(): ModelNode {
       normals: {
         // The normal values don't matter. We should consider a refactor where
         // normals aren't assumed to be required.
-        buffer: new Float32Array(4 * 3),
+        buffer: new Float32Array(positions.length),
         glType: 5126 as GLenum, // gl.Float
-        componentCount: 8 * 3,
+        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       indices: {
         buffer: indices,
+        glType: 5123 as GLenum, // gl.USHORT
+        componentCount: indices.length,
+        componentsPerAttrib: 1,
+      },
+    },
+    children: [],
+  }
+}
+
+/**
+ * Constructs a 64x64 line grid
+ */
+export function makeLineGridModel(): ModelNode {
+  const positions = []
+  const indices = []
+
+  for (let i = -32; i < 32; i++) {
+    // prettier-ignore
+    positions.push(
+      -32, 0.01, i,
+      32, 0.01, i,
+    )
+    indices.push(indices.length)
+    indices.push(indices.length)
+  }
+  for (let i = -32; i < 32; i++) {
+    // prettier-ignore
+    positions.push(
+      i, 0.01, -32,
+      i, 0.01, 32,
+    )
+    indices.push(indices.length)
+    indices.push(indices.length)
+  }
+
+  return {
+    name: 'root',
+    mesh: {
+      primitive: MeshPrimitive.Lines,
+      positions: {
+        buffer: new Float32Array(positions),
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: positions.length,
+        componentsPerAttrib: 3,
+      },
+      normals: {
+        // The normal values don't matter. We should consider a refactor where
+        // normals aren't assumed to be required.
+        buffer: new Float32Array(positions.length),
+        glType: 5126 as GLenum, // gl.Float
+        componentCount: positions.length,
+        componentsPerAttrib: 3,
+      },
+      indices: {
+        buffer: new Uint16Array(indices),
         glType: 5123 as GLenum, // gl.USHORT
         componentCount: indices.length,
         componentsPerAttrib: 1,

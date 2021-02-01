@@ -116,8 +116,8 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
       const playerPos = client.entityManager.transforms.get(playerId)!.position
       client.debugDraw.draw3d(() => [
         {
-          objectOld: {
-            type: 'LINES',
+          object: {
+            type: UnlitObjectType.Lines,
             // prettier-ignore
             positions: new Float32Array([
               playerPos[0], 0, playerPos[1],

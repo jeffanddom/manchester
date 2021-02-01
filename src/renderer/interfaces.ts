@@ -10,11 +10,6 @@ export type BufferArray =
   | Uint32Array
   | Float32Array
 
-export enum ModelPrimitive {
-  Lines,
-  Triangles,
-}
-
 export type ModelModifiers = {
   [key: string]: Immutable<mat4>
 }

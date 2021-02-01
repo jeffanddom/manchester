@@ -21,6 +21,7 @@ import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
+import { UnlitObjectType } from '~/renderer/Renderer3d'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -188,9 +189,10 @@ export class ClientSim {
 
     this.debugDraw.draw3d(() => [
       {
-        objectOld: {
-          type: 'MODEL',
-          modelName: 'wireTileGrid',
+        object: {
+          type: UnlitObjectType.Model,
+          modelName: 'linegrid',
+          model2World: mat4.create(),
           color: vec4.fromValues(1, 1, 0, 0.3),
         },
       },

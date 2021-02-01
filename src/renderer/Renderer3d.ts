@@ -1,22 +1,19 @@
 import { vec4 } from 'gl-matrix'
-import { mat4, quat, vec2, vec3 } from 'gl-matrix'
-
-import { makeLineCubeModel, makeLineTileModel } from './geometryUtils'
-import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
-import { ModelDef } from './interfacesOld'
+import { mat4, vec2 } from 'gl-matrix'
 
 import {
-  MeshPrimitive,
-  ModelModifiers,
-  ModelNode,
-  ModelPrimitive,
-} from '~/renderer/interfaces'
+  makeLineCubeModel,
+  makeLineGridModel,
+  makeLineTileModel,
+} from './geometryUtils'
+import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
+
+import { MeshPrimitive, ModelModifiers, ModelNode } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as solidShader } from '~/renderer/shaders/solid'
 import { shader as unlitShader } from '~/renderer/shaders/unlit'
 import { shader as vcolor } from '~/renderer/shaders/vcolor'
 import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
-import * as wireModels from '~/renderer/wireModels'
 import { Immutable } from '~/types/immutable'
 
 enum DepthTestMode {
@@ -37,31 +34,6 @@ interface Shader {
   attribs: Map<string, GLint>
   uniforms: Map<string, WebGLUniformLocation>
 }
-
-interface Model {
-  vao: WebGLVertexArrayObject
-  numVerts: number
-  primitive: ModelPrimitive
-  shader: string
-}
-
-interface WireLines {
-  type: 'LINES'
-  positions: Float32Array
-  color: vec4
-}
-
-interface WireModel {
-  type: 'MODEL'
-  modelName: string
-  color: vec4
-  translate?: vec3
-  uniformScale?: number
-  scale?: vec3
-  rot?: quat
-}
-
-export type WireObject = WireLines | WireModel
 
 export enum UnlitObjectType {
   Lines,
@@ -116,8 +88,7 @@ export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
-  private models: Map<string, Model> // DEPRECATED
-  private renderRootNodes: Map<string, RenderNode>
+  private models: Map<string, RenderNode>
 
   private fov: number
   private viewportDimensions: vec2
@@ -135,12 +106,10 @@ export class Renderer3d implements IModelLoader {
     this.loadShader('unlit', unlitShader)
     this.loadShader('wiresolid', wiresolidShader)
 
-    this.models = new Map() // DEPRECATED
-    this.loadModelDef('wireTileGrid', wireModels.tileGrid, 'unlit')
-
-    this.renderRootNodes = new Map()
+    this.models = new Map()
     this.loadModel('linecube', makeLineCubeModel())
     this.loadModel('linetile', makeLineTileModel())
+    this.loadModel('linegrid', makeLineGridModel())
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
     this.viewportDimensions = vec2.fromValues(
@@ -348,7 +317,7 @@ export class Renderer3d implements IModelLoader {
     })
 
     for (const { modelName, modelModifiers, model2World } of objects) {
-      const root = this.renderRootNodes.get(modelName)
+      const root = this.models.get(modelName)
       if (root === undefined) {
         throw new Error(`unknown model ${modelName}`)
       }
@@ -375,7 +344,7 @@ export class Renderer3d implements IModelLoader {
     })
 
     for (const { modelName, modelModifiers, model2World, color } of objects) {
-      const root = this.renderRootNodes.get(modelName)
+      const root = this.models.get(modelName)
       if (root === undefined) {
         throw new Error(`unknown model ${modelName}`)
       }
@@ -402,7 +371,7 @@ export class Renderer3d implements IModelLoader {
     })
 
     for (const { modelName, modelModifiers, model2World, color } of objects) {
-      const root = this.renderRootNodes.get(modelName)
+      const root = this.models.get(modelName)
       if (root === undefined) {
         throw new Error(`unknown model ${modelName}`)
       }
@@ -432,7 +401,7 @@ export class Renderer3d implements IModelLoader {
     })
 
     for (const { modelName, modelModifiers, model2World, color } of objects) {
-      const root = this.renderRootNodes.get(modelName)
+      const root = this.models.get(modelName)
       if (root === undefined) {
         throw new Error(`unknown model ${modelName}`)
       }
@@ -448,7 +417,7 @@ export class Renderer3d implements IModelLoader {
 
     for (const { modelName, modelModifiers, model2World, color } of objects) {
       const lineModel = modelName + '-line'
-      const root = this.renderRootNodes.get(lineModel)
+      const root = this.models.get(lineModel)
       if (root === undefined) {
         throw new Error(`unknown model ${lineModel}`)
       }
@@ -655,7 +624,7 @@ export class Renderer3d implements IModelLoader {
           break
 
         case UnlitObjectType.Model:
-          const model = this.renderRootNodes.get(obj.modelName)
+          const model = this.models.get(obj.modelName)
           if (model === undefined) {
             throw `model ${obj.modelName} not found`
           }
@@ -671,155 +640,11 @@ export class Renderer3d implements IModelLoader {
     }
   }
 
-  renderUnlitOld(objects: WireObject[]): void {
-    this.useShader('unlit')
-
-    this.applySettings({
-      alphaEnabled: true,
-      colorEnabled: true,
-      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
-    })
-
-    for (const obj of objects) {
-      this.gl.uniform4fv(this.currentShader!.uniforms.get('color')!, obj.color)
-
-      switch (obj.type) {
-        case 'LINES':
-          this.drawLines(obj.positions)
-          break
-
-        case 'MODEL':
-          const scale = vec3.fromValues(1, 1, 1)
-          if (obj.scale !== undefined) {
-            vec3.copy(scale, obj.scale)
-          } else if (obj.uniformScale !== undefined) {
-            scale[0] = obj.uniformScale
-            scale[1] = obj.uniformScale
-            scale[2] = obj.uniformScale
-          }
-
-          this.drawModel(
-            obj.modelName,
-            mat4.fromRotationTranslationScale(
-              mat4.create(),
-              obj.rot ?? quat.create(),
-              obj.translate ?? vec3.create(),
-              scale,
-            ),
-          )
-          break
-      }
-    }
-  }
-
-  /**
-   * DEPRECATED
-   */
-  loadModelDef(modelName: string, model: ModelDef, shaderName: string): void {
-    const shader = this.shaders.get(shaderName)
-    if (shader === undefined) {
-      throw new Error(`shader undefined: ${shaderName}`)
-    }
-
-    const numVerts = model.positions.length / 3
-
-    const positionAttrib = shader.attribs.get('position')
-    if (positionAttrib === undefined) {
-      throw new Error(`shader ${shaderName} has no position attrib`)
-    }
-
-    // Create terrain-specific VAO
-    const vao = this.gl.createVertexArray()!
-    this.gl.bindVertexArray(vao)
-
-    // Positions
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.gl.createBuffer())
-    this.gl.enableVertexAttribArray(positionAttrib)
-    this.gl.vertexAttribPointer(positionAttrib, 3, this.gl.FLOAT, false, 0, 0)
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      model.positions,
-      this.gl.STATIC_DRAW,
-    )
-
-    // Colors
-    if (model.colors !== undefined) {
-      const colorAttrib = shader.attribs.get('color')
-      if (colorAttrib === undefined) {
-        throw new Error(`shader ${shaderName} has no color attrib`)
-      }
-
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.gl.createBuffer())
-      this.gl.enableVertexAttribArray(colorAttrib)
-      this.gl.vertexAttribPointer(colorAttrib, 4, this.gl.FLOAT, false, 0, 0)
-      this.gl.bufferData(
-        this.gl.ARRAY_BUFFER,
-        new Float32Array(model.colors),
-        this.gl.STATIC_DRAW,
-      )
-    }
-
-    // Normals
-    const normalAttrib = shader.attribs.get('normal')
-    if (normalAttrib !== undefined && model.normals !== undefined) {
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.gl.createBuffer())
-      this.gl.enableVertexAttribArray(normalAttrib)
-      this.gl.vertexAttribPointer(normalAttrib, 3, this.gl.FLOAT, false, 0, 0)
-      this.gl.bufferData(
-        this.gl.ARRAY_BUFFER,
-        model.normals,
-        this.gl.STATIC_DRAW,
-      )
-    }
-
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null)
-    this.gl.bindVertexArray(null)
-
-    // Set VAO
-    this.models.set(modelName, {
-      vao,
-      numVerts,
-      primitive: model.primitive,
-      shader: shaderName,
-    })
-  }
-
   loadModel(name: string, root: ModelNode): void {
-    if (this.renderRootNodes.has(name)) {
+    if (this.models.has(name)) {
       throw new Error(`model with name ${name} already exists`)
     }
-    this.renderRootNodes.set(name, makeRenderNode(root, this.gl))
-  }
-
-  /**
-   * Draw the specified model with the given 2D position and rotation. The
-   * position will be projected onto the XZ plane.
-   */
-  private drawModel(modelName: string, model2World: mat4): void {
-    if (this.currentShader === undefined) {
-      throw new Error(`cannot render without current shader`)
-    }
-
-    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
-    if (model2WorldUniform === undefined) {
-      throw new Error(`shader has no model2World uniform`)
-    }
-    this.gl.uniformMatrix4fv(model2WorldUniform, false, model2World)
-
-    const model = this.models.get(modelName)
-    if (model === undefined) {
-      throw new Error(`model ${modelName} not defined`)
-    }
-    this.gl.bindVertexArray(model.vao)
-
-    switch (model.primitive) {
-      case ModelPrimitive.Lines:
-        this.gl.drawArrays(this.gl.LINES, 0, model.numVerts)
-        break
-      case ModelPrimitive.Triangles:
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, model.numVerts)
-        break
-    }
+    this.models.set(name, makeRenderNode(root, this.gl))
   }
 
   /**
