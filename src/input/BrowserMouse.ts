@@ -57,6 +57,13 @@ export class BrowserMouse implements IMouse {
     })
   }
 
+  reset(): void {
+    this.pos = undefined
+    this.down = new Set()
+    this.up = new Set()
+    this.scroll = 0
+  }
+
   getPos(): vec2 | undefined {
     return this.pos
   }

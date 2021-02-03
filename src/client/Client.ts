@@ -11,7 +11,6 @@ import { createServerConnectionWs } from '~/network/ServerConnection'
 import { Immutable } from '~/types/immutable'
 
 export class Client {
-  document: Document
   location: Location
   viewportDimensions: vec2
   pixelRatio: number
@@ -34,22 +33,21 @@ export class Client {
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
   }) {
-    this.document = params.document
     this.location = params.location
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
     this.pixelRatio = params.pixelRatio
 
     // disable right clicks
-    this.document.addEventListener('contextmenu', (e) => e.preventDefault())
+    params.document.addEventListener('contextmenu', (e) => e.preventDefault())
 
-    this.canvas3d = this.document.createElement('canvas')
+    this.canvas3d = params.document.createElement('canvas')
     this.canvas3d.setAttribute(
       'style',
       'position: absolute; top: 0; left: 0; z-index: 0',
     )
     this.canvas3d.width = this.viewportDimensions[0] * this.pixelRatio
     this.canvas3d.height = this.viewportDimensions[1] * this.pixelRatio
-    this.document.body.appendChild(this.canvas3d)
+    params.document.body.appendChild(this.canvas3d)
 
     this.canvas2d = document.createElement('canvas')
     this.canvas2d.setAttribute(
@@ -58,10 +56,10 @@ export class Client {
     )
     this.canvas2d.width = this.viewportDimensions[0]
     this.canvas2d.height = this.viewportDimensions[1]
-    this.document.body.appendChild(this.canvas2d)
+    params.document.body.appendChild(this.canvas2d)
 
-    this.keyboard = new BrowserKeyboard(this.document)
-    this.mouse = new BrowserMouse(this.document)
+    this.keyboard = new BrowserKeyboard(params.document)
+    this.mouse = new BrowserMouse(params.document)
     this.debugDraw = new DebugDraw()
 
     const gl = this.canvas3d.getContext('webgl2')
@@ -133,8 +131,8 @@ export class Client {
     return fetch(
       `${this.location.protocol}//${this.location.host}/api/restart`,
     ).then(() => {
-      this.keyboard = new BrowserKeyboard(this.document)
-      this.mouse = new BrowserMouse(this.document)
+      this.keyboard.reset()
+      this.mouse.reset()
       this.debugDraw = new DebugDraw()
 
       this.renderManager = new ClientRenderManager({

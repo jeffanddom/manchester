@@ -27,6 +27,11 @@ export class BrowserKeyboard implements IKeyboard {
     })
   }
 
+  reset(): void {
+    this.downKeys = new Set()
+    this.upKeys = new Set()
+  }
+
   update(): void {
     this.upKeys.clear()
   }

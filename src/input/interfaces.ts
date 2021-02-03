@@ -14,6 +14,8 @@ export enum DirectionMove {
 export interface IKeyboard {
   downKeys: Set<string>
   upKeys: Set<string>
+
+  reset: () => void
   update: () => void
 }
 
@@ -56,5 +58,6 @@ export interface IMouse {
   isDown: (b: MouseButton) => boolean
   isUp: (b: MouseButton) => boolean
   getScroll: () => number
+  reset: () => void
   update: () => void
 }
