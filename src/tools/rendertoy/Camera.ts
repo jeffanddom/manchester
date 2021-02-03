@@ -14,11 +14,15 @@ export class Camera {
     // stop right clicks from opening the context menu
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())
 
-    canvas.addEventListener('wheel', (event) => {
-      event.preventDefault()
-      this.spherePos[0] += event.deltaY * 0.025
-      this.spherePos[0] = math.clamp(this.spherePos[0], 1, 10)
-    })
+    canvas.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault()
+        this.spherePos[0] += event.deltaY * 0.025
+        this.spherePos[0] = math.clamp(this.spherePos[0], 1, 10)
+      },
+      { passive: false },
+    )
 
     canvas.addEventListener('pointermove', (event) => {
       const buttons = mouseButtonsFromBitmask(event.buttons)

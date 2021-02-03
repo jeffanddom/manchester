@@ -35,10 +35,14 @@ export class DocumentEventMouse implements IMouse {
       }
     })
 
-    document.addEventListener('wheel', (event) => {
-      event.preventDefault()
-      this.scroll = event.deltaY
-    })
+    document.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault()
+        this.scroll = event.deltaY
+      },
+      { passive: false },
+    )
 
     // clear state if the mouse leaves the root element, or if the window loses
     // focus
