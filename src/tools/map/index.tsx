@@ -4,8 +4,8 @@ import * as ReactDOM from 'react-dom'
 
 import { loadMap } from './storage'
 
-import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
-import { DocumentEventMouse } from '~/input/DocumentEventMouse'
+import { BrowserKeyboard } from '~/input/BrowserKeyboard'
+import { BrowserMouse } from '~/input/BrowserMouse'
 import { Map } from '~/map/interfaces'
 import { Controls } from '~/tools/map/Controls'
 import { Editor } from '~/tools/map/Editor'
@@ -27,8 +27,8 @@ if (map !== null) {
 const editor = new Editor({
   canvas,
   map,
-  keyboard: new DocumentEventKeyboard(document),
-  mouse: new DocumentEventMouse(document),
+  keyboard: new BrowserKeyboard(document),
+  mouse: new BrowserMouse(document),
 })
 
 let prevFrameTime = time.current()

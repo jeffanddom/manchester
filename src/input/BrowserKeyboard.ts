@@ -5,7 +5,7 @@
 
 import { IKeyboard } from '~/input/interfaces'
 
-export class DocumentEventKeyboard implements IKeyboard {
+export class BrowserKeyboard implements IKeyboard {
   downKeys: Set<string>
   upKeys: Set<string>
 

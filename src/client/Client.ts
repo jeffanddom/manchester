@@ -4,8 +4,8 @@ import { ClientRenderManager } from '~/client/ClientRenderManager'
 import { ClientSim } from '~/client/ClientSim'
 import { DebugDraw } from '~/DebugDraw'
 import { GameState } from '~/Game'
-import { DocumentEventKeyboard } from '~/input/DocumentEventKeyboard'
-import { DocumentEventMouse } from '~/input/DocumentEventMouse'
+import { BrowserKeyboard } from '~/input/BrowserKeyboard'
+import { BrowserMouse } from '~/input/BrowserMouse'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { createServerConnectionWs } from '~/network/ServerConnection'
 import { Immutable } from '~/types/immutable'
@@ -54,8 +54,8 @@ export class Client {
     this.canvas2d.height = this.viewportDimensions[1]
     this.document.body.appendChild(this.canvas2d)
 
-    this.keyboard = new DocumentEventKeyboard(this.document)
-    this.mouse = new DocumentEventMouse(this.document)
+    this.keyboard = new BrowserKeyboard(this.document)
+    this.mouse = new BrowserMouse(this.document)
     this.debugDraw = new DebugDraw()
 
     this.renderManager = new ClientRenderManager({
@@ -114,8 +114,8 @@ export class Client {
     return fetch(
       `${this.location.protocol}//${this.location.host}/api/restart`,
     ).then(() => {
-      this.keyboard = new DocumentEventKeyboard(this.document)
-      this.mouse = new DocumentEventMouse(this.document)
+      this.keyboard = new BrowserKeyboard(this.document)
+      this.mouse = new BrowserMouse(this.document)
       this.debugDraw = new DebugDraw()
 
       this.renderManager = new ClientRenderManager({

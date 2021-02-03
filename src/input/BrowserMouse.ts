@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { IMouse, MouseButton, mouseButtonFromRaw } from './interfaces'
 
-export class DocumentEventMouse implements IMouse {
+export class BrowserMouse implements IMouse {
   private pos: vec2 | undefined
   private down: Set<MouseButton>
   private up: Set<MouseButton>
