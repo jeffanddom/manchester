@@ -21,11 +21,8 @@ export class Camera3d {
   }
 
   getWvTransform(): mat4 {
-    const res = mat4.create()
-    return mat4.invert(
-      res,
-      mat4.targetTo(res, this.pos, this.target, vec3.fromValues(0, 1, 0)),
-    )
+    const out = mat4.create()
+    return mat4.invert(out, this.targetTo(out))
   }
 
   getViewportDimensions(): Immutable<vec2> {
@@ -45,8 +42,12 @@ export class Camera3d {
         this.viewportDimensions,
         math.fovToFocalLength(this.fov),
       ),
-      mat4.invert(mat4.create(), this.getWvTransform()),
+      this.targetTo(mat4.create()),
     )
+  }
+
+  private targetTo(out: mat4): mat4 {
+    return mat4.targetTo(out, this.pos, this.target, vec3.fromValues(0, 1, 0))
   }
 
   setPos(v: Immutable<vec3>): void {
