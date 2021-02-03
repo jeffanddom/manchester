@@ -169,6 +169,8 @@ export class ClientSim {
     for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall']) {
       gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
     }
+
+    this.syncCameraToPlayer()
   }
 
   setState(s: GameState): void {
@@ -177,6 +179,34 @@ export class ClientSim {
 
   connectServer(conn: IServerConnection): void {
     this.serverConnection = conn
+  }
+
+  private syncCameraToPlayer(): void {
+    if (this.playerNumber === undefined) {
+      return
+    }
+
+    const playerId = this.entityManager.getPlayerId(this.playerNumber)
+    if (playerId === undefined) {
+      return
+    }
+
+    const transform = this.entityManager.transforms.get(playerId)
+    if (transform === undefined) {
+      return
+    }
+
+    const targetPos = vec3.fromValues(
+      transform.position[0],
+      0,
+      transform.position[1],
+    )
+
+    // Position the 3D camera at a fixed offset from the player, and
+    // point the camera directly at the player.
+    const offset = vec3.fromValues(0, this.zoomLevel, 3)
+    this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
+    this.camera.setTarget(targetPos)
   }
 
   update(): void {
@@ -333,21 +363,7 @@ export class ClientSim {
           this.emitters = this.emitters.filter((e) => !e.dead)
           this.emitters.forEach((e) => e.update(dt))
 
-          const playerId = this.entityManager.getPlayerId(this.playerNumber!)
-          if (playerId !== undefined) {
-            const transform = this.entityManager.transforms.get(playerId)!
-            const targetPos = vec3.fromValues(
-              transform.position[0],
-              0,
-              transform.position[1],
-            )
-
-            // Position the 3D camera at a fixed offset from the player, and
-            // point the camera directly at the player.
-            const offset = vec3.fromValues(0, this.zoomLevel, 3)
-            this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
-            this.camera.setTarget(targetPos)
-          }
+          this.syncCameraToPlayer()
 
           // server message cleanup
           this.serverFrameUpdates = this.serverFrameUpdates.filter(
