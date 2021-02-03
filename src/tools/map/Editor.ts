@@ -71,7 +71,7 @@ export class Editor {
     keyboard: IKeyboard
     mouse: IMouse
   }) {
-    this.renderer = new Renderer2d(params.canvas)
+    this.renderer = new Renderer2d(params.canvas.getContext('2d')!)
     this.events = new EventEmitter()
 
     this.viewportDimensions = vec2.fromValues(

@@ -1,4 +1,4 @@
-import { mat2d, mat4, vec2, vec4 } from 'gl-matrix'
+import { mat2d, mat4, vec4 } from 'gl-matrix'
 
 import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
 import { ModelModifiers } from '~/renderer/interfaces'
@@ -42,12 +42,12 @@ export class ClientRenderManager {
   renderFrameDurations: RunningAverage
 
   constructor(config: {
-    canvas3d: HTMLCanvasElement
-    canvas2d: HTMLCanvasElement
+    gl: WebGL2RenderingContext
+    ctx2d: CanvasRenderingContext2D
     debugDraw: IDebugDrawWriter & IDebugDrawReader
   }) {
-    this.renderer3d = new Renderer3d(config.canvas3d)
-    this.renderer2d = new Renderer2d(config.canvas2d)
+    this.renderer3d = new Renderer3d(config.gl)
+    this.renderer2d = new Renderer2d(config.ctx2d)
     this.debugDraw = config.debugDraw
 
     this.lastRenderAt = time.current()
@@ -59,9 +59,8 @@ export class ClientRenderManager {
     return this.renderer3d
   }
 
-  setViewportDimensions(d: Immutable<vec2>): void {
-    this.renderer2d.setViewportDimensions(d)
-    this.renderer3d.setViewportDimensions(d)
+  syncViewportDimensions(): void {
+    this.renderer3d.syncViewportDimensions()
   }
 
   update(renderables: Renderable[], world2ViewTransform: mat4): void {

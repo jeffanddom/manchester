@@ -84,7 +84,6 @@ export class ShaderCompileError extends Error {
 export class ShaderLinkError extends Error {}
 
 export class Renderer3d implements IModelLoader {
-  private canvas: HTMLCanvasElement
   private gl: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
@@ -95,10 +94,8 @@ export class Renderer3d implements IModelLoader {
   private world2ViewTransform: mat4
   private currentShader: Shader | undefined
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-
-    this.gl = canvas.getContext('webgl2')!
+  constructor(gl: WebGL2RenderingContext) {
+    this.gl = gl
 
     this.shaders = new Map()
     this.loadShader('vcolor', vcolor)
@@ -112,11 +109,9 @@ export class Renderer3d implements IModelLoader {
     this.loadModel('linegrid', makeLineGridModel())
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
-    this.viewportDimensions = vec2.fromValues(
-      this.canvas.width,
-      this.canvas.height,
-    )
-    this.setViewportDimensions(this.viewportDimensions)
+
+    this.viewportDimensions = vec2.create()
+    this.syncViewportDimensions()
 
     this.world2ViewTransform = mat4.create()
     this.currentShader = undefined
@@ -288,11 +283,12 @@ export class Renderer3d implements IModelLoader {
     this.fov = fov
   }
 
-  setViewportDimensions(d: Immutable<vec2>): void {
-    vec2.copy(this.viewportDimensions, d)
+  syncViewportDimensions(): void {
+    this.viewportDimensions[0] = this.gl.canvas.width
+    this.viewportDimensions[1] = this.gl.canvas.height
 
     // Update gl viewport
-    this.gl.viewport(0, 0, d[0], d[1])
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
   }
 
   setWvTransform(w2v: mat4): void {

@@ -13,10 +13,11 @@ const client = new Client({
   document,
   location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
+  pixelRatio: window.devicePixelRatio,
 })
 
 window.addEventListener('resize', () => {
-  client.syncViewportDimensions(
+  client.setViewportDimensions(
     vec2.fromValues(window.innerWidth, window.innerHeight),
   )
 })

@@ -48,7 +48,7 @@ document.body.prepend(canvas)
 canvas.width = 400
 canvas.height = 400
 
-const renderer: Renderer2d = new Renderer2d(canvas)
+const renderer: Renderer2d = new Renderer2d(canvas.getContext('2d')!)
 renderer.setTransform(
   mat2d.fromTranslation(mat2d.create(), vec2.fromValues(200, 200)),
 )

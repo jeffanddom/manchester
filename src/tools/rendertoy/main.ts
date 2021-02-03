@@ -1,5 +1,5 @@
 import CodeMirror from 'codemirror'
-import { mat4, vec2, vec4 } from 'gl-matrix'
+import { mat4, vec4 } from 'gl-matrix'
 
 import * as models from './models'
 
@@ -103,16 +103,19 @@ vsEditor.on('change', () => (lastCodeUpdate = time.current()))
 fsEditor.on('change', () => (lastCodeUpdate = time.current()))
 
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
-canvas.width = canvas.parentElement!.clientWidth * 2
-canvas.height = canvas.parentElement!.clientHeight * 2
+const gl = canvas.getContext('webgl2')!
+const pixelRatio = window.devicePixelRatio
 
-const renderer = new Renderer3d(canvas)
+canvas.width = canvas.parentElement!.clientWidth * pixelRatio
+canvas.height = canvas.parentElement!.clientHeight * pixelRatio
+
+const renderer = new Renderer3d(gl)
 models.load(renderer)
 
 window.addEventListener('resize', () => {
-  canvas.width = canvas.parentElement!.clientWidth * 2
-  canvas.height = canvas.parentElement!.clientHeight * 2
-  renderer.setViewportDimensions(vec2.fromValues(canvas.width, canvas.height))
+  canvas.width = canvas.parentElement!.clientWidth * pixelRatio
+  canvas.height = canvas.parentElement!.clientHeight * pixelRatio
+  renderer.syncViewportDimensions()
 })
 
 const camera = new Camera(canvas)
