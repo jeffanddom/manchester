@@ -1,13 +1,6 @@
 import { mat4 } from 'gl-matrix'
 
-import {
-  BufferArray,
-  DataMesh,
-  LineMesh,
-  MeshPrimitive,
-  ModelNode,
-  TriangleMesh,
-} from './interfaces'
+import { BufferArray, DataMesh, MeshPrimitive, ModelNode } from './interfaces'
 
 import * as set from '~/util/set'
 
@@ -377,11 +370,13 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
         src.positions.bufferData[dataOffset + 2],
       )
 
-      normals.push(
-        src.normals.bufferData[dataOffset],
-        src.normals.bufferData[dataOffset + 1],
-        src.normals.bufferData[dataOffset + 2],
-      )
+      if (src.normals !== undefined) {
+        normals.push(
+          src.normals.bufferData[dataOffset],
+          src.normals.bufferData[dataOffset + 1],
+          src.normals.bufferData[dataOffset + 2],
+        )
+      }
     }
 
     const vertAEdgeOn = [0, 0, 0]
@@ -404,17 +399,12 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
     edgeOn.push(...vertAEdgeOn, ...vertBEdgeOn, ...vertCEdgeOn)
   }
 
-  return {
+  const res: DataMesh = {
     primitive: MeshPrimitive.Triangles,
     positions: {
       ...src.positions,
       bufferData: new Float32Array(positions),
       componentCount: positions.length,
-    },
-    normals: {
-      ...src.normals,
-      bufferData: new Float32Array(normals),
-      componentCount: normals.length,
     },
     indices: {
       ...src.indices,
@@ -430,25 +420,26 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
       componentsPerAttrib: 3,
     },
   }
+
+  if (src.normals !== undefined) {
+    res.normals = {
+      ...src.normals,
+      bufferData: new Float32Array(normals),
+      componentCount: normals.length,
+    }
+  }
+
+  return res
 }
 
-function triMeshToWiresolidLineMesh(
-  src: TriangleMesh<BufferArray>,
-): LineMesh<BufferArray> {
+function triMeshToWiresolidLineMesh(src: DataMesh): DataMesh {
   const indices = getWiresolidEdges(src.indices.bufferData)
 
-  // TODO: some position and normal entries might go unused as a result of
-  // common edge elimination, but we preserve them all in the resulting buffers.
-  // It would be nice to remove them.
-  return {
+  const res: DataMesh = {
     primitive: MeshPrimitive.Lines,
     positions: {
       ...src.positions,
       bufferData: src.positions.bufferData.slice(),
-    },
-    normals: {
-      ...src.normals,
-      bufferData: src.normals.bufferData.slice(),
     },
     indices: {
       bufferData: new Uint16Array(indices),
@@ -457,6 +448,15 @@ function triMeshToWiresolidLineMesh(
       componentsPerAttrib: 2,
     },
   }
+
+  if (src.normals !== undefined) {
+    res.normals = {
+      ...src.normals,
+      bufferData: src.normals.bufferData.slice(),
+    }
+  }
+
+  return res
 }
 
 /**
