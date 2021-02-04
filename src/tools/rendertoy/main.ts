@@ -29,8 +29,6 @@ const shaders: Record<
   {
     vertexSrc: string
     fragmentSrc: string
-    attribs: string[]
-    uniforms: string[]
   }
 > = {
   solid: solidShader,

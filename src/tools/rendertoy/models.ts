@@ -77,20 +77,14 @@ function makeCubeComplex(): ModelNode {
       primitive: MeshPrimitive.Triangles,
       positions: {
         bufferData: new Float32Array(positions),
-        glType: 5126 as GLenum, // FLOAT
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       normals: {
         bufferData: new Float32Array(normals),
-        glType: 5126 as GLenum, // FLOAT
-        componentCount: normals.length,
         componentsPerAttrib: 3,
       },
       indices: {
         bufferData: new Uint16Array(indices),
-        glType: 5123 as GLenum, // USHORT
-        componentCount: indices.length,
         componentsPerAttrib: 1,
       },
     },
