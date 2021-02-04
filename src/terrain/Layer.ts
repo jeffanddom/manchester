@@ -94,25 +94,25 @@ export class Layer {
       mesh: {
         primitive: MeshPrimitive.Triangles,
         positions: {
-          buffer: this.positions,
+          bufferData: this.positions,
           glType: 5126 as GLenum, // gl.FLOAT
           componentCount: this.positions.length,
           componentsPerAttrib: 3,
         },
         colors: {
-          buffer: this.colors,
+          bufferData: this.colors,
           glType: 5126 as GLenum, // gl.FLOAT
           componentCount: this.colors.length,
           componentsPerAttrib: 4,
         },
         normals: {
-          buffer: this.normals,
+          bufferData: this.normals,
           glType: 5126 as GLenum, // gl.FLOAT
           componentCount: this.normals.length,
           componentsPerAttrib: 3,
         },
         indices: {
-          buffer: new Uint16Array(this.indices),
+          bufferData: new Uint16Array(this.indices),
           glType: 5123 as GLenum, // gl.USHORT
           componentCount: this.indices.length,
           componentsPerAttrib: 1,

@@ -7,6 +7,7 @@ import {
   makeLineTileModel,
 } from './geometryUtils'
 import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
+import { ShaderAttribLoc, ShaderUniform } from './shaders/common'
 
 import { MeshPrimitive, ModelModifiers, ModelNode } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
@@ -25,14 +26,11 @@ enum DepthTestMode {
 interface ShaderDefinition {
   vertexSrc: string
   fragmentSrc: string
-  attribs: string[]
-  uniforms: string[]
 }
 
 interface Shader {
   program: WebGLProgram
-  attribs: Map<string, GLint>
-  uniforms: Map<string, WebGLUniformLocation>
+  uniforms: Map<ShaderUniform, WebGLUniformLocation>
 }
 
 export enum UnlitObjectType {
@@ -145,7 +143,11 @@ export class Renderer3d implements IModelLoader {
       throw new FragmentShaderError(this.gl.getShaderInfoLog(fragmentShader)!)
     }
 
-    const program = this.gl.createProgram()!
+    const program = this.gl.createProgram()
+    if (program === null) {
+      throw `unable to create shader program`
+    }
+
     this.gl.attachShader(program, vertexShader)
     this.gl.attachShader(program, fragmentShader)
     this.gl.linkProgram(program)
@@ -160,37 +162,16 @@ export class Renderer3d implements IModelLoader {
       throw 'Could not compile WebGL program. \n\n' + info
     }
 
-    const attribs = new Map()
-    for (const a of def.attribs) {
-      if (attribs.has(a)) {
-        throw new Error(`shader ${name} attrib ${a} already defined`)
-      }
-
-      const loc = this.gl.getAttribLocation(program, a)
-      if (loc < 0) {
-        throw new Error(`shader ${name} attrib ${a} not defined in source`)
-      }
-
-      attribs.set(a, loc)
-    }
-
     const uniforms = new Map()
-    for (const u of def.uniforms) {
-      if (uniforms.has(u)) {
-        throw new Error(`shader ${name} uniform ${u} already defined`)
-      }
-
+    for (const u of Object.values(ShaderUniform)) {
       const loc = this.gl.getUniformLocation(program, u)
-      if (loc === null) {
-        throw new Error(`shader ${name} uniform ${u} not defined in source`)
+      if (loc !== null) {
+        uniforms.set(u, loc)
       }
-
-      uniforms.set(u, loc)
     }
 
     this.shaders.set(name, {
       program,
-      attribs,
       uniforms,
     })
   }
@@ -204,7 +185,9 @@ export class Renderer3d implements IModelLoader {
 
     // Setup some common uniforms
 
-    const projectionUniform = this.currentShader.uniforms.get('projection')
+    const projectionUniform = this.currentShader.uniforms.get(
+      ShaderUniform.Projection,
+    )
     if (projectionUniform === undefined) {
       throw new Error(`shader ${name} projection uniform undefined`)
     }
@@ -221,7 +204,9 @@ export class Renderer3d implements IModelLoader {
       ),
     )
 
-    const world2ViewUniform = this.currentShader.uniforms.get('world2View')
+    const world2ViewUniform = this.currentShader.uniforms.get(
+      ShaderUniform.World2View,
+    )
     if (world2ViewUniform === undefined) {
       throw new Error(`shader ${name} world2View uniform undefined`)
     }
@@ -470,23 +455,15 @@ export class Renderer3d implements IModelLoader {
       throw new Error(`cannot render without current shader`)
     }
 
-    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+    const model2WorldUniform = this.currentShader.uniforms.get(
+      ShaderUniform.Model2World,
+    )
     if (model2WorldUniform === undefined) {
       throw new Error(`shader has no model2World uniform`)
     }
 
-    const positionAttrib = this.currentShader.attribs.get('position')
-    if (positionAttrib === undefined) {
-      throw new Error(`shader has no position attrib`)
-    }
-
     // Optional uniforms
-    const colorUniform = this.currentShader.uniforms.get('color')
-
-    // Optional attribs
-    const colorAttrib = this.currentShader.attribs.get('color')
-    const edgeOnAttrib = this.currentShader.attribs.get('edgeOn')
-    const normalAttrib = this.currentShader.attribs.get('normal')
+    const colorUniform = this.currentShader.uniforms.get(ShaderUniform.Color)
 
     // Uniforms
     this.gl.uniformMatrix4fv(
@@ -502,96 +479,23 @@ export class Renderer3d implements IModelLoader {
       this.gl.uniform4fv(colorUniform, color as Float32Array)
     }
 
-    const vao = this.gl.createVertexArray()
-    this.gl.bindVertexArray(vao)
-
-    // Position attrib
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.positions.buffer)
-    this.gl.enableVertexAttribArray(positionAttrib)
-    this.gl.vertexAttribPointer(
-      positionAttrib,
-      mesh.positions.componentsPerAttrib,
-      mesh.positions.glType,
-      false,
-      0,
+    this.gl.bindVertexArray(mesh.vao)
+    this.gl.drawElements(
+      this.meshPrimitiveToDrawMode(mesh.primitive),
+      mesh.count,
+      mesh.type,
       0,
     )
-
-    // color attrib
-    if (colorAttrib !== undefined && mesh.colors !== undefined) {
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.colors.buffer)
-      this.gl.enableVertexAttribArray(colorAttrib)
-      this.gl.vertexAttribPointer(
-        colorAttrib,
-        mesh.colors.componentsPerAttrib,
-        mesh.colors.glType,
-        false,
-        0,
-        0,
-      )
-    }
-
-    // edgeOn attrib
-    if (
-      edgeOnAttrib !== undefined &&
-      mesh.primitive == MeshPrimitive.Triangles &&
-      mesh.edgeOn !== undefined
-    ) {
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.edgeOn.buffer)
-      this.gl.enableVertexAttribArray(edgeOnAttrib)
-      this.gl.vertexAttribPointer(
-        edgeOnAttrib,
-        mesh.edgeOn.componentsPerAttrib,
-        mesh.edgeOn.glType,
-        false,
-        0,
-        0,
-      )
-    }
-
-    // Normal attrib
-    if (normalAttrib !== undefined) {
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.normals.buffer)
-      this.gl.enableVertexAttribArray(normalAttrib)
-      this.gl.vertexAttribPointer(
-        normalAttrib,
-        mesh.normals.componentsPerAttrib,
-        mesh.normals.glType,
-        false,
-        0,
-        0,
-      )
-    }
-
-    // Index buffer
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices.buffer)
-
-    switch (mesh.primitive) {
-      case MeshPrimitive.Triangles:
-        this.gl.drawElements(
-          this.gl.TRIANGLES,
-          mesh.indices.componentCount,
-          mesh.indices.glType,
-          0,
-        )
-        break
-      case MeshPrimitive.Lines:
-        this.gl.drawElements(
-          this.gl.LINES,
-          mesh.indices.componentCount,
-          mesh.indices.glType,
-          0,
-        )
-        break
-    }
-
-    // TODO: figure out how to preserve VAO. Probably, the GLTF loading
-    // helpers should have access to shader attribute locations, but we need
-    // a way to make those consistent across shaders.
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null)
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null)
     this.gl.bindVertexArray(null)
-    this.gl.deleteVertexArray(vao)
+  }
+
+  private meshPrimitiveToDrawMode(p: MeshPrimitive): GLenum {
+    switch (p) {
+      case MeshPrimitive.Triangles:
+        return this.gl.TRIANGLES
+      case MeshPrimitive.Lines:
+        return this.gl.LINES
+    }
   }
 
   /**
@@ -613,7 +517,7 @@ export class Renderer3d implements IModelLoader {
       switch (obj.type) {
         case UnlitObjectType.Lines:
           this.gl.uniform4fv(
-            this.currentShader!.uniforms.get('color')!,
+            this.currentShader!.uniforms.get(ShaderUniform.Color)!,
             obj.color,
           )
           this.drawLines(obj.positions)
@@ -640,7 +544,7 @@ export class Renderer3d implements IModelLoader {
     if (this.models.has(name)) {
       throw new Error(`model with name ${name} already exists`)
     }
-    this.models.set(name, makeRenderNode(root, this.gl))
+    this.models.set(name, makeRenderNode(this.gl, root))
   }
 
   /**
@@ -662,21 +566,26 @@ export class Renderer3d implements IModelLoader {
     this.gl.bindVertexArray(vao)
 
     // Setup position array
-    const positionAttrib = this.currentShader.attribs.get('position')
-    if (positionAttrib === undefined) {
-      throw new Error(`shader has no position attrib`)
-    }
     const posGlBuffer = this.gl.createBuffer()
     if (posGlBuffer === null) {
       throw new Error('could not create buffer')
     }
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, posGlBuffer)
-    this.gl.enableVertexAttribArray(positionAttrib)
-    this.gl.vertexAttribPointer(positionAttrib, 3, this.gl.FLOAT, false, 0, 0)
+    this.gl.enableVertexAttribArray(ShaderAttribLoc.Position)
+    this.gl.vertexAttribPointer(
+      ShaderAttribLoc.Position,
+      3,
+      this.gl.FLOAT,
+      false,
+      0,
+      0,
+    )
     this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW)
 
     // Our VAO is ready...set uniforms and execute the draw.
-    const model2WorldUniform = this.currentShader.uniforms.get('model2World')
+    const model2WorldUniform = this.currentShader.uniforms.get(
+      ShaderUniform.Model2World,
+    )
     if (model2WorldUniform === undefined) {
       throw new Error(`shader has no model2World uniform`)
     }

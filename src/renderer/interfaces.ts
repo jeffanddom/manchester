@@ -23,7 +23,7 @@ export enum MeshPrimitive {
 }
 
 export interface Buffer<T> {
-  buffer: T
+  bufferData: T
   glType: GLenum // FLOAT, etc.
   componentCount: number // total number of component values of type glType
   componentsPerAttrib: number // number of component values per attribute
@@ -32,8 +32,8 @@ export interface Buffer<T> {
 export interface TriangleMesh<T> {
   primitive: MeshPrimitive.Triangles
   positions: Buffer<T>
-  normals: Buffer<T>
   indices: Buffer<T>
+  normals?: Buffer<T>
   colors?: Buffer<T>
   edgeOn?: Buffer<T>
 }
@@ -41,12 +41,19 @@ export interface TriangleMesh<T> {
 export interface LineMesh<T> {
   primitive: MeshPrimitive.Lines
   positions: Buffer<T>
-  normals: Buffer<T>
   indices: Buffer<T>
+  normals?: Buffer<T>
   colors?: Buffer<T>
 }
 
-export type DataMesh = TriangleMesh<BufferArray> | LineMesh<BufferArray>
+export type DataMesh = {
+  primitive: MeshPrimitive
+  positions: Buffer<BufferArray>
+  indices: Buffer<BufferArray>
+  normals?: Buffer<BufferArray>
+  colors?: Buffer<BufferArray>
+  edgeOn?: Buffer<BufferArray>
+}
 
 export interface ModelNode {
   name: string

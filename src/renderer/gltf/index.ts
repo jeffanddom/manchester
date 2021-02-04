@@ -277,7 +277,7 @@ function makeBuffer(
   )
 
   return {
-    buffer: bufferData,
+    bufferData: bufferData,
     glType: accessor.componentType as GLenum,
     componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),

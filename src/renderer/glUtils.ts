@@ -4,14 +4,18 @@ import {
   Buffer,
   BufferArray,
   DataMesh,
-  LineMesh,
   MeshPrimitive,
   ModelNode,
-  TriangleMesh,
 } from '../renderer/interfaces'
 
-// TODO: this should just hold VAOs with pre-bound buffers
-export type RenderMesh = TriangleMesh<WebGLBuffer> | LineMesh<WebGLBuffer>
+import { ShaderAttribLoc } from './shaders/common'
+
+export interface RenderMesh {
+  primitive: MeshPrimitive
+  vao: WebGLVertexArrayObject
+  count: number // number of elements in index buffer
+  type: GLenum // type of index buffer element
+}
 
 export interface RenderNode {
   name: string
@@ -21,8 +25,8 @@ export interface RenderNode {
 }
 
 export function makeRenderNode(
-  src: ModelNode,
   gl: WebGL2RenderingContext,
+  src: ModelNode,
 ): RenderNode {
   const node: RenderNode = {
     name: src.name,
@@ -34,78 +38,84 @@ export function makeRenderNode(
   }
 
   if (src.mesh != null) {
-    node.mesh = makeRenderMesh(src.mesh, gl)
+    node.mesh = makeRenderMesh(gl, src.mesh)
   }
 
   for (const child of src.children) {
-    node.children.push(makeRenderNode(child, gl))
+    node.children.push(makeRenderNode(gl, child))
   }
 
   return node
 }
 
-function makeRenderMesh(src: DataMesh, gl: WebGL2RenderingContext): RenderMesh {
-  switch (src.primitive) {
-    case MeshPrimitive.Triangles: {
-      const res: RenderMesh = {
-        positions: getGlBuffer(src.positions, gl),
-        normals: getGlBuffer(src.normals, gl),
-        indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
-        primitive: MeshPrimitive.Triangles,
-      }
+function makeRenderMesh(gl: WebGL2RenderingContext, src: DataMesh): RenderMesh {
+  const vao = gl.createVertexArray()
+  if (vao === null) {
+    throw `could not create VAO`
+  }
 
-      if (src.colors !== undefined) {
-        res.colors = getGlBuffer(src.colors, gl)
-      }
+  gl.bindVertexArray(vao)
 
-      if (src.edgeOn !== undefined) {
-        res.edgeOn = getGlBuffer(src.edgeOn, gl)
-      }
+  bindAttribBuffer(gl, src.positions, ShaderAttribLoc.Position)
+  bindIndexBuffer(gl, src.indices)
 
-      return res
-    }
+  if (src.normals !== undefined) {
+    bindAttribBuffer(gl, src.normals, ShaderAttribLoc.Normal)
+  }
 
-    case MeshPrimitive.Lines: {
-      const res: RenderMesh = {
-        positions: getGlBuffer(src.positions, gl),
-        normals: getGlBuffer(src.normals, gl),
-        indices: getGlBuffer(src.indices, gl, { isIndexBuffer: true }),
-        primitive: MeshPrimitive.Lines,
-      }
+  if (src.colors !== undefined) {
+    bindAttribBuffer(gl, src.colors, ShaderAttribLoc.Color)
+  }
 
-      if (src.colors !== undefined) {
-        res.colors = getGlBuffer(src.colors, gl)
-      }
+  if (src.edgeOn !== undefined) {
+    bindAttribBuffer(gl, src.edgeOn, ShaderAttribLoc.EdgeOn)
+  }
 
-      return res
-    }
+  gl.bindVertexArray(null)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
+
+  return {
+    primitive: src.primitive,
+    vao,
+    count: src.indices.componentCount,
+    type: src.indices.glType,
   }
 }
 
-export function getGlBuffer(
-  buffer: Buffer<BufferArray>,
+export function bindAttribBuffer(
   gl: WebGL2RenderingContext,
-  opts?: { isIndexBuffer: boolean },
-): Buffer<WebGLBuffer> {
-  // Write data to a GL buffer
+  buffer: Buffer<BufferArray>,
+  attribLoc: ShaderAttribLoc,
+): void {
   const glBuffer = gl.createBuffer()
   if (glBuffer === null) {
     throw new Error('unable to create GL buffer')
   }
 
-  // Specifying the precise target matters because it sets a property on the
-  // buffer object.
-  const target =
-    opts !== undefined && opts.isIndexBuffer
-      ? gl.ELEMENT_ARRAY_BUFFER
-      : gl.ARRAY_BUFFER
-  gl.bindVertexArray(null)
-  gl.bindBuffer(target, glBuffer)
-  gl.bufferData(target, buffer.buffer, gl.STATIC_DRAW)
-  return {
-    buffer: glBuffer,
-    glType: buffer.glType,
-    componentCount: buffer.componentCount,
-    componentsPerAttrib: buffer.componentsPerAttrib,
+  gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer)
+  gl.bufferData(gl.ARRAY_BUFFER, buffer.bufferData, gl.STATIC_DRAW)
+
+  gl.enableVertexAttribArray(attribLoc)
+  gl.vertexAttribPointer(
+    attribLoc,
+    buffer.componentsPerAttrib,
+    buffer.glType,
+    false,
+    0,
+    0,
+  )
+}
+
+export function bindIndexBuffer(
+  gl: WebGL2RenderingContext,
+  buffer: Buffer<BufferArray>,
+): void {
+  const glBuffer = gl.createBuffer()
+  if (glBuffer === null) {
+    throw new Error('unable to create GL buffer')
   }
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer)
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, buffer.bufferData, gl.STATIC_DRAW)
 }

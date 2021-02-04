@@ -1,8 +1,10 @@
+import { ShaderAttribLoc } from './common'
+
 export const shader = {
   vertexSrc: `#version 300 es
-in vec3 position;
-in vec4 color;
-in vec3 normal;
+layout(location = ${ShaderAttribLoc.Position}) in vec3 position;
+layout(location = ${ShaderAttribLoc.Normal}) in vec3 normal;
+layout(location = ${ShaderAttribLoc.Color}) in vec4 color;
 
 uniform mat4 projection;
 uniform mat4 world2View;
@@ -20,8 +22,10 @@ void main() {
 
   fragmentSrc: `#version 300 es
 precision mediump float;
+
 in vec4 Color;
 in vec3 Normal;
+
 out vec4 FragColor;
 
 void main() {
@@ -30,7 +34,4 @@ void main() {
   FragColor = vec4(light * Color.rgb, Color.a);
 }
 `,
-
-  attribs: ['position', 'color', 'normal'],
-  uniforms: ['projection', 'world2View', 'model2World'],
 }

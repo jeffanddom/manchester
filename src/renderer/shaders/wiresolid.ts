@@ -3,11 +3,13 @@
  * an edgeOn attribute to determine proximity to an edge.
  */
 
+import { ShaderAttribLoc } from './common'
+
 export const shader = {
   vertexSrc: `#version 300 es
-in vec3 position;
-in vec3 normal;
-in vec3 edgeOn;
+layout(location = ${ShaderAttribLoc.Position}) in vec3 position;
+layout(location = ${ShaderAttribLoc.Normal}) in vec3 normal;
+layout(location = ${ShaderAttribLoc.EdgeOn}) in vec3 edgeOn;
 
 uniform mat4 projection;
 uniform mat4 world2View;
@@ -46,7 +48,4 @@ void main() {
   FragColor = vec4(light * mix(color.rgb, vec3(0.0), lerpAlpha()), 1);
 }
 `,
-
-  attribs: ['position', 'normal', 'edgeOn'],
-  uniforms: ['projection', 'world2View', 'model2World', 'color'],
 }

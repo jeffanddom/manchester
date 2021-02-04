@@ -2,10 +2,12 @@
  * The solid shader provides monochrome models with vertex normals.
  */
 
+import { ShaderAttribLoc } from './common'
+
 export const shader = {
   vertexSrc: `#version 300 es
-in vec3 position;
-in vec3 normal;
+layout(location = ${ShaderAttribLoc.Position}) in vec3 position;
+layout(location = ${ShaderAttribLoc.Normal}) in vec3 normal;
 
 uniform mat4 projection;
 uniform mat4 world2View;
@@ -21,7 +23,9 @@ void main() {
 
   fragmentSrc: `#version 300 es
 precision mediump float;
+
 uniform vec4 color;
+
 in vec3 Normal;
 out vec4 FragColor;
 
@@ -31,7 +35,4 @@ void main() {
   FragColor = vec4(light * color.rgb, color.a);
 }
 `,
-
-  attribs: ['position', 'normal'],
-  uniforms: ['projection', 'world2View', 'model2World', 'color'],
 }
