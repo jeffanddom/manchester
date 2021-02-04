@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix'
 
-import { BufferArray, DataMesh, MeshPrimitive, ModelNode } from './interfaces'
+import { DataMesh, MeshPrimitive, ModelNode, NumericArray } from './interfaces'
 
 import * as set from '~/util/set'
 
@@ -83,20 +83,14 @@ export function makeCubeModel(): ModelNode {
       primitive: MeshPrimitive.Triangles,
       positions: {
         bufferData: positions,
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       normals: {
         bufferData: normals,
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: normals.length,
         componentsPerAttrib: 3,
       },
       indices: {
         bufferData: indices,
-        glType: 5123 as GLenum, // gl.USHORT
-        componentCount: indices.length,
         componentsPerAttrib: 1,
       },
     },
@@ -144,22 +138,16 @@ export function makeLineCubeModel(): ModelNode {
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: positions,
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       normals: {
         // The normal values don't matter. We should consider a refactor where
         // normals aren't assumed to be required.
         bufferData: new Float32Array(positions.length),
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       indices: {
         bufferData: indices,
-        glType: 5123 as GLenum, // gl.USHORT
-        componentCount: indices.length,
         componentsPerAttrib: 1,
       },
     },
@@ -190,22 +178,16 @@ export function makeLineTileModel(): ModelNode {
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: positions,
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       normals: {
         // The normal values don't matter. We should consider a refactor where
         // normals aren't assumed to be required.
         bufferData: new Float32Array(positions.length),
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       indices: {
         bufferData: indices,
-        glType: 5123 as GLenum, // gl.USHORT
-        componentCount: indices.length,
         componentsPerAttrib: 1,
       },
     },
@@ -245,22 +227,16 @@ export function makeLineGridModel(): ModelNode {
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: new Float32Array(positions),
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       normals: {
         // The normal values don't matter. We should consider a refactor where
         // normals aren't assumed to be required.
         bufferData: new Float32Array(positions.length),
-        glType: 5126 as GLenum, // gl.Float
-        componentCount: positions.length,
         componentsPerAttrib: 3,
       },
       indices: {
         bufferData: new Uint16Array(indices),
-        glType: 5123 as GLenum, // gl.USHORT
-        componentCount: indices.length,
         componentsPerAttrib: 1,
       },
     },
@@ -402,30 +378,25 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
   const res: DataMesh = {
     primitive: MeshPrimitive.Triangles,
     positions: {
-      ...src.positions,
       bufferData: new Float32Array(positions),
-      componentCount: positions.length,
+      componentsPerAttrib: src.positions.componentsPerAttrib,
     },
     indices: {
-      ...src.indices,
       bufferData: new Uint16Array(indices),
-      componentCount: indices.length,
+      componentsPerAttrib: src.indices.componentsPerAttrib,
     },
     edgeOn: {
       // TODO: we may be able to use unsigned byte here, as long as we convert
       // to a float value in the vertex shader.
       bufferData: new Float32Array(edgeOn),
-      glType: 5126 as GLenum, // gl.Float
-      componentCount: edgeOn.length,
       componentsPerAttrib: 3,
     },
   }
 
   if (src.normals !== undefined) {
     res.normals = {
-      ...src.normals,
       bufferData: new Float32Array(normals),
-      componentCount: normals.length,
+      componentsPerAttrib: src.normals.componentsPerAttrib,
     }
   }
 
@@ -438,13 +409,11 @@ function triMeshToWiresolidLineMesh(src: DataMesh): DataMesh {
   const res: DataMesh = {
     primitive: MeshPrimitive.Lines,
     positions: {
-      ...src.positions,
       bufferData: src.positions.bufferData.slice(),
+      componentsPerAttrib: src.positions.componentsPerAttrib,
     },
     indices: {
       bufferData: new Uint16Array(indices),
-      glType: 5123 as GLenum, // Unsigned short
-      componentCount: indices.length,
       componentsPerAttrib: 2,
     },
   }
@@ -465,7 +434,7 @@ function triMeshToWiresolidLineMesh(src: DataMesh): DataMesh {
  * This is the set of all triangle edges, minus those that are shared by
  * co-planar triangles.
  */
-function getWiresolidEdges(triIndices: BufferArray): number[] {
+function getWiresolidEdges(triIndices: NumericArray): number[] {
   const trisByVert: Map<number, Set<number>> = new Map()
   for (let i = 0; i < triIndices.length; i++) {
     const vert = triIndices[i]

@@ -68,7 +68,7 @@ function applyAccessor(
     bufferViewOffset?: number
     stride?: number
   } = {},
-): renderer.BufferArray {
+): renderer.NumericArray {
   const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
   const degree = accessorTypeDegree(type)
   const elementSize = degree * accessorComponentTypeSize(componentType)
@@ -198,10 +198,7 @@ function makeMesh(doc: Document, meshId: number): renderer.DataMesh {
   }
 }
 
-function makeBuffer(
-  doc: Document,
-  accessorId: number,
-): renderer.Buffer<renderer.BufferArray> {
+function makeBuffer(doc: Document, accessorId: number): renderer.MeshBuffer {
   const accessors = doc.accessors ?? []
   if (accessors.length < accessorId) {
     throw new Error(`accessor ${accessorId}: not defined in glTF document`)
@@ -278,8 +275,6 @@ function makeBuffer(
 
   return {
     bufferData: bufferData,
-    glType: accessor.componentType as GLenum,
-    componentCount: accessor.count,
     componentsPerAttrib: accessorTypeDegree(accessor.type),
   }
 }

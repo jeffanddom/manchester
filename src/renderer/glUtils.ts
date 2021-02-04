@@ -1,11 +1,11 @@
 import { mat4 } from 'gl-matrix'
 
 import {
-  Buffer,
-  BufferArray,
   DataMesh,
+  MeshBuffer,
   MeshPrimitive,
   ModelNode,
+  NumericArray,
 } from '../renderer/interfaces'
 
 import { ShaderAttribLoc } from './shaders/common'
@@ -78,14 +78,14 @@ function makeRenderMesh(gl: WebGL2RenderingContext, src: DataMesh): RenderMesh {
   return {
     primitive: src.primitive,
     vao,
-    count: src.indices.componentCount,
-    type: src.indices.glType,
+    count: src.indices.bufferData.length,
+    type: numericArrayToGLType(gl, src.indices.bufferData),
   }
 }
 
 export function bindAttribBuffer(
   gl: WebGL2RenderingContext,
-  buffer: Buffer<BufferArray>,
+  src: MeshBuffer,
   attribLoc: ShaderAttribLoc,
 ): void {
   const glBuffer = gl.createBuffer()
@@ -94,13 +94,13 @@ export function bindAttribBuffer(
   }
 
   gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, buffer.bufferData, gl.STATIC_DRAW)
+  gl.bufferData(gl.ARRAY_BUFFER, src.bufferData, gl.STATIC_DRAW)
 
   gl.enableVertexAttribArray(attribLoc)
   gl.vertexAttribPointer(
     attribLoc,
-    buffer.componentsPerAttrib,
-    buffer.glType,
+    src.componentsPerAttrib,
+    numericArrayToGLType(gl, src.bufferData),
     false,
     0,
     0,
@@ -109,7 +109,7 @@ export function bindAttribBuffer(
 
 export function bindIndexBuffer(
   gl: WebGL2RenderingContext,
-  buffer: Buffer<BufferArray>,
+  src: MeshBuffer,
 ): void {
   const glBuffer = gl.createBuffer()
   if (glBuffer === null) {
@@ -117,5 +117,34 @@ export function bindIndexBuffer(
   }
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer)
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, buffer.bufferData, gl.STATIC_DRAW)
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, src.bufferData, gl.STATIC_DRAW)
+}
+
+function numericArrayToGLType(
+  gl: WebGL2RenderingContext,
+  array: NumericArray,
+): GLenum {
+  if (array instanceof Uint8Array) {
+    return gl.UNSIGNED_BYTE
+  }
+  if (array instanceof Int8Array) {
+    return gl.BYTE
+  }
+  if (array instanceof Uint16Array) {
+    return gl.UNSIGNED_SHORT
+  }
+  if (array instanceof Int16Array) {
+    return gl.SHORT
+  }
+  if (array instanceof Uint32Array) {
+    return gl.UNSIGNED_INT
+  }
+  if (array instanceof Int32Array) {
+    return gl.INT
+  }
+  if (array instanceof Float32Array) {
+    return gl.FLOAT
+  }
+
+  throw `should be unreachable`
 }
