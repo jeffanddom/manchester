@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
@@ -21,6 +19,7 @@ import { PickupType } from '~/systems/pickups'
 import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
 import { TurretComponent } from '~/systems/turret'
 import * as turret from '~/systems/turret'
+import { Aabb2 } from '~/util/aabb2'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
@@ -28,7 +27,7 @@ import { tileBox } from '~/util/tileMath'
 
 type QuadtreeEntity = {
   id: EntityId
-  aabb: [vec2, vec2]
+  aabb: Aabb2
 }
 
 export class EntityManager {
@@ -66,7 +65,7 @@ export class EntityManager {
   friendlyTeam: SortedSet<EntityId>
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
 
-  constructor(playfieldAabb: [vec2, vec2]) {
+  constructor(playfieldAabb: Aabb2) {
     this.nextEntityIdUncommitted = 0
     this.nextEntityIdCommitted = 0
     this.currentPlayer = -1
@@ -122,7 +121,7 @@ export class EntityManager {
     this.quadtree = new Quadtree<EntityId, QuadtreeEntity>({
       maxItems: 4,
       aabb: playfieldAabb,
-      comparator: (aabb: [vec2, vec2], e: QuadtreeEntity) => {
+      comparator: (aabb: Aabb2, e: QuadtreeEntity) => {
         return minBiasAabbOverlap(aabb, e.aabb)
       },
     })
@@ -289,7 +288,7 @@ export class EntityManager {
     this.quadtree.remove(id)
   }
 
-  public queryByWorldPos(aabb: [vec2, vec2]): EntityId[] {
+  public queryByWorldPos(aabb: Aabb2): EntityId[] {
     // Start with known non-moving entities
     const results = new Set<EntityId>(
       this.quadtree.query(aabb).map((r) => r.id),

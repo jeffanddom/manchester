@@ -10,7 +10,7 @@ import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
 import { SimState, simulationPhaseDebugColor } from '~/simulate'
-import * as aabb from '~/util/aabb2'
+import * as aabb2 from '~/util/aabb2'
 import { radialTranslate2 } from '~/util/math'
 
 export const update = (simState: SimState): void => {
@@ -19,7 +19,7 @@ export const update = (simState: SimState): void => {
 
     for (const [entityId, d] of simState.entityManager.damageables) {
       const xform = simState.entityManager.transforms.get(entityId)!
-      const [center, size] = aabb.centerSize(damageableAabb(d, xform))
+      const [center, size] = aabb2.centerSize(damageableAabb(d, xform))
       objects.push({
         object: {
           type: UnlitObjectType.Model,
@@ -43,7 +43,7 @@ export const update = (simState: SimState): void => {
     const attackerAabb = damagerAabb(damager, transform)
 
     simState.debugDraw.draw3d(() => {
-      const [center, size] = aabb.centerSize(attackerAabb)
+      const [center, size] = aabb2.centerSize(attackerAabb)
       return [
         {
           object: {
@@ -77,7 +77,7 @@ export const update = (simState: SimState): void => {
         damageableId,
       )!
 
-      return aabb.overlap(
+      return aabb2.overlap(
         damageableAabb(damageable, targetTransform),
         attackerAabb,
       )

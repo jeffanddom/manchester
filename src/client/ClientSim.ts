@@ -27,6 +27,7 @@ import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import * as terrain from '~/terrain'
 import { Immutable } from '~/types/immutable'
+import * as aabb2 from '~/util/aabb2'
 import { discardUntil } from '~/util/array'
 import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
@@ -91,10 +92,7 @@ export class ClientSim {
     this.modelLoader = config.modelLoader
     this.debugDraw = config.debugDraw
 
-    this.entityManager = new EntityManager([
-      [0, 0],
-      [0, 0],
-    ])
+    this.entityManager = new EntityManager(aabb2.create())
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = null
@@ -152,14 +150,13 @@ export class ClientSim {
     // Level setup
     this.map = Map.fromRaw(gameProgression[this.currentLevel])
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
+    const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
     this.entityManager = new EntityManager([
-      worldOrigin,
-      vec2.add(
-        vec2.create(),
-        worldOrigin,
-        vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
-      ),
+      worldOrigin[0],
+      worldOrigin[1],
+      worldOrigin[0] + dimensions[0],
+      worldOrigin[1] + dimensions[1],
     ])
     this.entityManager.currentPlayer = this.playerNumber!
 

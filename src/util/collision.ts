@@ -1,18 +1,16 @@
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
+import { Aabb2 } from '~/util/aabb2'
 import * as aabb2 from '~/util/aabb2'
 
-const aabbFromSegment = (s: Immutable<[vec2, vec2]>): [vec2, vec2] => {
-  const northwest = vec2.fromValues(
+const aabbFromSegment = (s: Immutable<[vec2, vec2]>): Aabb2 => {
+  return [
     Math.min(s[0][0], s[1][0]),
     Math.min(s[0][1], s[1][1]),
-  )
-  const southeast = vec2.fromValues(
     Math.max(s[0][0], s[1][0]),
     Math.max(s[0][1], s[1][1]),
-  )
-  return [northwest, southeast]
+  ]
 }
 
 const crossScalar = (v: vec2, w: vec2): number => {
@@ -52,12 +50,12 @@ export const segmentSegment = (
 
 export const segmentToAabb = (
   s: Immutable<[vec2, vec2]>,
-  aabb: Immutable<[vec2, vec2]>,
+  aabb: Immutable<Aabb2>,
 ): boolean => {
-  const nw = vec2.fromValues(aabb[0][0], aabb[0][1])
-  const ne = vec2.fromValues(aabb[1][0], aabb[0][1])
-  const sw = vec2.fromValues(aabb[0][0], aabb[1][1])
-  const se = vec2.fromValues(aabb[1][0], aabb[1][1])
+  const nw = vec2.fromValues(aabb[aabb2.Elem.x1], aabb[aabb2.Elem.y1])
+  const ne = vec2.fromValues(aabb[aabb2.Elem.x2], aabb[aabb2.Elem.y1])
+  const sw = vec2.fromValues(aabb[aabb2.Elem.x1], aabb[aabb2.Elem.y2])
+  const se = vec2.fromValues(aabb[aabb2.Elem.x2], aabb[aabb2.Elem.y2])
 
   return (
     segmentSegment(s, [nw, ne]) ||

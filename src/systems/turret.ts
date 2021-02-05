@@ -11,6 +11,7 @@ import { EntityId } from '~/entities/EntityId'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
+import { Aabb2 } from '~/util/aabb2'
 import { segmentToAabb } from '~/util/collision'
 import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 import { SortedSet } from '~/util/SortedSet'
@@ -43,10 +44,13 @@ export const update = (
   const turretIds = new SortedSet<EntityId>()
   for (const id of entityManager.friendlyTeam) {
     const position = entityManager.transforms.get(id)!.position
-    const searchSpace: [vec2, vec2] = [
-      vec2.sub(vec2.create(), position, vec2.fromValues(RANGE, RANGE)),
-      vec2.add(vec2.create(), position, vec2.fromValues(RANGE, RANGE)),
+    const searchSpace: Aabb2 = [
+      position[0] - RANGE,
+      position[1] - RANGE,
+      position[0] + RANGE,
+      position[1] + RANGE,
     ]
+
     for (const turretId of entityManager.queryByWorldPos(searchSpace)) {
       if (entityManager.turrets.has(turretId)) {
         turretIds.add(turretId)
@@ -62,11 +66,11 @@ export const update = (
     // I. Find a target
 
     const shootables: { id: EntityId; transform: Immutable<Transform> }[] = []
-    const turretOrigin = transform.position
-
-    const searchSpace: [vec2, vec2] = [
-      vec2.sub(vec2.create(), turretOrigin, vec2.fromValues(RANGE, RANGE)),
-      vec2.add(vec2.create(), turretOrigin, vec2.fromValues(RANGE, RANGE)),
+    const searchSpace: Aabb2 = [
+      transform.position[0] - RANGE,
+      transform.position[1] - RANGE,
+      transform.position[0] + RANGE,
+      transform.position[1] + RANGE,
     ]
 
     for (const targetId of entityManager.queryByWorldPos(searchSpace)) {

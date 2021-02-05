@@ -9,15 +9,9 @@ export type Hitbox = {
 }
 
 export function aabb(h: Immutable<Hitbox>, position: Immutable<vec2>): Aabb2 {
-  const offsetPosition = vec2.add(vec2.create(), h.offset, position)
-
-  return [
-    offsetPosition,
-    vec2.fromValues(
-      offsetPosition[0] + h.dimensions[0],
-      offsetPosition[1] + h.dimensions[1],
-    ),
-  ]
+  const x1 = h.offset[0] + position[0]
+  const y1 = h.offset[1] + position[1]
+  return [x1, y1, x1 + h.dimensions[0], y1 + h.dimensions[1]]
 }
 
 export function clone(h: Immutable<Hitbox>): Hitbox {
