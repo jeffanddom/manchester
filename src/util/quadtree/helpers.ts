@@ -176,3 +176,14 @@ export const nodeQuery = <TItem>(
 
   return res
 }
+
+export function treeDepth<TItem>(root: TNode<TItem>): number {
+  if (root.children === undefined) {
+    return 1
+  }
+
+  return root.children.reduce(
+    (accum, child) => Math.max(treeDepth(child) + 1, accum),
+    -1,
+  )
+}
