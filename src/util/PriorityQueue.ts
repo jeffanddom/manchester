@@ -57,9 +57,9 @@ export class PriorityQueue<T> {
    * comparator. The value is returned. The length of the queue will decrease by
    * one.
    */
-  public pop(): T | null {
+  public pop(): T | undefined {
     if (this._length === 0) {
-      return null
+      return undefined
     }
 
     const result = this.storage[0]
@@ -109,9 +109,9 @@ export class PriorityQueue<T> {
   /**
    * Return the lowest ranking value from the queue, according to the comparator.
    */
-  public peek(): T | null {
+  public peek(): T | undefined {
     if (this.storage.length === 0) {
-      return null
+      return undefined
     }
 
     return this.storage[0]

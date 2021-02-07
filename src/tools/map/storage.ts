@@ -6,11 +6,11 @@ export type SaveState = {
   previous: RawMap
 }
 
-export const loadMap = (): Map | null => {
+export const loadMap = (): Map | undefined => {
   const json = window.localStorage.getItem(STORAGE_KEY)
   if (json === null) {
     console.log('no previous map data found')
-    return null
+    return undefined
   }
 
   try {
@@ -19,14 +19,14 @@ export const loadMap = (): Map | null => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (s.previous === undefined) {
       console.log('no previous map data found')
-      return null
+      return undefined
     }
 
     console.log('map data found')
     return Map.fromRaw(s.previous)
   } catch (error) {
     console.log(`error loading parsing map data: {$error}`)
-    return null
+    return undefined
   }
 }
 

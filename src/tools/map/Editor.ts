@@ -54,7 +54,7 @@ export class Editor {
   keyboard: IKeyboard
   mouse: IMouse
 
-  cursorTilePos: vec2 | null
+  cursorTilePos: vec2 | undefined
   brush: {
     mode: BrushMode
     terrain: terrain.Type
@@ -93,7 +93,7 @@ export class Editor {
     this.keyboard = params.keyboard
     this.mouse = params.mouse
 
-    this.cursorTilePos = null
+    this.cursorTilePos = undefined
     this.brush = {
       mode: BrushMode.TERRAIN,
       terrain: _.first(TERRAIN_TYPES)!,
@@ -152,7 +152,7 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        if (this.cursorTilePos !== null) {
+        if (this.cursorTilePos !== undefined) {
           this.map.terrain[this.t2a(this.cursorTilePos)] = null
         }
 
@@ -177,7 +177,7 @@ export class Editor {
     if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
       if (this.keyboard.downKeys.has(keyMap.shift)) {
         // delete terrain under cursor
-        if (this.cursorTilePos !== null) {
+        if (this.cursorTilePos !== undefined) {
           this.map.entities[this.t2a(this.cursorTilePos)] = null
         }
 
@@ -200,7 +200,7 @@ export class Editor {
       this.keyboard.downKeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
-      if (this.cursorTilePos !== null) {
+      if (this.cursorTilePos !== undefined) {
         const n = this.t2a(this.cursorTilePos)
 
         // TODO: send these to an event stream a la Redux, for undo etc.
@@ -238,7 +238,7 @@ export class Editor {
       this.renderGrid()
     }
 
-    if (this.cursorTilePos !== null) {
+    if (this.cursorTilePos !== undefined) {
       this.renderTile(this.cursorTilePos, 'rgba(0, 255, 255, 0.5)')
     }
   }

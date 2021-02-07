@@ -17,7 +17,7 @@ canvas.width = 400
 canvas.height = 400
 
 let map = loadMap()
-if (map !== null) {
+if (map !== undefined) {
   console.log('loaded map from storage')
 } else {
   console.log('no saved map in storage')

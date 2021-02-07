@@ -17,7 +17,7 @@ export type ShooterComponent = {
   lastFiredFrame: number
   orientation: number
   input: {
-    target: vec2 | null
+    target: vec2 | undefined
     fire: boolean
   }
 }
@@ -27,7 +27,7 @@ export function make(): ShooterComponent {
     cooldownTtl: 0,
     lastFiredFrame: -1,
     orientation: 0,
-    input: { target: null, fire: false },
+    input: { target: undefined, fire: false },
   }
 }
 
@@ -37,7 +37,8 @@ export function clone(s: ShooterComponent): ShooterComponent {
     lastFiredFrame: s.lastFiredFrame,
     orientation: s.orientation,
     input: {
-      target: s.input.target !== null ? vec2.clone(s.input.target) : null,
+      target:
+        s.input.target !== undefined ? vec2.clone(s.input.target) : undefined,
       fire: s.input.fire,
     },
   }

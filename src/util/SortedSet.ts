@@ -1,14 +1,14 @@
 import { SortedMap } from './SortedMap'
 
 export class SortedSet<Tk> {
-  private map: SortedMap<Tk, null>
+  private map: SortedMap<Tk, undefined>
 
   constructor() {
     this.map = new SortedMap()
   }
 
   add(k: Tk): void {
-    this.map.set(k, null)
+    this.map.set(k, undefined)
   }
 
   size(): number {

@@ -33,11 +33,11 @@ export function makeRenderNode(
     children: [],
   }
 
-  if (src.transform != null) {
+  if (src.transform !== undefined) {
     node.transform = src.transform
   }
 
-  if (src.mesh != null) {
+  if (src.mesh !== undefined) {
     node.mesh = makeRenderMesh(gl, src.mesh)
   }
 

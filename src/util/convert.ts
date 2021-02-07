@@ -5,9 +5,9 @@ export type RawVec2 = { '0': number; '1': number }
 export const toIntEnum = <T extends { [key: number]: number | string }>(
   e: T,
   raw: number,
-): T[keyof T] | null => {
+): T[keyof T] | undefined => {
   if (!(raw in e)) {
-    return null
+    return undefined
   }
   return (raw as unknown) as T[keyof T]
 }
@@ -15,9 +15,9 @@ export const toIntEnum = <T extends { [key: number]: number | string }>(
 export const toStringEnum = <T extends { [key: string]: string }>(
   e: T,
   raw: string,
-): T[keyof T] | null => {
+): T[keyof T] | undefined => {
   if (Object.keys(e).find((k) => e[k] === raw) === undefined) {
-    return null
+    return undefined
   }
   return (raw as unknown) as T[keyof T]
 }

@@ -44,7 +44,7 @@ export class ClientSim {
   playerInputState: {
     cursorMode: CursorMode
   }
-  serverConnection: IServerConnection | null
+  serverConnection: IServerConnection | undefined
   playerNumber: number | undefined
   serverFrameUpdates: ServerFrameUpdate[]
   committedFrame: number
@@ -95,7 +95,7 @@ export class ClientSim {
     this.entityManager = new EntityManager(aabb2.create())
     this.localMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
-    this.serverConnection = null
+    this.serverConnection = undefined
     this.playerNumber = undefined
     this.serverFrameUpdates = []
     this.committedFrame = -1
@@ -273,7 +273,7 @@ export class ClientSim {
 
   tick(dt: number): void {
     let serverMessages: ServerMessage[] = []
-    if (this.serverConnection !== null) {
+    if (this.serverConnection !== undefined) {
       serverMessages = this.serverConnection.consume()
     }
 

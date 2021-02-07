@@ -25,13 +25,15 @@ export enum BuilderState {
 }
 
 export class BuilderCreator {
-  nextBuilder: {
-    mode: BuilderMode
-    dest: vec2
-  } | null
+  nextBuilder:
+    | {
+        mode: BuilderMode
+        dest: vec2
+      }
+    | undefined
 
   constructor() {
-    this.nextBuilder = null
+    this.nextBuilder = undefined
   }
 }
 
