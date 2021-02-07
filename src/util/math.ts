@@ -71,7 +71,7 @@ export const radialTranslate2 = (
   return vec2.add(
     out,
     start,
-    vec2.rotate(vec2.create(), [0, -amount], [0, 0], orientation),
+    vec2.rotate(out, [0, -amount], [0, 0], orientation),
   )
 }
 
