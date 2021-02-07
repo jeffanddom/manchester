@@ -328,7 +328,7 @@ export class ClientSim {
           }
 
           this.waitingForServer =
-            this.serverFrameUpdates.length == 0 &&
+            this.serverFrameUpdates.length === 0 &&
             this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
           if (this.waitingForServer) {
             break

@@ -87,7 +87,7 @@ export async function launch(
     })
     .promise()
 
-  if (res.Instances === undefined || res.Instances.length == 0) {
+  if (res.Instances === undefined || res.Instances.length === 0) {
     throw new Error('no instances returned')
   }
 
@@ -111,12 +111,12 @@ export async function waitForPublicDnsName(
       .promise()
 
     const reservations = res.Reservations
-    if (reservations === undefined || reservations.length == 0) {
+    if (reservations === undefined || reservations.length === 0) {
       throw new Error(`could not find instance ${instanceId}`)
     }
 
     const instances = reservations[0].Instances
-    if (instances === undefined || instances.length == 0) {
+    if (instances === undefined || instances.length === 0) {
       throw new Error(`could not find instance ${instanceId}`)
     }
 

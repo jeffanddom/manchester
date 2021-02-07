@@ -11,7 +11,7 @@ export function poll(period: number = 3 * 1000): void {
   window.setInterval(() => {
     fetch('/api/buildVersion')
       .then((response) => {
-        if (response.status != 200) {
+        if (response.status !== 200) {
           throw new Error(
             'build version fetch: invalid status ' + response.status.toString(),
           )
