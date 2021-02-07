@@ -2,14 +2,14 @@ import { mat2d, vec2, vec3 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 
-export type SphereCoord = vec3 // [r, theta, phi]
+export type SphereCoord = [number, number, number] // [r, theta, phi]
 
 export function sphereCoordFromValues(
   r: number, // radius
   theta: number, // inclination
   phi: number, // azimuth
 ): SphereCoord {
-  return vec3.fromValues(r, theta, phi)
+  return [r, theta, phi]
 }
 
 /**
