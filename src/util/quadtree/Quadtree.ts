@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import {
   Comparator,
   QuadtreeItem,
@@ -9,16 +7,18 @@ import {
   treeDepth,
 } from './helpers'
 
+import { Aabb2 } from '~/util/aabb2'
+
 export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   private maxItems: number
-  private aabb: [vec2, vec2] // NW and SE extrema
+  private aabb: Aabb2 // NW and SE extrema
   private root: TNode<TItem>
   private idMap: Map<TId, TNode<TItem>[]>
   private comparator: Comparator<TItem>
 
   constructor(config: {
     maxItems: number
-    aabb: [vec2, vec2]
+    aabb: Aabb2
     comparator: Comparator<TItem>
   }) {
     this.maxItems = config.maxItems
@@ -54,7 +54,7 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
     this.idMap.delete(id)
   }
 
-  public query(aabb: [vec2, vec2]): TItem[] {
+  public query(aabb: Aabb2): TItem[] {
     return nodeQuery(this.root, this.aabb, this.comparator, aabb)
   }
 

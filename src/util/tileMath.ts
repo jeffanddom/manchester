@@ -2,11 +2,14 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { Immutable } from '~/types/immutable'
+import { Aabb2 } from '~/util/aabb2'
 
-export const tileBox = (pos: Immutable<vec2>): [vec2, vec2] => {
+export const tileBox = (pos: Immutable<vec2>): Aabb2 => {
   return [
-    vec2.fromValues(pos[0] - TILE_SIZE / 2, pos[1] - TILE_SIZE / 2),
-    vec2.fromValues(pos[0] + TILE_SIZE / 2, pos[1] + TILE_SIZE / 2),
+    pos[0] - TILE_SIZE / 2,
+    pos[1] - TILE_SIZE / 2,
+    pos[0] + TILE_SIZE / 2,
+    pos[1] + TILE_SIZE / 2,
   ]
 }
 

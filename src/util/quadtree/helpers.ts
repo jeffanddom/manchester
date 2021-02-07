@@ -1,12 +1,13 @@
 import { vec2 } from 'gl-matrix'
 
 import * as aabb2 from '~/util/aabb2'
+import { Aabb2 } from '~/util/aabb2'
 
 export interface QuadtreeItem<TId> {
   id: TId
 }
 
-export type Comparator<TItem> = (aabb: [vec2, vec2], item: TItem) => boolean
+export type Comparator<TItem> = (aabb: Aabb2, item: TItem) => boolean
 
 export enum Quadrant {
   NW,
@@ -37,12 +38,12 @@ export const emptyNode = <TItem>(): TNode<TItem> => {
  * extrema. Points along the north and west edges are considered to be within
  * the AABB, whereas points along the south and east edges are not.
  */
-export const minBiasAabbContains = (aabb: [vec2, vec2], p: vec2): boolean => {
+export const minBiasAabbContains = (box: Aabb2, p: vec2): boolean => {
   return (
-    aabb[0][0] <= p[0] &&
-    p[0] < aabb[1][0] &&
-    aabb[0][1] <= p[1] &&
-    p[1] < aabb[1][1]
+    box[aabb2.Elem.x1] <= p[0] &&
+    p[0] < box[aabb2.Elem.x2] &&
+    box[aabb2.Elem.y1] <= p[1] &&
+    p[1] < box[aabb2.Elem.y2]
   )
 }
 
@@ -51,44 +52,54 @@ export const minBiasAabbContains = (aabb: [vec2, vec2], p: vec2): boolean => {
  * The south and east edges of an AABB are not considered to be inside of the
  * AABB.
  */
-export const minBiasAabbOverlap = (
-  a: [vec2, vec2],
-  b: [vec2, vec2],
-): boolean => {
+export const minBiasAabbOverlap = (a: Aabb2, b: Aabb2): boolean => {
   if (!aabb2.overlap(a, b)) {
     return false
   }
 
   // Ensure that south/west edges are not counted.
-  const leftmost = a[0][0] <= b[0][0] ? a : b
-  const rightmost = a[0][0] <= b[0][0] ? b : a
-  const upper = a[0][1] <= b[0][1] ? a : b
-  const lower = a[0][1] <= b[0][1] ? b : a
-  return leftmost[1][0] !== rightmost[0][0] && upper[1][1] !== lower[0][1]
+  const leftmost = a[aabb2.Elem.x1] <= b[aabb2.Elem.x1] ? a : b
+  const rightmost = a[aabb2.Elem.x1] <= b[aabb2.Elem.x1] ? b : a
+  const upper = a[aabb2.Elem.y1] <= b[aabb2.Elem.y1] ? a : b
+  const lower = a[aabb2.Elem.y1] <= b[aabb2.Elem.y1] ? b : a
+  return (
+    leftmost[aabb2.Elem.x2] !== rightmost[aabb2.Elem.x1] &&
+    upper[aabb2.Elem.y2] !== lower[aabb2.Elem.y1]
+  )
 }
 
-export const quadrantOfAabb = (
-  parentAabb: [vec2, vec2],
-  q: Quadrant,
-): [vec2, vec2] => {
-  const aabb = [vec2.clone(parentAabb[0]), vec2.clone(parentAabb[1])]
-  const halfW = (aabb[1][0] - aabb[0][0]) / 2
-  const halfH = (aabb[1][1] - aabb[0][1]) / 2
+export const quadrantOfAabb = (parent: Aabb2, q: Quadrant): Aabb2 => {
+  const halfW = (parent[aabb2.Elem.x2] - parent[aabb2.Elem.x1]) / 2
+  const halfH = (parent[aabb2.Elem.y2] - parent[aabb2.Elem.y1]) / 2
 
   switch (q) {
     case Quadrant.NW:
-      return [aabb[0], vec2.fromValues(aabb[0][0] + halfW, aabb[0][1] + halfH)]
+      return [
+        parent[aabb2.Elem.x1],
+        parent[aabb2.Elem.y1],
+        parent[aabb2.Elem.x1] + halfW,
+        parent[aabb2.Elem.y1] + halfH,
+      ]
     case Quadrant.NE:
       return [
-        vec2.fromValues(aabb[0][0] + halfW, aabb[0][1]),
-        vec2.fromValues(aabb[1][0], aabb[0][1] + halfH),
+        parent[aabb2.Elem.x1] + halfW,
+        parent[aabb2.Elem.y1],
+        parent[aabb2.Elem.x2],
+        parent[aabb2.Elem.y1] + halfH,
       ]
     case Quadrant.SE:
-      return [vec2.fromValues(aabb[0][0] + halfW, aabb[0][1] + halfH), aabb[1]]
+      return [
+        parent[aabb2.Elem.x1] + halfW,
+        parent[aabb2.Elem.y1] + halfH,
+        parent[aabb2.Elem.x2],
+        parent[aabb2.Elem.y2],
+      ]
     case Quadrant.SW:
       return [
-        vec2.fromValues(aabb[0][0], aabb[0][1] + halfH),
-        vec2.fromValues(aabb[0][0] + halfW, aabb[1][1]),
+        parent[aabb2.Elem.x1],
+        parent[aabb2.Elem.y1] + halfH,
+        parent[aabb2.Elem.x1] + halfW,
+        parent[aabb2.Elem.y2],
       ]
   }
 }
@@ -96,7 +107,7 @@ export const quadrantOfAabb = (
 export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
   node: TNode<TItem>,
   idMap: Map<TId, TNode<TItem>[]>,
-  aabb: [vec2, vec2],
+  aabb: Aabb2,
   maxItems: number,
   comparator: Comparator<TItem>,
   item: TItem,
@@ -148,9 +159,9 @@ export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
 
 export const nodeQuery = <TItem>(
   node: TNode<TItem>,
-  nodeAabb: [vec2, vec2],
+  nodeAabb: Aabb2,
   comparator: Comparator<TItem>,
-  queryAabb: [vec2, vec2],
+  queryAabb: Aabb2,
 ): TItem[] => {
   if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
     return []

@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import * as aabb2 from '../../aabb2'
+import { Aabb2 } from '../../aabb2'
 import {
   ChildList,
   Quadrant,
@@ -18,135 +19,73 @@ type TestItem = {
   pos: vec2
 }
 
-const testComparator = (aabb: [vec2, vec2], item: TestItem): boolean => {
-  return minBiasAabbContains(aabb, item.pos)
+const testComparator = (box: Aabb2, item: TestItem): boolean => {
+  return minBiasAabbContains(box, item.pos)
 }
 
 test('quadrantOfAabb', () => {
-  const aabb: [vec2, vec2] = [vec2.fromValues(0, 0), vec2.fromValues(2, 2)]
+  const a: Aabb2 = [0, 0, 2, 2]
+  expect(quadrantOfAabb(a, Quadrant.NW)).toStrictEqual([0, 0, 1, 1])
+  expect(quadrantOfAabb(a, Quadrant.NE)).toStrictEqual([1, 0, 2, 1])
+  expect(quadrantOfAabb(a, Quadrant.SE)).toStrictEqual([1, 1, 2, 2])
+  expect(quadrantOfAabb(a, Quadrant.SW)).toStrictEqual([0, 1, 1, 2])
 
-  const nw = quadrantOfAabb(aabb, Quadrant.NW)
-  expect(vec2.equals(nw[0], vec2.fromValues(0, 0))).toBe(true)
-  expect(vec2.equals(nw[1], vec2.fromValues(1, 1))).toBe(true)
-
-  const ne = quadrantOfAabb(aabb, Quadrant.NE)
-  expect(vec2.equals(ne[0], vec2.fromValues(1, 0))).toBe(true)
-  expect(vec2.equals(ne[1], vec2.fromValues(2, 1))).toBe(true)
-
-  const se = quadrantOfAabb(aabb, Quadrant.SE)
-  expect(vec2.equals(se[0], vec2.fromValues(1, 1))).toBe(true)
-  expect(vec2.equals(se[1], vec2.fromValues(2, 2))).toBe(true)
-
-  const sw = quadrantOfAabb(aabb, Quadrant.SW)
-  expect(vec2.equals(sw[0], vec2.fromValues(0, 1))).toBe(true)
-  expect(vec2.equals(sw[1], vec2.fromValues(1, 2))).toBe(true)
-})
-
-test('quadrantOfAabb2', () => {
-  const aabb: [vec2, vec2] = [vec2.fromValues(0, 1), vec2.fromValues(2, 3)]
-
-  const nw = quadrantOfAabb(aabb, Quadrant.NW)
-  expect(vec2.equals(nw[0], vec2.fromValues(0, 1))).toBe(true)
-  expect(vec2.equals(nw[1], vec2.fromValues(1, 2))).toBe(true)
-
-  const ne = quadrantOfAabb(aabb, Quadrant.NE)
-  expect(vec2.equals(ne[0], vec2.fromValues(1, 1))).toBe(true)
-  expect(vec2.equals(ne[1], vec2.fromValues(2, 2))).toBe(true)
-
-  const se = quadrantOfAabb(aabb, Quadrant.SE)
-  expect(vec2.equals(se[0], vec2.fromValues(1, 2))).toBe(true)
-  expect(vec2.equals(se[1], vec2.fromValues(2, 3))).toBe(true)
-
-  const sw = quadrantOfAabb(aabb, Quadrant.SW)
-  expect(vec2.equals(sw[0], vec2.fromValues(0, 2))).toBe(true)
-  expect(vec2.equals(sw[1], vec2.fromValues(1, 3))).toBe(true)
+  const b: Aabb2 = [0, 1, 2, 3]
+  expect(quadrantOfAabb(b, Quadrant.NW)).toStrictEqual([0, 1, 1, 2])
+  expect(quadrantOfAabb(b, Quadrant.NE)).toStrictEqual([1, 1, 2, 2])
+  expect(quadrantOfAabb(b, Quadrant.SE)).toStrictEqual([1, 2, 2, 3])
+  expect(quadrantOfAabb(b, Quadrant.SW)).toStrictEqual([0, 2, 1, 3])
 })
 
 test('minBiasAabbContains', () => {
-  const aabb: [vec2, vec2] = [vec2.fromValues(0, 1), vec2.fromValues(1, 2)]
-  expect(minBiasAabbContains(aabb, [0.5, 1.5])).toBe(true) // strict interior
-  expect(minBiasAabbContains(aabb, [10, 11])).toBe(false) // strict exterior
-  expect(minBiasAabbContains(aabb, [0.5, 1])).toBe(true) // north edge
-  expect(minBiasAabbContains(aabb, [0, 1.5])).toBe(true) // west edge
-  expect(minBiasAabbContains(aabb, [0.5, 2])).toBe(false) // south edge
-  expect(minBiasAabbContains(aabb, [1, 1.5])).toBe(false) // east edge
+  const box: Aabb2 = [0, 1, 1, 2]
+  expect(minBiasAabbContains(box, [0.5, 1.5])).toBe(true) // strict interior
+  expect(minBiasAabbContains(box, [10, 11])).toBe(false) // strict exterior
+  expect(minBiasAabbContains(box, [0.5, 1])).toBe(true) // north edge
+  expect(minBiasAabbContains(box, [0, 1.5])).toBe(true) // west edge
+  expect(minBiasAabbContains(box, [0.5, 2])).toBe(false) // south edge
+  expect(minBiasAabbContains(box, [1, 1.5])).toBe(false) // east edge
 })
 
 describe('minBiasAabbOverlap', () => {
   test('fully disjoint', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [2, 3],
-      [3, 4],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [2, 3, 3, 4]
     expect(minBiasAabbOverlap(a, b)).toBe(false)
     expect(minBiasAabbOverlap(b, a)).toBe(false)
   })
 
   test('full enclosure', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [0.25, 1.25],
-      [0.75, 1.75],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [0.25, 1.25, 0.75, 1.75]
     expect(minBiasAabbOverlap(a, b)).toBe(true)
     expect(minBiasAabbOverlap(b, a)).toBe(true)
   })
 
   test('partial overlap', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [0.5, 1.5],
-      [1.5, 2.5],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [0.5, 1.5, 1.5, 2.5]
     expect(minBiasAabbOverlap(a, b)).toBe(true)
     expect(minBiasAabbOverlap(b, a)).toBe(true)
   })
 
   test('shared north edge', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [0.5, 1],
-      [1, 1.5],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [0.5, 1, 1, 1.5]
     expect(minBiasAabbOverlap(a, b)).toBe(true)
     expect(minBiasAabbOverlap(b, a)).toBe(true)
   })
 
   test('shared west edge', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [0, 1.5],
-      [0.5, 2],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [0, 1.5, 0.5, 2]
     expect(minBiasAabbOverlap(a, b)).toBe(true)
     expect(minBiasAabbOverlap(b, a)).toBe(true)
   })
 
   test('vertically adjacent, no overlap', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [0, 2],
-      [1, 3],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [0, 2, 1, 3]
 
     expect(aabb2.overlap(a, b)).toBe(true)
     expect(aabb2.overlap(b, a)).toBe(true)
@@ -155,14 +94,8 @@ describe('minBiasAabbOverlap', () => {
   })
 
   test('horizontally adjacent, no overlap', () => {
-    const a: [vec2, vec2] = [
-      [0, 1],
-      [1, 2],
-    ]
-    const b: [vec2, vec2] = [
-      [1, 1],
-      [2, 2],
-    ]
+    const a: Aabb2 = [0, 1, 1, 2]
+    const b: Aabb2 = [1, 1, 2, 2]
 
     expect(aabb2.overlap(a, b)).toBe(true)
     expect(aabb2.overlap(b, a)).toBe(true)
@@ -175,20 +108,10 @@ describe('nodeInsert', () => {
   test('insert attempt into non-enclosing node', () => {
     const node = emptyNode<TestItem>()
     const idMap: Map<string, TNode<TestItem>[]> = new Map()
-    nodeInsert(
-      node,
-      idMap,
-      [
-        [0, 1],
-        [1, 2],
-      ],
-      1,
-      testComparator,
-      {
-        id: 'a',
-        pos: [-1, 0],
-      },
-    )
+    nodeInsert(node, idMap, [0, 1, 1, 2], 1, testComparator, {
+      id: 'a',
+      pos: [-1, 0],
+    })
 
     expect(node.items!.length).toBe(0)
 
@@ -199,17 +122,7 @@ describe('nodeInsert', () => {
     const node = emptyNode<TestItem>()
     const idMap: Map<string, TNode<TestItem>[]> = new Map()
     const item = { id: 'a', pos: vec2.fromValues(0, 1) }
-    nodeInsert(
-      node,
-      idMap,
-      [
-        [0, 1],
-        [1, 2],
-      ],
-      1,
-      testComparator,
-      item,
-    )
+    nodeInsert(node, idMap, [0, 1, 1, 2], 1, testComparator, item)
 
     expect(node.items!.length).toBe(1)
     expect(node.items![0]).toBe(item)
@@ -236,17 +149,7 @@ describe('nodeInsert', () => {
     ]
 
     for (const i of items) {
-      nodeInsert(
-        node,
-        idMap,
-        [
-          [0, 1],
-          [2, 3],
-        ],
-        1,
-        testComparator,
-        i,
-      )
+      nodeInsert(node, idMap, [0, 1, 2, 3], 1, testComparator, i)
     }
 
     expect(node.items).toBeUndefined()
@@ -277,17 +180,7 @@ describe('nodeInsert', () => {
     const idMap: Map<string, TNode<TestItem>[]> = new Map()
 
     for (const i of items) {
-      nodeInsert(
-        node,
-        idMap,
-        [
-          [0, 1],
-          [2, 3],
-        ],
-        3,
-        testComparator,
-        i,
-      )
+      nodeInsert(node, idMap, [0, 1, 2, 3], 3, testComparator, i)
     }
 
     expect(node.items).toBeUndefined()
@@ -319,52 +212,30 @@ describe('nodeQuery', () => {
 
   test('no overlap with node AABB', () => {
     expect(
-      nodeQuery(
-        { items },
-        [
-          [-1, 0],
-          [1, 2],
-        ],
-        minBiasAabbContains,
-        [
-          [2, 3],
-          [3, 4],
-        ],
-      ).length,
+      nodeQuery({ items }, [-1, 0, 1, 2], minBiasAabbContains, [2, 3, 3, 4])
+        .length,
     ).toBe(0)
   })
 
   test('no overlap with items', () => {
     expect(
-      nodeQuery(
-        { items },
-        [
-          [-1, 0],
-          [1, 2],
-        ],
-        minBiasAabbContains,
-        [
-          [-0.25, 0.75],
-          [0.25, 1.25],
-        ],
-      ).length,
+      nodeQuery({ items }, [-1, 0, 1, 2], minBiasAabbContains, [
+        -0.25,
+        0.75,
+        0.25,
+        1.25,
+      ]).length,
     ).toBe(0)
   })
 
   test('no overlap with some items', () => {
     const node = { items }
-    const results = nodeQuery(
-      node,
-      [
-        [-1, 0],
-        [1, 2],
-      ],
-      minBiasAabbContains,
-      [
-        [-0.75, 0.25],
-        [0, 2],
-      ],
-    )
+    const results = nodeQuery(node, [-1, 0, 1, 2], minBiasAabbContains, [
+      -0.75,
+      0.25,
+      0,
+      2,
+    ])
     expect(results.length).toBe(2)
     expect(results[0]).toBe(items[0])
     expect(results[1]).toBe(items[3])

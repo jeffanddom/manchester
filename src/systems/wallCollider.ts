@@ -5,6 +5,7 @@ import { TILE_SIZE } from '~/constants'
 import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
+import { Aabb2 } from '~/util/aabb2'
 import { tileBox, tileCoords } from '~/util/tileMath'
 
 enum DirectionCollision {
@@ -18,9 +19,11 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
   for (const [id] of simState.entityManager.playerNumbers) {
     const transform = simState.entityManager.transforms.get(id)!
     const position = transform.position
-    const checkAabb: [vec2, vec2] = [
-      vec2.fromValues(position[0] - TILE_SIZE, position[1] - TILE_SIZE),
-      vec2.fromValues(position[0] + TILE_SIZE, position[1] + TILE_SIZE),
+    const checkAabb: Aabb2 = [
+      position[0] - TILE_SIZE,
+      position[1] - TILE_SIZE,
+      position[0] + TILE_SIZE,
+      position[1] + TILE_SIZE,
     ]
     const queried = simState.entityManager.queryByWorldPos(checkAabb)
     const playerBox = tileBox(position)
@@ -44,46 +47,46 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
       if (aabb2.overlap(playerBox, wallBox)) {
         // North
         if (
-          previousPlayerBox[1][1] <= wallBox[0][1] &&
-          playerBox[1][1] > wallBox[0][1]
+          previousPlayerBox[aabb2.Elem.y2] <= wallBox[aabb2.Elem.y1] &&
+          playerBox[aabb2.Elem.y2] > wallBox[aabb2.Elem.y1]
         ) {
           collisions.push({
             transform: otherTransform,
             direction: DirectionCollision.North,
-            value: wallBox[0][1],
+            value: wallBox[aabb2.Elem.y1],
           })
         }
         // South
         if (
-          previousPlayerBox[0][1] >= wallBox[1][1] &&
-          playerBox[0][1] < wallBox[1][1]
+          previousPlayerBox[aabb2.Elem.y1] >= wallBox[aabb2.Elem.y2] &&
+          playerBox[aabb2.Elem.y1] < wallBox[aabb2.Elem.y2]
         ) {
           collisions.push({
             transform: otherTransform,
             direction: DirectionCollision.South,
-            value: wallBox[1][1],
+            value: wallBox[aabb2.Elem.y2],
           })
         }
         // East
         if (
-          previousPlayerBox[0][0] >= wallBox[1][0] &&
-          playerBox[0][0] < wallBox[1][0]
+          previousPlayerBox[aabb2.Elem.x1] >= wallBox[aabb2.Elem.x2] &&
+          playerBox[aabb2.Elem.x1] < wallBox[aabb2.Elem.x2]
         ) {
           collisions.push({
             transform: otherTransform,
             direction: DirectionCollision.East,
-            value: wallBox[1][0],
+            value: wallBox[aabb2.Elem.x2],
           })
         }
         // West
         if (
-          previousPlayerBox[1][0] <= wallBox[0][0] &&
-          playerBox[1][0] > wallBox[0][0]
+          previousPlayerBox[aabb2.Elem.x2] <= wallBox[aabb2.Elem.x1] &&
+          playerBox[aabb2.Elem.x2] > wallBox[aabb2.Elem.x1]
         ) {
           collisions.push({
             transform: otherTransform,
             direction: DirectionCollision.West,
-            value: wallBox[0][0],
+            value: wallBox[aabb2.Elem.x1],
           })
         }
       }

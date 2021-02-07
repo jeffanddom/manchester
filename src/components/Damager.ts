@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
-
 import { Hitbox } from '~/components/Hitbox'
 import * as hitbox from '~/components/Hitbox'
 import { Transform } from '~/components/Transform'
 import { EntityId } from '~/entities/EntityId'
 import { Immutable } from '~/types/immutable'
+import { Aabb2 } from '~/util/aabb2'
 
 export type Damager = {
   damageValue: number
@@ -15,7 +14,7 @@ export type Damager = {
 export function aabb(
   d: Immutable<Damager>,
   transform: Immutable<Transform>,
-): [vec2, vec2] {
+): Aabb2 {
   return hitbox.aabb(d.hitbox, transform.position)
 }
 

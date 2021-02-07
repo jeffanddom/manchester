@@ -10,6 +10,7 @@ import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
 import { ServerMessageType } from '~/network/ServerMessage'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as terrain from '~/terrain'
+import * as aabb2 from '~/util/aabb2'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
@@ -43,10 +44,7 @@ export class ServerSim {
 
   constructor(config: { playerCount: number; minFramesBehindClient: number }) {
     this.clientMessagesByFrame = []
-    this.entityManager = new EntityManager([
-      [0, 0],
-      [0, 0],
-    ])
+    this.entityManager = new EntityManager(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
     this.simulationFrame = 0
@@ -154,14 +152,17 @@ export class ServerSim {
             this.map.origin,
             TILE_SIZE,
           )
+          const dimensions = vec2.scale(
+            vec2.create(),
+            this.map.dimensions,
+            TILE_SIZE,
+          )
 
           this.entityManager = new EntityManager([
-            worldOrigin,
-            vec2.add(
-              vec2.create(),
-              worldOrigin,
-              vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE),
-            ),
+            worldOrigin[0],
+            worldOrigin[1],
+            worldOrigin[0] + dimensions[0],
+            worldOrigin[1] + dimensions[1],
           ])
           this.terrainLayer = initMap(this.entityManager, this.map)
 

@@ -1,8 +1,7 @@
-import { vec2 } from 'gl-matrix'
-
 import * as hitbox from '~/components/Hitbox'
 import { Transform } from '~/components/Transform'
 import { Immutable } from '~/types/immutable'
+import { Aabb2 } from '~/util/aabb2'
 
 export type Damageable = {
   maxHealth: number
@@ -21,7 +20,7 @@ export function make(health: number, hitbox: hitbox.Hitbox): Damageable {
 export function aabb(
   d: Immutable<Damageable>,
   transform: Immutable<Transform>,
-): [vec2, vec2] {
+): Aabb2 {
   return hitbox.aabb(d.hitbox, transform.position)
 }
 
