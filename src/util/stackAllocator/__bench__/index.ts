@@ -40,9 +40,10 @@ export function bench(): {
 
     withAllocator.push(
       time.measure(() => {
-        allocator.pushFrame()
         for (let i = 0; i < size; i++) {
+          allocator.pushFrame()
           arr[i] = allocator.allocDefault()
+          allocator.popFrame()
         }
       }),
     )
