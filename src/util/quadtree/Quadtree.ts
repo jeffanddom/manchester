@@ -55,7 +55,7 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   }
 
   public query(aabb: Aabb2): TItem[] {
-    return nodeQuery(this.root, this.aabb, this.comparator, aabb)
+    return nodeQuery([], this.root, this.aabb, this.comparator, aabb)
   }
 
   public depth(): number {

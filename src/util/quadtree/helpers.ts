@@ -158,34 +158,38 @@ export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
 }
 
 export const nodeQuery = <TItem>(
+  out: TItem[],
   node: TNode<TItem>,
   nodeAabb: Aabb2,
   comparator: Comparator<TItem>,
   queryAabb: Aabb2,
 ): TItem[] => {
   if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
-    return []
+    return out
   }
 
   if (node.items !== undefined) {
-    return node.items.filter((i) => comparator(queryAabb, i))
+    for (const i of node.items) {
+      if (comparator(queryAabb, i)) {
+        out.push(i)
+      }
+    }
+
+    return out
   }
 
   const children = node.children!
-  const res: TItem[] = []
-
   for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
-    for (const i of nodeQuery(
+    nodeQuery(
+      out,
       children[q],
       quadrantOfAabb(nodeAabb, q),
       comparator,
       queryAabb,
-    )) {
-      res.push(i)
-    }
+    )
   }
 
-  return res
+  return out
 }
 
 export function treeDepth<TItem>(root: TNode<TItem>): number {

@@ -212,14 +212,14 @@ describe('nodeQuery', () => {
 
   test('no overlap with node AABB', () => {
     expect(
-      nodeQuery({ items }, [-1, 0, 1, 2], minBiasAabbContains, [2, 3, 3, 4])
+      nodeQuery([], { items }, [-1, 0, 1, 2], minBiasAabbContains, [2, 3, 3, 4])
         .length,
     ).toBe(0)
   })
 
   test('no overlap with items', () => {
     expect(
-      nodeQuery({ items }, [-1, 0, 1, 2], minBiasAabbContains, [
+      nodeQuery([], { items }, [-1, 0, 1, 2], minBiasAabbContains, [
         -0.25,
         0.75,
         0.25,
@@ -230,7 +230,7 @@ describe('nodeQuery', () => {
 
   test('no overlap with some items', () => {
     const node = { items }
-    const results = nodeQuery(node, [-1, 0, 1, 2], minBiasAabbContains, [
+    const results = nodeQuery([], node, [-1, 0, 1, 2], minBiasAabbContains, [
       -0.75,
       0.25,
       0,
