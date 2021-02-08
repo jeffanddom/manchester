@@ -24,9 +24,11 @@ export function bench(): {
   for (let t = 0; t < trials; t++) {
     const allocator = new Vec3Allocator(size)
 
+    gc()
+    let arr = new Array(size)
+
     noAllocator.push(
       time.measure(() => {
-        const arr = new Array(size)
         for (let i = 0; i < size; i++) {
           arr[i] = vec3.create()
         }
@@ -34,18 +36,16 @@ export function bench(): {
     )
 
     gc()
+    arr = new Array(size)
 
     withAllocator.push(
       time.measure(() => {
-        const arr = new Array(size)
         allocator.pushFrame()
         for (let i = 0; i < size; i++) {
           arr[i] = allocator.allocDefault()
         }
       }),
     )
-
-    gc()
   }
 
   const noAllocatorMean = mean(noAllocator)
