@@ -25,15 +25,19 @@ export const serverBuildVersionPath = path.join(
   'buildVersion',
 )
 
-export const webEntrypoints = ['client', 'tools/rendertoy']
+export const webEntrypoints = [
+  ['client', 'main.ts'],
+  ['tools/rendertoy', 'main.ts'],
+  ['tools/bench', 'main.tsx'],
+]
 
 export const webBuildOpts: esbuild.BuildOptions = {
   bundle: true,
   define: {
     'process.env.NODE_ENV': '"production"', // for react-dom
   },
-  entryPoints: webEntrypoints.map((srcPath) =>
-    path.join(gameSrcPath, srcPath, 'main.ts'),
+  entryPoints: webEntrypoints.map(([dir, entryfile]) =>
+    path.join(gameSrcPath, dir, entryfile),
   ),
   loader: {
     '.obj': 'text',
@@ -66,13 +70,13 @@ export async function updateWebBuildVersion(
 
 export async function copyWebHtml(): Promise<void> {
   await Promise.all(
-    webEntrypoints.map(async (srcPath) => {
-      await fs.promises.mkdir(path.join(webOutputPath, srcPath), {
+    webEntrypoints.map(async ([dir]) => {
+      await fs.promises.mkdir(path.join(webOutputPath, dir), {
         recursive: true,
       })
       await fs.promises.copyFile(
-        path.join(gameSrcPath, srcPath, 'index.html'),
-        path.join(webOutputPath, srcPath, 'index.html'),
+        path.join(gameSrcPath, dir, 'index.html'),
+        path.join(webOutputPath, dir, 'index.html'),
       )
     }),
   )
