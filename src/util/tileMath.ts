@@ -13,16 +13,14 @@ export const tileBox = (pos: Immutable<vec2>): Aabb2 => {
   ]
 }
 
-export const tileCoords = (position: Immutable<vec2>): vec2 => {
-  return vec2.floor(
-    vec2.create(),
-    vec2.scale(vec2.create(), position, 1 / TILE_SIZE),
-  )
+export const tileCoords = (out: vec2, position: Immutable<vec2>): vec2 => {
+  out[0] = Math.floor(position[0] / TILE_SIZE)
+  out[1] = Math.floor(position[1] / TILE_SIZE)
+  return out
 }
 
-export const tileToWorld = (tilePos: vec2): vec2 => {
-  const v = vec2.create()
-  vec2.scale(v, tilePos, TILE_SIZE)
-  vec2.add(v, v, vec2.fromValues(TILE_SIZE / 2, TILE_SIZE / 2))
-  return v
+export const tileToWorld = (out: vec2, tilePos: vec2): vec2 => {
+  out[0] = tilePos[0] * TILE_SIZE + TILE_SIZE / 2
+  out[1] = tilePos[1] * TILE_SIZE + TILE_SIZE / 2
+  return out
 }

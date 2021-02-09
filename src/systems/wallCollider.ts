@@ -95,14 +95,15 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
     collisions = collisions.filter((collision) => {
       const wallTransform = collision.transform
       const direction = collision.direction
-      const coords = tileCoords(wallTransform.position)
+      const coords = tileCoords(vec2.create(), wallTransform.position)
+      const preallocVec2 = vec2.create()
 
       switch (direction) {
         case DirectionCollision.North:
           return (
             collisions.find((c) =>
               vec2.equals(
-                tileCoords(c.transform.position),
+                tileCoords(preallocVec2, c.transform.position),
                 vec2.fromValues(coords[0], coords[1] - 1),
               ),
             ) === undefined
@@ -111,7 +112,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
           return (
             collisions.find((c) =>
               vec2.equals(
-                tileCoords(c.transform.position),
+                tileCoords(preallocVec2, c.transform.position),
                 vec2.fromValues(coords[0], coords[1] + 1),
               ),
             ) === undefined
@@ -120,7 +121,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
           return (
             collisions.find((c) =>
               vec2.equals(
-                tileCoords(c.transform.position),
+                tileCoords(preallocVec2, c.transform.position),
                 vec2.fromValues(coords[0] + 1, coords[1]),
               ),
             ) === undefined
@@ -129,7 +130,7 @@ export const update = (simState: Pick<SimState, 'entityManager'>): void => {
           return (
             collisions.find((c) =>
               vec2.equals(
-                tileCoords(c.transform.position),
+                tileCoords(preallocVec2, c.transform.position),
                 vec2.fromValues(coords[0] - 1, coords[1]),
               ),
             ) === undefined
