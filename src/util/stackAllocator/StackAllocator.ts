@@ -2,9 +2,14 @@ export class StackAllocator<T> {
   private objects: T[]
   private nextObject: number
   private frameSizes: number[]
-  private setDefault: (obj: T) => T
+  private setDefault: (obj: T) => void
 
-  constructor(size: number, create: () => T, setDefault: (obj: T) => T) {
+  /**
+   * setDefault should update the provided object in place. We don't care about
+   * its return value, so we annotated with void, which is compatible with any
+   * return type.
+   */
+  constructor(size: number, create: () => T, setDefault: (obj: T) => void) {
     this.objects = []
     for (let i = 0; i < size; i++) {
       this.objects.push(create())
@@ -44,6 +49,8 @@ export class StackAllocator<T> {
   }
 
   allocDefault(): T {
-    return this.setDefault(this.allocDirty())
+    const obj = this.allocDirty()
+    this.setDefault(obj)
+    return obj
   }
 }
