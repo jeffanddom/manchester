@@ -17,16 +17,19 @@ export enum SimulationPhase {
   ClientReprediction,
 }
 
-export function simulationPhaseDebugColor(phase: SimulationPhase): vec4 {
+export function simulationPhaseDebugColor(
+  out: vec4,
+  phase: SimulationPhase,
+): vec4 {
   switch (phase) {
     case SimulationPhase.ServerTick:
-      return vec4.fromValues(0, 0, 0, 0)
+      return vec4.set(out, 0, 0, 0, 0)
     case SimulationPhase.ClientPrediction:
-      return vec4.fromValues(1, 0, 0.8, 1)
+      return vec4.set(out, 1, 0, 0.8, 1)
     case SimulationPhase.ClientReprediction:
-      return vec4.fromValues(0.8, 0.8, 0, 1)
+      return vec4.set(out, 0.8, 0.8, 0, 1)
     case SimulationPhase.ClientAuthoritative:
-      return vec4.fromValues(0.2, 1, 0.2, 1)
+      return vec4.set(out, 0.2, 1, 0.2, 1)
   }
 }
 

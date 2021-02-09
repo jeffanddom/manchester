@@ -1,7 +1,4 @@
-import { vec3 } from 'gl-matrix'
-import { mat4 } from 'gl-matrix'
-import { quat } from 'gl-matrix'
-import { vec2 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
@@ -30,7 +27,7 @@ export const update = (simState: SimState): void => {
             vec3.fromValues(center[0], 0.05, center[1]),
             vec3.fromValues(size[0], 1, size[1]),
           ),
-          color: simulationPhaseDebugColor(simState.phase),
+          color: simulationPhaseDebugColor(vec4.create(), simState.phase),
         },
       })
     }
@@ -55,7 +52,7 @@ export const update = (simState: SimState): void => {
               vec3.fromValues(center[0], 0.05, center[1]),
               vec3.fromValues(size[0], 1, size[1]),
             ),
-            color: simulationPhaseDebugColor(simState.phase),
+            color: simulationPhaseDebugColor(vec4.create(), simState.phase),
           },
           lifetime: 3,
         },
