@@ -34,10 +34,11 @@ export class Camera3d {
     return this.fov
   }
 
-  screenToWorld(screenPos: Immutable<vec2>): vec3 {
+  screenToWorld(out: vec3, screenPos: Immutable<vec2>): vec3 {
     return vec3.transformMat4(
-      vec3.create(),
+      out,
       math.screenToView(
+        out,
         screenPos,
         this.viewportDimensions,
         math.fovToFocalLength(this.fov),

@@ -155,6 +155,7 @@ export function vec3toFixedString(
  * See: "Picking", chapter 6.6 Van Verth and Bishop, 2nd ed.
  */
 export function screenToView(
+  out: vec3,
   screenPos: Immutable<vec2>,
   viewportDimensions: Immutable<vec2>,
   focalLength: number,
@@ -162,11 +163,11 @@ export function screenToView(
   const w = viewportDimensions[0]
   const h = viewportDimensions[1]
 
-  return vec3.fromValues(
-    (2 * (screenPos[0] - w / 2)) / h,
-    (-2 * (screenPos[1] - h / 2)) / h,
-    -focalLength,
-  )
+  out[0] = (2 * (screenPos[0] - w / 2)) / h
+  out[1] = (-2 * (screenPos[1] - h / 2)) / h
+  out[2] = -focalLength
+
+  return out
 }
 
 export function fovToFocalLength(fov: number): number {

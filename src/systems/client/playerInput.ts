@@ -90,7 +90,7 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
   }
 
   // Get mouse position on display plane, in worldspace coordinates
-  const mouseWorldPos = client.camera.screenToWorld(mousePos)
+  const mouseWorldPos = client.camera.screenToWorld(vec3.create(), mousePos)
 
   // Get camera ray in world space
   const cameraWorldPos = client.camera.getPos()
