@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { mat4, vec2 } from 'gl-matrix'
 
 import { ClientRenderManager } from '~/client/ClientRenderManager'
 import { ClientSim } from '~/client/ClientSim'
@@ -99,7 +99,7 @@ export class Client {
     if (this.sim.state !== GameState.Connecting) {
       this.renderManager.update(
         this.sim.getRenderables(),
-        this.sim.camera.getWvTransform(),
+        this.sim.camera.getWvTransform(mat4.create()),
       )
     }
 

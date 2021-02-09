@@ -20,8 +20,7 @@ export class Camera3d {
     return this.pos
   }
 
-  getWvTransform(): mat4 {
-    const out = mat4.create()
+  getWvTransform(out: mat4): mat4 {
     return mat4.invert(out, this.targetTo(out))
   }
 

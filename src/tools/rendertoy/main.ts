@@ -170,7 +170,7 @@ function update(): void {
   requestAnimationFrame(update)
 
   renderer.clear()
-  renderer.setWvTransform(camera.world2View())
+  renderer.setWvTransform(camera.world2View(mat4.create()))
 
   if (lastCodeUpdate !== undefined && time.current() - lastCodeUpdate > 2) {
     lastCodeUpdate = undefined

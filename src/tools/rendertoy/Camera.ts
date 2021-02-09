@@ -50,24 +50,23 @@ export class Camera {
     })
   }
 
-  public world2View(): mat4 {
+  public world2View(out: mat4): mat4 {
     const worldPos = math.sphereCoordToVec3(vec3.create(), this.spherePos)
-    const m = mat4.targetTo(
-      mat4.create(),
+    mat4.targetTo(
+      out,
       worldPos,
       vec3.fromValues(0, 0, 0),
       vec3.fromValues(0, 1, 0),
     )
+
+    const rot = mat4.getRotation(quat.create(), out)
+
     const offset = mat4.fromTranslation(
       mat4.create(),
-      vec3.transformQuat(
-        vec3.create(),
-        this.viewOffset,
-        mat4.getRotation(quat.create(), m),
-      ),
+      vec3.transformQuat(vec3.create(), this.viewOffset, rot),
     )
 
-    mat4.multiply(m, offset, m)
-    return mat4.invert(m, m)
+    mat4.multiply(out, offset, out)
+    return mat4.invert(out, out)
   }
 }
