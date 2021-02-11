@@ -3,21 +3,23 @@ export class StackAllocator<T> {
   private nextObject: number
   private frameSizes: number[]
   private setDefault: (obj: T) => void
+  private setFree?: (obj: T) => void
 
-  /**
-   * setDefault should update the provided object in place. We don't care about
-   * its return value, so we annotated with void, which is compatible with any
-   * return type.
-   */
-  constructor(size: number, create: () => T, setDefault: (obj: T) => void) {
+  constructor(config: {
+    size: number
+    create: () => T
+    setDefault: (obj: T) => void // called to initialize object in allocDefault
+    setFree?: (obj: T) => void // set to clear freed objects to a sentinel value, to detect use-after-free bugs
+  }) {
     this.objects = []
-    for (let i = 0; i < size; i++) {
-      this.objects.push(create())
+    for (let i = 0; i < config.size; i++) {
+      this.objects.push(config.create())
     }
 
     this.nextObject = 0
     this.frameSizes = []
-    this.setDefault = setDefault
+    this.setDefault = config.setDefault
+    this.setFree = config.setFree
   }
 
   pushFrame(): void {
@@ -29,7 +31,14 @@ export class StackAllocator<T> {
       throw `no frame to pop`
     }
 
-    this.nextObject -= this.frameSizes.pop()! // can't be undefined if length > 0
+    const frameSize = this.frameSizes.pop()! // can't be undefined if length > 0
+    this.nextObject -= frameSize
+
+    if (this.setFree !== undefined) {
+      for (let i = this.nextObject; i < this.nextObject + frameSize; i++) {
+        this.setFree(this.objects[i])
+      }
+    }
   }
 
   allocDirty(): T {
