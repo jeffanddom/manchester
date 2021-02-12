@@ -1,7 +1,7 @@
 import {
   Comparator,
+  Node,
   QuadtreeItem,
-  TNode,
   nodeInsert,
   nodeQuery,
   treeDepth,
@@ -11,9 +11,8 @@ import { Aabb2 } from '~/util/aabb2'
 
 export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   private maxItems: number
-  private aabb: Aabb2 // NW and SE extrema
-  private root: TNode<TItem>
-  private idMap: Map<TId, TNode<TItem>[]>
+  private root: Node<TItem>
+  private idMap: Map<TId, Node<TItem>[]>
   private comparator: Comparator<TItem>
 
   constructor(config: {
@@ -22,8 +21,7 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
     comparator: Comparator<TItem>
   }) {
     this.maxItems = config.maxItems
-    this.aabb = config.aabb
-    this.root = { items: [] }
+    this.root = { aabb: config.aabb, items: [] }
     this.idMap = new Map()
     this.comparator = config.comparator
   }
@@ -33,14 +31,7 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
       this.remove(item.id)
     }
 
-    nodeInsert(
-      this.root,
-      this.idMap,
-      this.aabb,
-      this.maxItems,
-      this.comparator,
-      item,
-    )
+    nodeInsert(this.root, this.idMap, this.maxItems, this.comparator, item)
   }
 
   public remove(id: TId): void {
@@ -55,7 +46,7 @@ export class Quadtree<TId, TItem extends QuadtreeItem<TId>> {
   }
 
   public query(aabb: Aabb2): TItem[] {
-    return nodeQuery([], this.root, this.aabb, this.comparator, aabb)
+    return nodeQuery([], this.root, this.comparator, aabb)
   }
 
   public depth(): number {

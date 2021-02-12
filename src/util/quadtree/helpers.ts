@@ -17,20 +17,20 @@ export enum Quadrant {
 }
 
 export type ChildList<TItem> = [
-  TNode<TItem>,
-  TNode<TItem>,
-  TNode<TItem>,
-  TNode<TItem>,
+  Node<TItem>,
+  Node<TItem>,
+  Node<TItem>,
+  Node<TItem>,
 ]
 
-export type TNode<TItem> = {
-  // parent?: TNode<T>
+export type Node<TItem> = {
+  aabb: Aabb2
   children?: ChildList<TItem>
   items?: TItem[]
 }
 
-export const emptyNode = <TItem>(): TNode<TItem> => {
-  return { items: [] }
+export const emptyNode = <TItem>(aabb: Aabb2): Node<TItem> => {
+  return { aabb, items: [] }
 }
 
 /**
@@ -66,6 +66,36 @@ export const minBiasAabbOverlap = (a: Aabb2, b: Aabb2): boolean => {
     leftmost[aabb2.Elem.x2] !== rightmost[aabb2.Elem.x1] &&
     upper[aabb2.Elem.y2] !== lower[aabb2.Elem.y1]
   )
+}
+
+export function quadrants(
+  out: [Aabb2, Aabb2, Aabb2, Aabb2],
+  aabb: Aabb2,
+): [Aabb2, Aabb2, Aabb2, Aabb2] {
+  const halfW = (aabb[aabb2.Elem.x2] - aabb[aabb2.Elem.x1]) / 2
+  const halfH = (aabb[aabb2.Elem.y2] - aabb[aabb2.Elem.y1]) / 2
+
+  out[Quadrant.NW][0] = aabb[aabb2.Elem.x1]
+  out[Quadrant.NW][1] = aabb[aabb2.Elem.y1]
+  out[Quadrant.NW][2] = aabb[aabb2.Elem.x1] + halfW
+  out[Quadrant.NW][3] = aabb[aabb2.Elem.y1] + halfH
+
+  out[Quadrant.NE][0] = aabb[aabb2.Elem.x1] + halfW
+  out[Quadrant.NE][1] = aabb[aabb2.Elem.y1]
+  out[Quadrant.NE][2] = aabb[aabb2.Elem.x2]
+  out[Quadrant.NE][3] = aabb[aabb2.Elem.y1] + halfH
+
+  out[Quadrant.SE][0] = aabb[aabb2.Elem.x1] + halfW
+  out[Quadrant.SE][1] = aabb[aabb2.Elem.y1] + halfH
+  out[Quadrant.SE][2] = aabb[aabb2.Elem.x2]
+  out[Quadrant.SE][3] = aabb[aabb2.Elem.y2]
+
+  out[Quadrant.SW][0] = aabb[aabb2.Elem.x1]
+  out[Quadrant.SW][1] = aabb[aabb2.Elem.y1] + halfH
+  out[Quadrant.SW][2] = aabb[aabb2.Elem.x1] + halfW
+  out[Quadrant.SW][3] = aabb[aabb2.Elem.y2]
+
+  return out
 }
 
 export const quadrantOfAabb = (parent: Aabb2, q: Quadrant): Aabb2 => {
@@ -105,28 +135,21 @@ export const quadrantOfAabb = (parent: Aabb2, q: Quadrant): Aabb2 => {
 }
 
 export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
-  node: TNode<TItem>,
-  idMap: Map<TId, TNode<TItem>[]>,
-  aabb: Aabb2,
+  node: Node<TItem>,
+  idMap: Map<TId, Node<TItem>[]>,
   maxItems: number,
   comparator: Comparator<TItem>,
   item: TItem,
 ): void => {
-  if (!comparator(aabb, item)) {
+  if (!comparator(node.aabb, item)) {
     return
   }
 
   if (node.children !== undefined) {
-    for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
-      nodeInsert(
-        node.children[q],
-        idMap,
-        quadrantOfAabb(aabb, q),
-        maxItems,
-        comparator,
-        item,
-      )
-    }
+    nodeInsert(node.children[Quadrant.NW], idMap, maxItems, comparator, item)
+    nodeInsert(node.children[Quadrant.NE], idMap, maxItems, comparator, item)
+    nodeInsert(node.children[Quadrant.SE], idMap, maxItems, comparator, item)
+    nodeInsert(node.children[Quadrant.SW], idMap, maxItems, comparator, item)
     return
   }
 
@@ -147,24 +170,33 @@ export const nodeInsert = <TId, TItem extends QuadtreeItem<TId>>(
 
   // Convert node from item node to branch node
   delete node.items
-  node.children = [{ items: [] }, { items: [] }, { items: [] }, { items: [] }]
+
+  const nodeQuadrants = quadrants(
+    [aabb2.create(), aabb2.create(), aabb2.create(), aabb2.create()],
+    node.aabb,
+  )
+  node.children = [
+    emptyNode(nodeQuadrants[Quadrant.NW]),
+    emptyNode(nodeQuadrants[Quadrant.NE]),
+    emptyNode(nodeQuadrants[Quadrant.SE]),
+    emptyNode(nodeQuadrants[Quadrant.SW]),
+  ]
+
   for (const i of items) {
     const parentNodes = idMap.get(i.id)!
     const toRemove = parentNodes.indexOf(node)
     parentNodes.splice(toRemove, 1)
-
-    nodeInsert(node, idMap, aabb, maxItems, comparator, i)
+    nodeInsert(node, idMap, maxItems, comparator, i)
   }
 }
 
 export const nodeQuery = <TItem>(
   out: TItem[],
-  node: TNode<TItem>,
-  nodeAabb: Aabb2,
+  node: Node<TItem>,
   comparator: Comparator<TItem>,
   queryAabb: Aabb2,
 ): TItem[] => {
-  if (!minBiasAabbOverlap(nodeAabb, queryAabb)) {
+  if (!minBiasAabbOverlap(node.aabb, queryAabb)) {
     return out
   }
 
@@ -174,25 +206,18 @@ export const nodeQuery = <TItem>(
         out.push(i)
       }
     }
-
-    return out
-  }
-
-  const children = node.children!
-  for (const q of [Quadrant.NW, Quadrant.NE, Quadrant.SE, Quadrant.SW]) {
-    nodeQuery(
-      out,
-      children[q],
-      quadrantOfAabb(nodeAabb, q),
-      comparator,
-      queryAabb,
-    )
+  } else {
+    const children = node.children!
+    nodeQuery(out, children[Quadrant.NW], comparator, queryAabb)
+    nodeQuery(out, children[Quadrant.NE], comparator, queryAabb)
+    nodeQuery(out, children[Quadrant.SE], comparator, queryAabb)
+    nodeQuery(out, children[Quadrant.SW], comparator, queryAabb)
   }
 
   return out
 }
 
-export function treeDepth<TItem>(root: TNode<TItem>): number {
+export function treeDepth<TItem>(root: Node<TItem>): number {
   if (root.children === undefined) {
     return 1
   }

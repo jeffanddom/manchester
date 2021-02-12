@@ -4,14 +4,15 @@ import * as aabb2 from '../../aabb2'
 import { Aabb2 } from '../../aabb2'
 import {
   ChildList,
+  Node,
   Quadrant,
-  TNode,
   emptyNode,
   minBiasAabbContains,
   minBiasAabbOverlap,
   nodeInsert,
   nodeQuery,
   quadrantOfAabb,
+  quadrants,
 } from '../helpers'
 
 type TestItem = {
@@ -106,40 +107,43 @@ describe('minBiasAabbOverlap', () => {
 
 describe('nodeInsert', () => {
   test('insert attempt into non-enclosing node', () => {
-    const node = emptyNode<TestItem>()
-    const idMap: Map<string, TNode<TestItem>[]> = new Map()
-    nodeInsert(node, idMap, [0, 1, 1, 2], 1, testComparator, {
+    const node = emptyNode<TestItem>([0, 1, 1, 2])
+    const idMap: Map<string, Node<TestItem>[]> = new Map()
+    nodeInsert(node, idMap, 1, testComparator, {
       id: 'a',
       pos: [-1, 0],
     })
 
     expect(node.items!.length).toBe(0)
-
     expect(idMap).not.toHaveProperty('a')
   })
 
   test('insert into node with spare capacity', () => {
-    const node = emptyNode<TestItem>()
-    const idMap: Map<string, TNode<TestItem>[]> = new Map()
+    const node = emptyNode<TestItem>([0, 1, 1, 2])
+    const idMap: Map<string, Node<TestItem>[]> = new Map()
     const item = { id: 'a', pos: vec2.fromValues(0, 1) }
-    nodeInsert(node, idMap, [0, 1, 1, 2], 1, testComparator, item)
+    nodeInsert(node, idMap, 1, testComparator, item)
 
     expect(node.items!.length).toBe(1)
     expect(node.items![0]).toBe(item)
-
     expect(idMap.has('a')).toBe(true)
   })
 
   test('insert into intermediate node', () => {
+    const aabb: Aabb2 = [0, 1, 2, 3]
+    const quads = quadrants(
+      [aabb2.create(), aabb2.create(), aabb2.create(), aabb2.create()],
+      aabb,
+    )
     const children: ChildList<TestItem> = [
-      emptyNode(),
-      emptyNode(),
-      emptyNode(),
-      emptyNode(),
+      emptyNode(quads[Quadrant.NW]),
+      emptyNode(quads[Quadrant.NE]),
+      emptyNode(quads[Quadrant.SE]),
+      emptyNode(quads[Quadrant.SW]),
     ]
 
-    const node: TNode<TestItem> = { children }
-    const idMap: Map<string, TNode<TestItem>[]> = new Map()
+    const node: Node<TestItem> = { aabb: [0, 1, 2, 3], children }
+    const idMap: Map<string, Node<TestItem>[]> = new Map()
 
     const items: TestItem[] = [
       { id: 'a', pos: vec2.fromValues(0, 1) },
@@ -149,7 +153,7 @@ describe('nodeInsert', () => {
     ]
 
     for (const i of items) {
-      nodeInsert(node, idMap, [0, 1, 2, 3], 1, testComparator, i)
+      nodeInsert(node, idMap, 1, testComparator, i)
     }
 
     expect(node.items).toBeUndefined()
@@ -176,11 +180,11 @@ describe('nodeInsert', () => {
       { id: 'd', pos: vec2.fromValues(0.5, 2.5) },
     ]
 
-    const node: TNode<TestItem> = { items: [] }
-    const idMap: Map<string, TNode<TestItem>[]> = new Map()
+    const node: Node<TestItem> = { aabb: [0, 1, 2, 3], items: [] }
+    const idMap: Map<string, Node<TestItem>[]> = new Map()
 
     for (const i of items) {
-      nodeInsert(node, idMap, [0, 1, 2, 3], 3, testComparator, i)
+      nodeInsert(node, idMap, 3, testComparator, i)
     }
 
     expect(node.items).toBeUndefined()
@@ -212,14 +216,18 @@ describe('nodeQuery', () => {
 
   test('no overlap with node AABB', () => {
     expect(
-      nodeQuery([], { items }, [-1, 0, 1, 2], minBiasAabbContains, [2, 3, 3, 4])
-        .length,
+      nodeQuery([], { aabb: [-1, 0, 1, 2], items }, minBiasAabbContains, [
+        2,
+        3,
+        3,
+        4,
+      ]).length,
     ).toBe(0)
   })
 
   test('no overlap with items', () => {
     expect(
-      nodeQuery([], { items }, [-1, 0, 1, 2], minBiasAabbContains, [
+      nodeQuery([], { aabb: [-1, 0, 1, 2], items }, minBiasAabbContains, [
         -0.25,
         0.75,
         0.25,
@@ -229,8 +237,8 @@ describe('nodeQuery', () => {
   })
 
   test('no overlap with some items', () => {
-    const node = { items }
-    const results = nodeQuery([], node, [-1, 0, 1, 2], minBiasAabbContains, [
+    const node: Node<vec2> = { aabb: [-1, 0, 1, 2], items }
+    const results = nodeQuery([], node, minBiasAabbContains, [
       -0.75,
       0.25,
       0,
