@@ -30,6 +30,10 @@ declare module 'gl-matrix' {
     export function max(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function min(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function scale(out: vec2, a: Immutable<vec2>, b: number): vec2
+    export function squaredDistance(
+      a: Immutable<vec2>,
+      b: Immutable<vec2>,
+    ): number
     export function sub(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function subtract(
       out: vec2,

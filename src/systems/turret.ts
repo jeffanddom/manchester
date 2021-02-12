@@ -18,6 +18,7 @@ import { SortedSet } from '~/util/SortedSet'
 
 const TURRET_ROT_SPEED = Math.PI / 2
 const RANGE = 12 * TILE_SIZE
+const RANGE_SQUARED = RANGE * RANGE
 const COOLDOWN_PERIOD = 0.33
 
 export type TurretComponent = {
@@ -83,7 +84,10 @@ export const update = (
       }
 
       const targetTransform = entityManager.transforms.get(targetId)!
-      if (vec2.distance(targetTransform.position, transform.position) > RANGE) {
+      if (
+        vec2.squaredDistance(targetTransform.position, transform.position) >
+        RANGE_SQUARED
+      ) {
         continue
       }
 
@@ -95,8 +99,8 @@ export const update = (
 
     shootables.sort(
       (a, b) =>
-        vec2.distance(a.transform!.position, transform.position) -
-        vec2.distance(b.transform!.position, transform.position),
+        vec2.squaredDistance(a.transform!.position, transform.position) -
+        vec2.squaredDistance(b.transform!.position, transform.position),
     )
 
     const target = shootables.find((candidate, n) => {
