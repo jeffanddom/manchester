@@ -13,7 +13,6 @@ import { SimState } from '~/simulate'
 import { getAngle, radialTranslate2 } from '~/util/math'
 
 export type ShooterComponent = {
-  cooldownTtl: number
   lastFiredFrame: number
   orientation: number
   input: {
@@ -24,7 +23,6 @@ export type ShooterComponent = {
 
 export function make(): ShooterComponent {
   return {
-    cooldownTtl: 0,
     lastFiredFrame: -1,
     orientation: 0,
     input: { target: undefined, fire: false },
@@ -33,7 +31,6 @@ export function make(): ShooterComponent {
 
 export function clone(s: ShooterComponent): ShooterComponent {
   return {
-    cooldownTtl: s.cooldownTtl,
     lastFiredFrame: s.lastFiredFrame,
     orientation: s.orientation,
     input: {

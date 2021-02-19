@@ -9,6 +9,7 @@ import { Type } from '~/entities/types'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
+import { TankMoverComponent } from '~/systems/tankMover'
 import { TurretComponent } from '~/systems/turret'
 
 export interface EntityComponents {
@@ -26,6 +27,7 @@ export interface EntityComponents {
   entityModel?: EntityModel
   shooter?: ShooterComponent
   targetable?: boolean
+  tankMover?: TankMoverComponent
   team?: Team
   transform?: Transform
   turret?: TurretComponent

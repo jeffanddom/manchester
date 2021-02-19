@@ -11,6 +11,7 @@ import {
 import { Type } from '~/entities/types'
 import { BuilderCreator } from '~/systems/builder'
 import * as shooter from '~/systems/shooter'
+import * as tankMover from '~/systems/tankMover'
 
 export const makePlayer = (): EntityComponents => {
   const e = makeDefaultEntity()
@@ -37,6 +38,7 @@ export const makePlayer = (): EntityComponents => {
   }
   e.shooter = shooter.make()
   e.transform = transform.make()
+  e.tankMover = tankMover.make()
 
   return e
 }

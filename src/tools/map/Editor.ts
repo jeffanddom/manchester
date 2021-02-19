@@ -115,22 +115,22 @@ export class Editor {
   updateCamera(dt: number): void {
     const cameraPos = this.camera.getPosition()
 
-    if (this.keyboard.downKeys.has(keyMap.cameraNorth)) {
+    if (this.keyboard.heldkeys.has(keyMap.cameraNorth)) {
       vec2.add(cameraPos, cameraPos, [0, -CAMERA_SPEED * dt])
-    } else if (this.keyboard.downKeys.has(keyMap.cameraSouth)) {
+    } else if (this.keyboard.heldkeys.has(keyMap.cameraSouth)) {
       vec2.add(cameraPos, cameraPos, [0, CAMERA_SPEED * dt])
     }
 
-    if (this.keyboard.downKeys.has(keyMap.cameraWest)) {
+    if (this.keyboard.heldkeys.has(keyMap.cameraWest)) {
       vec2.add(cameraPos, cameraPos, [-CAMERA_SPEED * dt, 0])
-    } else if (this.keyboard.downKeys.has(keyMap.cameraEast)) {
+    } else if (this.keyboard.heldkeys.has(keyMap.cameraEast)) {
       vec2.add(cameraPos, cameraPos, [CAMERA_SPEED * dt, 0])
     }
 
     let zoom = this.camera.getZoom()
-    if (this.keyboard.downKeys.has(keyMap.zoomIn)) {
+    if (this.keyboard.heldkeys.has(keyMap.zoomIn)) {
       zoom += ZOOM_SPEED * dt
-    } else if (this.keyboard.downKeys.has(keyMap.zoomOut)) {
+    } else if (this.keyboard.heldkeys.has(keyMap.zoomOut)) {
       zoom -= ZOOM_SPEED * dt
     }
     zoom = math.clamp(zoom, 0.5, 3)
@@ -150,7 +150,7 @@ export class Editor {
 
   updateBrush(): void {
     if (this.keyboard.upKeys.has(keyMap.toggleTerrain)) {
-      if (this.keyboard.downKeys.has(keyMap.shift)) {
+      if (this.keyboard.heldkeys.has(keyMap.shift)) {
         // delete terrain under cursor
         if (this.cursorTilePos !== undefined) {
           this.map.terrain[this.t2a(this.cursorTilePos)] = null
@@ -164,8 +164,8 @@ export class Editor {
       } else {
         this.brush.terrain =
           TERRAIN_TYPES[
-            (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
-              TERRAIN_TYPES.length
+          (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
+          TERRAIN_TYPES.length
           ]
       }
 
@@ -175,7 +175,7 @@ export class Editor {
     }
 
     if (this.keyboard.upKeys.has(keyMap.toggleEntity)) {
-      if (this.keyboard.downKeys.has(keyMap.shift)) {
+      if (this.keyboard.heldkeys.has(keyMap.shift)) {
         // delete terrain under cursor
         if (this.cursorTilePos !== undefined) {
           this.map.entities[this.t2a(this.cursorTilePos)] = null
@@ -188,7 +188,7 @@ export class Editor {
       } else {
         this.brush.entity =
           ENTITY_TYPES[
-            (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
+          (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
           ]
       }
 
@@ -197,7 +197,7 @@ export class Editor {
     }
 
     if (
-      this.keyboard.downKeys.has(keyMap.paint) ||
+      this.keyboard.heldkeys.has(keyMap.paint) ||
       this.mouse.isDown(MouseButton.LEFT)
     ) {
       if (this.cursorTilePos !== undefined) {

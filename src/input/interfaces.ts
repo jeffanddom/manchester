@@ -13,6 +13,7 @@ export enum DirectionMove {
 
 export interface IKeyboard {
   downKeys: Set<string>
+  heldkeys: Set<string>
   upKeys: Set<string>
 
   reset: () => void

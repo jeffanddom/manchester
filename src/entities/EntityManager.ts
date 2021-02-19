@@ -24,6 +24,7 @@ import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
 import { tileBox } from '~/util/tileMath'
+import { TankMoverComponent, clone as tankMoverClone } from '~/systems/tankMover'
 
 type QuadtreeEntity = {
   id: EntityId
@@ -52,6 +53,7 @@ export class EntityManager {
   renderables: ComponentTable<string>
   entityModels: ComponentTable<EntityModel>
   shooters: ComponentTable<ShooterComponent>
+  tankMovers: ComponentTable<TankMoverComponent>
   targetables: EntitySet
   teams: ComponentTable<Team>
   transforms: ComponentTable<Transform>
@@ -87,6 +89,7 @@ export class EntityManager {
     this.playfieldClamped = new EntitySet()
     this.renderables = new ComponentTable((c) => c)
     this.shooters = new ComponentTable(shooterClone)
+    this.tankMovers = new ComponentTable(tankMoverClone)
     this.targetables = new EntitySet()
     this.teams = new ComponentTable((c) => c)
     this.transforms = new ComponentTable(transform.clone)
@@ -108,6 +111,7 @@ export class EntityManager {
       this.renderables,
       this.entityModels,
       this.shooters,
+      this.tankMovers,
       this.targetables,
       this.teams,
       this.transforms,
@@ -228,6 +232,10 @@ export class EntityManager {
 
     if (e.entityModel !== undefined) {
       this.entityModels.set(id, e.entityModel)
+    }
+
+    if (e.tankMover !== undefined) {
+      this.tankMovers.set(id, e.tankMover)
     }
 
     if (e.targetable ?? false) {

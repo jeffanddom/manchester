@@ -6,7 +6,7 @@ export enum ClientMessageType {
   // Informs the server about the end of a client frame. Sent every frame from
   // client to server.
   FRAME_END,
-  MOVE_PLAYER,
+  PLAYER_MOVE,
   TANK_AIM,
 }
 
@@ -15,11 +15,12 @@ export type ClientMessageFrameEnd = {
   frame: number
 }
 
-export type MovePlayerClientMessage = {
+export type PlayerMoveClientMessage = {
   frame: number
   playerNumber: number
-  type: ClientMessageType.MOVE_PLAYER
+  type: ClientMessageType.PLAYER_MOVE
   direction: DirectionMove
+  dash: boolean
 }
 
 export type TankAimClientMessage = {
@@ -32,5 +33,5 @@ export type TankAimClientMessage = {
 
 export type ClientMessage =
   | ClientMessageFrameEnd
-  | MovePlayerClientMessage
+  | PlayerMoveClientMessage
   | TankAimClientMessage

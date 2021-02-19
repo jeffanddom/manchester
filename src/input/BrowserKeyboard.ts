@@ -7,32 +7,36 @@ import { IKeyboard } from '~/input/interfaces'
 
 export class BrowserKeyboard implements IKeyboard {
   downKeys: Set<string>
+  heldkeys: Set<string>
   upKeys: Set<string>
 
   constructor(document: Document) {
     this.downKeys = new Set()
+    this.heldkeys = new Set()
     this.upKeys = new Set()
 
     document.addEventListener('focusout', () => {
-      this.downKeys.clear()
+      this.heldkeys.clear()
       this.upKeys.clear()
     })
     document.addEventListener('keydown', (event) => {
       this.downKeys.add(event.code)
+      this.heldkeys.add(event.code)
       this.upKeys.delete(event.code)
     })
     document.addEventListener('keyup', (event) => {
-      this.downKeys.delete(event.code)
+      this.heldkeys.delete(event.code)
       this.upKeys.add(event.code)
     })
   }
 
   reset(): void {
-    this.downKeys = new Set()
+    this.heldkeys = new Set()
     this.upKeys = new Set()
   }
 
   update(): void {
+    this.downKeys.clear()
     this.upKeys.clear()
   }
 }

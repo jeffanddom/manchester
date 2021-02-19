@@ -18,6 +18,7 @@ export const keyMap = {
   buildTurretMode: 'Digit2',
   buildWallMode: 'Digit3',
   moveBuilderMode: 'Digit4',
+  dash: 'Space',
 }
 
 export enum CursorMode {
@@ -29,47 +30,31 @@ export enum CursorMode {
 }
 
 export const update = (client: ClientSim, frame: number): void => {
-  // handleCursorMode(game)
   handleMoveInput(client, frame)
   handleAttackInput(client, frame)
-  // handleBuilderInput(game, entityManager)
 }
-
-// const handleCursorMode = (game: Game): void => {
-//   if (game.client.keyboard.downKeys.has(keyMap.harvestMode)) {
-//     game.client.playerInputState.cursorMode = CursorMode.HARVEST
-//   } else if (game.client.keyboard.downKeys.has(keyMap.buildTurretMode)) {
-//     game.client.playerInputState.cursorMode = CursorMode.BUILD_TURRET
-//   } else if (game.client.keyboard.downKeys.has(keyMap.buildWallMode)) {
-//     game.client.playerInputState.cursorMode = CursorMode.BUILD_WALL
-//   } else if (game.client.keyboard.downKeys.has(keyMap.moveBuilderMode)) {
-//     game.client.playerInputState.cursorMode = CursorMode.MOVE_BUILDER
-//   } else {
-//     game.client.playerInputState.cursorMode = CursorMode.NONE
-//   }
-// }
 
 const handleMoveInput = (client: ClientSim, frame: number): void => {
   let direction
-  if (client.keyboard.downKeys.has(keyMap.moveUp)) {
-    if (client.keyboard.downKeys.has(keyMap.moveLeft)) {
+  if (client.keyboard.heldkeys.has(keyMap.moveUp)) {
+    if (client.keyboard.heldkeys.has(keyMap.moveLeft)) {
       direction = DirectionMove.NW
-    } else if (client.keyboard.downKeys.has(keyMap.moveRight)) {
+    } else if (client.keyboard.heldkeys.has(keyMap.moveRight)) {
       direction = DirectionMove.NE
     } else {
       direction = DirectionMove.N
     }
-  } else if (client.keyboard.downKeys.has(keyMap.moveDown)) {
-    if (client.keyboard.downKeys.has(keyMap.moveLeft)) {
+  } else if (client.keyboard.heldkeys.has(keyMap.moveDown)) {
+    if (client.keyboard.heldkeys.has(keyMap.moveLeft)) {
       direction = DirectionMove.SW
-    } else if (client.keyboard.downKeys.has(keyMap.moveRight)) {
+    } else if (client.keyboard.heldkeys.has(keyMap.moveRight)) {
       direction = DirectionMove.SE
     } else {
       direction = DirectionMove.S
     }
-  } else if (client.keyboard.downKeys.has(keyMap.moveLeft)) {
+  } else if (client.keyboard.heldkeys.has(keyMap.moveLeft)) {
     direction = DirectionMove.W
-  } else if (client.keyboard.downKeys.has(keyMap.moveRight)) {
+  } else if (client.keyboard.heldkeys.has(keyMap.moveRight)) {
     direction = DirectionMove.E
   }
 
@@ -77,8 +62,9 @@ const handleMoveInput = (client: ClientSim, frame: number): void => {
     client.sendClientMessage({
       frame,
       playerNumber: client.playerNumber,
-      type: ClientMessageType.MOVE_PLAYER,
+      type: ClientMessageType.PLAYER_MOVE,
       direction,
+      dash: client.keyboard.downKeys.has(keyMap.dash)
     })
   }
 }
@@ -144,49 +130,3 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
     },
   ])
 }
-
-// const handleBuilderInput = (game: Game, entityManager: EntityManager): void => {
-//   const player = entityManager.getPlayer()!
-//   player.builderCreator!.nextBuilder = null
-
-//   const mousePos = game.client.mouse.getPos()
-//   if (
-//     !game.client.mouse.isUp(MouseButton.RIGHT) ||
-//     !mousePos ||
-//     game.client.playerInputState.cursorMode === CursorMode.NONE
-//   ) {
-//     return
-//   }
-
-//   const inventory = player.inventory!
-//   let mode
-//   switch (game.client.playerInputState.cursorMode) {
-//     case CursorMode.HARVEST:
-//       mode = BuilderMode.HARVEST
-//       break
-//     case CursorMode.BUILD_TURRET:
-//       if (!inventory.includes(PickupType.Core)) {
-//         return
-//       }
-
-//       inventory.splice(inventory.indexOf(PickupType.Core), 1)
-//       mode = BuilderMode.BUILD_TURRET
-//       break
-//     case CursorMode.BUILD_WALL:
-//       if (!inventory.includes(PickupType.Wood)) {
-//         return
-//       }
-
-//       inventory.splice(inventory.indexOf(PickupType.Wood), 1)
-//       mode = BuilderMode.BUILD_WALL
-//       break
-//     case CursorMode.MOVE_BUILDER:
-//       mode = BuilderMode.MOVE
-//       break
-//   }
-
-//   player.builderCreator!.nextBuilder = {
-//     mode,
-//     dest: game.client.camera.viewToWorldspace(mousePos),
-//   }
-// }
