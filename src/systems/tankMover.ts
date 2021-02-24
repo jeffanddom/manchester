@@ -12,9 +12,9 @@ import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const TANK_SPEED = 60 * (TILE_SIZE / 8)
 const TANK_ROT_SPEED = Math.PI
-const DASH_DURATION = 8
+const DASH_DURATION = 6
 const DASH_SPEED = 60 * (TILE_SIZE / 1.25)
-const DASH_TTL = 20
+const DASH_COOLDOWN = 25
 
 export type TankMoverComponent = {
   dashDirection: DirectionMove
@@ -23,14 +23,14 @@ export type TankMoverComponent = {
 
 export function make(): TankMoverComponent {
   return {
-    dashDirection: DirectionMove.N
+    dashDirection: DirectionMove.N,
   }
 }
 
 export function clone(t: TankMoverComponent): TankMoverComponent {
   return {
     dashDirection: t.dashDirection,
-    lastDashFrame: t.lastDashFrame
+    lastDashFrame: t.lastDashFrame,
   }
 }
 
@@ -42,7 +42,7 @@ export const update = (
   },
   dt: number,
 ): void => {
-  const messages = new Map<number, PlayerMoveClientMessage>();
+  const messages = new Map<number, PlayerMoveClientMessage>()
   simState.messages.forEach((m) => {
     if (m.type === ClientMessageType.PLAYER_MOVE) {
       messages.set(m.playerNumber, m)
@@ -55,7 +55,7 @@ export const update = (
 
     const message = messages.get(playerNumber)
 
-    if (tankMover.lastDashFrame) {
+    if (tankMover.lastDashFrame !== undefined) {
       if (simState.frame - tankMover.lastDashFrame < DASH_DURATION) {
         const position = radialTranslate2(
           vec2.create(),
@@ -68,8 +68,10 @@ export const update = (
         continue
       }
 
-      if (simState.frame - tankMover.lastDashFrame >= DASH_TTL) {
-        simState.entityManager.tankMovers.update(id, { lastDashFrame: undefined })
+      if (simState.frame - tankMover.lastDashFrame >= DASH_COOLDOWN) {
+        simState.entityManager.tankMovers.update(id, {
+          lastDashFrame: undefined,
+        })
       }
     }
 
@@ -77,7 +79,8 @@ export const update = (
       let orientation
       if (message.dash && tankMover.lastDashFrame === undefined) {
         simState.entityManager.tankMovers.update(id, {
-          lastDashFrame: simState.frame, dashDirection: message.direction
+          lastDashFrame: simState.frame,
+          dashDirection: message.direction,
         })
         orientation = message.direction
         simState.entityManager.transforms.update(id, { orientation })

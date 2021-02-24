@@ -1,5 +1,7 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
+import { CameraController } from './CameraController'
+
 import { getGltfDocument } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
@@ -53,6 +55,7 @@ export class ClientSim {
 
   camera: Camera3d
   zoomLevel: number
+  cameraController: CameraController
   emitters: ParticleEmitter[]
   emitterHistory: Set<string>
 
@@ -106,6 +109,7 @@ export class ClientSim {
       viewportDimensions: config.viewportDimensions,
     })
     this.zoomLevel = 12
+    this.cameraController = new CameraController()
     this.emitters = []
     this.emitterHistory = new Set()
 
@@ -167,7 +171,9 @@ export class ClientSim {
       gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
     }
 
-    this.syncCameraToPlayer()
+    const playerPos = vec3.create()
+    this.getPlayerPos(playerPos)
+    this.cameraController.reset(playerPos)
   }
 
   setState(s: GameState): void {
@@ -178,9 +184,9 @@ export class ClientSim {
     this.serverConnection = conn
   }
 
-  private syncCameraToPlayer(): void {
+  private getPlayerPos(out: vec3): void {
     if (this.playerNumber === undefined) {
-      return
+      return // TODO: should be an error
     }
 
     const playerId = this.entityManager.getPlayerId(this.playerNumber)
@@ -193,11 +199,20 @@ export class ClientSim {
       return
     }
 
-    const targetPos = vec3.fromValues(
-      transform.position[0],
-      0,
-      transform.position[1],
-    )
+    out[0] = transform.position[0]
+    out[1] = 0
+    out[2] = transform.position[1]
+  }
+
+  private syncCameraToPlayer(dt: number): void {
+    const playerPos = vec3.create()
+    this.getPlayerPos(playerPos)
+
+    this.cameraController.setTarget(playerPos)
+    this.cameraController.update(dt)
+
+    const targetPos = vec3.create()
+    this.cameraController.getPos(targetPos)
 
     // Position the 3D camera at a fixed offset from the player, and
     // point the camera directly at the player.
@@ -360,7 +375,7 @@ export class ClientSim {
           this.emitters = this.emitters.filter((e) => !e.dead)
           this.emitters.forEach((e) => e.update(dt))
 
-          this.syncCameraToPlayer()
+          this.syncCameraToPlayer(dt)
 
           // server message cleanup
           this.serverFrameUpdates = this.serverFrameUpdates.filter(
