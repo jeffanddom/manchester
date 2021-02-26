@@ -169,7 +169,7 @@ for (let axis = 0; axis < 3; axis++) {
 function update(): void {
   requestAnimationFrame(update)
 
-  renderer.clear()
+  renderer.clear(0.5, 0.5, 0.5)
   renderer.setWvTransform(camera.world2View(mat4.create()))
 
   if (lastCodeUpdate !== undefined && time.current() - lastCodeUpdate > 2) {

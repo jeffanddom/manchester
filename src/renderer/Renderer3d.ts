@@ -79,7 +79,7 @@ export class ShaderCompileError extends Error {
   }
 }
 
-export class ShaderLinkError extends Error {}
+export class ShaderLinkError extends Error { }
 
 export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
@@ -250,8 +250,8 @@ export class Renderer3d implements IModelLoader {
     }
   }
 
-  clear(): void {
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0)
+  clear(r = 0.0, g = 0.0, b = 0.0, a = 1.0): void {
+    this.gl.clearColor(r, g, b, a)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
   }
 
@@ -437,8 +437,8 @@ export class Renderer3d implements IModelLoader {
       )
     }
 
-    if (node.mesh !== undefined) {
-      this.renderMesh(node.mesh, model2World, color)
+    for (const mesh of node.meshes) {
+      this.renderMesh(mesh, model2World, color)
     }
 
     for (const c of node.children) {

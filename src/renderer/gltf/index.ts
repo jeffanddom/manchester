@@ -105,17 +105,18 @@ export function makeNode(doc: Document, nodeId: number): renderer.ModelNode {
 
   const name = gltfNode.name
   if (name === undefined || name.length === 0) {
-    throw new Error(`glTF node has unefined or empty name`)
+    throw new Error(`glTF node has undefined or empty name`)
   }
 
   const modelNode: renderer.ModelNode = {
     name,
+    meshes: [],
     children: [],
   }
 
   // Mesh
   if (gltfNode.mesh !== undefined) {
-    modelNode.mesh = makeMesh(doc, gltfNode.mesh)
+    modelNode.meshes = makeMeshes(doc, gltfNode.mesh)
   }
 
   // Transform
@@ -148,7 +149,7 @@ export function makeNode(doc: Document, nodeId: number): renderer.ModelNode {
   return modelNode
 }
 
-function makeMesh(doc: Document, meshId: number): renderer.DataMesh {
+function makeMeshes(doc: Document, meshId: number): renderer.DataMesh[] {
   const meshes = doc.meshes ?? []
   if (meshes.length < meshId) {
     throw new Error(`mesh ${meshId}: not defined in glTF document`)
@@ -156,46 +157,44 @@ function makeMesh(doc: Document, meshId: number): renderer.DataMesh {
   const gltfMesh = meshes[meshId]
 
   // Mesh primitive
-  if (gltfMesh.primitives.length !== 1) {
-    throw new Error(
-      `mesh ${meshId}: unsupported primitive count (${gltfMesh.primitives.length})`,
-    )
-  }
-  const primitive = gltfMesh.primitives[0]
+  const dataMeshes = []
+  for (const primitive of gltfMesh.primitives) {
+    const primitiveMode = primitive.mode ?? PrimitiveMode.Triangles // triangles are the glTF default
+    if (primitiveMode !== PrimitiveMode.Triangles) {
+      throw new Error(
+        `mesh ${meshId}: unsupported primitive mode ${primitiveMode}`,
+      )
+    }
 
-  const primitiveMode = primitive.mode ?? PrimitiveMode.Triangles // triangles are the glTF default
-  if (primitiveMode !== PrimitiveMode.Triangles) {
-    throw new Error(
-      `mesh ${meshId}: unsupported primitive mode ${primitiveMode}`,
-    )
+    // Extract accessors for position attrib, normal attrib, and indexes.
+    const attributes = primitive.attributes
+    if (!attributes.hasOwnProperty(PrimitiveAttribute.Position)) {
+      throw new Error(`mesh ${meshId}: missing accessor for position attribute`)
+    }
+    if (!attributes.hasOwnProperty(PrimitiveAttribute.Normal)) {
+      throw new Error(`mesh ${meshId}: missing accessor for normal attribute`)
+    }
+    const positionAccessorId = attributes[PrimitiveAttribute.Position]
+    const normalAccessorId = attributes[PrimitiveAttribute.Normal]
+
+    const indexAccessorId = primitive.indices
+    if (indexAccessorId === undefined) {
+      throw new Error(`mesh ${meshId}: primitive has no accessor index`)
+    }
+
+    const positions = makeBuffer(doc, positionAccessorId)
+    const normals = makeBuffer(doc, normalAccessorId)
+    const indices = makeBuffer(doc, indexAccessorId)
+
+    dataMeshes.push({
+      positions,
+      normals,
+      indices,
+      primitive: renderer.MeshPrimitive.Triangles,
+    })
   }
 
-  // Extract accessors for position attrib, normal attrib, and indexes.
-  const attributes = primitive.attributes
-  if (!attributes.hasOwnProperty(PrimitiveAttribute.Position)) {
-    throw new Error(`mesh ${meshId}: missing accessor for position attribute`)
-  }
-  if (!attributes.hasOwnProperty(PrimitiveAttribute.Normal)) {
-    throw new Error(`mesh ${meshId}: missing accessor for normal attribute`)
-  }
-  const positionAccessorId = attributes[PrimitiveAttribute.Position]
-  const normalAccessorId = attributes[PrimitiveAttribute.Normal]
-
-  const indexAccessorId = primitive.indices
-  if (indexAccessorId === undefined) {
-    throw new Error(`mesh ${meshId}: primitive has no accessor index`)
-  }
-
-  const positions = makeBuffer(doc, positionAccessorId)
-  const normals = makeBuffer(doc, normalAccessorId)
-  const indices = makeBuffer(doc, indexAccessorId)
-
-  return {
-    positions,
-    normals,
-    indices,
-    primitive: renderer.MeshPrimitive.Triangles,
-  }
+  return dataMeshes
 }
 
 function makeBuffer(doc: Document, accessorId: number): renderer.MeshBuffer {

@@ -19,7 +19,7 @@ export interface RenderMesh {
 
 export interface RenderNode {
   name: string
-  mesh?: RenderMesh
+  meshes: RenderMesh[]
   transform?: mat4
   children: RenderNode[]
 }
@@ -30,6 +30,7 @@ export function makeRenderNode(
 ): RenderNode {
   const node: RenderNode = {
     name: src.name,
+    meshes: [],
     children: [],
   }
 
@@ -37,8 +38,8 @@ export function makeRenderNode(
     node.transform = src.transform
   }
 
-  if (src.mesh !== undefined) {
-    node.mesh = makeRenderMesh(gl, src.mesh)
+  for (const dataMesh of src.meshes) {
+    node.meshes.push(makeRenderMesh(gl, dataMesh))
   }
 
   for (const child of src.children) {

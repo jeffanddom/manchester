@@ -59,7 +59,7 @@ export const update = (simState: SimState): void => {
     simState.entityManager.entityModels.update(id, {
       modifiers: {
         ...entityModel.modifiers,
-        'tank.body.turret:post': mat4.fromRotation(
+        'shiba.head:post': mat4.fromRotation(
           mat4.create(),
 
           // This angle is a rotation on the XY plane. We need to negate when moving to XZ.

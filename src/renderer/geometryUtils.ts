@@ -7,9 +7,9 @@ import * as set from '~/util/set'
 export function makeCubeModel(): ModelNode {
   // prettier-ignore
   const positions = new Float32Array([
-    1, 1, -1, 
-    1, 1, 1,  
-    1, -1, 1, 
+    1, 1, -1,
+    1, 1, 1,
+    1, -1, 1,
     1, -1, -1,
     -1, 1, 1,
     -1, 1, -1,
@@ -79,7 +79,7 @@ export function makeCubeModel(): ModelNode {
 
   return {
     name: 'cube',
-    mesh: {
+    meshes: [{
       primitive: MeshPrimitive.Triangles,
       positions: {
         bufferData: positions,
@@ -93,7 +93,7 @@ export function makeCubeModel(): ModelNode {
         bufferData: indices,
         componentsPerAttrib: 1,
       },
-    },
+    }],
     children: [],
   }
 }
@@ -134,7 +134,7 @@ export function makeLineCubeModel(): ModelNode {
 
   return {
     name: 'root',
-    mesh: {
+    meshes: [{
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: positions,
@@ -150,7 +150,7 @@ export function makeLineCubeModel(): ModelNode {
         bufferData: indices,
         componentsPerAttrib: 1,
       },
-    },
+    }],
     children: [],
   }
 }
@@ -174,7 +174,7 @@ export function makeLineTileModel(): ModelNode {
 
   return {
     name: 'root',
-    mesh: {
+    meshes: [{
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: positions,
@@ -190,7 +190,7 @@ export function makeLineTileModel(): ModelNode {
         bufferData: indices,
         componentsPerAttrib: 1,
       },
-    },
+    }],
     children: [],
   }
 }
@@ -223,7 +223,7 @@ export function makeLineGridModel(): ModelNode {
 
   return {
     name: 'root',
-    mesh: {
+    meshes: [{
       primitive: MeshPrimitive.Lines,
       positions: {
         bufferData: new Float32Array(positions),
@@ -239,7 +239,7 @@ export function makeLineGridModel(): ModelNode {
         bufferData: new Uint16Array(indices),
         componentsPerAttrib: 1,
       },
-    },
+    }],
     children: [],
   }
 }
@@ -259,6 +259,7 @@ export function makeLineGridModel(): ModelNode {
 export function triModelAddEdgeOn(src: ModelNode): ModelNode {
   const res: ModelNode = {
     name: src.name,
+    meshes: [],
     children: [],
   }
 
@@ -266,11 +267,11 @@ export function triModelAddEdgeOn(src: ModelNode): ModelNode {
     res.transform = mat4.clone(src.transform)
   }
 
-  if (src.mesh !== undefined) {
-    if (src.mesh.primitive !== MeshPrimitive.Triangles) {
-      throw `invalid mesh primitive: ${src.mesh.primitive}`
+  for (const mesh of src.meshes) {
+    if (mesh.primitive !== MeshPrimitive.Triangles) {
+      throw `invalid mesh primitive: ${mesh.primitive}`
     }
-    res.mesh = triMeshAddEdgeOn(src.mesh)
+    res.meshes.push(triMeshAddEdgeOn(mesh))
   }
 
   for (const child of src.children) {
@@ -294,6 +295,7 @@ export function triModelAddEdgeOn(src: ModelNode): ModelNode {
 export function triModelToWiresolidLineModel(src: ModelNode): ModelNode {
   const res: ModelNode = {
     name: src.name,
+    meshes: [],
     children: [],
   }
 
@@ -301,11 +303,11 @@ export function triModelToWiresolidLineModel(src: ModelNode): ModelNode {
     res.transform = mat4.clone(src.transform)
   }
 
-  if (src.mesh !== undefined) {
-    if (src.mesh.primitive !== MeshPrimitive.Triangles) {
-      throw `invalid mesh primitive: ${src.mesh.primitive}`
+  for (const mesh of src.meshes) {
+    if (mesh.primitive !== MeshPrimitive.Triangles) {
+      throw `invalid mesh primitive: ${mesh.primitive}`
     }
-    res.mesh = triMeshToWiresolidLineMesh(src.mesh)
+    res.meshes.push(triMeshToWiresolidLineMesh(mesh))
   }
 
   for (const child of src.children) {

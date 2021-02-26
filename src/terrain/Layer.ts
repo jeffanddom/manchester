@@ -91,7 +91,7 @@ export class Layer {
   public getModel(): ModelNode {
     return {
       name: 'root',
-      mesh: {
+      meshes: [{
         primitive: MeshPrimitive.Triangles,
         positions: {
           bufferData: this.positions,
@@ -109,7 +109,7 @@ export class Layer {
           bufferData: new Uint16Array(this.indices),
           componentsPerAttrib: 1,
         },
-      },
+      }],
       children: [],
     }
   }

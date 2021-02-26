@@ -73,7 +73,7 @@ function makeCubeComplex(): ModelNode {
 
   return {
     name: 'cube',
-    mesh: {
+    meshes: [{
       primitive: MeshPrimitive.Triangles,
       positions: {
         bufferData: new Float32Array(positions),
@@ -87,7 +87,7 @@ function makeCubeComplex(): ModelNode {
         bufferData: new Uint16Array(indices),
         componentsPerAttrib: 1,
       },
-    },
+    }],
     children: [],
   }
 }
@@ -96,6 +96,10 @@ export function load(renderer: Renderer3d): void {
   const tank = gltf.getModels(getGltfDocument('tank'))[0]
   renderer.loadModel('tank', triModelAddEdgeOn(tank))
   renderer.loadModel('tank-line', triModelToWiresolidLineModel(tank))
+
+  const shiba = gltf.getModels(getGltfDocument('shiba'))[0]
+  renderer.loadModel('shiba', triModelAddEdgeOn(shiba))
+  renderer.loadModel('shiba-line', triModelToWiresolidLineModel(shiba))
 
   const turret = gltf.getModels(getGltfDocument('turret'))[0]
   renderer.loadModel('turret', triModelAddEdgeOn(turret))

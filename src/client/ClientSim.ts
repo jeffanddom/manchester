@@ -167,7 +167,7 @@ export class ClientSim {
     this.terrainLayer = initMap(this.entityManager, this.map)
     this.modelLoader.loadModel('terrain', this.terrainLayer.getModel())
 
-    for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall']) {
+    for (const m of ['bullet', 'core', 'tank', 'turret', 'tree', 'wall', 'shiba']) {
       gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
     }
 

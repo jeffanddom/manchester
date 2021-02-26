@@ -35,7 +35,7 @@ export type DataMesh = {
 
 export interface ModelNode {
   name: string
-  mesh?: DataMesh
+  meshes: DataMesh[]
   transform?: mat4
   children: ModelNode[]
 }

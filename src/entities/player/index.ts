@@ -28,7 +28,7 @@ export const makePlayer = (): EntityComponents => {
   })
   e.inventory = []
   e.entityModel = {
-    name: 'tank',
+    name: 'shiba',
     color: vec4.fromValues(1, 1, 1, 1),
     modifiers: {},
   }
