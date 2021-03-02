@@ -29,6 +29,8 @@ export enum CursorMode {
   BUILD_WALL,
 }
 
+const inputDelay = 3
+
 export const update = (client: ClientSim, frame: number): void => {
   handleMoveInput(client, frame)
   handleAttackInput(client, frame)
@@ -60,7 +62,7 @@ const handleMoveInput = (client: ClientSim, frame: number): void => {
 
   if (direction !== undefined && client.playerNumber !== undefined) {
     client.sendClientMessage({
-      frame,
+      frame: frame + inputDelay,
       playerNumber: client.playerNumber,
       type: ClientMessageType.PLAYER_MOVE,
       direction,
@@ -90,7 +92,7 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
 
   if (client.playerNumber !== undefined) {
     client.sendClientMessage({
-      frame,
+      frame: frame + inputDelay,
       playerNumber: client.playerNumber,
       type: ClientMessageType.TANK_AIM,
       targetPos,

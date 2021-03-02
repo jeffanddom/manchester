@@ -136,6 +136,17 @@ export class ServerSim {
         if (msg.type !== ClientMessageType.FRAME_END) {
           this.clientMessagesByFrame[index].push(msg)
         }
+
+        for (const receiver of this.clients) {
+          if (client === receiver) {
+            continue
+          }
+
+          client.conn.send({
+            type: ServerMessageType.REMOTE_CLIENT_MESSAGE,
+            message: msg
+          })
+        }
       }
     }
 
@@ -220,8 +231,7 @@ export class ServerSim {
 
           this.simulationDurations.sample(time.current() - start)
 
-          // send authoritative updates to clients
-          this.clients.forEach((client) => {
+          for (const client of this.clients) {
             client.conn.send({
               type: ServerMessageType.FRAME_UPDATE,
               frame: this.simulationFrame,
@@ -229,7 +239,7 @@ export class ServerSim {
               updateFrameDurationAvg: this.updateFrameDurations.average(),
               simulationDurationAvg: this.simulationDurations.average(),
             })
-          })
+          }
 
           this.simulationFrame++
         }

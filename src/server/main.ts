@@ -16,7 +16,7 @@ async function buildVersion(): Promise<string> {
 async function main(): Promise<void> {
   // TODO: read from envvar
   const playerCount = 1
-  const clientBufferSize = 7
+  const clientBufferSize = 15
   const port = 3000
 
   let gameSim = new ServerSim({

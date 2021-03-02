@@ -5,6 +5,7 @@ export enum ServerMessageType {
   FRAME_UPDATE,
   SPEED_UP,
   SLOW_DOWN,
+  REMOTE_CLIENT_MESSAGE,
 }
 
 export type ServerStartGameMessage = {
@@ -20,4 +21,9 @@ export type ServerFrameUpdateMessage = {
   simulationDurationAvg: number
 }
 
-export type ServerMessage = ServerStartGameMessage | ServerFrameUpdateMessage
+export type RemoteClientMessage = {
+  type: ServerMessageType.REMOTE_CLIENT_MESSAGE,
+  message: ClientMessage
+}
+
+export type ServerMessage = ServerStartGameMessage | ServerFrameUpdateMessage | RemoteClientMessage

@@ -42,7 +42,7 @@ interface ServerFrameUpdate {
 
 export class ClientSim {
   entityManager: EntityManager
-  localMessageHistory: ClientMessage[]
+  uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
   }
@@ -96,7 +96,7 @@ export class ClientSim {
     this.debugDraw = config.debugDraw
 
     this.entityManager = new EntityManager(aabb2.create())
-    this.localMessageHistory = []
+    this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
     this.playerNumber = undefined
@@ -327,17 +327,19 @@ export class ClientSim {
           for (const msg of serverMessages) {
             switch (msg.type) {
               case ServerMessageType.FRAME_UPDATE:
-                {
-                  this.serverFrameUpdates.push({
-                    frame: msg.frame,
-                    inputs: msg.inputs,
-                  })
-                  this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
+                this.serverFrameUpdates.push({
+                  frame: msg.frame,
+                  inputs: msg.inputs,
+                })
+                this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
 
-                  this.serverInputsPerFrame.sample(msg.inputs.length)
-                  this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
-                  this.serverSimulationDurationAvg = msg.simulationDurationAvg
-                }
+                this.serverInputsPerFrame.sample(msg.inputs.length)
+                this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
+                this.serverSimulationDurationAvg = msg.simulationDurationAvg
+
+                break
+              case ServerMessageType.REMOTE_CLIENT_MESSAGE:
+                this.uncommittedMessageHistory.push(msg.message)
                 break
             }
           }
@@ -359,7 +361,7 @@ export class ClientSim {
           simulate(
             {
               entityManager: this.entityManager,
-              messages: this.localMessageHistory.filter(
+              messages: this.uncommittedMessageHistory.filter(
                 (m) => m.frame === this.simulationFrame,
               ),
               terrainLayer: this.terrainLayer,
@@ -444,9 +446,8 @@ export class ClientSim {
 
     this.entityManager.commitPrediction()
 
-    this.localMessageHistory = discardUntil(
-      this.localMessageHistory,
-      (m) => m.frame > this.committedFrame,
+    this.uncommittedMessageHistory = this.uncommittedMessageHistory.filter(
+      (m) => m.frame > this.committedFrame
     )
 
     // Repredict already-simulated frames
@@ -454,7 +455,7 @@ export class ClientSim {
       simulate(
         {
           entityManager: this.entityManager,
-          messages: this.localMessageHistory.filter((m) => m.frame === f),
+          messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
           terrainLayer: this.terrainLayer,
           registerParticleEmitter: this.registerParticleEmitter,
           frame: f,
@@ -507,7 +508,7 @@ export class ClientSim {
   }
 
   sendClientMessage(m: ClientMessage): void {
-    this.localMessageHistory.push(m)
+    this.uncommittedMessageHistory.push(m)
     this.serverConnection!.send(m)
   }
 }
