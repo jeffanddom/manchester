@@ -42,7 +42,7 @@ export class ServerSim {
   lastUpdateAt: number
   simulationDurations: RunningAverage
 
-  constructor(config: { playerCount: number; minFramesBehindClient: number }) {
+  constructor(config: { playerCount: number }) {
     this.clientMessagesByFrame = []
     this.entityManager = new EntityManager(aabb2.create())
     this.clients = []
@@ -144,7 +144,7 @@ export class ServerSim {
 
           client.conn.send({
             type: ServerMessageType.REMOTE_CLIENT_MESSAGE,
-            message: msg
+            message: msg,
           })
         }
       }
@@ -216,6 +216,17 @@ export class ServerSim {
 
           // Remove this frame's client messages from the history, then process.
           const frameMessages = this.clientMessagesByFrame.shift() ?? []
+
+          for (const client of this.clients) {
+            client.conn.send({
+              type: ServerMessageType.FRAME_UPDATE,
+              frame: this.simulationFrame,
+              inputs: frameMessages,
+              updateFrameDurationAvg: this.updateFrameDurations.average(),
+              simulationDurationAvg: this.simulationDurations.average(),
+            })
+          }
+
           simulate(
             {
               entityManager: this.entityManager,
@@ -230,17 +241,6 @@ export class ServerSim {
           )
 
           this.simulationDurations.sample(time.current() - start)
-
-          for (const client of this.clients) {
-            client.conn.send({
-              type: ServerMessageType.FRAME_UPDATE,
-              frame: this.simulationFrame,
-              inputs: frameMessages,
-              updateFrameDurationAvg: this.updateFrameDurations.average(),
-              simulationDurationAvg: this.simulationDurations.average(),
-            })
-          }
-
           this.simulationFrame++
         }
         break

@@ -5,7 +5,7 @@ import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
-import { SIMULATION_PERIOD_S } from '~/constants'
+import { PLAYER_COUNT, SERVER_PORT, SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
 
@@ -14,14 +14,8 @@ async function buildVersion(): Promise<string> {
 }
 
 async function main(): Promise<void> {
-  // TODO: read from envvar
-  const playerCount = 1
-  const clientBufferSize = 15
-  const port = 3000
-
   let gameSim = new ServerSim({
-    playerCount,
-    minFramesBehindClient: clientBufferSize,
+    playerCount: PLAYER_COUNT,
   })
 
   setInterval(
@@ -31,7 +25,7 @@ async function main(): Promise<void> {
 
   const wsServer = new WebSocket.Server({ noServer: true })
   const httpServer = new hapi.Server({
-    port,
+    port: SERVER_PORT,
     host: 'localhost',
   })
 
@@ -60,8 +54,7 @@ async function main(): Promise<void> {
       console.log('restarting game server')
       gameSim.shutdown()
       gameSim = new ServerSim({
-        playerCount,
-        minFramesBehindClient: clientBufferSize,
+        playerCount: PLAYER_COUNT,
       })
       return ''
     },
@@ -112,7 +105,7 @@ async function main(): Promise<void> {
   })
 
   const bv = await buildVersion()
-  console.log(`Starting dev server on port ${port}, build version ${bv}`)
+  console.log(`Starting dev server on port ${SERVER_PORT}, build version ${bv}`)
   await httpServer.start()
 }
 

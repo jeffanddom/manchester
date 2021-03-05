@@ -4,6 +4,7 @@ import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
 import { ClientSim } from '~/client/ClientSim'
+import { CLIENT_INPUT_DELAY } from '~/constants'
 import { DirectionMove } from '~/input/interfaces'
 import { MouseButton } from '~/input/interfaces'
 import { ClientMessageType } from '~/network/ClientMessage'
@@ -28,8 +29,6 @@ export enum CursorMode {
   BUILD_TURRET,
   BUILD_WALL,
 }
-
-const inputDelay = 3
 
 export const update = (client: ClientSim, frame: number): void => {
   handleMoveInput(client, frame)
@@ -62,11 +61,11 @@ const handleMoveInput = (client: ClientSim, frame: number): void => {
 
   if (direction !== undefined && client.playerNumber !== undefined) {
     client.sendClientMessage({
-      frame: frame + inputDelay,
+      frame: frame + CLIENT_INPUT_DELAY,
       playerNumber: client.playerNumber,
       type: ClientMessageType.PLAYER_MOVE,
       direction,
-      dash: client.keyboard.downKeys.has(keyMap.dash)
+      dash: client.keyboard.downKeys.has(keyMap.dash),
     })
   }
 }
@@ -92,7 +91,7 @@ const handleAttackInput = (client: ClientSim, frame: number): void => {
 
   if (client.playerNumber !== undefined) {
     client.sendClientMessage({
-      frame: frame + inputDelay,
+      frame: frame + CLIENT_INPUT_DELAY,
       playerNumber: client.playerNumber,
       type: ClientMessageType.TANK_AIM,
       targetPos,
