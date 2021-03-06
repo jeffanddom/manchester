@@ -26,7 +26,6 @@ async function main(): Promise<void> {
   const wsServer = new WebSocket.Server({ noServer: true })
   const httpServer = new hapi.Server({
     port: SERVER_PORT,
-    host: 'localhost',
   })
 
   await httpServer.register(inert)
