@@ -107,7 +107,7 @@ class CloudDev {
     )
     console.log(`hostname: ${this.remoteHost.name}`)
 
-    // Attach volume to instnace
+    // Attach volume to instance
     console.log(`attaching EBS volume...`)
     await awsUtils.attachVolume(this.ec2, this.instanceId, this.ebsVolumeId)
 
