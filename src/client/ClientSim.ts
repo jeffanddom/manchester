@@ -387,11 +387,6 @@ export class ClientSim {
 
           this.syncCameraToPlayer(dt)
 
-          // server message cleanup
-          this.serverFrameUpdates = this.serverFrameUpdates.filter(
-            (m) => m.frame <= this.simulationFrame,
-          )
-
           this.serverConnection!.send({
             type: ClientMessageType.FRAME_END,
             frame: this.simulationFrame,
@@ -409,29 +404,23 @@ export class ClientSim {
       (u) => u.frame > this.committedFrame,
     )
 
-    // Process all contiguous server frames
-    const toProcess: ServerFrameUpdate[] = []
-    const deferred: ServerFrameUpdate[] = []
-    for (const update of this.serverFrameUpdates) {
-      const wantFrame =
-        toProcess.length > 0
-          ? toProcess[toProcess.length - 1].frame + 1
-          : this.committedFrame + 1
-
-      if (update.frame === wantFrame) {
-        toProcess.push(update)
-      } else {
-        deferred.push(update)
+    // Process all contiguous server frames prior to the current simulation
+    // frame
+    let splitAt = 0
+    while (splitAt < this.serverFrameUpdates.length) {
+      if (this.serverFrameUpdates[splitAt].frame >= this.simulationFrame) {
+        break
       }
+      splitAt++
     }
+
+    const toProcess = this.serverFrameUpdates.slice(0, splitAt)
+    this.serverFrameUpdates = this.serverFrameUpdates.slice(splitAt)
 
     // Early-out if there are no server updates we can process right now.
     if (toProcess.length === 0) {
       return
     }
-
-    // Save future frames for later
-    this.serverFrameUpdates = deferred
 
     this.entityManager.undoPrediction()
 
