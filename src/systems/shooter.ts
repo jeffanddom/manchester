@@ -4,10 +4,6 @@ import { glMatrix, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import {
-  ClientMessageType,
-  TankAimClientMessage,
-} from '~/network/ClientMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { getAngle, radialTranslate2 } from '~/util/math'
@@ -42,18 +38,15 @@ export function clone(s: ShooterComponent): ShooterComponent {
 }
 
 export const update = (simState: SimState): void => {
-  const messages: Array<TankAimClientMessage> = []
-  simState.messages.forEach((m) => {
-    if (m.type === ClientMessageType.TANK_AIM) {
-      messages.push(m)
+  simState.messages.forEach((message) => {
+    if (message.attack === undefined) {
+      return
     }
-  })
 
-  messages.forEach((message) => {
     const id = simState.entityManager.getPlayerId(message.playerNumber)!
     const shooter = simState.entityManager.shooters.get(id)!
     const transform = simState.entityManager.transforms.get(id)!
-    const newAngle = getAngle(transform.position, message.targetPos)
+    const newAngle = getAngle(transform.position, message.attack.targetPos)
 
     const entityModel = simState.entityManager.entityModels.get(id)!
     simState.entityManager.entityModels.update(id, {
@@ -71,7 +64,7 @@ export const update = (simState: SimState): void => {
     })
 
     if (
-      !message.firing ||
+      !message.attack.firing ||
       (shooter.lastFiredFrame !== -1 &&
         message.frame - shooter.lastFiredFrame < 15)
     ) {

@@ -16,7 +16,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
-import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
+import { ClientMessage } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
@@ -67,7 +67,6 @@ export class ClientSim {
   tickDurations: RunningAverage
   updateFrameDurations: RunningAverage
   framesAheadOfServer: RunningAverage
-  serverInputsPerFrame: RunningAverage
 
   keyboard: IKeyboard
   mouse: IMouse
@@ -121,7 +120,6 @@ export class ClientSim {
     this.tickDurations = new RunningAverage(3 * 60)
     this.updateFrameDurations = new RunningAverage(3 * 60)
     this.framesAheadOfServer = new RunningAverage(3 * 60)
-    this.serverInputsPerFrame = new RunningAverage(3 * 60)
 
     // Common
     this.state = GameState.Connecting
@@ -259,7 +257,6 @@ export class ClientSim {
         `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
         `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
         `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-        `SIPF: ${this.serverInputsPerFrame.average().toFixed(2)}`,
         `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
           2,
         )}`,
@@ -341,11 +338,10 @@ export class ClientSim {
                 })
                 this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
 
-                this.serverInputsPerFrame.sample(msg.inputs.length)
                 this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
                 this.serverSimulationDurationAvg = msg.simulationDurationAvg
-
                 break
+
               case ServerMessageType.REMOTE_CLIENT_MESSAGE:
                 this.uncommittedMessageHistory.push(msg.message)
                 break
@@ -386,12 +382,6 @@ export class ClientSim {
           this.emitters.forEach((e) => e.update(dt))
 
           this.syncCameraToPlayer(dt)
-
-          this.serverConnection!.send({
-            type: ClientMessageType.FRAME_END,
-            frame: this.simulationFrame,
-          })
-
           this.simulationFrame++
         }
         break

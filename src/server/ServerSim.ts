@@ -6,7 +6,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
-import { ClientMessage, ClientMessageType } from '~/network/ClientMessage'
+import { ClientMessage } from '~/network/ClientMessage'
 import { ServerMessageType } from '~/network/ServerMessage'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as terrain from '~/terrain'
@@ -110,10 +110,7 @@ export class ServerSim {
     // process incoming client messages
     for (const client of this.clients) {
       for (const msg of client.conn.consume()) {
-        if (
-          msg.type === ClientMessageType.FRAME_END &&
-          msg.frame > client.frame
-        ) {
+        if (msg.frame > client.frame) {
           client.frame = msg.frame
         }
 
@@ -133,9 +130,7 @@ export class ServerSim {
 
         // Store message grouped by frame, but don't worry about FRAME_END
         // messages.
-        if (msg.type !== ClientMessageType.FRAME_END) {
-          this.clientMessagesByFrame[index].push(msg)
-        }
+        this.clientMessagesByFrame[index].push(msg)
 
         for (const receiver of this.clients) {
           if (client === receiver) {

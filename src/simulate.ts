@@ -35,7 +35,7 @@ export function simulationPhaseDebugColor(
 
 export type SimState = {
   entityManager: EntityManager
-  messages: Array<ClientMessage>
+  messages: ClientMessage[]
   terrainLayer: terrain.Layer
   frame: number
   registerParticleEmitter?: (params: {

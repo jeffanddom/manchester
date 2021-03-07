@@ -3,11 +3,7 @@ import { mat4, vec2, vec3 } from 'gl-matrix'
 import { TILE_SIZE } from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { DirectionMove } from '~/input/interfaces'
-import {
-  ClientMessage,
-  ClientMessageType,
-  PlayerMoveClientMessage,
-} from '~/network/ClientMessage'
+import { ClientMessage, ClientMoveUpdate } from '~/network/ClientMessage'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 const TANK_SPEED = 60 * (TILE_SIZE / 8)
@@ -42,10 +38,10 @@ export const update = (
   },
   dt: number,
 ): void => {
-  const messages = new Map<number, PlayerMoveClientMessage>()
+  const messages = new Map<number, ClientMoveUpdate>()
   simState.messages.forEach((m) => {
-    if (m.type === ClientMessageType.PLAYER_MOVE) {
-      messages.set(m.playerNumber, m)
+    if (m.move !== undefined) {
+      messages.set(m.playerNumber, m.move)
     }
   })
 

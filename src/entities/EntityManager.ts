@@ -17,6 +17,7 @@ import { EntityStateContainer } from '~/entities/EntityStateContainer'
 import { Type } from '~/entities/types'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
+import { TankMoverComponent, clone as tankMoverClone } from '~/systems/tankMover'
 import { TurretComponent } from '~/systems/turret'
 import * as turret from '~/systems/turret'
 import { Aabb2 } from '~/util/aabb2'
@@ -24,7 +25,6 @@ import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
 import { tileBox } from '~/util/tileMath'
-import { TankMoverComponent, clone as tankMoverClone } from '~/systems/tankMover'
 
 type QuadtreeEntity = {
   id: EntityId
