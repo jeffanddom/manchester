@@ -58,14 +58,11 @@ export const simulate = (
 ): void => {
   systems.transformInit(simState)
 
-  if (gameState === GameState.Running) {
-    systems.tankMover(simState, dt)
-    systems.hiding(simState.entityManager)
-    // systems.builder(this, this.entityManager, dt)
-    systems.shooter(simState)
-    systems.turret(simState, dt)
-  }
-
+  systems.tankMover(simState, dt)
+  systems.hiding(simState.entityManager)
+  // systems.builder(this, this.entityManager, dt)
+  systems.shooter(simState)
+  systems.turret(simState, dt)
   systems.bullet(simState, dt)
   // systems.pickups(this, this.entityManager)
   systems.wallCollider(simState)
@@ -73,25 +70,6 @@ export const simulate = (
   systems.playfieldClamping(simState)
 
   systems.damageable(simState)
-
-  // TODO: need mechanism to sync state with client
-  // if (this.state === GameState.YouDied) {
-  // 'r' for restart
-  // if (this.client.keyboard.upKeys.has(82)) {
-  //   this.setState(GameState.Running)
-  // }
-  // }
-
-  // if (this.state === GameState.Running) {
-  //   systems.levelCompletion(this)
-  // }
-
-  // TODO: need mechanism to sync state with client
-  // if (this.state === GameState.LevelComplete) {
-  // if (this.client.keyboard.upKeys.has(32)) {
-  //   this.setState(GameState.Running)
-  // }
-  // }
 
   simState.entityManager.update()
 }

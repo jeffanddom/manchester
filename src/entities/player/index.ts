@@ -3,7 +3,7 @@ import { vec2, vec4 } from 'gl-matrix'
 import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
-import { TILE_SIZE } from '~/constants'
+import { PLAYER_HEALTH, TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
   makeDefaultEntity,
@@ -22,7 +22,7 @@ export const makePlayer = (): EntityComponents => {
   e.team = Team.Friendly
   e.moveable = true
   e.builderCreator = new BuilderCreator()
-  e.damageable = damageable.make(10, {
+  e.damageable = damageable.make(PLAYER_HEALTH, {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),
   })

@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { TILE_SIZE } from '~/constants'
+import { DEFAULT_GUN_KICK, DEFAULT_GUN_KNOCKBACK, TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
@@ -77,6 +77,25 @@ export const update = (simState: SimState): void => {
     simState.entityManager.shooters.update(id, {
       lastFiredFrame: message.frame,
       orientation: newAngle,
+    })
+
+    const tankMover = simState.entityManager.tankMovers.get(id)!
+    const kick = vec2.scale(
+      vec2.create(),
+      vec2.rotate(
+        vec2.create(),
+        vec2.fromValues(0, -1), // VEC2_NORTH, plz
+        vec2.create(), // VEC2_ZERO
+        shooter.orientation,
+      ),
+      DEFAULT_GUN_KICK, // kick intensity
+    )
+    simState.entityManager.tankMovers.update(id, {
+      externalVelocity: vec2.add(
+        vec2.create(),
+        tankMover.externalVelocity,
+        kick,
+      ),
     })
 
     const bulletPos = radialTranslate2(

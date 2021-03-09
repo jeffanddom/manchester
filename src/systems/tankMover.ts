@@ -1,25 +1,28 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
-import { TILE_SIZE } from '~/constants'
+import {
+  DASH_COOLDOWN,
+  DASH_DURATION,
+  DASH_SPEED,
+  EXTERNAL_VELOCITY_DECELERATION,
+  TANK_ROT_SPEED,
+  TANK_SPEED,
+} from '~/constants'
 import { EntityManager } from '~/entities/EntityManager'
 import { DirectionMove } from '~/input/interfaces'
 import { ClientMessage, ClientMoveUpdate } from '~/network/ClientMessage'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
-const TANK_SPEED = 60 * (TILE_SIZE / 8)
-const TANK_ROT_SPEED = Math.PI
-const DASH_DURATION = 6
-const DASH_SPEED = 60 * (TILE_SIZE / 1.25)
-const DASH_COOLDOWN = 25
-
 export type TankMoverComponent = {
   dashDirection: DirectionMove
   lastDashFrame?: number
+  externalVelocity: vec2
 }
 
 export function make(): TankMoverComponent {
   return {
     dashDirection: DirectionMove.N,
+    externalVelocity: vec2.create(),
   }
 }
 
@@ -27,6 +30,7 @@ export function clone(t: TankMoverComponent): TankMoverComponent {
   return {
     dashDirection: t.dashDirection,
     lastDashFrame: t.lastDashFrame,
+    externalVelocity: vec2.clone(t.externalVelocity),
   }
 }
 
@@ -71,8 +75,9 @@ export const update = (
       }
     }
 
+    const position = vec2.clone(transform.position)
+    let orientation = transform.orientation
     if (message !== undefined) {
-      let orientation
       if (message.dash && tankMover.lastDashFrame === undefined) {
         simState.entityManager.tankMovers.update(id, {
           lastDashFrame: simState.frame,
@@ -87,14 +92,7 @@ export const update = (
           amount: TANK_ROT_SPEED * dt,
         })
 
-        const position = radialTranslate2(
-          vec2.create(),
-          transform.position,
-          message.direction,
-          TANK_SPEED * dt,
-        )
-
-        simState.entityManager.transforms.update(id, { position, orientation })
+        radialTranslate2(position, position, message.direction, TANK_SPEED * dt)
       }
 
       simState.entityManager.entityModels.update(id, {
@@ -109,5 +107,28 @@ export const update = (
         },
       })
     }
+
+    vec2.add(position, position, tankMover.externalVelocity)
+    if (!vec2.equals(vec2.create(), tankMover.externalVelocity)) {
+      const newExternalVelocity = vec2.create()
+      const dv = vec2.scale(
+        vec2.create(),
+        vec2.normalize(vec2.create(), tankMover.externalVelocity),
+        EXTERNAL_VELOCITY_DECELERATION,
+      )
+      if (
+        vec2.squaredLength(dv) >= vec2.squaredLength(tankMover.externalVelocity)
+      ) {
+        vec2.zero(newExternalVelocity)
+      } else {
+        vec2.subtract(newExternalVelocity, tankMover.externalVelocity, dv)
+      }
+
+      simState.entityManager.tankMovers.update(id, {
+        externalVelocity: newExternalVelocity,
+      })
+    }
+
+    simState.entityManager.transforms.update(id, { position, orientation })
   }
 }

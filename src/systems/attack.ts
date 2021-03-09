@@ -2,11 +2,15 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
-import { TILE_SIZE } from '~/constants'
+import { DEFAULT_GUN_KNOCKBACK, TILE_SIZE } from '~/constants'
 import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
-import { SimState, simulationPhaseDebugColor } from '~/simulate'
+import {
+  SimState,
+  SimulationPhase,
+  simulationPhaseDebugColor,
+} from '~/simulate'
 import * as aabb2 from '~/util/aabb2'
 import { radialTranslate2 } from '~/util/math'
 
@@ -39,25 +43,25 @@ export const update = (simState: SimState): void => {
     const transform = simState.entityManager.transforms.get(id)!
     const attackerAabb = damagerAabb(damager, transform)
 
-    simState.debugDraw.draw3d(() => {
-      const [center, size] = aabb2.centerSize(attackerAabb)
-      return [
-        {
-          object: {
-            type: UnlitObjectType.Model,
-            modelName: 'linetile',
-            model2World: mat4.fromRotationTranslationScale(
-              mat4.create(),
-              quat.create(),
-              vec3.fromValues(center[0], 0.05, center[1]),
-              vec3.fromValues(size[0], 1, size[1]),
-            ),
-            color: simulationPhaseDebugColor(vec4.create(), simState.phase),
-          },
-          lifetime: 3,
-        },
-      ]
-    })
+    // simState.debugDraw.draw3d(() => {
+    //   const [center, size] = aabb2.centerSize(attackerAabb)
+    //   return [
+    //     {
+    //       object: {
+    //         type: UnlitObjectType.Model,
+    //         modelName: 'linetile',
+    //         model2World: mat4.fromRotationTranslationScale(
+    //           mat4.create(),
+    //           quat.create(),
+    //           vec3.fromValues(center[0], 0.05, center[1]),
+    //           vec3.fromValues(size[0], 1, size[1]),
+    //         ),
+    //         color: simulationPhaseDebugColor(vec4.create(), simState.phase),
+    //       },
+    //       lifetime: 3,
+    //     },
+    //   ]
+    // })
 
     const targetIds = simState.entityManager.queryByWorldPos(attackerAabb)
     const targetId = targetIds.find((damageableId) => {
@@ -93,6 +97,57 @@ export const update = (simState: SimState): void => {
     })
 
     simState.entityManager.markForDeletion(id)
+
+    // Knockback
+    const tankMover = simState.entityManager.tankMovers.get(targetId)
+    if (tankMover !== undefined) {
+      const kick = vec2.scale(
+        vec2.create(),
+        vec2.rotate(
+          vec2.create(),
+          vec2.fromValues(0, -1), // VEC2_NORTH, plz
+          vec2.create(), // VEC2_ZERO
+          transform.orientation,
+        ),
+        DEFAULT_GUN_KNOCKBACK,
+      )
+      simState.entityManager.tankMovers.update(targetId, {
+        externalVelocity: vec2.add(
+          vec2.create(),
+          tankMover.externalVelocity,
+          kick,
+        ),
+      })
+    }
+
+    // Debug draw hits
+    simState.debugDraw.draw3d(() => {
+      if (simState.phase !== SimulationPhase.ClientAuthoritative) {
+        return []
+      }
+      const damageableTransform = simState.entityManager.transforms.get(
+        targetId,
+      )!
+      const [center, size] = aabb2.centerSize(
+        damageableAabb(damageable, damageableTransform),
+      )
+      return [
+        {
+          object: {
+            type: UnlitObjectType.Model,
+            modelName: 'linetile',
+            model2World: mat4.fromRotationTranslationScale(
+              mat4.create(),
+              quat.create(),
+              vec3.fromValues(center[0], 0.05, center[1]),
+              vec3.fromValues(size[0], 1, size[1]),
+            ),
+            color: vec4.fromValues(1, 0, 0, 1),
+          },
+          lifetime: 60,
+        },
+      ]
+    })
 
     // ---------------------
 
