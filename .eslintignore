@@ -1,3 +1,4 @@
 out/*
 dist/*
 src/assets/**/*.json
+jest.config.js
