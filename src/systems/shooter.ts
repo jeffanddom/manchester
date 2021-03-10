@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { DEFAULT_GUN_KICK, DEFAULT_GUN_KNOCKBACK, TILE_SIZE } from '~/constants'
+import { DEFAULT_GUN_KICK, TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
