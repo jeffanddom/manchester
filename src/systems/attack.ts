@@ -1,8 +1,10 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
+import { FrameEventType } from './FrameEvent'
+
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
-import { DEFAULT_GUN_KNOCKBACK, TILE_SIZE } from '~/constants'
+import { TILE_SIZE } from '~/constants'
 import { DebugDrawObject } from '~/DebugDraw'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
@@ -99,26 +101,11 @@ export const update = (simState: SimState): void => {
     simState.entityManager.markForDeletion(id)
 
     // Knockback
-    const tankMover = simState.entityManager.tankMovers.get(targetId)
-    if (tankMover !== undefined) {
-      const kick = vec2.scale(
-        vec2.create(),
-        vec2.rotate(
-          vec2.create(),
-          vec2.fromValues(0, -1), // VEC2_NORTH, plz
-          vec2.create(), // VEC2_ZERO
-          transform.orientation,
-        ),
-        DEFAULT_GUN_KNOCKBACK,
-      )
-      simState.entityManager.tankMovers.update(targetId, {
-        externalVelocity: vec2.add(
-          vec2.create(),
-          tankMover.externalVelocity,
-          kick,
-        ),
-      })
-    }
+    simState.frameEvents.push({
+      type: FrameEventType.TankHit,
+      entityId: targetId,
+      hitAngle: transform.orientation,
+    })
 
     // Debug draw hits
     simState.debugDraw.draw3d(() => {

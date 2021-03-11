@@ -1,6 +1,8 @@
 import { vec4 } from 'gl-matrix'
 
 import { ParticleEmitter } from './particles/ParticleEmitter'
+import { FrameEvent } from './systems/FrameEvent'
+import { Immutable } from './types/immutable'
 
 import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
@@ -36,6 +38,7 @@ export function simulationPhaseDebugColor(
 export type SimState = {
   entityManager: EntityManager
   messages: ClientMessage[]
+  frameEvents: Immutable<FrameEvent>[]
   terrainLayer: terrain.Layer
   frame: number
   registerParticleEmitter?: (params: {
@@ -58,15 +61,16 @@ export const simulate = (
 ): void => {
   systems.transformInit(simState)
 
-  systems.tankMover(simState, dt)
   systems.hiding(simState.entityManager)
   // systems.builder(this, this.entityManager, dt)
   systems.shooter(simState)
   systems.turret(simState, dt)
   systems.bullet(simState, dt)
   // systems.pickups(this, this.entityManager)
-  systems.wallCollider(simState)
   systems.attack(simState)
+
+  systems.tankMover(simState, dt)
+  systems.wallCollider(simState)
   systems.playfieldClamping(simState)
 
   systems.damageable(simState)

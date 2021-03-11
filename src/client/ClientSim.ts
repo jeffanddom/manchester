@@ -368,6 +368,7 @@ export class ClientSim {
               messages: this.uncommittedMessageHistory.filter(
                 (m) => m.frame === this.simulationFrame,
               ),
+              frameEvents: [],
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               registerParticleEmitter: this.registerParticleEmitter,
@@ -419,6 +420,7 @@ export class ClientSim {
         {
           entityManager: this.entityManager,
           messages: update.inputs,
+          frameEvents: [],
           terrainLayer: this.terrainLayer,
           registerParticleEmitter: this.registerParticleEmitter,
           frame: update.frame,
@@ -443,6 +445,7 @@ export class ClientSim {
         {
           entityManager: this.entityManager,
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
+          frameEvents: [],
           terrainLayer: this.terrainLayer,
           registerParticleEmitter: this.registerParticleEmitter,
           frame: f,

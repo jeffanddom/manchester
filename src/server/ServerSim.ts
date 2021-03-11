@@ -226,6 +226,7 @@ export class ServerSim {
             {
               entityManager: this.entityManager,
               messages: frameMessages,
+              frameEvents: [],
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               debugDraw: mockDebugDraw,

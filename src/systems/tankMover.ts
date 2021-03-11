@@ -1,16 +1,20 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
+import { FrameEventType } from './FrameEvent'
+
 import {
   DASH_COOLDOWN,
   DASH_DURATION,
   DASH_SPEED,
+  DEFAULT_GUN_KICK as DEFAULT_GUN_RECOIL,
+  DEFAULT_GUN_KNOCKBACK as DEFAULT_HIT_KNOCKBACK,
   EXTERNAL_VELOCITY_DECELERATION,
   TANK_ROT_SPEED,
   TANK_SPEED,
 } from '~/constants'
-import { EntityManager } from '~/entities/EntityManager'
 import { DirectionMove } from '~/input/interfaces'
-import { ClientMessage, ClientMoveUpdate } from '~/network/ClientMessage'
+import { ClientMoveUpdate } from '~/network/ClientMessage'
+import { SimState } from '~/simulate'
 import { radialTranslate2, rotateUntil } from '~/util/math'
 
 export type TankMoverComponent = {
@@ -34,14 +38,7 @@ export function clone(t: TankMoverComponent): TankMoverComponent {
   }
 }
 
-export const update = (
-  simState: {
-    entityManager: EntityManager
-    messages: ClientMessage[]
-    frame: number
-  },
-  dt: number,
-): void => {
+export const update = (simState: SimState, dt: number): void => {
   const messages = new Map<number, ClientMoveUpdate>()
   simState.messages.forEach((m) => {
     if (m.move !== undefined) {
@@ -52,9 +49,9 @@ export const update = (
   for (const [id, tankMover] of simState.entityManager.tankMovers) {
     const playerNumber = simState.entityManager.playerNumbers.get(id)!
     const transform = simState.entityManager.transforms.get(id)!
-
     const message = messages.get(playerNumber)
 
+    // Apply active dash
     if (tankMover.lastDashFrame !== undefined) {
       if (simState.frame - tankMover.lastDashFrame < DASH_DURATION) {
         const position = radialTranslate2(
@@ -65,7 +62,7 @@ export const update = (
         )
 
         simState.entityManager.transforms.update(id, { position })
-        continue
+        continue // TODO: this should not short circuit external velocity
       }
 
       if (simState.frame - tankMover.lastDashFrame >= DASH_COOLDOWN) {
@@ -76,6 +73,8 @@ export const update = (
     }
 
     const position = vec2.clone(transform.position)
+
+    // Intrinsic motion
     let orientation = transform.orientation
     if (message !== undefined) {
       if (message.dash && tankMover.lastDashFrame === undefined) {
@@ -108,27 +107,69 @@ export const update = (
       })
     }
 
-    vec2.add(position, position, tankMover.externalVelocity)
-    if (!vec2.equals(vec2.create(), tankMover.externalVelocity)) {
-      const newExternalVelocity = vec2.create()
-      const dv = vec2.scale(
-        vec2.create(),
-        vec2.normalize(vec2.create(), tankMover.externalVelocity),
-        EXTERNAL_VELOCITY_DECELERATION,
-      )
-      if (
-        vec2.squaredLength(dv) >= vec2.squaredLength(tankMover.externalVelocity)
-      ) {
-        vec2.zero(newExternalVelocity)
-      } else {
-        vec2.subtract(newExternalVelocity, tankMover.externalVelocity, dv)
+    const externalVelocity = vec2.clone(tankMover.externalVelocity)
+
+    // apply sources of external velocity
+    for (const event of simState.frameEvents) {
+      if (event.entityId !== id) {
+        continue
       }
 
-      simState.entityManager.tankMovers.update(id, {
-        externalVelocity: newExternalVelocity,
-      })
+      switch (event.type) {
+        case FrameEventType.TankHit:
+          {
+            const recoil = vec2.scale(
+              vec2.create(),
+              vec2.rotate(
+                vec2.create(),
+                vec2.fromValues(0, -1), // VEC2_NORTH, plz
+                vec2.create(), // VEC2_ZERO
+                event.hitAngle,
+              ),
+              DEFAULT_GUN_RECOIL,
+            )
+
+            vec2.sub(externalVelocity, externalVelocity, recoil)
+          }
+          break
+
+        case FrameEventType.TankShoot:
+          {
+            const knockback = vec2.scale(
+              vec2.create(),
+              vec2.rotate(
+                vec2.create(),
+                vec2.fromValues(0, -1), // VEC2_NORTH, plz
+                vec2.create(), // VEC2_ZERO
+                event.orientation,
+              ),
+              DEFAULT_HIT_KNOCKBACK,
+            )
+
+            vec2.sub(externalVelocity, externalVelocity, knockback)
+          }
+          break
+      }
     }
 
+    // adjust position by external velocity
+    vec2.add(position, position, externalVelocity)
+
+    // apply deceleration to external velocity
+    if (!vec2.equals(vec2.create(), externalVelocity)) {
+      const dv = vec2.scale(
+        vec2.create(),
+        vec2.normalize(vec2.create(), externalVelocity),
+        EXTERNAL_VELOCITY_DECELERATION,
+      )
+      if (vec2.squaredLength(dv) >= vec2.squaredLength(externalVelocity)) {
+        vec2.zero(externalVelocity)
+      } else {
+        vec2.subtract(externalVelocity, externalVelocity, dv)
+      }
+    }
+
+    simState.entityManager.tankMovers.update(id, { externalVelocity })
     simState.entityManager.transforms.update(id, { position, orientation })
   }
 }
