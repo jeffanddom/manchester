@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
@@ -15,7 +15,13 @@ import {
 import { DirectionMove } from '~/input/interfaces'
 import { ClientMoveUpdate } from '~/network/ClientMessage'
 import { SimState } from '~/simulate'
-import { radialTranslate2, rotateUntil } from '~/util/math'
+import {
+  North2,
+  PlusY3,
+  Zero2,
+  radialTranslate2,
+  rotateUntil,
+} from '~/util/math'
 
 export type TankMoverComponent = {
   dashDirection: DirectionMove
@@ -101,7 +107,7 @@ export const update = (simState: SimState, dt: number): void => {
 
             // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
             -orientation,
-            vec3.fromValues(0, 1, 0),
+            PlusY3,
           ),
         },
       })
@@ -120,12 +126,7 @@ export const update = (simState: SimState, dt: number): void => {
           {
             const recoil = vec2.scale(
               vec2.create(),
-              vec2.rotate(
-                vec2.create(),
-                vec2.fromValues(0, -1), // VEC2_NORTH, plz
-                vec2.create(), // VEC2_ZERO
-                event.hitAngle,
-              ),
+              vec2.rotate(vec2.create(), North2, Zero2, event.hitAngle),
               DEFAULT_GUN_RECOIL,
             )
 
@@ -137,12 +138,7 @@ export const update = (simState: SimState, dt: number): void => {
           {
             const knockback = vec2.scale(
               vec2.create(),
-              vec2.rotate(
-                vec2.create(),
-                vec2.fromValues(0, -1), // VEC2_NORTH, plz
-                vec2.create(), // VEC2_ZERO
-                event.orientation,
-              ),
+              vec2.rotate(vec2.create(), North2, Zero2, event.orientation),
               DEFAULT_HIT_KNOCKBACK,
             )
 

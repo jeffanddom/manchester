@@ -52,12 +52,7 @@ export class Camera {
 
   public world2View(out: mat4): mat4 {
     const worldPos = math.sphereCoordToVec3(vec3.create(), this.spherePos)
-    mat4.targetTo(
-      out,
-      worldPos,
-      vec3.fromValues(0, 0, 0),
-      vec3.fromValues(0, 1, 0),
-    )
+    mat4.targetTo(out, worldPos, math.Zero3, math.PlusY3)
 
     const rot = mat4.getRotation(quat.create(), out)
 

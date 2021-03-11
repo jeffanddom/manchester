@@ -73,21 +73,23 @@ function makeCubeComplex(): ModelNode {
 
   return {
     name: 'cube',
-    meshes: [{
-      primitive: MeshPrimitive.Triangles,
-      positions: {
-        bufferData: new Float32Array(positions),
-        componentsPerAttrib: 3,
+    meshes: [
+      {
+        primitive: MeshPrimitive.Triangles,
+        positions: {
+          bufferData: new Float32Array(positions),
+          componentsPerAttrib: 3,
+        },
+        normals: {
+          bufferData: new Float32Array(normals),
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          bufferData: new Uint16Array(indices),
+          componentsPerAttrib: 1,
+        },
       },
-      normals: {
-        bufferData: new Float32Array(normals),
-        componentsPerAttrib: 3,
-      },
-      indices: {
-        bufferData: new Uint16Array(indices),
-        componentsPerAttrib: 1,
-      },
-    }],
+    ],
     children: [],
   }
 }

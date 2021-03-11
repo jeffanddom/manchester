@@ -2,6 +2,23 @@ import { mat2d, vec2, vec3 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 
+export const Zero2: Immutable<vec2> = vec2.create()
+export const PlusY2: Immutable<vec2> = vec2.fromValues(0, 1)
+export const MinusY2: Immutable<vec2> = vec2.fromValues(0, -1)
+export const PlusX2: Immutable<vec2> = vec2.fromValues(1, 0)
+export const MinusX2: Immutable<vec2> = vec2.fromValues(-1, 0)
+export const North2: Immutable<vec2> = MinusY2
+export const South2: Immutable<vec2> = PlusY2
+export const West2: Immutable<vec2> = MinusX2
+export const East2: Immutable<vec2> = PlusX2
+export const Zero3: Immutable<vec3> = vec3.create()
+export const PlusX3: Immutable<vec3> = vec3.fromValues(1, 0, 0)
+export const MinusX3: Immutable<vec3> = vec3.fromValues(-1, 0, 0)
+export const PlusY3: Immutable<vec3> = vec3.fromValues(0, 1, 0)
+export const MinusY3: Immutable<vec3> = vec3.fromValues(0, -1, 0)
+export const PlusZ3: Immutable<vec3> = vec3.fromValues(0, 0, 1)
+export const MinusZ3: Immutable<vec3> = vec3.fromValues(0, 0, -1)
+
 export type SphereCoord = [number, number, number] // [r, theta, phi]
 
 export function sphereCoordFromValues(
@@ -71,7 +88,7 @@ export const radialTranslate2 = (
   return vec2.add(
     out,
     start,
-    vec2.rotate(vec2.create(), [0, -amount], [0, 0], orientation),
+    vec2.rotate(vec2.create(), [0, -amount], Zero2, orientation),
   )
 }
 
@@ -80,7 +97,7 @@ export const getAngle = (
   to: Immutable<vec2>,
 ): number => {
   const offset = vec2.sub(vec2.create(), to, from)
-  return Math.sign(offset[0]) * vec2.angle(vec2.fromValues(0, -1), offset)
+  return Math.sign(offset[0]) * vec2.angle(North2, offset)
 }
 
 export const normalizeAngle = (theta: number): number => {

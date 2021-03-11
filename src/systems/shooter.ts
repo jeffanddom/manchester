@@ -1,5 +1,4 @@
 import { mat4 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
@@ -8,7 +7,7 @@ import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
-import { getAngle, radialTranslate2 } from '~/util/math'
+import { PlusY3, getAngle, radialTranslate2 } from '~/util/math'
 
 export type ShooterComponent = {
   lastFiredFrame: number
@@ -60,7 +59,7 @@ export const update = (simState: SimState): void => {
           // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
           // It is applied against the tank's orientation to track the mouse at all angles.
           transform.orientation - newAngle,
-          vec3.fromValues(0, 1, 0),
+          PlusY3,
         ),
       },
     })

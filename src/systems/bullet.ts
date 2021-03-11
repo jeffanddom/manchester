@@ -1,9 +1,9 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
-import { radialTranslate2 } from '~/util/math'
+import { PlusY3, radialTranslate2 } from '~/util/math'
 
 const BULLET_SPEED = 60 * (TILE_SIZE / 3)
 
@@ -35,7 +35,7 @@ export const update = (
           'bullet:post': mat4.fromRotation(
             mat4.create(),
             -transform.orientation, // rotations on XZ plane need to be negated
-            vec3.fromValues(0, 1, 0),
+            PlusY3,
           ),
         },
       })

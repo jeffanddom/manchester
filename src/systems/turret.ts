@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix'
 import { mat4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
@@ -13,7 +12,7 @@ import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 import { Aabb2 } from '~/util/aabb2'
 import { segmentToAabb } from '~/util/collision'
-import { getAngle, radialTranslate2, rotateUntil } from '~/util/math'
+import { PlusY3, getAngle, radialTranslate2, rotateUntil } from '~/util/math'
 import { SortedSet } from '~/util/SortedSet'
 
 const TURRET_ROT_SPEED = Math.PI / 2
@@ -157,7 +156,7 @@ export const update = (
           // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
           // It is applied against the tank's orientation to track the mouse at all angles.
           -newOrientation,
-          vec3.fromValues(0, 1, 0),
+          PlusY3,
         ),
       },
     })

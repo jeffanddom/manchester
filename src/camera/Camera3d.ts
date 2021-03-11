@@ -47,7 +47,7 @@ export class Camera3d {
   }
 
   private targetTo(out: mat4): mat4 {
-    return mat4.targetTo(out, this.pos, this.target, vec3.fromValues(0, 1, 0))
+    return mat4.targetTo(out, this.pos, this.target, math.PlusY3)
   }
 
   setPos(v: Immutable<vec3>): void {
