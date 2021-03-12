@@ -79,21 +79,23 @@ export function makeCubeModel(): ModelNode {
 
   return {
     name: 'cube',
-    meshes: [{
-      primitive: MeshPrimitive.Triangles,
-      positions: {
-        bufferData: positions,
-        componentsPerAttrib: 3,
+    meshes: [
+      {
+        primitive: MeshPrimitive.Triangles,
+        positions: {
+          bufferData: positions,
+          componentsPerAttrib: 3,
+        },
+        normals: {
+          bufferData: normals,
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          bufferData: indices,
+          componentsPerAttrib: 1,
+        },
       },
-      normals: {
-        bufferData: normals,
-        componentsPerAttrib: 3,
-      },
-      indices: {
-        bufferData: indices,
-        componentsPerAttrib: 1,
-      },
-    }],
+    ],
     children: [],
   }
 }
@@ -134,23 +136,25 @@ export function makeLineCubeModel(): ModelNode {
 
   return {
     name: 'root',
-    meshes: [{
-      primitive: MeshPrimitive.Lines,
-      positions: {
-        bufferData: positions,
-        componentsPerAttrib: 3,
+    meshes: [
+      {
+        primitive: MeshPrimitive.Lines,
+        positions: {
+          bufferData: positions,
+          componentsPerAttrib: 3,
+        },
+        normals: {
+          // The normal values don't matter. We should consider a refactor where
+          // normals aren't assumed to be required.
+          bufferData: new Float32Array(positions.length),
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          bufferData: indices,
+          componentsPerAttrib: 1,
+        },
       },
-      normals: {
-        // The normal values don't matter. We should consider a refactor where
-        // normals aren't assumed to be required.
-        bufferData: new Float32Array(positions.length),
-        componentsPerAttrib: 3,
-      },
-      indices: {
-        bufferData: indices,
-        componentsPerAttrib: 1,
-      },
-    }],
+    ],
     children: [],
   }
 }
@@ -174,23 +178,25 @@ export function makeLineTileModel(): ModelNode {
 
   return {
     name: 'root',
-    meshes: [{
-      primitive: MeshPrimitive.Lines,
-      positions: {
-        bufferData: positions,
-        componentsPerAttrib: 3,
+    meshes: [
+      {
+        primitive: MeshPrimitive.Lines,
+        positions: {
+          bufferData: positions,
+          componentsPerAttrib: 3,
+        },
+        normals: {
+          // The normal values don't matter. We should consider a refactor where
+          // normals aren't assumed to be required.
+          bufferData: new Float32Array(positions.length),
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          bufferData: indices,
+          componentsPerAttrib: 1,
+        },
       },
-      normals: {
-        // The normal values don't matter. We should consider a refactor where
-        // normals aren't assumed to be required.
-        bufferData: new Float32Array(positions.length),
-        componentsPerAttrib: 3,
-      },
-      indices: {
-        bufferData: indices,
-        componentsPerAttrib: 1,
-      },
-    }],
+    ],
     children: [],
   }
 }
@@ -223,23 +229,25 @@ export function makeLineGridModel(): ModelNode {
 
   return {
     name: 'root',
-    meshes: [{
-      primitive: MeshPrimitive.Lines,
-      positions: {
-        bufferData: new Float32Array(positions),
-        componentsPerAttrib: 3,
+    meshes: [
+      {
+        primitive: MeshPrimitive.Lines,
+        positions: {
+          bufferData: new Float32Array(positions),
+          componentsPerAttrib: 3,
+        },
+        normals: {
+          // The normal values don't matter. We should consider a refactor where
+          // normals aren't assumed to be required.
+          bufferData: new Float32Array(positions.length),
+          componentsPerAttrib: 3,
+        },
+        indices: {
+          bufferData: new Uint16Array(indices),
+          componentsPerAttrib: 1,
+        },
       },
-      normals: {
-        // The normal values don't matter. We should consider a refactor where
-        // normals aren't assumed to be required.
-        bufferData: new Float32Array(positions.length),
-        componentsPerAttrib: 3,
-      },
-      indices: {
-        bufferData: new Uint16Array(indices),
-        componentsPerAttrib: 1,
-      },
-    }],
+    ],
     children: [],
   }
 }

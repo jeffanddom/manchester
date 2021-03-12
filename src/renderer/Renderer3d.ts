@@ -11,6 +11,7 @@ import { ShaderAttribLoc, ShaderUniform } from './shaders/common'
 
 import { MeshPrimitive, ModelModifiers, ModelNode } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
+import { shader as particleShader } from '~/renderer/shaders/particle'
 import { shader as solidShader } from '~/renderer/shaders/solid'
 import { shader as unlitShader } from '~/renderer/shaders/unlit'
 import { shader as vcolor } from '~/renderer/shaders/vcolor'
@@ -82,7 +83,8 @@ export class ShaderCompileError extends Error {
 export class ShaderLinkError extends Error {}
 
 export class Renderer3d implements IModelLoader {
-  private gl: WebGL2RenderingContext
+  // private gl: WebGL2RenderingContext
+  gl: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
   private models: Map<string, RenderNode>
@@ -97,6 +99,7 @@ export class Renderer3d implements IModelLoader {
 
     this.shaders = new Map()
     this.loadShader('vcolor', vcolor)
+    this.loadShader('particle', particleShader)
     this.loadShader('solid', solidShader)
     this.loadShader('unlit', unlitShader)
     this.loadShader('wiresolid', wiresolidShader)
@@ -176,7 +179,8 @@ export class Renderer3d implements IModelLoader {
     })
   }
 
-  private useShader(name: string): void {
+  // private useShader(name: string): void {
+  public useShader(name: string): void {
     this.currentShader = this.shaders.get(name)
     if (this.currentShader === undefined) {
       throw new Error(`shader ${name} not loaded`)

@@ -22,5 +22,5 @@ export const DASH_COOLDOWN = 25
 
 // Gun stuff
 export const EXTERNAL_VELOCITY_DECELERATION = 0.05
-export const DEFAULT_GUN_KICK = -0.15
-export const DEFAULT_GUN_KNOCKBACK = 0.3
+export const DEFAULT_GUN_KICK = -0.3
+export const DEFAULT_GUN_KNOCKBACK = 0.15
