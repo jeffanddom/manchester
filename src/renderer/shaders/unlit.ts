@@ -1,27 +1,25 @@
-import { ShaderAttribLoc } from './common'
-
 export const shader = {
   vertexSrc: `#version 300 es
-layout(location = ${ShaderAttribLoc.Position}) in vec3 position;
+in vec3 aPosition;
 
-uniform mat4 projection;
-uniform mat4 world2View;
-uniform mat4 model2World;
+uniform mat4 uProjection;
+uniform mat4 uWorld2View;
+uniform mat4 uModel2World;
  
 void main() {
-  gl_Position = projection * world2View * model2World * vec4(position, 1.0);
+  gl_Position = uProjection * uWorld2View * uModel2World * vec4(aPosition, 1.0);
 }
 `,
 
   fragmentSrc: `#version 300 es
 precision mediump float;
 
-uniform vec4 color;
+uniform vec4 uColor;
 
 out vec4 FragColor;
 
 void main() {
-  FragColor = color;
+  FragColor = uColor;
 }
 `,
 }

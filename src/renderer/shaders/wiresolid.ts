@@ -1,34 +1,32 @@
 /**
  * Wiresolids are rendered with a stroke and fill attribute. Vertexes require
- * an edgeOn attribute to determine proximity to an edge.
+ * an aEdgeOn attribute to determine proximity to an edge.
  */
-
-import { ShaderAttribLoc } from './common'
 
 export const shader = {
   vertexSrc: `#version 300 es
-layout(location = ${ShaderAttribLoc.Position}) in vec3 position;
-layout(location = ${ShaderAttribLoc.Normal}) in vec3 normal;
-layout(location = ${ShaderAttribLoc.EdgeOn}) in vec3 edgeOn;
+in vec3 aPosition;
+in vec3 aNormal;
+in vec3 aEdgeOn;
 
-uniform mat4 projection;
-uniform mat4 world2View;
-uniform mat4 model2World;
+uniform mat4 uProjection;
+uniform mat4 uWorld2View;
+uniform mat4 uModel2World;
 
 out vec3 Normal;
 out vec3 EdgeOn;
 
 void main() {
-  gl_Position = projection * world2View * model2World * vec4(position, 1.0);
-  Normal = mat3(world2View * model2World) * normal;
-  EdgeOn = edgeOn;
+  gl_Position = uProjection * uWorld2View * uModel2World * vec4(aPosition, 1.0);
+  Normal = mat3(uWorld2View * uModel2World) * aNormal;
+  EdgeOn = aEdgeOn;
 }
 `,
 
   fragmentSrc: `#version 300 es
 precision mediump float;
 
-uniform vec4 color;
+uniform vec4 uColor;
 
 in vec3 Normal;
 in vec3 EdgeOn;
@@ -43,9 +41,9 @@ float lerpAlpha() {
 }
 
 void main() {
-  vec3 normal = normalize(Normal);
-  float light = dot(normal, normalize(vec3(1, 0.5, 0))) * 0.4 + 0.6;
-  FragColor = vec4(light * mix(color.rgb, vec3(0.0), lerpAlpha()), 1);
+  vec3 aNormal = normalize(Normal);
+  float light = dot(aNormal, normalize(vec3(1, 0.5, 0))) * 0.4 + 0.6;
+  FragColor = vec4(light * mix(uColor.rgb, vec3(0.0), lerpAlpha()), 1);
 }
 `,
 }

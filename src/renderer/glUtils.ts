@@ -8,7 +8,7 @@ import {
   NumericArray,
 } from '../renderer/interfaces'
 
-import { ShaderAttribLoc } from './shaders/common'
+import { ShaderAttrib } from './shaders/common'
 
 export interface RenderMesh {
   primitive: MeshPrimitive
@@ -57,19 +57,19 @@ function makeRenderMesh(gl: WebGL2RenderingContext, src: DataMesh): RenderMesh {
 
   gl.bindVertexArray(vao)
 
-  bindAttribBuffer(gl, src.positions, ShaderAttribLoc.Position)
+  bindAttribBuffer(gl, src.positions, ShaderAttrib.Position)
   bindIndexBuffer(gl, src.indices)
 
   if (src.normals !== undefined) {
-    bindAttribBuffer(gl, src.normals, ShaderAttribLoc.Normal)
+    bindAttribBuffer(gl, src.normals, ShaderAttrib.Normal)
   }
 
   if (src.colors !== undefined) {
-    bindAttribBuffer(gl, src.colors, ShaderAttribLoc.Color)
+    bindAttribBuffer(gl, src.colors, ShaderAttrib.VertexColor)
   }
 
   if (src.edgeOn !== undefined) {
-    bindAttribBuffer(gl, src.edgeOn, ShaderAttribLoc.EdgeOn)
+    bindAttribBuffer(gl, src.edgeOn, ShaderAttrib.EdgeOn)
   }
 
   gl.bindVertexArray(null)
@@ -87,7 +87,7 @@ function makeRenderMesh(gl: WebGL2RenderingContext, src: DataMesh): RenderMesh {
 export function bindAttribBuffer(
   gl: WebGL2RenderingContext,
   src: MeshBuffer,
-  attribLoc: ShaderAttribLoc,
+  attribLoc: ShaderAttrib,
 ): void {
   const glBuffer = gl.createBuffer()
   if (glBuffer === null) {

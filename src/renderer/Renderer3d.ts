@@ -7,7 +7,7 @@ import {
   makeLineTileModel,
 } from './geometryUtils'
 import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
-import { ShaderAttribLoc, ShaderUniform } from './shaders/common'
+import { ShaderAttrib, ShaderUniform, attribName } from './shaders/common'
 
 import { MeshPrimitive, ModelModifiers, ModelNode } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
@@ -151,6 +151,15 @@ export class Renderer3d implements IModelLoader {
       throw `unable to create shader program`
     }
 
+    // Bind attribute names to conventional locations.
+    // This needs to occur _before_ linking, which freezes the program.
+    for (const attrib of Object.values(ShaderAttrib)) {
+      if (typeof attrib !== 'number') {
+        continue
+      }
+      this.gl.bindAttribLocation(program, attrib, attribName(attrib))
+    }
+
     this.gl.attachShader(program, vertexShader)
     this.gl.attachShader(program, fragmentShader)
     this.gl.linkProgram(program)
@@ -165,6 +174,7 @@ export class Renderer3d implements IModelLoader {
       throw 'Could not compile WebGL program. \n\n' + info
     }
 
+    // Build mapping between uniform name and location
     const uniforms = new Map()
     for (const u of Object.values(ShaderUniform)) {
       const loc = this.gl.getUniformLocation(program, u)
@@ -575,9 +585,9 @@ export class Renderer3d implements IModelLoader {
       throw new Error('could not create buffer')
     }
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, posGlBuffer)
-    this.gl.enableVertexAttribArray(ShaderAttribLoc.Position)
+    this.gl.enableVertexAttribArray(ShaderAttrib.Position)
     this.gl.vertexAttribPointer(
-      ShaderAttribLoc.Position,
+      ShaderAttrib.Position,
       3,
       this.gl.FLOAT,
       false,

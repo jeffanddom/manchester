@@ -5,18 +5,18 @@
 
 export const shader = {
   vertexSrc: `#version 300 es
-layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec4 a_color;
-layout(location = 2) in mat4 a_model2World;
+in vec3 aPosition;
+in vec4 aInstanceColor;
+in mat4 aInstanceTransform;
 
-uniform mat4 projection;
-uniform mat4 world2View;
+uniform mat4 uProjection;
+uniform mat4 uWorld2View;
 
 out vec4 color;
 
 void main() {
-  gl_Position = projection * world2View * a_model2World * vec4(a_position, 1.0);
-  color = a_color;
+  gl_Position = uProjection * uWorld2View * aInstanceTransform * vec4(aPosition, 1.0);
+  color = aInstanceColor;
 }
 `,
 
