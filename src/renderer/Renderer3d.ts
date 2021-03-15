@@ -6,10 +6,22 @@ import {
   makeLineGridModel,
   makeLineTileModel,
 } from './geometryUtils'
-import { RenderMesh, RenderNode, makeRenderNode } from './glUtils'
+import {
+  RenderMesh,
+  RenderMeshInstanced,
+  RenderNode,
+  makeRenderMeshInstanced,
+  makeRenderNode,
+} from './glUtils'
 import { ShaderAttrib, ShaderUniform, attribName } from './shaders/common'
 
-import { MeshPrimitive, ModelModifiers, ModelNode } from '~/renderer/interfaces'
+import {
+  DataMeshInstanced,
+  MeshPrimitive,
+  ModelModifiers,
+  ModelNode,
+  NumericArray,
+} from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as particleShader } from '~/renderer/shaders/particle'
 import { shader as solidShader } from '~/renderer/shaders/solid'
@@ -83,11 +95,11 @@ export class ShaderCompileError extends Error {
 export class ShaderLinkError extends Error {}
 
 export class Renderer3d implements IModelLoader {
-  // private gl: WebGL2RenderingContext
-  gl: WebGL2RenderingContext
+  private gl: WebGL2RenderingContext
 
   private shaders: Map<string, Shader>
   private models: Map<string, RenderNode>
+  private particleMeshes: Map<string, RenderMeshInstanced>
 
   private fov: number
   private viewportDimensions: vec2
@@ -108,6 +120,8 @@ export class Renderer3d implements IModelLoader {
     this.loadModel('linecube', makeLineCubeModel())
     this.loadModel('linetile', makeLineTileModel())
     this.loadModel('linegrid', makeLineGridModel())
+
+    this.particleMeshes = new Map()
 
     this.fov = (75 * Math.PI) / 180 // set some sane default
 
@@ -189,8 +203,7 @@ export class Renderer3d implements IModelLoader {
     })
   }
 
-  // private useShader(name: string): void {
-  public useShader(name: string): void {
+  private useShader(name: string): void {
     this.currentShader = this.shaders.get(name)
     if (this.currentShader === undefined) {
       throw new Error(`shader ${name} not loaded`)
@@ -554,11 +567,59 @@ export class Renderer3d implements IModelLoader {
     }
   }
 
+  renderParticles(
+    name: string,
+    attribData: Map<number, NumericArray>,
+    instances: number,
+  ): void {
+    const mesh = this.particleMeshes.get(name)
+    if (mesh === undefined) {
+      throw `particle mesh ${name} not found`
+    }
+
+    this.gl.bindVertexArray(mesh.vao)
+
+    for (const [attrib, data] of attribData) {
+      // We assume here that the attrib data contains enough to satisfy the
+      // instance count. Since we don't have componentsPerAttrib here, we can't
+      // verify.
+
+      const glBuffer = mesh.instanceAttribBuffers.get(attrib)
+      if (glBuffer === undefined) {
+        throw `particle mesh ${name} does not use attrib ${attrib}`
+      }
+
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, glBuffer)
+      this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
+    }
+
+    this.gl.drawArraysInstanced(
+      mesh.primitive,
+      0,
+      mesh.vertsPerInstance,
+      instances,
+    )
+  }
+
   loadModel(name: string, root: ModelNode): void {
     if (this.models.has(name)) {
       throw new Error(`model with name ${name} already exists`)
     }
     this.models.set(name, makeRenderNode(this.gl, root))
+  }
+
+  loadParticleMesh(
+    name: string,
+    dataMesh: DataMeshInstanced,
+    maxInstances: number,
+  ): void {
+    if (this.particleMeshes.has(name)) {
+      throw `particle mesh with name ${name} already exists`
+    }
+    this.particleMeshes.set(
+      name,
+      makeRenderMeshInstanced(this.gl, dataMesh, maxInstances),
+    )
   }
 
   /**
