@@ -92,7 +92,7 @@ export class ShaderCompileError extends Error {
   }
 }
 
-export class ShaderLinkError extends Error {}
+export class ShaderLinkError extends Error { }
 
 export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
@@ -572,6 +572,8 @@ export class Renderer3d implements IModelLoader {
     attribData: Map<number, NumericArray>,
     instances: number,
   ): void {
+    this.useShader('particle')
+
     const mesh = this.particleMeshes.get(name)
     if (mesh === undefined) {
       throw `particle mesh ${name} not found`
@@ -594,11 +596,12 @@ export class Renderer3d implements IModelLoader {
     }
 
     this.gl.drawArraysInstanced(
-      mesh.primitive,
+      this.meshPrimitiveToDrawMode(mesh.primitive),
       0,
       mesh.vertsPerInstance,
       instances,
     )
+    this.gl.bindVertexArray(null)
   }
 
   loadModel(name: string, root: ModelNode): void {

@@ -114,17 +114,11 @@ export function makeRenderMeshInstanced(
 
   const instanceAttribBuffers: Map<number, WebGLBuffer> = new Map()
   for (const [attrib, bufferConfig] of src.instanceAttribBufferConfig) {
-    const buffer = gl.createBuffer()
-    if (buffer === null) {
-      throw `failed to create buffer`
-    }
-
-    const bufferData = createNumericArray(
-      bufferConfig.arrayType,
+    const bufferLength =
       maxInstances *
-        bufferConfig.componentsPerAttrib *
-        (bufferConfig.attribSlots ?? 1),
-    )
+      bufferConfig.componentsPerAttrib *
+      (bufferConfig.attribSlots ?? 1)
+    const bufferData = createNumericArray(bufferConfig.arrayType, bufferLength)
     const glBuffer = bindAttribBuffer(
       gl,
       { bufferData, componentsPerAttrib: bufferConfig.componentsPerAttrib },

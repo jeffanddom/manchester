@@ -15,8 +15,25 @@ import { ShaderAttrib } from '~/renderer/shaders/common'
 import { inverseLerp, lerp } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
+// function logGLCall(functionName, args) {
+//   console.log(
+//     'gl.' +
+//     functionName +
+//     '(' +
+//     WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
+//     ')',
+//   )
+// }
+
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
 const gl = canvas.getContext('webgl2')!
+
+// Replace above `const gl` with this to get gl call logging
+// const gl = WebGLDebugUtils.makeDebugContext(
+//   canvas.getContext('webgl2')!,
+//   undefined,
+//   logGLCall,
+// )
 const pixelRatio = window.devicePixelRatio
 
 canvas.width = canvas.parentElement!.clientWidth * pixelRatio
@@ -56,7 +73,7 @@ for (let axis = 0; axis < 3; axis++) {
   })
 }
 
-const tris = 10000
+const tris = 10
 
 const attribBuffers: Map<number, MeshBuffer> = new Map()
 attribBuffers.set(ShaderAttrib.Position, {
@@ -90,7 +107,9 @@ instanceAttribBufferConfig.set(ShaderAttrib.InstanceTransform, {
 // prettier-ignore
 const colors = new Float32Array([
   0, 1, 1, 1,
-  1, 0, 1, 1
+  1, 0, 1, 1,
+  1, 1, 0, 1,
+  1, 1, 1, 1,
 ])
 
 const xforms: mat4[] = []
@@ -102,12 +121,12 @@ for (let i = 0; i < tris; i++) {
         mat4.create(),
         mat4.create(),
         vec3.fromValues(
-          lerp(-5, 5, Math.random()),
-          lerp(-5, 5, Math.random()),
-          lerp(-5, 5, Math.random()),
+          lerp(-1, 1, Math.random()),
+          lerp(-1, 1, Math.random()),
+          lerp(-1, 1, Math.random()),
         ),
       ),
-      vec3.fromValues(0.1, 0.1, 0.1),
+      vec3.fromValues(0.5, 0.5, 0.5),
     ),
   )
 }
