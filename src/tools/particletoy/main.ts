@@ -56,7 +56,7 @@ for (let axis = 0; axis < 3; axis++) {
   })
 }
 
-const tris = 2
+const tris = 10000
 
 const attribBuffers: Map<number, MeshBuffer> = new Map()
 attribBuffers.set(ShaderAttrib.Position, {
@@ -144,8 +144,8 @@ function update(): void {
     )
   }
 
-  for (let j = 0; j < 16; j++) {
-    for (let i = 0; i < xforms.length; i++) {
+  for (let i = 0; i < xforms.length; i++) {
+    for (let j = 0; j < 16; j++) {
       xformData[i * 16 + j] = xforms[i][j]
     }
   }

@@ -129,7 +129,7 @@ export function makeRenderMeshInstanced(
       gl,
       { bufferData, componentsPerAttrib: bufferConfig.componentsPerAttrib },
       attrib,
-      { isPerInstance: true },
+      { isPerInstance: true, attribSlots: bufferConfig.attribSlots },
     )
 
     instanceAttribBuffers.set(attrib, glBuffer)
@@ -164,8 +164,10 @@ export function bindAttribBuffer(
     throw new Error('unable to create GL buffer')
   }
 
+  const usage = opts.isPerInstance ?? false ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW
+
   gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, src.bufferData, gl.STATIC_DRAW)
+  gl.bufferData(gl.ARRAY_BUFFER, src.bufferData, usage)
 
   const attribSlots = opts.attribSlots ?? 1
   const arrayDataType = numericArrayToArrayDataType(src.bufferData)
