@@ -5,6 +5,7 @@ import { Camera } from './Camera'
 import * as models from './models'
 
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
+import { ShaderAttrib } from '~/renderer/shaders/common'
 import { inverseLerp, lerp } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
@@ -81,9 +82,16 @@ renderer.gl.bufferData(
   ]),
   renderer.gl.STATIC_DRAW,
 )
-renderer.gl.enableVertexAttribArray(1)
-renderer.gl.vertexAttribPointer(1, 4, renderer.gl.FLOAT, false, 0, 0)
-renderer.gl.vertexAttribDivisor(1, tris / 2)
+renderer.gl.enableVertexAttribArray(ShaderAttrib.InstanceColor)
+renderer.gl.vertexAttribPointer(
+  ShaderAttrib.InstanceColor,
+  4,
+  renderer.gl.FLOAT,
+  false,
+  0,
+  0,
+)
+renderer.gl.vertexAttribDivisor(ShaderAttrib.InstanceColor, tris / 2)
 
 const xforms: mat4[] = []
 for (let i = 0; i < tris; i++) {
@@ -120,7 +128,7 @@ renderer.gl.bufferData(
 )
 
 for (let i = 0; i < 4; i++) {
-  const attribLoc = 2 + i
+  const attribLoc = ShaderAttrib.InstanceTransform + i
   renderer.gl.enableVertexAttribArray(attribLoc)
   renderer.gl.vertexAttribPointer(
     attribLoc,
