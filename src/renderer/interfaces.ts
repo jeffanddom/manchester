@@ -37,11 +37,8 @@ export interface MeshBuffer {
 
 export type DataMesh = {
   primitive: MeshPrimitive
-  positions: MeshBuffer
+  attribBuffers: Map<number, MeshBuffer>
   indices: MeshBuffer
-  normals?: MeshBuffer
-  colors?: MeshBuffer
-  edgeOn?: MeshBuffer
 }
 
 export interface BufferConfig {

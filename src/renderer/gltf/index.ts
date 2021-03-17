@@ -14,6 +14,7 @@ import { arrayDataTypeElementSize } from '~/renderer/glUtils'
 import * as renderer from '~/renderer/interfaces'
 import { ArrayDataType, ModelNode } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
+import { ShaderAttrib } from '~/renderer/shaders/common'
 
 export { Document } from '~/renderer/gltf/types'
 
@@ -166,14 +167,16 @@ function makeMeshes(doc: Document, meshId: number): renderer.DataMesh[] {
       throw new Error(`mesh ${meshId}: primitive has no accessor index`)
     }
 
-    const positions = makeBuffer(doc, positionAccessorId)
-    const normals = makeBuffer(doc, normalAccessorId)
-    const indices = makeBuffer(doc, indexAccessorId)
+    const attribBuffers = new Map()
+    attribBuffers.set(
+      ShaderAttrib.Position,
+      makeBuffer(doc, positionAccessorId),
+    )
+    attribBuffers.set(ShaderAttrib.Normal, makeBuffer(doc, normalAccessorId))
 
     dataMeshes.push({
-      positions,
-      normals,
-      indices,
+      attribBuffers,
+      indices: makeBuffer(doc, indexAccessorId),
       primitive: renderer.MeshPrimitive.Triangles,
     })
   }

@@ -10,8 +10,6 @@ import {
   NumericArray,
 } from '../renderer/interfaces'
 
-import { ShaderAttrib } from './shaders/common'
-
 export interface RenderMesh {
   primitive: MeshPrimitive
   vao: WebGLVertexArrayObject
@@ -67,24 +65,14 @@ function makeRenderMesh(gl: WebGL2RenderingContext, src: DataMesh): RenderMesh {
 
   gl.bindVertexArray(vao)
 
-  bindAttribBuffer(gl, src.positions, ShaderAttrib.Position)
+  for (const [attrib, buf] of src.attribBuffers) {
+    bindAttribBuffer(gl, buf, attrib)
+  }
+
   bindIndexBuffer(gl, src.indices)
 
-  if (src.normals !== undefined) {
-    bindAttribBuffer(gl, src.normals, ShaderAttrib.Normal)
-  }
-
-  if (src.colors !== undefined) {
-    bindAttribBuffer(gl, src.colors, ShaderAttrib.VertexColor)
-  }
-
-  if (src.edgeOn !== undefined) {
-    bindAttribBuffer(gl, src.edgeOn, ShaderAttrib.EdgeOn)
-  }
-
-  gl.bindVertexArray(null)
-
   // Ensure future buffer ops don't modify this VAO
+  gl.bindVertexArray(null)
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
 

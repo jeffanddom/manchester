@@ -1,6 +1,7 @@
 import { mat4 } from 'gl-matrix'
 
 import { DataMesh, MeshPrimitive, ModelNode, NumericArray } from './interfaces'
+import { ShaderAttrib } from './shaders/common'
 
 import * as set from '~/util/set'
 
@@ -77,19 +78,22 @@ export function makeCubeModel(): ModelNode {
     20, 22, 23,
   ])
 
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: positions,
+    componentsPerAttrib: 3,
+  })
+  attribBuffers.set(ShaderAttrib.Normal, {
+    bufferData: normals,
+    componentsPerAttrib: 3,
+  })
+
   return {
     name: 'cube',
     meshes: [
       {
         primitive: MeshPrimitive.Triangles,
-        positions: {
-          bufferData: positions,
-          componentsPerAttrib: 3,
-        },
-        normals: {
-          bufferData: normals,
-          componentsPerAttrib: 3,
-        },
+        attribBuffers,
         indices: {
           bufferData: indices,
           componentsPerAttrib: 1,
@@ -134,21 +138,18 @@ export function makeLineCubeModel(): ModelNode {
     3, 7,
   ])
 
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: positions,
+    componentsPerAttrib: 3,
+  })
+
   return {
     name: 'root',
     meshes: [
       {
         primitive: MeshPrimitive.Lines,
-        positions: {
-          bufferData: positions,
-          componentsPerAttrib: 3,
-        },
-        normals: {
-          // The normal values don't matter. We should consider a refactor where
-          // normals aren't assumed to be required.
-          bufferData: new Float32Array(positions.length),
-          componentsPerAttrib: 3,
-        },
+        attribBuffers,
         indices: {
           bufferData: indices,
           componentsPerAttrib: 1,
@@ -176,21 +177,18 @@ export function makeLineTileModel(): ModelNode {
     3, 0,
   ])
 
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: positions,
+    componentsPerAttrib: 3,
+  })
+
   return {
     name: 'root',
     meshes: [
       {
         primitive: MeshPrimitive.Lines,
-        positions: {
-          bufferData: positions,
-          componentsPerAttrib: 3,
-        },
-        normals: {
-          // The normal values don't matter. We should consider a refactor where
-          // normals aren't assumed to be required.
-          bufferData: new Float32Array(positions.length),
-          componentsPerAttrib: 3,
-        },
+        attribBuffers,
         indices: {
           bufferData: indices,
           componentsPerAttrib: 1,
@@ -227,21 +225,18 @@ export function makeLineGridModel(): ModelNode {
     indices.push(indices.length)
   }
 
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: new Float32Array(positions),
+    componentsPerAttrib: 3,
+  })
+
   return {
     name: 'root',
     meshes: [
       {
         primitive: MeshPrimitive.Lines,
-        positions: {
-          bufferData: new Float32Array(positions),
-          componentsPerAttrib: 3,
-        },
-        normals: {
-          // The normal values don't matter. We should consider a refactor where
-          // normals aren't assumed to be required.
-          bufferData: new Float32Array(positions.length),
-          componentsPerAttrib: 3,
-        },
+        attribBuffers,
         indices: {
           bufferData: new Uint16Array(indices),
           componentsPerAttrib: 1,
@@ -332,6 +327,13 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
     edgeSet.add(`${edgeOnIndices[e]}:${edgeOnIndices[e + 1]}`)
   }
 
+  const srcPositions = src.attribBuffers.get(ShaderAttrib.Position)
+  if (srcPositions === undefined) {
+    throw `source mesh has no position attribute`
+  }
+
+  const srcNormals = src.attribBuffers.get(ShaderAttrib.Normal)
+
   const positions = []
   const normals = []
   const edgeOn = []
@@ -351,16 +353,16 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
       const dataOffset = vertIndex * 3
 
       positions.push(
-        src.positions.bufferData[dataOffset],
-        src.positions.bufferData[dataOffset + 1],
-        src.positions.bufferData[dataOffset + 2],
+        srcPositions.bufferData[dataOffset],
+        srcPositions.bufferData[dataOffset + 1],
+        srcPositions.bufferData[dataOffset + 2],
       )
 
-      if (src.normals !== undefined) {
+      if (srcNormals !== undefined) {
         normals.push(
-          src.normals.bufferData[dataOffset],
-          src.normals.bufferData[dataOffset + 1],
-          src.normals.bufferData[dataOffset + 2],
+          srcNormals.bufferData[dataOffset],
+          srcNormals.bufferData[dataOffset + 1],
+          srcNormals.bufferData[dataOffset + 2],
         )
       }
     }
@@ -385,57 +387,65 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
     edgeOn.push(...vertAEdgeOn, ...vertBEdgeOn, ...vertCEdgeOn)
   }
 
-  const res: DataMesh = {
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: new Float32Array(positions),
+    componentsPerAttrib: srcPositions.componentsPerAttrib,
+  })
+  attribBuffers.set(ShaderAttrib.EdgeOn, {
+    // TODO: we may be able to use unsigned byte here, as long as we convert
+    // to a float value in the vertex shader.
+    bufferData: new Float32Array(edgeOn),
+    componentsPerAttrib: 3,
+  })
+
+  if (srcNormals !== undefined) {
+    attribBuffers.set(ShaderAttrib.Normal, {
+      bufferData: new Float32Array(normals),
+      componentsPerAttrib: srcNormals.componentsPerAttrib,
+    })
+  }
+
+  return {
     primitive: MeshPrimitive.Triangles,
-    positions: {
-      bufferData: new Float32Array(positions),
-      componentsPerAttrib: src.positions.componentsPerAttrib,
-    },
+    attribBuffers,
     indices: {
       bufferData: new Uint16Array(indices),
       componentsPerAttrib: src.indices.componentsPerAttrib,
     },
-    edgeOn: {
-      // TODO: we may be able to use unsigned byte here, as long as we convert
-      // to a float value in the vertex shader.
-      bufferData: new Float32Array(edgeOn),
-      componentsPerAttrib: 3,
-    },
   }
-
-  if (src.normals !== undefined) {
-    res.normals = {
-      bufferData: new Float32Array(normals),
-      componentsPerAttrib: src.normals.componentsPerAttrib,
-    }
-  }
-
-  return res
 }
 
 function triMeshToWiresolidLineMesh(src: DataMesh): DataMesh {
   const indices = getWiresolidEdges(src.indices.bufferData)
 
-  const res: DataMesh = {
+  const srcPositions = src.attribBuffers.get(ShaderAttrib.Position)
+  if (srcPositions === undefined) {
+    throw `source mesh has no position attribute`
+  }
+
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: srcPositions.bufferData.slice(),
+    componentsPerAttrib: srcPositions.componentsPerAttrib,
+  })
+
+  const srcNormals = src.attribBuffers.get(ShaderAttrib.Normal)
+  if (srcNormals !== undefined) {
+    attribBuffers.set(ShaderAttrib.Normal, {
+      bufferData: srcNormals.bufferData.slice(),
+      componentsPerAttrib: srcNormals.componentsPerAttrib,
+    })
+  }
+
+  return {
     primitive: MeshPrimitive.Lines,
-    positions: {
-      bufferData: src.positions.bufferData.slice(),
-      componentsPerAttrib: src.positions.componentsPerAttrib,
-    },
+    attribBuffers,
     indices: {
       bufferData: new Uint16Array(indices),
       componentsPerAttrib: 2,
     },
   }
-
-  if (src.normals !== undefined) {
-    res.normals = {
-      ...src.normals,
-      bufferData: src.normals.bufferData.slice(),
-    }
-  }
-
-  return res
 }
 
 /**

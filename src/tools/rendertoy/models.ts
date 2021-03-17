@@ -10,6 +10,7 @@ import {
 import * as gltf from '~/renderer/gltf'
 import { MeshPrimitive, ModelNode } from '~/renderer/interfaces'
 import { Renderer3d } from '~/renderer/Renderer3d'
+import { ShaderAttrib } from '~/renderer/shaders/common'
 
 function makeCubeComplex(): ModelNode {
   // positions for front face
@@ -71,19 +72,22 @@ function makeCubeComplex(): ModelNode {
     }
   }
 
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: new Float32Array(positions),
+    componentsPerAttrib: 3,
+  })
+  attribBuffers.set(ShaderAttrib.Normal, {
+    bufferData: new Float32Array(normals),
+    componentsPerAttrib: 3,
+  })
+
   return {
     name: 'cube',
     meshes: [
       {
         primitive: MeshPrimitive.Triangles,
-        positions: {
-          bufferData: new Float32Array(positions),
-          componentsPerAttrib: 3,
-        },
-        normals: {
-          bufferData: new Float32Array(normals),
-          componentsPerAttrib: 3,
-        },
+        attribBuffers,
         indices: {
           bufferData: new Uint16Array(indices),
           componentsPerAttrib: 1,

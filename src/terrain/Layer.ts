@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { MeshPrimitive, ModelNode } from '~/renderer/interfaces'
+import { ShaderAttrib } from '~/renderer/shaders/common'
 import { Type } from '~/terrain/Type'
 
 export class Layer {
@@ -89,27 +90,32 @@ export class Layer {
   }
 
   public getModel(): ModelNode {
+    const attribBuffers = new Map()
+    attribBuffers.set(ShaderAttrib.Position, {
+      bufferData: this.positions,
+      componentsPerAttrib: 3,
+    })
+    attribBuffers.set(ShaderAttrib.VertexColor, {
+      bufferData: this.colors,
+      componentsPerAttrib: 4,
+    })
+    attribBuffers.set(ShaderAttrib.Normal, {
+      bufferData: this.normals,
+      componentsPerAttrib: 3,
+    })
+
     return {
       name: 'root',
-      meshes: [{
-        primitive: MeshPrimitive.Triangles,
-        positions: {
-          bufferData: this.positions,
-          componentsPerAttrib: 3,
+      meshes: [
+        {
+          primitive: MeshPrimitive.Triangles,
+          attribBuffers,
+          indices: {
+            bufferData: new Uint16Array(this.indices),
+            componentsPerAttrib: 1,
+          },
         },
-        colors: {
-          bufferData: this.colors,
-          componentsPerAttrib: 4,
-        },
-        normals: {
-          bufferData: this.normals,
-          componentsPerAttrib: 3,
-        },
-        indices: {
-          bufferData: new Uint16Array(this.indices),
-          componentsPerAttrib: 1,
-        },
-      }],
+      ],
       children: [],
     }
   }
