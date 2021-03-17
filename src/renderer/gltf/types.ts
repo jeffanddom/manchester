@@ -7,6 +7,8 @@
  * some type declarations here and add things as we need them.
  */
 
+import { ArrayDataType } from '~/renderer/interfaces'
+
 /**
  * An index into one of the top-level object arrays.
  */
@@ -88,15 +90,6 @@ export interface Primitive {
   mode?: PrimitiveMode
 }
 
-export enum AccessorComponentType {
-  Byte = 5120,
-  UnsignedByte = 5121,
-  Short = 5122,
-  UnsignedShort = 5123,
-  UnsignedInt = 5125,
-  Float = 5126,
-}
-
 export enum AccessorType {
   Scalar = 'SCALAR',
   Vec2 = 'VEC2',
@@ -109,7 +102,7 @@ export enum AccessorType {
 
 export interface Accessor {
   type: AccessorType
-  componentType: AccessorComponentType
+  componentType: ArrayDataType
   count: number
   bufferView?: id
   byteOffset?: number

@@ -8,7 +8,18 @@ export type NumericArray =
   | Int16Array
   | Uint16Array
   | Uint32Array
+  | Int32Array
   | Float32Array
+
+export enum ArrayDataType {
+  Byte = 5120,
+  UnsignedByte = 5121,
+  Short = 5122,
+  UnsignedShort = 5123,
+  Int = 5124,
+  UnsignedInt = 5125,
+  Float = 5126,
+}
 
 export type ModelModifiers = {
   [key: string]: Immutable<mat4>
@@ -31,6 +42,19 @@ export type DataMesh = {
   normals?: MeshBuffer
   colors?: MeshBuffer
   edgeOn?: MeshBuffer
+}
+
+export interface BufferConfig {
+  arrayType: ArrayDataType
+  componentsPerAttrib: number // number of component values per attribute
+  attribSlots?: number // number of slots consumed by this attribute
+}
+
+export type DataMeshInstanced = {
+  primitive: MeshPrimitive
+  attribBuffers: Map<number, MeshBuffer>
+  instanceAttribBufferConfig: Map<number, BufferConfig>
+  vertsPerInstance: number
 }
 
 export interface ModelNode {

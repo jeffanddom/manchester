@@ -100,8 +100,10 @@ export const update = (simState: SimState, dt: number): void => {
         radialTranslate2(position, position, message.direction, TANK_SPEED * dt)
       }
 
+      const entityModel = simState.entityManager.entityModels.get(id)!
       simState.entityManager.entityModels.update(id, {
         modifiers: {
+          ...entityModel.modifiers,
           'shiba:post': mat4.fromRotation(
             mat4.create(),
 

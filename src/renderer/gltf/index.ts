@@ -3,37 +3,19 @@ import { mat4, quat, vec3 } from 'gl-matrix'
 import {
   triModelAddEdgeOn,
   triModelToWiresolidLineModel,
-} from '../geometryUtils'
-import { IModelLoader } from '../ModelLoader'
-
+} from '~/renderer/geometryUtils'
 import {
-  AccessorComponentType,
   AccessorType,
   Document,
   PrimitiveAttribute,
   PrimitiveMode,
 } from '~/renderer/gltf/types'
+import { arrayDataTypeElementSize } from '~/renderer/glUtils'
 import * as renderer from '~/renderer/interfaces'
-import { ModelNode } from '~/renderer/interfaces'
+import { ArrayDataType, ModelNode } from '~/renderer/interfaces'
+import { IModelLoader } from '~/renderer/ModelLoader'
 
 export { Document } from '~/renderer/gltf/types'
-
-export function accessorComponentTypeSize(t: AccessorComponentType): number {
-  switch (t) {
-    case AccessorComponentType.Byte:
-      return 1
-    case AccessorComponentType.UnsignedByte:
-      return 1
-    case AccessorComponentType.Short:
-      return 2
-    case AccessorComponentType.UnsignedShort:
-      return 2
-    case AccessorComponentType.UnsignedInt:
-      return 4
-    case AccessorComponentType.Float:
-      return 4
-  }
-}
 
 export function accessorTypeDegree(t: AccessorType): number {
   switch (t) {
@@ -61,7 +43,7 @@ export function accessorTypeDegree(t: AccessorType): number {
 function applyAccessor(
   bytes: ArrayBuffer,
   type: AccessorType,
-  componentType: AccessorComponentType,
+  componentType: ArrayDataType,
   count: number,
   opts: {
     accessorOffset?: number
@@ -71,23 +53,25 @@ function applyAccessor(
 ): renderer.NumericArray {
   const offset = (opts.accessorOffset ?? 0) + (opts.bufferViewOffset ?? 0)
   const degree = accessorTypeDegree(type)
-  const elementSize = degree * accessorComponentTypeSize(componentType)
+  const elementSize = degree * arrayDataTypeElementSize(componentType)
   if (opts.stride !== undefined && opts.stride !== elementSize) {
     throw new Error(`interleaved buffer views not yet supported`)
   }
 
   switch (componentType) {
-    case AccessorComponentType.Byte:
+    case ArrayDataType.Byte:
       return new Int8Array(bytes, offset, count * degree)
-    case AccessorComponentType.UnsignedByte:
+    case ArrayDataType.UnsignedByte:
       return new Uint8Array(bytes, offset, count * degree)
-    case AccessorComponentType.Short:
+    case ArrayDataType.Short:
       return new Int16Array(bytes, offset, count * degree)
-    case AccessorComponentType.UnsignedShort:
+    case ArrayDataType.UnsignedShort:
       return new Uint16Array(bytes, offset, count * degree)
-    case AccessorComponentType.UnsignedInt:
+    case ArrayDataType.Int:
+      return new Int32Array(bytes, offset, count * degree)
+    case ArrayDataType.UnsignedInt:
       return new Uint32Array(bytes, offset, count * degree)
-    case AccessorComponentType.Float:
+    case ArrayDataType.Float:
       return new Float32Array(bytes, offset, count * degree)
   }
 }
