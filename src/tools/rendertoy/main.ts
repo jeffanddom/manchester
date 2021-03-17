@@ -221,7 +221,3 @@ function update(): void {
 
 requestAnimationFrame(update)
 autoReload.poll(1000)
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-globalThis.renderer = renderer

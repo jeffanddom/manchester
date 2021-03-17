@@ -2,6 +2,7 @@ import { mat4, vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
 import { Camera } from './Camera'
+// import { WebGLDebugUtils } from './webgl-debug'
 
 import {
   ArrayDataType,
@@ -15,27 +16,26 @@ import { ShaderAttrib } from '~/renderer/shaders/common'
 import { inverseLerp, lerp } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
-// function logGLCall(functionName, args) {
+// function logGLCall(functionName: string, args: unknown): void {
 //   console.log(
 //     'gl.' +
-//     functionName +
-//     '(' +
-//     WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
-//     ')',
+//       functionName +
+//       '(' +
+//       WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
+//       ')',
 //   )
 // }
 
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
-const gl = canvas.getContext('webgl2')!
 
-// Replace above `const gl` with this to get gl call logging
+const gl = canvas.getContext('webgl2')!
 // const gl = WebGLDebugUtils.makeDebugContext(
 //   canvas.getContext('webgl2')!,
 //   undefined,
 //   logGLCall,
 // )
-const pixelRatio = window.devicePixelRatio
 
+const pixelRatio = window.devicePixelRatio
 canvas.width = canvas.parentElement!.clientWidth * pixelRatio
 canvas.height = canvas.parentElement!.clientHeight * pixelRatio
 

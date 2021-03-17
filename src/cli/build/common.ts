@@ -28,7 +28,6 @@ export const serverBuildVersionPath = path.join(
 export const webEntrypoints = [
   ['client', 'main.ts'],
   ['tools/particletoy', 'main.ts'],
-  ['tools/particletoy', 'webgl-debug.js'],
   ['tools/rendertoy', 'main.ts'],
   ['tools/bench', 'main.tsx'],
 ]

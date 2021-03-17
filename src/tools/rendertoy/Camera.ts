@@ -24,7 +24,7 @@ export class Camera {
       { passive: false },
     )
 
-    canvas.addEventListener('pointermove', (event) => {
+    canvas.addEventListener('mousemove', (event) => {
       const buttons = mouseButtonsFromBitmask(event.buttons)
 
       if (buttons.has(MouseButton.LEFT)) {

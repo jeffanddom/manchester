@@ -92,7 +92,7 @@ export class ShaderCompileError extends Error {
   }
 }
 
-export class ShaderLinkError extends Error { }
+export class ShaderLinkError extends Error {}
 
 export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
