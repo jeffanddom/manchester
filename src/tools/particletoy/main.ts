@@ -142,42 +142,43 @@ const dataMesh = {
   instanceAttribBufferConfig,
 }
 
-renderer.loadParticleMesh('default', dataMesh, tris)
+const attribUpdates: Map<number, NumericArray> = new Map()
+attribUpdates.set(ShaderAttrib.InstanceColor, colorsData)
+attribUpdates.set(ShaderAttrib.InstanceScale, scalesData)
+attribUpdates.set(ShaderAttrib.InstanceTranslation, translationsData)
 
-let first = true
-const workQuat = quat.create()
+renderer.loadParticleMesh('default', dataMesh, tris)
+renderer.updateParticles('default', attribUpdates)
+
+// To avoid allocations, we'll re-use some objects in the update loop.
+const tempMat = mat4.create()
+const tempQuat = quat.create()
+attribUpdates.clear() // we'll re-use this in the looop
+
 function update(): void {
   requestAnimationFrame(update)
 
   renderer.clear(0.5, 0.5, 0.5)
-  renderer.setWvTransform(camera.world2View(mat4.create()))
+  renderer.setWvTransform(camera.world2View(tempMat))
 
   renderer.renderUnlit(axes)
 
   for (let i = 0; i < tris; i++) {
     quat.set(
-      workQuat,
+      tempQuat,
       rotationsData[i * 4],
       rotationsData[i * 4 + 1],
       rotationsData[i * 4 + 2],
       rotationsData[i * 4 + 3],
     )
-    quat.rotateX(workQuat, workQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    quat.rotateY(workQuat, workQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    quat.rotateZ(workQuat, workQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    rotationsData.set(workQuat, i * 4)
+    quat.rotateX(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
+    quat.rotateY(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
+    quat.rotateZ(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
+    rotationsData.set(tempQuat, i * 4)
   }
 
-  const attribUpdates: Map<number, NumericArray> = new Map()
-  if (first) {
-    first = false
-    attribUpdates.set(ShaderAttrib.InstanceColor, colorsData)
-    attribUpdates.set(ShaderAttrib.InstanceScale, scalesData)
-    attribUpdates.set(ShaderAttrib.InstanceTranslation, translationsData)
-  }
   attribUpdates.set(ShaderAttrib.InstanceRotation, rotationsData)
-
-  renderer.renderParticles('default', attribUpdates, tris)
+  renderer.renderParticles('default', tris, attribUpdates)
 }
 
 requestAnimationFrame(update)

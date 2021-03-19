@@ -93,7 +93,7 @@ export class ShaderCompileError extends Error {
   }
 }
 
-export class ShaderLinkError extends Error { }
+export class ShaderLinkError extends Error {}
 
 export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
@@ -578,20 +578,13 @@ export class Renderer3d implements IModelLoader {
     }
   }
 
-  renderParticles(
+  /**
+   * Update instance attrib data for a particle mesh without drawing them.
+   */
+  public updateParticles(
     name: string,
     attribData: Map<number, NumericArray>,
-    instances: number,
   ): void {
-    this.useShader('particle')
-
-    this.applySettings({
-      alphaEnabled: true,
-      backfaceCullingEnabled: false,
-      colorEnabled: true,
-      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
-    })
-
     const mesh = this.particleMeshes.get(name)
     if (mesh === undefined) {
       throw `particle mesh ${name} not found`
@@ -613,12 +606,55 @@ export class Renderer3d implements IModelLoader {
       this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
     }
 
+    this.gl.bindVertexArray(null)
+  }
+
+  /**
+   * Render a particle mesh, optionally updating instance attrib data before
+   * drawing.
+   */
+  public renderParticles(
+    name: string,
+    instances: number,
+    attribData?: Map<number, NumericArray>,
+  ): void {
+    const mesh = this.particleMeshes.get(name)
+    if (mesh === undefined) {
+      throw `particle mesh ${name} not found`
+    }
+
+    this.gl.bindVertexArray(mesh.vao)
+
+    if (attribData !== undefined) {
+      for (const [attrib, data] of attribData) {
+        // We assume here that the attrib data contains enough to satisfy the
+        // instance count. Since we don't have componentsPerAttrib here, we can't
+        // verify.
+
+        const glBuffer = mesh.instanceAttribBuffers.get(attrib)
+        if (glBuffer === undefined) {
+          throw `particle mesh ${name} does not use attrib ${attrib}`
+        }
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, glBuffer)
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
+      }
+    }
+
+    this.useShader('particle')
+    this.applySettings({
+      alphaEnabled: true,
+      backfaceCullingEnabled: false, // render both sides of a particle
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThan,
+    })
     this.gl.drawArraysInstanced(
       this.meshPrimitiveToDrawMode(mesh.primitive),
       0,
       mesh.vertsPerInstance,
       instances,
     )
+
     this.gl.bindVertexArray(null)
   }
 
