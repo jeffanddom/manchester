@@ -69,6 +69,7 @@ export type UnlitObject = UnlitLines | UnlitModel
 
 interface RenderSettings {
   alphaEnabled: boolean
+  backfaceCullingEnabled: boolean
   colorEnabled: boolean
   depthTestMode: DepthTestMode
 }
@@ -92,7 +93,7 @@ export class ShaderCompileError extends Error {
   }
 }
 
-export class ShaderLinkError extends Error {}
+export class ShaderLinkError extends Error { }
 
 export class Renderer3d implements IModelLoader {
   private gl: WebGL2RenderingContext
@@ -243,9 +244,13 @@ export class Renderer3d implements IModelLoader {
 
   private applySettings(settings: RenderSettings): void {
     // Currently, all render modes use backface culling.
-    this.gl.enable(this.gl.CULL_FACE)
-    this.gl.cullFace(this.gl.BACK)
-    this.gl.frontFace(this.gl.CCW)
+    if (settings.backfaceCullingEnabled) {
+      this.gl.enable(this.gl.CULL_FACE)
+      this.gl.cullFace(this.gl.BACK)
+      this.gl.frontFace(this.gl.CCW)
+    } else {
+      this.gl.disable(this.gl.CULL_FACE)
+    }
 
     if (settings.colorEnabled) {
       this.gl.colorMask(true, true, true, true)
@@ -320,6 +325,7 @@ export class Renderer3d implements IModelLoader {
     this.useShader('vcolor')
     this.applySettings({
       alphaEnabled: true,
+      backfaceCullingEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
     })
@@ -347,6 +353,7 @@ export class Renderer3d implements IModelLoader {
     this.useShader('solid')
     this.applySettings({
       alphaEnabled: true,
+      backfaceCullingEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
     })
@@ -374,6 +381,7 @@ export class Renderer3d implements IModelLoader {
     this.useShader('wiresolid')
     this.applySettings({
       alphaEnabled: true,
+      backfaceCullingEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThan,
     })
@@ -404,6 +412,7 @@ export class Renderer3d implements IModelLoader {
     // First pass: write to the depth buffer only
     this.applySettings({
       alphaEnabled: false,
+      backfaceCullingEnabled: true,
       colorEnabled: false,
       depthTestMode: DepthTestMode.LessThan,
     })
@@ -419,6 +428,7 @@ export class Renderer3d implements IModelLoader {
     // Second pass: draw lines to color buffer
     this.applySettings({
       alphaEnabled: true,
+      backfaceCullingEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing opaque faces
     })
@@ -536,6 +546,7 @@ export class Renderer3d implements IModelLoader {
 
     this.applySettings({
       alphaEnabled: true,
+      backfaceCullingEnabled: true,
       colorEnabled: true,
       depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
     })
@@ -573,6 +584,13 @@ export class Renderer3d implements IModelLoader {
     instances: number,
   ): void {
     this.useShader('particle')
+
+    this.applySettings({
+      alphaEnabled: true,
+      backfaceCullingEnabled: false,
+      colorEnabled: true,
+      depthTestMode: DepthTestMode.LessThanOrEqual, // allow drawing over existing surfaces
+    })
 
     const mesh = this.particleMeshes.get(name)
     if (mesh === undefined) {
