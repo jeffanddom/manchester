@@ -1,20 +1,11 @@
-import { mat4, vec4 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
-import { quat } from 'gl-matrix'
+import { mat4, quat, vec3, vec4 } from 'gl-matrix'
 
 import { Camera } from './Camera'
+import { ParticleSystem } from './ParticleSystem'
 // import { WebGLDebugUtils } from './webgl-debug'
 
-import {
-  ArrayDataType,
-  BufferConfig,
-  MeshBuffer,
-  MeshPrimitive,
-  NumericArray,
-} from '~/renderer/interfaces'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
-import { ShaderAttrib } from '~/renderer/shaders/common'
-import { inverseLerp, lerp } from '~/util/math'
+import { lerp } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
 // function logGLCall(functionName: string, args: unknown): void {
@@ -74,111 +65,49 @@ for (let axis = 0; axis < 3; axis++) {
   })
 }
 
-const tris = 30000
+const particles = new ParticleSystem('default', 30000)
 
-const attribBuffers: Map<number, MeshBuffer> = new Map()
-attribBuffers.set(ShaderAttrib.Position, {
-  // prettier-ignore
-  bufferData: new Float32Array([
-    0, 0.5, 0,
-    -0.5, -0.5, 0,
-    0.5, -0.5, 0,
-  ]),
-  componentsPerAttrib: 3,
-})
+for (let i = 0; i < particles.getCapacity(); i++) {
+  const rotAxis = vec3.fromValues(
+    lerp(-1, 1, Math.random()),
+    lerp(-1, 1, Math.random()),
+    lerp(-1, 1, Math.random()),
+  )
+  vec3.normalize(rotAxis, rotAxis)
 
-const instanceAttribBufferConfig: Map<number, BufferConfig> = new Map()
-
-instanceAttribBufferConfig.set(ShaderAttrib.InstanceColor, {
-  arrayType: ArrayDataType.Float,
-  componentsPerAttrib: 4,
-})
-
-instanceAttribBufferConfig.set(ShaderAttrib.InstanceRotation, {
-  arrayType: ArrayDataType.Float,
-  componentsPerAttrib: 4,
-})
-
-instanceAttribBufferConfig.set(ShaderAttrib.InstanceTranslation, {
-  arrayType: ArrayDataType.Float,
-  componentsPerAttrib: 3,
-})
-
-instanceAttribBufferConfig.set(ShaderAttrib.InstanceScale, {
-  arrayType: ArrayDataType.Float,
-  componentsPerAttrib: 3,
-})
-
-const rotationsData = new Float32Array(4 * tris)
-const translationsData = new Float32Array(3 * tris)
-const scalesData = new Float32Array(3 * tris)
-const colorsData = new Float32Array(4 * tris)
-
-for (let i = 0; i < tris; i++) {
-  rotationsData.set(quat.create(), i * 4)
-  translationsData.set(
-    vec3.fromValues(
+  particles.add({
+    rotation: quat.create(),
+    translation: vec3.fromValues(
       lerp(-10, 10, Math.random()),
       lerp(-10, 10, Math.random()),
       lerp(-10, 10, Math.random()),
     ),
-    i * 3,
-  )
-  scalesData.set(
-    vec3.fromValues(
+    scale: vec3.fromValues(
       lerp(0.05, 0.25, Math.random()),
       lerp(0.05, 0.25, Math.random()),
       lerp(0.05, 0.25, Math.random()),
     ),
-    i * 3,
-  )
-  colorsData.set([Math.random(), Math.random(), Math.random(), 1], i * 4)
+    color: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
+    rotVel: quat.setAxisAngle(
+      quat.create(),
+      rotAxis,
+      lerp(0.1, 0.3, Math.random()),
+    ),
+  })
 }
 
-const dataMesh = {
-  primitive: MeshPrimitive.Triangles,
-  vertsPerInstance: 3,
-  attribBuffers,
-  instanceAttribBufferConfig,
-}
-
-const attribUpdates: Map<number, NumericArray> = new Map()
-attribUpdates.set(ShaderAttrib.InstanceColor, colorsData)
-attribUpdates.set(ShaderAttrib.InstanceScale, scalesData)
-attribUpdates.set(ShaderAttrib.InstanceTranslation, translationsData)
-
-renderer.loadParticleMesh('default', dataMesh, tris)
-renderer.updateParticles('default', attribUpdates)
-
-// To avoid allocations, we'll re-use some objects in the update loop.
-const tempMat = mat4.create()
-const tempQuat = quat.create()
-attribUpdates.clear() // we'll re-use this in the looop
+particles.initRender(renderer)
 
 function update(): void {
   requestAnimationFrame(update)
 
   renderer.clear(0.5, 0.5, 0.5)
-  renderer.setWvTransform(camera.world2View(tempMat))
+  renderer.setWvTransform(camera.world2View(mat4.create()))
 
   renderer.renderUnlit(axes)
 
-  for (let i = 0; i < tris; i++) {
-    quat.set(
-      tempQuat,
-      rotationsData[i * 4],
-      rotationsData[i * 4 + 1],
-      rotationsData[i * 4 + 2],
-      rotationsData[i * 4 + 3],
-    )
-    quat.rotateX(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    quat.rotateY(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    quat.rotateZ(tempQuat, tempQuat, lerp(0.05, 0.15, inverseLerp(0, tris, i)))
-    rotationsData.set(tempQuat, i * 4)
-  }
-
-  attribUpdates.set(ShaderAttrib.InstanceRotation, rotationsData)
-  renderer.renderParticles('default', tris, attribUpdates)
+  particles.update()
+  particles.render(renderer)
 }
 
 requestAnimationFrame(update)
