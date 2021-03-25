@@ -9,7 +9,7 @@ export enum ShaderAttrib {
   InstanceRotation = 5, // vec4 (quat)
   InstanceScale = 6, // vec3
   InstanceColor = 7, // vec3 or vec4
-  InstanceTransform = 8, // mat4 (occupies 4 attrib slots)
+  InstanceActive = 8,
 }
 
 export function attribName(attrib: ShaderAttrib): string {
@@ -30,8 +30,8 @@ export function attribName(attrib: ShaderAttrib): string {
       return 'aInstanceScale'
     case ShaderAttrib.InstanceColor:
       return 'aInstanceColor'
-    case ShaderAttrib.InstanceTransform:
-      return 'aInstanceTransform'
+    case ShaderAttrib.InstanceActive:
+      return 'aInstanceActive'
     default:
       throw `unknown attribute: ${attrib}`
   }

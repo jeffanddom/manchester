@@ -9,6 +9,7 @@ import {
 } from '~/renderer/interfaces'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { ShaderAttrib } from '~/renderer/shaders/common'
+import { PriorityQueue } from '~/util/PriorityQueue'
 
 class ParticleAttribData<T extends NumericArray> {
   private data: T
@@ -39,6 +40,15 @@ class ParticleAttribData<T extends NumericArray> {
     return this.dirty ? this.data : undefined
   }
 
+  public get(n: number): number {
+    return this.data[n]
+  }
+
+  public set(n: number, v: number): void {
+    this.data[n] = v
+    this.dirty = true
+  }
+
   public markClean(): void {
     this.dirty = false
   }
@@ -47,16 +57,20 @@ class ParticleAttribData<T extends NumericArray> {
 export class ParticleSystem {
   private meshName: string
   private capacity: number
-  private numParticles: number
+
+  // liveness tracking
+  private freeList: PriorityQueue<number>
+  private ttls: Float32Array // one float per particle
 
   // instance attrib data (flat arrays of glMatrix objects)
-  private rotations: ParticleAttribData<Float32Array> // quat
-  private translations: ParticleAttribData<Float32Array> // vec3
-  private scales: ParticleAttribData<Float32Array> // vec3
-  private colors: ParticleAttribData<Float32Array> // vec4
+  private active: ParticleAttribData<Float32Array> // one float per particle, 0 means not active, 1 means active
+  private rotations: ParticleAttribData<Float32Array> // one quat per particle
+  private translations: ParticleAttribData<Float32Array> // one vec3 per particle
+  private scales: ParticleAttribData<Float32Array> // one vec3 per particle
+  private colors: ParticleAttribData<Float32Array> // one vec4 per particle
 
-  // simulation settings (flat arrays)
-  private rotVel: Float32Array // quat
+  // physics
+  private rotVel: Float32Array // one quat per particle
 
   // preallocated temporaries
   private tempQuats: [quat, quat]
@@ -64,42 +78,56 @@ export class ParticleSystem {
   public constructor(meshName: string, capacity: number) {
     this.meshName = meshName
     this.capacity = capacity
-    this.numParticles = 0
 
+    this.active = new ParticleAttribData(new Float32Array(capacity))
     this.rotations = new ParticleAttribData(new Float32Array(4 * capacity))
     this.translations = new ParticleAttribData(new Float32Array(3 * capacity))
     this.scales = new ParticleAttribData(new Float32Array(3 * capacity))
     this.colors = new ParticleAttribData(new Float32Array(4 * capacity))
+
+    this.freeList = new PriorityQueue((a, b) => a - b)
+    this.ttls = new Float32Array(capacity)
+
+    for (let i = 0; i < capacity; i++) {
+      this.freeList.push(i)
+      this.active.set(i, 0)
+    }
 
     this.rotVel = new Float32Array(4 * capacity)
 
     this.tempQuats = [quat.create(), quat.create()]
   }
 
+  private free(n: number): void {
+    this.freeList.push(n)
+    this.active.set(n, 0)
+  }
+
   public add(config: {
+    ttl: number
     rotation: quat
     translation: vec3
     scale: vec3
     color: vec4
     rotVel: quat
   }): void {
-    if (this.numParticles === this.capacity) {
+    const index = this.freeList.pop()
+    if (index === undefined) {
       throw `particle system is full, can't add particle`
     }
 
-    this.rotations.copyFrom(
-      config.rotation as Float32Array,
-      this.numParticles * 4,
-    )
-    this.translations.copyFrom(
-      config.translation as Float32Array,
-      this.numParticles * 3,
-    )
-    this.scales.copyFrom(config.scale as Float32Array, this.numParticles * 3)
-    this.colors.copyFrom(config.color as Float32Array, this.numParticles * 4)
-    this.rotVel.set(config.rotVel, this.numParticles * 4)
+    const index3 = index * 3
+    const index4 = index * 4
 
-    this.numParticles++
+    this.ttls[index] = config.ttl
+
+    this.active.set(index, 1)
+    this.rotations.copyFrom(config.rotation as Float32Array, index4)
+    this.translations.copyFrom(config.translation as Float32Array, index3)
+    this.scales.copyFrom(config.scale as Float32Array, index3)
+    this.colors.copyFrom(config.color as Float32Array, index4)
+
+    this.rotVel.set(config.rotVel, index4)
   }
 
   /**
@@ -112,16 +140,29 @@ export class ParticleSystem {
    * and the vertex shader could perform the conversion from axis-angle to
    * rotation matrix.
    */
-  public update(): void {
+  public update(dt: number): void {
     // Simulate rotations
-    for (let i = 0; i < this.numParticles; i++) {
+    for (let i = 0; i < this.capacity; i++) {
+      if (this.active.get(i) === 0) {
+        continue
+      }
+
+      this.ttls[i] -= dt
+      if (this.ttls[i] <= 0) {
+        this.free(i)
+        continue
+      }
+
+      const index4 = i * 4
+
+      // Alias our temporary quats
       const rotVel = this.tempQuats[0]
       const rotation = this.tempQuats[1]
 
-      rotVel[0] = this.rotVel[i * 4 + 0]
-      rotVel[1] = this.rotVel[i * 4 + 1]
-      rotVel[2] = this.rotVel[i * 4 + 2]
-      rotVel[3] = this.rotVel[i * 4 + 3]
+      rotVel[0] = this.rotVel[index4 + 0]
+      rotVel[1] = this.rotVel[index4 + 1]
+      rotVel[2] = this.rotVel[index4 + 2]
+      rotVel[3] = this.rotVel[index4 + 3]
 
       if (
         rotVel[0] === 0 &&
@@ -133,15 +174,11 @@ export class ParticleSystem {
       }
 
       const rotations = this.rotations
-      rotations.copyInto(rotation as Float32Array, i * 4, 4)
+      rotations.copyInto(rotation as Float32Array, index4, 4)
 
       quat.multiply(rotation, rotation, rotVel)
-      rotations.copyFrom(rotation as Float32Array, i * 4)
+      rotations.copyFrom(rotation as Float32Array, index4)
     }
-  }
-
-  public getNumParticles(): number {
-    return this.numParticles
   }
 
   public getCapacity(): number {
@@ -162,9 +199,9 @@ export class ParticleSystem {
 
     const instanceAttribBufferConfig: Map<number, BufferConfig> = new Map()
 
-    instanceAttribBufferConfig.set(ShaderAttrib.InstanceColor, {
+    instanceAttribBufferConfig.set(ShaderAttrib.InstanceActive, {
       arrayType: ArrayDataType.Float,
-      componentsPerAttrib: 4,
+      componentsPerAttrib: 1,
     })
 
     instanceAttribBufferConfig.set(ShaderAttrib.InstanceRotation, {
@@ -182,6 +219,11 @@ export class ParticleSystem {
       componentsPerAttrib: 3,
     })
 
+    instanceAttribBufferConfig.set(ShaderAttrib.InstanceColor, {
+      arrayType: ArrayDataType.Float,
+      componentsPerAttrib: 4,
+    })
+
     renderer.loadParticleMesh(
       this.meshName,
       {
@@ -196,6 +238,12 @@ export class ParticleSystem {
 
   public render(renderer: Renderer3d): void {
     const attribUpdates = new Map()
+
+    const activeData = this.active.getRawDataIfDirty()
+    if (activeData !== undefined) {
+      attribUpdates.set(ShaderAttrib.InstanceActive, activeData)
+      this.active.markClean()
+    }
 
     const rotData = this.rotations.getRawDataIfDirty()
     if (rotData !== undefined) {
@@ -221,6 +269,6 @@ export class ParticleSystem {
       this.colors.markClean()
     }
 
-    renderer.renderParticles(this.meshName, this.numParticles, attribUpdates)
+    renderer.renderParticles(this.meshName, this.capacity, attribUpdates)
   }
 }

@@ -10,6 +10,7 @@ in vec4 aInstanceColor;
 in vec4 aInstanceRotation;
 in vec3 aInstanceScale;
 in vec3 aInstanceTranslation;
+in float aInstanceActive;
 
 uniform mat4 uProjection;
 uniform mat4 uWorld2View;
@@ -47,6 +48,12 @@ mat4 fromRotationTranslationScale(vec4 q, vec3 t, vec3 s) {
 }
 
 void main() {
+  if (aInstanceActive == 0.0) {
+    // position outside of clip volume
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+
   mat4 transform = fromRotationTranslationScale(aInstanceRotation, aInstanceTranslation, aInstanceScale);
   gl_Position = uProjection * uWorld2View * transform * vec4(aPosition, 1.0);
   color = aInstanceColor;

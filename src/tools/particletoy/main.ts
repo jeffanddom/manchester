@@ -4,6 +4,7 @@ import { Camera } from './Camera'
 import { ParticleSystem } from './ParticleSystem'
 // import { WebGLDebugUtils } from './webgl-debug'
 
+import { SIMULATION_PERIOD_S } from '~/constants'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
 import { lerp } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
@@ -76,6 +77,7 @@ for (let i = 0; i < particles.getCapacity(); i++) {
   vec3.normalize(rotAxis, rotAxis)
 
   particles.add({
+    ttl: lerp(5, 15, Math.random()),
     rotation: quat.create(),
     translation: vec3.fromValues(
       lerp(-10, 10, Math.random()),
@@ -106,7 +108,7 @@ function update(): void {
 
   renderer.renderUnlit(axes)
 
-  particles.update()
+  particles.update(SIMULATION_PERIOD_S)
   particles.render(renderer)
 }
 
