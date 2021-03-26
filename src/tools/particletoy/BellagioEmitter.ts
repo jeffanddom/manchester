@@ -1,7 +1,7 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
-import { ParticleSystem } from '~/tools/particletoy/ParticleSystem'
+import { ParticleSystem } from '~/particles/ParticleSystem'
 import { lerp } from '~/util/math'
 
 export class BellagioEmitter {

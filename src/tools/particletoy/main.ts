@@ -2,10 +2,10 @@ import { mat4, vec3, vec4 } from 'gl-matrix'
 
 import { BellagioEmitter } from './BellagioEmitter'
 import { Camera } from './Camera'
-import { ParticleSystem } from './ParticleSystem'
 // import { WebGLDebugUtils } from './webgl-debug'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
+import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
 import * as autoReload from '~/web/autoReload'
 
