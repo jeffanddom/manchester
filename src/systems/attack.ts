@@ -1,12 +1,10 @@
-import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
+import { mat4, quat, vec3, vec4 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
 import { aabb as damageableAabb } from '~/components/Damageable'
 import { aabb as damagerAabb } from '~/components/Damager'
-import { TILE_SIZE } from '~/constants'
 import { DebugDrawObject } from '~/DebugDraw'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
 import {
   SimState,
@@ -14,7 +12,6 @@ import {
   simulationPhaseDebugColor,
 } from '~/simulate'
 import * as aabb2 from '~/util/aabb2'
-import { radialTranslate2 } from '~/util/math'
 
 export const update = (simState: SimState): void => {
   simState.debugDraw.draw3d(() => {
@@ -135,34 +132,5 @@ export const update = (simState: SimState): void => {
         },
       ]
     })
-
-    // ---------------------
-
-    // Client only side-effects:
-    // - explosion
-    // - camera shake if player hit
-    if (simState.registerParticleEmitter !== undefined) {
-      const explosion = new ParticleEmitter({
-        spawnTtl: 0.2,
-        position: radialTranslate2(
-          vec2.create(),
-          transform.position,
-          transform.orientation,
-          TILE_SIZE / 2,
-        ),
-        particleTtl: 0.1,
-        particleRadius: 10,
-        particleSpeedRange: [90, 125],
-        particleRate: 270,
-        orientation: 0,
-        arc: Math.PI * 2,
-        colors: ['#FF4500', '#FFA500', '#FFD700', '#000'],
-      })
-      simState.registerParticleEmitter({
-        emitter: explosion,
-        entity: targetId,
-        frame: simState.frame,
-      })
-    }
   }
 }

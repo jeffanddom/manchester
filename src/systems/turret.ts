@@ -7,7 +7,6 @@ import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 import { Aabb2 } from '~/util/aabb2'
@@ -32,14 +31,8 @@ export function clone(t: TurretComponent): TurretComponent {
   return { cooldownTtl: t.cooldownTtl }
 }
 
-export const update = (
-  simState: Pick<
-    SimState,
-    'entityManager' | 'frame' | 'registerParticleEmitter'
-  >,
-  dt: number,
-): void => {
-  const { entityManager, frame, registerParticleEmitter } = simState
+export const update = (simState: SimState, dt: number): void => {
+  const { entityManager } = simState
 
   const turretIds = new SortedSet<EntityId>()
   for (const id of entityManager.friendlyTeam) {
@@ -186,23 +179,5 @@ export const update = (
         owner: id,
       }),
     )
-
-    if (registerParticleEmitter !== undefined) {
-      registerParticleEmitter({
-        emitter: new ParticleEmitter({
-          spawnTtl: 0.1,
-          position: bulletPos,
-          particleTtl: 0.065,
-          particleRadius: 3,
-          particleRate: 240,
-          particleSpeedRange: [120, 280],
-          orientation: newOrientation,
-          arc: Math.PI / 4,
-          colors: ['#FF9933', '#CCC', '#FFF'],
-        }),
-        entity: id,
-        frame: frame,
-      })
-    }
   }
 }

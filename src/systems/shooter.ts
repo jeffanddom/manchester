@@ -5,7 +5,6 @@ import { FrameEventType } from './FrameEvent'
 
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import { SimState } from '~/simulate'
 import { PlusY3, getAngle, radialTranslate2 } from '~/util/math'
 
@@ -100,25 +99,5 @@ export const update = (simState: SimState): void => {
         owner: id,
       }),
     )
-
-    if (simState.registerParticleEmitter !== undefined) {
-      const muzzleFlash = new ParticleEmitter({
-        spawnTtl: 0.1,
-        position: bulletPos,
-        particleTtl: 0.065,
-        particleRadius: 3,
-        particleRate: 240,
-        particleSpeedRange: [120, 280],
-        orientation: newAngle,
-        arc: Math.PI / 4,
-        colors: ['#FF9933', '#CCC', '#FFF'],
-      })
-
-      simState.registerParticleEmitter({
-        emitter: muzzleFlash,
-        entity: id,
-        frame: simState.frame,
-      })
-    }
   })
 }
