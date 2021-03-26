@@ -1,16 +1,13 @@
 import { vec4 } from 'gl-matrix'
 
-import { ParticleEmitter } from './particles/ParticleEmitter'
-import { FrameEvent } from './systems/FrameEvent'
-import { Immutable } from './types/immutable'
-
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
 import { ClientMessage } from '~/network/ClientMessage'
 import * as systems from '~/systems'
+import { FrameEvent } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
+import { Immutable } from '~/types/immutable'
 
 export enum SimulationPhase {
   ServerTick,
@@ -41,11 +38,6 @@ export type SimState = {
   frameEvents: Immutable<FrameEvent>[]
   terrainLayer: terrain.Layer
   frame: number
-  registerParticleEmitter?: (params: {
-    emitter: ParticleEmitter
-    entity: EntityId
-    frame: number
-  }) => void
   debugDraw: IDebugDrawWriter
 
   // Let's be SUPER judicious about when we actually use the phase property.

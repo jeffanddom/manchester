@@ -11,7 +11,6 @@ import {
   TILE_SIZE,
 } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { EntityId } from '~/entities/EntityId'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
@@ -19,7 +18,6 @@ import { Map } from '~/map/interfaces'
 import { ClientMessage } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
-import { ParticleEmitter } from '~/particles/ParticleEmitter'
 import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
@@ -56,7 +54,6 @@ export class ClientSim {
   camera: Camera3d
   zoomLevel: number
   cameraController: CameraController
-  emitters: ParticleEmitter[]
   emitterHistory: Set<string>
 
   lastUpdateAt: number
@@ -109,7 +106,6 @@ export class ClientSim {
     })
     this.zoomLevel = 12
     this.cameraController = new CameraController()
-    this.emitters = []
     this.emitterHistory = new Set()
 
     this.lastUpdateAt = time.current()
@@ -133,9 +129,6 @@ export class ClientSim {
       tileDimensions: vec2.create(),
       terrain: this.map.terrain,
     })
-
-    // Depedency-injection binding
-    this.registerParticleEmitter = this.registerParticleEmitter.bind(this)
   }
 
   shutdown(): void {
@@ -147,8 +140,6 @@ export class ClientSim {
   }
 
   startPlay(): void {
-    this.emitters = []
-
     // Level setup
     this.map = Map.fromRaw(gameProgression[this.currentLevel])
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
@@ -371,16 +362,12 @@ export class ClientSim {
               frameEvents: [],
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
-              registerParticleEmitter: this.registerParticleEmitter,
               debugDraw: this.debugDraw,
               phase: SimulationPhase.ClientPrediction,
             },
             this.state,
             dt,
           )
-
-          this.emitters = this.emitters.filter((e) => !e.dead)
-          this.emitters.forEach((e) => e.update(dt))
 
           this.syncCameraToPlayer(dt)
           this.simulationFrame++
@@ -422,7 +409,6 @@ export class ClientSim {
           messages: update.inputs,
           frameEvents: [],
           terrainLayer: this.terrainLayer,
-          registerParticleEmitter: this.registerParticleEmitter,
           frame: update.frame,
           debugDraw: this.debugDraw,
           phase: SimulationPhase.ClientAuthoritative,
@@ -447,7 +433,6 @@ export class ClientSim {
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
           frameEvents: [],
           terrainLayer: this.terrainLayer,
-          registerParticleEmitter: this.registerParticleEmitter,
           frame: f,
           debugDraw: this.debugDraw,
           phase: SimulationPhase.ClientReprediction,
@@ -484,17 +469,6 @@ export class ClientSim {
     }
 
     return res
-  }
-
-  registerParticleEmitter(params: {
-    emitter: ParticleEmitter
-    entity: EntityId
-    frame: number
-  }): void {
-    if (!this.emitterHistory.has(`${params.frame}:${params.entity}`)) {
-      this.emitterHistory.add(`${params.frame}:${params.entity}`)
-      this.emitters.push(params.emitter)
-    }
   }
 
   sendClientMessage(m: ClientMessage): void {
