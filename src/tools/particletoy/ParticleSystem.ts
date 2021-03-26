@@ -172,6 +172,10 @@ export class ParticleSystem {
         continue
       }
 
+      // Assuming update() is called after add() within the same frame, the
+      // time delta will be applied to new particles. In other words, this
+      // treats particles as having been spawned at the beginning of the
+      // interval, rather than the end.
       this.ttls[i] -= dt
       if (this.ttls[i] <= 0) {
         this.free(i)
@@ -209,7 +213,10 @@ export class ParticleSystem {
         rotations.setArray(rotation, index4)
       }
 
-      // Apply ballistic motion
+      // Apply ballistic motion. For simplicity, we apply the full acceleration
+      // increment over the course of the entire time delta, rather than use a
+      // more accurate integration technique. As long as it looks fine, we'll go
+      // with the simpler math.
       vel[0] = this.vels[index3 + 0]
       vel[1] = this.vels[index3 + 1]
       vel[2] = this.vels[index3 + 2]
