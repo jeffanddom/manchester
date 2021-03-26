@@ -579,44 +579,17 @@ export class Renderer3d implements IModelLoader {
   }
 
   /**
-   * Update instance attrib data for a particle mesh without drawing them.
-   */
-  public updateParticles(
-    name: string,
-    attribData: Map<number, NumericArray>,
-  ): void {
-    const mesh = this.particleMeshes.get(name)
-    if (mesh === undefined) {
-      throw `particle mesh ${name} not found`
-    }
-
-    this.gl.bindVertexArray(mesh.vao)
-
-    for (const [attrib, data] of attribData) {
-      // We assume here that the attrib data contains enough to satisfy the
-      // instance count. Since we don't have componentsPerAttrib here, we can't
-      // verify.
-
-      const glBuffer = mesh.instanceAttribBuffers.get(attrib)
-      if (glBuffer === undefined) {
-        throw `particle mesh ${name} does not use attrib ${attrib}`
-      }
-
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, glBuffer)
-      this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
-    }
-
-    this.gl.bindVertexArray(null)
-  }
-
-  /**
    * Render a particle mesh, optionally updating instance attrib data before
    * drawing.
    */
   public renderParticles(
     name: string,
     instances: number,
-    attribData?: Map<number, NumericArray>,
+    // Map of attrib location to update data. Update data includes an array,
+    // an offset into the array, and a length. The array is assumed to be the
+    // same size as the buffer being updated, but only the range specified by
+    // the offset and the length will be updated.
+    attribData?: Map<number, [NumericArray, number, number]>,
   ): void {
     const mesh = this.particleMeshes.get(name)
     if (mesh === undefined) {
@@ -626,7 +599,7 @@ export class Renderer3d implements IModelLoader {
     this.gl.bindVertexArray(mesh.vao)
 
     if (attribData !== undefined) {
-      for (const [attrib, data] of attribData) {
+      for (const [attrib, [data, srcOffset, srcLength]] of attribData) {
         // We assume here that the attrib data contains enough to satisfy the
         // instance count. Since we don't have componentsPerAttrib here, we can't
         // verify.
@@ -637,7 +610,13 @@ export class Renderer3d implements IModelLoader {
         }
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, glBuffer)
-        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
+        this.gl.bufferSubData(
+          this.gl.ARRAY_BUFFER,
+          srcOffset * 4, // this is a byte offset
+          data,
+          srcOffset, // this is a float offset
+          srcLength,
+        )
       }
     }
 

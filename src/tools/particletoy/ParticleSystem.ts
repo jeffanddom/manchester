@@ -12,21 +12,38 @@ import { PriorityQueue } from '~/util/PriorityQueue'
 
 class ParticleAttribData {
   private data: Float32Array
-  private dirty: boolean
+  private updatedStart: number
+  private updatedEnd: number
 
   constructor(capacity: number) {
     this.data = new Float32Array(capacity)
-    this.dirty = true
+    this.updatedStart = +Infinity
+    this.updatedEnd = -Infinity
   }
 
   public set(n: number, v: number): void {
     this.data[n] = v
-    this.dirty = true
+
+    if (n < this.updatedStart) {
+      this.updatedStart = n
+    }
+
+    if (n > this.updatedEnd) {
+      this.updatedEnd = n
+    }
   }
 
-  public setArray(src: ArrayLike<number>, offset?: number): void {
-    this.data.set(src, offset)
-    this.dirty = true
+  public setArray(src: ArrayLike<number>, dstOffset = 0): void {
+    this.data.set(src, dstOffset)
+
+    if (dstOffset < this.updatedStart) {
+      this.updatedStart = dstOffset
+    }
+
+    const writeEnd = dstOffset + src.length - 1
+    if (writeEnd > this.updatedEnd) {
+      this.updatedEnd = writeEnd
+    }
   }
 
   public get(n: number): number {
@@ -44,12 +61,26 @@ class ParticleAttribData {
     }
   }
 
-  public getRawDataIfDirty(): Float32Array | undefined {
-    return this.dirty ? this.data : undefined
+  /**
+   * Returns updated data, if any. Updated data is returned as an array, plus an
+   * offset indicating where updated data begins, and a length indicating the
+   * size of the updated data.
+   */
+  public getRawUpdates(): [Float32Array, number, number] | undefined {
+    if (this.updatedStart === Infinity) {
+      return undefined
+    }
+
+    return [
+      this.data,
+      this.updatedStart,
+      this.updatedEnd - this.updatedStart + 1,
+    ]
   }
 
-  public markClean(): void {
-    this.dirty = false
+  public clearUpdates(): void {
+    this.updatedStart = +Infinity
+    this.updatedEnd = -Infinity
   }
 }
 
@@ -295,34 +326,34 @@ export class ParticleSystem {
   public render(renderer: Renderer3d): void {
     const attribUpdates = new Map()
 
-    const activeData = this.active.getRawDataIfDirty()
+    const activeData = this.active.getRawUpdates()
     if (activeData !== undefined) {
       attribUpdates.set(ShaderAttrib.InstanceActive, activeData)
-      this.active.markClean()
+      this.active.clearUpdates()
     }
 
-    const rotData = this.rotations.getRawDataIfDirty()
+    const rotData = this.rotations.getRawUpdates()
     if (rotData !== undefined) {
       attribUpdates.set(ShaderAttrib.InstanceRotation, rotData)
-      this.rotations.markClean()
+      this.rotations.clearUpdates()
     }
 
-    const transData = this.translations.getRawDataIfDirty()
+    const transData = this.translations.getRawUpdates()
     if (transData !== undefined) {
       attribUpdates.set(ShaderAttrib.InstanceTranslation, transData)
-      this.translations.markClean()
+      this.translations.clearUpdates()
     }
 
-    const scaleData = this.scales.getRawDataIfDirty()
+    const scaleData = this.scales.getRawUpdates()
     if (scaleData !== undefined) {
       attribUpdates.set(ShaderAttrib.InstanceScale, scaleData)
-      this.scales.markClean()
+      this.scales.clearUpdates()
     }
 
-    const colorData = this.colors.getRawDataIfDirty()
+    const colorData = this.colors.getRawUpdates()
     if (colorData !== undefined) {
       attribUpdates.set(ShaderAttrib.InstanceColor, colorData)
-      this.colors.markClean()
+      this.colors.clearUpdates()
     }
 
     renderer.renderParticles(this.meshName, this.highWatermark, attribUpdates)
