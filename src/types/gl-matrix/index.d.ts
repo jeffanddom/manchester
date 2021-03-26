@@ -74,4 +74,17 @@ declare module 'gl-matrix' {
   export namespace vec4 {
     export function clone(a: Immutable<vec4>): vec4
   }
+
+  // Any type that extends Float32Array
+  export type DerivedFloat32Array =
+    | Float32Array
+    | mat2
+    | mat2d
+    | mat3
+    | mat4
+    | quat
+    | quat2
+    | vec2
+    | vec3
+    | vec4
 }

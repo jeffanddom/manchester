@@ -1,4 +1,4 @@
-import { quat, vec3, vec4 } from 'gl-matrix'
+import { DerivedFloat32Array, quat, vec3, vec4 } from 'gl-matrix'
 
 import {
   ArrayDataType,
@@ -19,13 +19,13 @@ class ParticleAttribData {
     this.dirty = true
   }
 
-  public setArray(src: ArrayLike<number>, offset?: number): void {
-    this.data.set(src, offset)
+  public set(n: number, v: number): void {
+    this.data[n] = v
     this.dirty = true
   }
 
-  public set(n: number, v: number): void {
-    this.data[n] = v
+  public setArray(src: ArrayLike<number>, offset?: number): void {
+    this.data.set(src, offset)
     this.dirty = true
   }
 
@@ -34,7 +34,7 @@ class ParticleAttribData {
   }
 
   public getArray(
-    dst: Float32Array,
+    dst: DerivedFloat32Array,
     srcOffset: number,
     length: number,
     dstOffset = 0,
@@ -203,7 +203,7 @@ export class ParticleSystem {
         )
       ) {
         const rotations = this.rotations
-        rotations.getArray(rotation as Float32Array, index4, 4)
+        rotations.getArray(rotation, index4, 4)
 
         quat.multiply(rotation, rotation, rotVel)
         rotations.setArray(rotation, index4)
@@ -224,7 +224,7 @@ export class ParticleSystem {
       this.vels[index3 + 2] = vel[2]
 
       vec3.scale(vel, vel, dt)
-      this.translations.getArray(trans as Float32Array, index3, 3)
+      this.translations.getArray(trans, index3, 3)
       vec3.add(trans, trans, vel)
       this.translations.setArray(trans, index3)
     }
