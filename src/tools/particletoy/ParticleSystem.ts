@@ -5,28 +5,36 @@ import {
   BufferConfig,
   MeshBuffer,
   MeshPrimitive,
-  NumericArray,
 } from '~/renderer/interfaces'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { ShaderAttrib } from '~/renderer/shaders/common'
 import { PriorityQueue } from '~/util/PriorityQueue'
 
-class ParticleAttribData<T extends NumericArray> {
-  private data: T
+class ParticleAttribData {
+  private data: Float32Array
   private dirty: boolean
 
-  constructor(data: T) {
-    this.data = data
+  constructor(capacity: number) {
+    this.data = new Float32Array(capacity)
     this.dirty = true
   }
 
-  public copyFrom(src: T, offset?: number): void {
+  public setArray(src: ArrayLike<number>, offset?: number): void {
     this.data.set(src, offset)
     this.dirty = true
   }
 
-  public copyInto(
-    dst: T,
+  public set(n: number, v: number): void {
+    this.data[n] = v
+    this.dirty = true
+  }
+
+  public get(n: number): number {
+    return this.data[n]
+  }
+
+  public getArray(
+    dst: Float32Array,
     srcOffset: number,
     length: number,
     dstOffset = 0,
@@ -36,17 +44,8 @@ class ParticleAttribData<T extends NumericArray> {
     }
   }
 
-  public getRawDataIfDirty(): T | undefined {
+  public getRawDataIfDirty(): Float32Array | undefined {
     return this.dirty ? this.data : undefined
-  }
-
-  public get(n: number): number {
-    return this.data[n]
-  }
-
-  public set(n: number, v: number): void {
-    this.data[n] = v
-    this.dirty = true
   }
 
   public markClean(): void {
@@ -64,11 +63,11 @@ export class ParticleSystem {
   private highWatermark: number // the last particle to send to the draw call
 
   // instance attrib data (flat arrays of glMatrix objects)
-  private active: ParticleAttribData<Float32Array> // one float per particle, 0 means not active, 1 means active
-  private rotations: ParticleAttribData<Float32Array> // one quat per particle
-  private translations: ParticleAttribData<Float32Array> // one vec3 per particle
-  private scales: ParticleAttribData<Float32Array> // one vec3 per particle
-  private colors: ParticleAttribData<Float32Array> // one vec4 per particle
+  private active: ParticleAttribData // one float per particle, 0 means not active, 1 means active
+  private rotations: ParticleAttribData // one quat per particle
+  private translations: ParticleAttribData // one vec3 per particle
+  private scales: ParticleAttribData // one vec3 per particle
+  private colors: ParticleAttribData // one vec4 per particle
 
   // physics
   private vels: Float32Array // one vec3 per particle
@@ -83,11 +82,11 @@ export class ParticleSystem {
     this.meshName = meshName
     this.capacity = capacity
 
-    this.active = new ParticleAttribData(new Float32Array(capacity))
-    this.rotations = new ParticleAttribData(new Float32Array(4 * capacity))
-    this.translations = new ParticleAttribData(new Float32Array(3 * capacity))
-    this.scales = new ParticleAttribData(new Float32Array(3 * capacity))
-    this.colors = new ParticleAttribData(new Float32Array(4 * capacity))
+    this.active = new ParticleAttribData(capacity)
+    this.rotations = new ParticleAttribData(4 * capacity)
+    this.translations = new ParticleAttribData(3 * capacity)
+    this.scales = new ParticleAttribData(3 * capacity)
+    this.colors = new ParticleAttribData(4 * capacity)
 
     this.freeList = new PriorityQueue((a, b) => a - b)
     this.ttls = new Float32Array(capacity)
@@ -146,10 +145,10 @@ export class ParticleSystem {
     this.ttls[index] = config.ttl
 
     this.active.set(index, 1)
-    this.rotations.copyFrom(config.rotation as Float32Array, index4)
-    this.translations.copyFrom(config.translation as Float32Array, index3)
-    this.scales.copyFrom(config.scale as Float32Array, index3)
-    this.colors.copyFrom(config.color as Float32Array, index4)
+    this.rotations.setArray(config.rotation, index4)
+    this.translations.setArray(config.translation, index3)
+    this.scales.setArray(config.scale, index3)
+    this.colors.setArray(config.color, index4)
 
     this.vels.set(config.vel, index3)
     this.accels.set(config.accel, index3)
@@ -204,10 +203,10 @@ export class ParticleSystem {
         )
       ) {
         const rotations = this.rotations
-        rotations.copyInto(rotation as Float32Array, index4, 4)
+        rotations.getArray(rotation as Float32Array, index4, 4)
 
         quat.multiply(rotation, rotation, rotVel)
-        rotations.copyFrom(rotation as Float32Array, index4)
+        rotations.setArray(rotation, index4)
       }
 
       // Apply ballistic motion
@@ -225,9 +224,9 @@ export class ParticleSystem {
       this.vels[index3 + 2] = vel[2]
 
       vec3.scale(vel, vel, dt)
-      this.translations.copyInto(trans as Float32Array, index3, 3)
+      this.translations.getArray(trans as Float32Array, index3, 3)
       vec3.add(trans, trans, vel)
-      this.translations.copyFrom(trans as Float32Array, index3)
+      this.translations.setArray(trans, index3)
     }
   }
 
