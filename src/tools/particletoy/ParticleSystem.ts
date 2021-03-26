@@ -61,6 +61,7 @@ export class ParticleSystem {
   // liveness tracking
   private freeList: PriorityQueue<number>
   private ttls: Float32Array // one float per particle
+  private highWatermark: number // the last particle to send to the draw call
 
   // instance attrib data (flat arrays of glMatrix objects)
   private active: ParticleAttribData<Float32Array> // one float per particle, 0 means not active, 1 means active
@@ -70,10 +71,13 @@ export class ParticleSystem {
   private colors: ParticleAttribData<Float32Array> // one vec4 per particle
 
   // physics
-  private rotVel: Float32Array // one quat per particle
+  private vels: Float32Array // one vec3 per particle
+  private accels: Float32Array // one vec3 per particle
+  private rotVels: Float32Array // one quat per particle
 
   // preallocated temporaries
   private tempQuats: [quat, quat]
+  private tempVec3: [vec3, vec3, vec3]
 
   public constructor(meshName: string, capacity: number) {
     this.meshName = meshName
@@ -87,20 +91,34 @@ export class ParticleSystem {
 
     this.freeList = new PriorityQueue((a, b) => a - b)
     this.ttls = new Float32Array(capacity)
+    this.highWatermark = 0
 
     for (let i = 0; i < capacity; i++) {
       this.freeList.push(i)
       this.active.set(i, 0)
     }
 
-    this.rotVel = new Float32Array(4 * capacity)
+    this.vels = new Float32Array(3 * capacity)
+    this.accels = new Float32Array(3 * capacity)
+    this.rotVels = new Float32Array(4 * capacity)
 
     this.tempQuats = [quat.create(), quat.create()]
+    this.tempVec3 = [vec3.create(), vec3.create(), vec3.create()]
   }
 
   private free(n: number): void {
     this.freeList.push(n)
     this.active.set(n, 0)
+
+    // Reset high watermark if necessary
+    if (n === this.highWatermark) {
+      for (let i = this.highWatermark - 1; i >= 0; i--) {
+        if (this.active.get(i) === 1) {
+          this.highWatermark = i
+          break
+        }
+      }
+    }
   }
 
   public add(config: {
@@ -109,11 +127,17 @@ export class ParticleSystem {
     translation: vec3
     scale: vec3
     color: vec4
+    vel: vec3
+    accel: vec3
     rotVel: quat
   }): void {
     const index = this.freeList.pop()
     if (index === undefined) {
       throw `particle system is full, can't add particle`
+    }
+
+    if (index > this.highWatermark) {
+      this.highWatermark = index
     }
 
     const index3 = index * 3
@@ -127,7 +151,9 @@ export class ParticleSystem {
     this.scales.copyFrom(config.scale as Float32Array, index3)
     this.colors.copyFrom(config.color as Float32Array, index4)
 
-    this.rotVel.set(config.rotVel, index4)
+    this.vels.set(config.vel, index3)
+    this.accels.set(config.accel, index3)
+    this.rotVels.set(config.rotVel, index4)
   }
 
   /**
@@ -153,31 +179,55 @@ export class ParticleSystem {
         continue
       }
 
+      const index3 = i * 3
       const index4 = i * 4
 
-      // Alias our temporary quats
+      // Alias our temporary glMatrix objects
       const rotVel = this.tempQuats[0]
       const rotation = this.tempQuats[1]
+      const vel = this.tempVec3[0]
+      const accel = this.tempVec3[1]
+      const trans = this.tempVec3[2]
 
-      rotVel[0] = this.rotVel[index4 + 0]
-      rotVel[1] = this.rotVel[index4 + 1]
-      rotVel[2] = this.rotVel[index4 + 2]
-      rotVel[3] = this.rotVel[index4 + 3]
+      // Rotate particle
+      rotVel[0] = this.rotVels[index4 + 0]
+      rotVel[1] = this.rotVels[index4 + 1]
+      rotVel[2] = this.rotVels[index4 + 2]
+      rotVel[3] = this.rotVels[index4 + 3]
 
       if (
-        rotVel[0] === 0 &&
-        rotVel[1] === 0 &&
-        rotVel[2] === 0 &&
-        rotVel[3] === 1
+        !(
+          rotVel[0] === 0 &&
+          rotVel[1] === 0 &&
+          rotVel[2] === 0 &&
+          rotVel[3] === 1
+        )
       ) {
-        continue
+        const rotations = this.rotations
+        rotations.copyInto(rotation as Float32Array, index4, 4)
+
+        quat.multiply(rotation, rotation, rotVel)
+        rotations.copyFrom(rotation as Float32Array, index4)
       }
 
-      const rotations = this.rotations
-      rotations.copyInto(rotation as Float32Array, index4, 4)
+      // Apply ballistic motion
+      vel[0] = this.vels[index3 + 0]
+      vel[1] = this.vels[index3 + 1]
+      vel[2] = this.vels[index3 + 2]
 
-      quat.multiply(rotation, rotation, rotVel)
-      rotations.copyFrom(rotation as Float32Array, index4)
+      accel[0] = this.accels[index3 + 0] * dt
+      accel[1] = this.accels[index3 + 1] * dt
+      accel[2] = this.accels[index3 + 2] * dt
+
+      vec3.add(vel, vel, accel)
+      this.vels[index3 + 0] = vel[0]
+      this.vels[index3 + 1] = vel[1]
+      this.vels[index3 + 2] = vel[2]
+
+      vec3.scale(vel, vel, dt)
+      this.translations.copyInto(trans as Float32Array, index3, 3)
+      vec3.add(trans, trans, vel)
+      this.translations.copyFrom(trans as Float32Array, index3)
     }
   }
 
@@ -190,9 +240,9 @@ export class ParticleSystem {
     attribBuffers.set(ShaderAttrib.Position, {
       // prettier-ignore
       bufferData: new Float32Array([
-        0, 0.5, 0,
-        -0.5, -0.5, 0,
-        0.5, -0.5, 0,
+        0, 1 / Math.sqrt(3), 0,
+        -0.5, -0.5 / Math.sqrt(3), 0,
+        0.5, -0.5 / Math.sqrt(3), 0,        
       ]),
       componentsPerAttrib: 3,
     })
@@ -269,6 +319,6 @@ export class ParticleSystem {
       this.colors.markClean()
     }
 
-    renderer.renderParticles(this.meshName, this.capacity, attribUpdates)
+    renderer.renderParticles(this.meshName, this.highWatermark, attribUpdates)
   }
 }

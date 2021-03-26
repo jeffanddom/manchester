@@ -5,12 +5,12 @@
 
 export const shader = {
   vertexSrc: `#version 300 es
+in float aInstanceActive;
 in vec3 aPosition;
 in vec4 aInstanceColor;
 in vec4 aInstanceRotation;
 in vec3 aInstanceScale;
 in vec3 aInstanceTranslation;
-in float aInstanceActive;
 
 uniform mat4 uProjection;
 uniform mat4 uWorld2View;

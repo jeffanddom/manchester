@@ -19,6 +19,68 @@ import * as autoReload from '~/web/autoReload'
 //   )
 // }
 
+class Emitter {
+  private system: ParticleSystem
+  private potentialParticles: number
+  private origin: vec3
+
+  constructor(system: ParticleSystem, origin: vec3) {
+    this.system = system
+    this.potentialParticles = 0
+    this.origin = vec3.clone(origin)
+  }
+
+  public update(): void {
+    this.potentialParticles += 1000 * SIMULATION_PERIOD_S
+    while (this.potentialParticles >= 1) {
+      this.potentialParticles -= 1
+
+      const rotAxis = vec3.fromValues(
+        lerp(-1, 1, Math.random()),
+        lerp(-1, 1, Math.random()),
+        lerp(-1, 1, Math.random()),
+      )
+      vec3.normalize(rotAxis, rotAxis)
+
+      this.system.add({
+        ttl: 3,
+        rotation: quat.create(),
+        translation: vec3.add(
+          vec3.create(),
+          vec3.fromValues(
+            lerp(-0.05, 0.05, Math.random()),
+            lerp(-0.05, 0.05, Math.random()),
+            lerp(-0.05, 0.05, Math.random()),
+          ),
+          this.origin,
+        ),
+        scale: vec3.fromValues(
+          lerp(0.05, 0.25, Math.random()),
+          lerp(0.05, 0.25, Math.random()),
+          lerp(0.05, 0.25, Math.random()),
+        ),
+        color: vec4.fromValues(
+          lerp(0, 0.1, Math.random()),
+          lerp(0.4, 0.7, Math.random()),
+          lerp(0.6, 1, Math.random()),
+          1,
+        ),
+        vel: vec3.fromValues(
+          lerp(-1, 1, Math.random()),
+          lerp(1, 5, Math.random()),
+          lerp(-1, 1, Math.random()),
+        ),
+        accel: vec3.fromValues(0, -1.5, 0),
+        rotVel: quat.setAxisAngle(
+          quat.create(),
+          rotAxis,
+          lerp(0.1, 0.3, Math.random()),
+        ),
+      })
+    }
+  }
+}
+
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
 
 const gl = canvas.getContext('webgl2')!
@@ -66,39 +128,17 @@ for (let axis = 0; axis < 3; axis++) {
   })
 }
 
-const particles = new ParticleSystem('default', 30000)
-
-for (let i = 0; i < particles.getCapacity(); i++) {
-  const rotAxis = vec3.fromValues(
-    lerp(-1, 1, Math.random()),
-    lerp(-1, 1, Math.random()),
-    lerp(-1, 1, Math.random()),
-  )
-  vec3.normalize(rotAxis, rotAxis)
-
-  particles.add({
-    ttl: lerp(5, 15, Math.random()),
-    rotation: quat.create(),
-    translation: vec3.fromValues(
-      lerp(-10, 10, Math.random()),
-      lerp(-10, 10, Math.random()),
-      lerp(-10, 10, Math.random()),
-    ),
-    scale: vec3.fromValues(
-      lerp(0.05, 0.25, Math.random()),
-      lerp(0.05, 0.25, Math.random()),
-      lerp(0.05, 0.25, Math.random()),
-    ),
-    color: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
-    rotVel: quat.setAxisAngle(
-      quat.create(),
-      rotAxis,
-      lerp(0.1, 0.3, Math.random()),
-    ),
-  })
-}
+const particles = new ParticleSystem('default', 100 * 1000)
 
 particles.initRender(renderer)
+
+const emitters = [
+  new Emitter(particles, vec3.fromValues(-3, 0, 0)),
+  new Emitter(particles, vec3.fromValues(0, 0, 0)),
+  new Emitter(particles, vec3.fromValues(3, 0, 0)),
+  new Emitter(particles, vec3.fromValues(0, 0, -3)),
+  new Emitter(particles, vec3.fromValues(0, 0, 3)),
+]
 
 function update(): void {
   requestAnimationFrame(update)
@@ -107,6 +147,10 @@ function update(): void {
   renderer.setWvTransform(camera.world2View(mat4.create()))
 
   renderer.renderUnlit(axes)
+
+  for (const e of emitters) {
+    e.update()
+  }
 
   particles.update(SIMULATION_PERIOD_S)
   particles.render(renderer)
