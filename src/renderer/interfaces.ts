@@ -60,3 +60,9 @@ export interface ModelNode {
   transform?: mat4
   children: ModelNode[]
 }
+
+// A Float32Array with an offset and length. Both the offset and length are
+// expressed in number of floats. This is an alternative to using
+// Float32Array(buffer, byteOffset, length) when you need to keep the offset
+// separate.
+export type Float32ArrayWithSpan = [Float32Array, number, number]

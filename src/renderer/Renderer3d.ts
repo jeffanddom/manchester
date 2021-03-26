@@ -17,10 +17,10 @@ import { ShaderAttrib, ShaderUniform, attribName } from './shaders/common'
 
 import {
   DataMeshInstanced,
+  Float32ArrayWithSpan,
   MeshPrimitive,
   ModelModifiers,
   ModelNode,
-  NumericArray,
 } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { shader as particleShader } from '~/renderer/shaders/particle'
@@ -589,7 +589,7 @@ export class Renderer3d implements IModelLoader {
     // an offset into the array, and a length. The array is assumed to be the
     // same size as the buffer being updated, but only the range specified by
     // the offset and the length will be updated.
-    attribData?: Map<number, [NumericArray, number, number]>,
+    attribData?: Map<number, Float32ArrayWithSpan>,
   ): void {
     const mesh = this.particleMeshes.get(name)
     if (mesh === undefined) {

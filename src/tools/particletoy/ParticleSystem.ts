@@ -3,6 +3,7 @@ import { DerivedFloat32Array, quat, vec3, vec4 } from 'gl-matrix'
 import {
   ArrayDataType,
   BufferConfig,
+  Float32ArrayWithSpan,
   MeshBuffer,
   MeshPrimitive,
 } from '~/renderer/interfaces'
@@ -66,7 +67,7 @@ class ParticleAttribData {
    * offset indicating where updated data begins, and a length indicating the
    * size of the updated data.
    */
-  public getRawUpdates(): [Float32Array, number, number] | undefined {
+  public getRawUpdates(): Float32ArrayWithSpan | undefined {
     if (this.updatedStart === Infinity) {
       return undefined
     }
