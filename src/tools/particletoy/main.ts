@@ -1,12 +1,16 @@
-import { mat4, vec3, vec4 } from 'gl-matrix'
+import { mat4, quat, vec3, vec4 } from 'gl-matrix'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import { BellagioEmitter } from './BellagioEmitter'
 import { Camera } from './Camera'
+import { Controls } from './Controls'
 // import { WebGLDebugUtils } from './webgl-debug'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
+import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
 import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
+import { One4 } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
 // function logGLCall(functionName: string, args: unknown): void {
@@ -70,17 +74,20 @@ const particles = new ParticleSystem('default', 100 * 1000)
 
 particles.initRender(renderer)
 
-const emitters = [
-  new BellagioEmitter(particles, vec3.fromValues(-0.4, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(-0.8, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(-1.2, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(-1.6, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(0, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(0.4, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(0.8, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(1.2, 0, 0)),
-  new BellagioEmitter(particles, vec3.fromValues(1.6, 0, 0)),
-]
+const emitter = new BasicEmitter({
+  emitterTtl: undefined, // nonexpiring
+  origin: vec3.create(),
+  orientation: quat.create(),
+  spawnRate: 10,
+  particleTtlRange: [2, 3],
+  translationOffsetRange: [vec3.create(), vec3.create()],
+  scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
+  colorRange: [vec4.create(), vec4.clone(One4)],
+  velRange: [vec3.fromValues(0, 0, 3), vec3.fromValues(1, 1, 3)],
+  gravity: vec3.create(),
+})
+
+particles.addEmitter(emitter)
 
 function update(): void {
   requestAnimationFrame(update)
@@ -90,13 +97,14 @@ function update(): void {
 
   renderer.renderUnlit(axes)
 
-  for (const e of emitters) {
-    e.update()
-  }
-
   particles.update(SIMULATION_PERIOD_S)
   particles.render(renderer)
 }
 
 requestAnimationFrame(update)
 autoReload.poll(1000)
+
+ReactDOM.render(
+  React.createElement(Controls, { emitter }),
+  document.getElementById('controls'),
+)

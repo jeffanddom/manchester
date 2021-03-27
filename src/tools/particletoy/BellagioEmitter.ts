@@ -1,23 +1,28 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
-import { ParticleSystem } from '~/particles/ParticleSystem'
+import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
 import { lerp } from '~/util/math'
 
-export class BellagioEmitter {
-  private system: ParticleSystem
+export class BellagioEmitter implements ParticleEmitter {
   private potentialParticles: number
   private direction: number
   private origin: vec3
 
-  constructor(system: ParticleSystem, origin: vec3) {
-    this.system = system
+  constructor(origin: vec3) {
     this.potentialParticles = 0
     this.direction = 0
     this.origin = vec3.clone(origin)
   }
 
-  public update(): void {
+  public isActive(): boolean {
+    return true
+  }
+
+  public update(
+    _dt: number,
+    addParticle: (config: ParticleConfig) => void,
+  ): void {
     this.potentialParticles += 1000 * SIMULATION_PERIOD_S
     this.direction += SIMULATION_PERIOD_S * 2
     while (this.potentialParticles >= 1) {
@@ -30,7 +35,7 @@ export class BellagioEmitter {
       )
       vec3.normalize(rotAxis, rotAxis)
 
-      this.system.add({
+      addParticle({
         ttl: 1.5,
         rotation: quat.create(),
         translation: vec3.add(

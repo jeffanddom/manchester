@@ -1,4 +1,6 @@
-import { DerivedFloat32Array, quat, vec3, vec4 } from 'gl-matrix'
+import { DerivedFloat32Array, quat, vec3 } from 'gl-matrix'
+
+import { ParticleConfig, ParticleEmitter } from './interfaces'
 
 import {
   ArrayDataType,
@@ -89,6 +91,9 @@ export class ParticleSystem {
   private meshName: string
   private capacity: number
 
+  // emitters
+  private emitters: ParticleEmitter[]
+
   // liveness tracking
   private freeList: PriorityQueue<number>
   private ttls: Float32Array // one float per particle
@@ -113,6 +118,8 @@ export class ParticleSystem {
   public constructor(meshName: string, capacity: number) {
     this.meshName = meshName
     this.capacity = capacity
+
+    this.emitters = []
 
     this.active = new ParticleAttribData(capacity)
     this.rotations = new ParticleAttribData(4 * capacity)
@@ -152,16 +159,11 @@ export class ParticleSystem {
     }
   }
 
-  public add(config: {
-    ttl: number
-    rotation: quat
-    translation: vec3
-    scale: vec3
-    color: vec4
-    vel: vec3
-    accel: vec3
-    rotVel: quat
-  }): void {
+  public addEmitter(emitter: ParticleEmitter): void {
+    this.emitters.push(emitter)
+  }
+
+  public add(config: ParticleConfig): void {
     const index = this.freeList.pop()
     if (index === undefined) {
       throw `particle system is full, can't add particle`
@@ -198,7 +200,17 @@ export class ParticleSystem {
    * rotation matrix.
    */
   public update(dt: number): void {
-    // Simulate rotations
+    // Simulate emitters
+    const addParticle = (config: ParticleConfig): void => {
+      this.add(config)
+    }
+    for (const emitter of this.emitters) {
+      emitter.update(dt, addParticle)
+    }
+
+    this.emitters = this.emitters.filter((e) => e.isActive())
+
+    // Simulate particles
     for (let i = 0; i < this.capacity; i++) {
       if (this.active.get(i) === 0) {
         continue

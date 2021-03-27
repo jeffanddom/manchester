@@ -1,8 +1,9 @@
-import { mat2d, vec2, vec3 } from 'gl-matrix'
+import { mat2d, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
 
 export const Zero2: Immutable<vec2> = vec2.create()
+export const One2: Immutable<vec2> = vec2.fromValues(1, 1)
 export const PlusY2: Immutable<vec2> = vec2.fromValues(0, 1)
 export const MinusY2: Immutable<vec2> = vec2.fromValues(0, -1)
 export const PlusX2: Immutable<vec2> = vec2.fromValues(1, 0)
@@ -11,13 +12,26 @@ export const North2: Immutable<vec2> = MinusY2
 export const South2: Immutable<vec2> = PlusY2
 export const West2: Immutable<vec2> = MinusX2
 export const East2: Immutable<vec2> = PlusX2
+
 export const Zero3: Immutable<vec3> = vec3.create()
+export const One3: Immutable<vec3> = vec3.fromValues(1, 1, 1)
 export const PlusX3: Immutable<vec3> = vec3.fromValues(1, 0, 0)
 export const MinusX3: Immutable<vec3> = vec3.fromValues(-1, 0, 0)
 export const PlusY3: Immutable<vec3> = vec3.fromValues(0, 1, 0)
 export const MinusY3: Immutable<vec3> = vec3.fromValues(0, -1, 0)
 export const PlusZ3: Immutable<vec3> = vec3.fromValues(0, 0, 1)
 export const MinusZ3: Immutable<vec3> = vec3.fromValues(0, 0, -1)
+
+export const Zero4: Immutable<vec4> = vec4.fromValues(0, 0, 0, 0)
+export const One4: Immutable<vec4> = vec4.fromValues(1, 1, 1, 1)
+export const PlusX4: Immutable<vec4> = vec4.fromValues(1, 0, 0, 0)
+export const MinusX4: Immutable<vec4> = vec4.fromValues(-1, 0, 0, 0)
+export const PlusY4: Immutable<vec4> = vec4.fromValues(0, 1, 0, 0)
+export const MinusY4: Immutable<vec4> = vec4.fromValues(0, -1, 0, 0)
+export const PlusZ4: Immutable<vec4> = vec4.fromValues(0, 0, 1, 0)
+export const MinusZ4: Immutable<vec4> = vec4.fromValues(0, 0, -1, 0)
+export const PlusW4: Immutable<vec4> = vec4.fromValues(0, 0, 0, 1)
+export const MinusW4: Immutable<vec4> = vec4.fromValues(0, 0, 0, -1)
 
 export type SphereCoord = [number, number, number] // [r, theta, phi]
 
@@ -189,4 +203,32 @@ export function screenToView(
 
 export function fovToFocalLength(fov: number): number {
   return 1 / Math.tan(fov / 2)
+}
+
+export function multilerp3(
+  out: vec3,
+  from: Immutable<vec3>,
+  to: Immutable<vec3>,
+  a0: number,
+  a1: number,
+  a2: number,
+): void {
+  out[0] = lerp(from[0], to[0], a0)
+  out[1] = lerp(from[1], to[1], a1)
+  out[2] = lerp(from[2], to[2], a2)
+}
+
+export function multilerp4(
+  out: vec4,
+  from: Immutable<vec4>,
+  to: Immutable<vec4>,
+  a0: number,
+  a1: number,
+  a2: number,
+  a3: number,
+): void {
+  out[0] = lerp(from[0], to[0], a0)
+  out[1] = lerp(from[1], to[1], a1)
+  out[2] = lerp(from[2], to[2], a2)
+  out[3] = lerp(from[3], to[3], a3)
 }
