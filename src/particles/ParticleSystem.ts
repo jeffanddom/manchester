@@ -57,9 +57,10 @@ class ParticleAttribData {
   public getArray(
     dst: DerivedFloat32Array,
     srcOffset: number,
-    length: number,
+    length?: number,
     dstOffset = 0,
   ): void {
+    length = length ?? dst.length
     for (let i = 0; i < length; i++) {
       dst[dstOffset + dstOffset + i] = this.data[srcOffset + i]
     }
@@ -102,7 +103,8 @@ export class ParticleSystem {
 
   // instance attrib data (flat arrays of glMatrix objects)
   private active: ParticleAttribData // one float per particle, 0 means not active, 1 means active
-  private rotations: ParticleAttribData // one quat per particle
+  private preRotations: ParticleAttribData // one quat per particle
+  private postRotations: ParticleAttribData // one quat per particle
   private translations: ParticleAttribData // one vec3 per particle
   private scales: ParticleAttribData // one vec3 per particle
   private colors: ParticleAttribData // one vec4 per particle
@@ -111,11 +113,9 @@ export class ParticleSystem {
   private vels: Float32Array // one vec3 per particle
   private accels: Float32Array // one vec3 per particle
   private rotVels: Float32Array // one quat per particle
-  private orientations: Float32Array // one quat per particle
-  private localRotations: Float32Array // one quat per particle
 
   // preallocated temporaries
-  private tempQuats: [quat, quat, quat]
+  private tempQuats: [quat, quat]
   private tempVec3: [vec3, vec3, vec3]
 
   public constructor(meshName: string, capacity: number) {
@@ -125,7 +125,8 @@ export class ParticleSystem {
     this.emitters = []
 
     this.active = new ParticleAttribData(capacity)
-    this.rotations = new ParticleAttribData(4 * capacity)
+    this.postRotations = new ParticleAttribData(4 * capacity)
+    this.preRotations = new ParticleAttribData(4 * capacity)
     this.translations = new ParticleAttribData(3 * capacity)
     this.scales = new ParticleAttribData(3 * capacity)
     this.colors = new ParticleAttribData(4 * capacity)
@@ -139,13 +140,11 @@ export class ParticleSystem {
       this.active.set(i, 0)
     }
 
-    this.orientations = new Float32Array(4 * capacity)
-    this.localRotations = new Float32Array(4 * capacity)
     this.vels = new Float32Array(3 * capacity)
     this.accels = new Float32Array(3 * capacity)
     this.rotVels = new Float32Array(4 * capacity)
 
-    this.tempQuats = [quat.create(), quat.create(), quat.create()]
+    this.tempQuats = [quat.create(), quat.create()]
     this.tempVec3 = [vec3.create(), vec3.create(), vec3.create()]
   }
 
@@ -184,7 +183,8 @@ export class ParticleSystem {
     this.ttls[index] = config.ttl
 
     this.active.set(index, 1)
-    this.rotations.setArray(config.orientation, index4)
+    this.preRotations.setArray(QuatIdentity, index4)
+    this.postRotations.setArray(config.orientation, index4)
     this.translations.setArray(config.translation, index3)
     this.scales.setArray(config.scale, index3)
     this.colors.setArray(config.color, index4)
@@ -192,8 +192,6 @@ export class ParticleSystem {
     this.vels.set(config.vel, index3)
     this.accels.set(config.accel, index3)
     this.rotVels.set(config.rotVel, index4)
-    this.orientations.set(config.orientation, index4)
-    this.localRotations.set(QuatIdentity, index4)
   }
 
   /**
@@ -238,8 +236,8 @@ export class ParticleSystem {
 
       // Alias our temporary glMatrix objects
       const rotVel = this.tempQuats[0]
-      const orientation = this.tempQuats[1]
-      const rotation = this.tempQuats[2]
+      const preRotation = this.tempQuats[1]
+
       const vel = this.tempVec3[0]
       const accel = this.tempVec3[1]
       const trans = this.tempVec3[2]
@@ -249,29 +247,10 @@ export class ParticleSystem {
       rotVel[1] = this.rotVels[index4 + 1]
       rotVel[2] = this.rotVels[index4 + 2]
       rotVel[3] = this.rotVels[index4 + 3]
-
-      if (
-        !(
-          rotVel[0] === 0 &&
-          rotVel[1] === 0 &&
-          rotVel[2] === 0 &&
-          rotVel[3] === 1
-        )
-      ) {
-        rotation[0] = this.localRotations[index4 + 0]
-        rotation[1] = this.localRotations[index4 + 1]
-        rotation[2] = this.localRotations[index4 + 2]
-        rotation[3] = this.localRotations[index4 + 3]
-        quat.multiply(rotation, rotVel, rotation)
-        this.localRotations.set(rotation, index4)
-
-        orientation[0] = this.orientations[index4 + 0]
-        orientation[1] = this.orientations[index4 + 1]
-        orientation[2] = this.orientations[index4 + 2]
-        orientation[3] = this.orientations[index4 + 3]
-        quat.multiply(rotation, orientation, rotation)
-
-        this.rotations.setArray(rotation, index4)
+      if (!quat.equals(rotVel, QuatIdentity)) {
+        this.preRotations.getArray(preRotation, index4)
+        quat.multiply(preRotation, rotVel, preRotation)
+        this.preRotations.setArray(preRotation, index4)
       }
 
       // Apply ballistic motion. For simplicity, we apply the full acceleration
@@ -292,7 +271,7 @@ export class ParticleSystem {
       this.vels[index3 + 2] = vel[2]
 
       vec3.scale(vel, vel, dt)
-      this.translations.getArray(trans, index3, 3)
+      this.translations.getArray(trans, index3)
       vec3.add(trans, trans, vel)
       this.translations.setArray(trans, index3)
     }
@@ -321,7 +300,12 @@ export class ParticleSystem {
       componentsPerAttrib: 1,
     })
 
-    instanceAttribBufferConfig.set(ShaderAttrib.InstanceRotation, {
+    instanceAttribBufferConfig.set(ShaderAttrib.InstancePreRotation, {
+      arrayType: ArrayDataType.Float,
+      componentsPerAttrib: 4,
+    })
+
+    instanceAttribBufferConfig.set(ShaderAttrib.InstancePostRotation, {
       arrayType: ArrayDataType.Float,
       componentsPerAttrib: 4,
     })
@@ -362,10 +346,16 @@ export class ParticleSystem {
       this.active.clearUpdates()
     }
 
-    const rotData = this.rotations.getRawUpdates()
-    if (rotData !== undefined) {
-      attribUpdates.set(ShaderAttrib.InstanceRotation, rotData)
-      this.rotations.clearUpdates()
+    const preRotationData = this.preRotations.getRawUpdates()
+    if (preRotationData !== undefined) {
+      attribUpdates.set(ShaderAttrib.InstancePreRotation, preRotationData)
+      this.preRotations.clearUpdates()
+    }
+
+    const postRotationData = this.postRotations.getRawUpdates()
+    if (postRotationData !== undefined) {
+      attribUpdates.set(ShaderAttrib.InstancePostRotation, postRotationData)
+      this.postRotations.clearUpdates()
     }
 
     const transData = this.translations.getRawUpdates()

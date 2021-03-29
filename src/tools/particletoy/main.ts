@@ -77,7 +77,7 @@ particles.initRender(renderer)
 const emitter = new BasicEmitter({
   emitterTtl: undefined, // nonexpiring
   origin: vec3.create(),
-  orientation: quat.fromEuler(quat.create(), -90, 0, 0),
+  orientation: quat.fromEuler(quat.create(), -90, 0, 45),
   spawnRate: 40,
   particleTtlRange: [2, 3],
   orientationOffsetRange: [quat.create(), quat.create()],

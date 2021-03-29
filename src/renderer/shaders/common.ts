@@ -6,10 +6,11 @@ export enum ShaderAttrib {
 
   // Instance attribs
   InstanceTranslation = 4, // vec3
-  InstanceRotation = 5, // vec4 (quat)
-  InstanceScale = 6, // vec3
-  InstanceColor = 7, // vec3 or vec4
-  InstanceActive = 8,
+  InstancePreRotation = 5, // vec4 (quat)
+  InstancePostRotation = 6, // vec4 (quat)
+  InstanceScale = 7, // vec3
+  InstanceColor = 8, // vec3 or vec4
+  InstanceActive = 9,
 }
 
 export function attribName(attrib: ShaderAttrib): string {
@@ -24,8 +25,10 @@ export function attribName(attrib: ShaderAttrib): string {
       return 'aEdgeOn'
     case ShaderAttrib.InstanceTranslation:
       return 'aInstanceTranslation'
-    case ShaderAttrib.InstanceRotation:
-      return 'aInstanceRotation'
+    case ShaderAttrib.InstancePreRotation:
+      return 'aInstancePreRotation'
+    case ShaderAttrib.InstancePostRotation:
+      return 'aInstancePostRotation'
     case ShaderAttrib.InstanceScale:
       return 'aInstanceScale'
     case ShaderAttrib.InstanceColor:

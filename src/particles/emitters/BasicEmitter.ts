@@ -68,7 +68,7 @@ export class BasicEmitter implements ParticleEmitter {
 
     this.potentialParticles += this.config.spawnRate * dt
 
-    const [rotation, rotVel] = this.tempQuat
+    const [orientation, rotVel] = this.tempQuat
     const [translation, scale, vel] = this.tempVec3
     const [color] = this.tempVec4
 
@@ -82,12 +82,12 @@ export class BasicEmitter implements ParticleEmitter {
       )
 
       quat.slerp(
-        rotation,
+        orientation,
         this.config.orientationOffsetRange[0],
         this.config.orientationOffsetRange[1],
         Math.random(),
       )
-      quat.multiply(rotation, this.config.orientation, rotation) // offset should apply before global orientation
+      quat.multiply(orientation, this.config.orientation, orientation) // offset should apply before global orientation
 
       multilerp3(
         translation,
@@ -138,7 +138,7 @@ export class BasicEmitter implements ParticleEmitter {
 
       add({
         ttl,
-        orientation: rotation,
+        orientation,
         translation,
         scale,
         color,

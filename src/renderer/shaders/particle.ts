@@ -8,7 +8,8 @@ export const shader = {
 in float aInstanceActive;
 in vec3 aPosition;
 in vec4 aInstanceColor;
-in vec4 aInstanceRotation;
+in vec4 aInstancePreRotation;
+in vec4 aInstancePostRotation;
 in vec3 aInstanceScale;
 in vec3 aInstanceTranslation;
 
@@ -47,6 +48,15 @@ mat4 fromRotationTranslationScale(vec4 q, vec3 t, vec3 s) {
   return result;
 }
 
+vec4 multiplyQuat(vec4 a, vec4 b) {
+  vec4 result;
+  result[0] = a[0] * b[3] + a[3] * b[0] + a[1] * b[2] - a[2] * b[1];
+  result[1] = a[1] * b[3] + a[3] * b[1] + a[2] * b[0] - a[0] * b[2];
+  result[2] = a[2] * b[3] + a[3] * b[2] + a[0] * b[1] - a[1] * b[0];
+  result[3] = a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2];
+  return result;  
+}
+
 void main() {
   if (aInstanceActive == 0.0) {
     // position outside of clip volume
@@ -54,7 +64,11 @@ void main() {
     return;
   }
 
-  mat4 transform = fromRotationTranslationScale(aInstanceRotation, aInstanceTranslation, aInstanceScale);
+  mat4 transform = fromRotationTranslationScale(
+    multiplyQuat(aInstancePostRotation, aInstancePreRotation),
+    aInstanceTranslation,
+    aInstanceScale
+  );
   gl_Position = uProjection * uWorld2View * transform * vec4(aPosition, 1.0);
   color = aInstanceColor;
 }
