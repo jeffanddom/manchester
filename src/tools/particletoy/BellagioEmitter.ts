@@ -37,7 +37,7 @@ export class BellagioEmitter implements ParticleEmitter {
 
       addParticle({
         ttl: 1.5,
-        rotation: quat.create(),
+        orientation: quat.create(),
         translation: vec3.add(
           vec3.create(),
           vec3.fromValues(

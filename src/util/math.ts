@@ -1,3 +1,4 @@
+import { quat } from 'gl-matrix'
 import { mat2d, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
@@ -32,6 +33,8 @@ export const PlusZ4: Immutable<vec4> = vec4.fromValues(0, 0, 1, 0)
 export const MinusZ4: Immutable<vec4> = vec4.fromValues(0, 0, -1, 0)
 export const PlusW4: Immutable<vec4> = vec4.fromValues(0, 0, 0, 1)
 export const MinusW4: Immutable<vec4> = vec4.fromValues(0, 0, 0, -1)
+
+export const QuatIdentity: Immutable<quat> = quat.create()
 
 export type SphereCoord = [number, number, number] // [r, theta, phi]
 

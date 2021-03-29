@@ -77,14 +77,22 @@ particles.initRender(renderer)
 const emitter = new BasicEmitter({
   emitterTtl: undefined, // nonexpiring
   origin: vec3.create(),
-  orientation: quat.create(),
-  spawnRate: 10,
+  orientation: quat.fromEuler(quat.create(), -90, 0, 0),
+  spawnRate: 40,
   particleTtlRange: [2, 3],
-  translationOffsetRange: [vec3.create(), vec3.create()],
+  orientationOffsetRange: [quat.create(), quat.create()],
+  translationOffsetRange: [
+    vec3.fromValues(-0.1, -0.1, -0.1),
+    vec3.fromValues(0.1, 0.1, 0.1),
+  ],
   scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
   colorRange: [vec4.create(), vec4.clone(One4)],
-  velRange: [vec3.fromValues(0, 0, 3), vec3.fromValues(1, 1, 3)],
-  gravity: vec3.create(),
+  velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
+  rotVelRange: [
+    quat.fromEuler(quat.create(), 5, 0, 0),
+    quat.fromEuler(quat.create(), 15, 0, 0),
+  ],
+  gravity: vec3.fromValues(0, -5, 0),
 })
 
 particles.addEmitter(emitter)

@@ -13,15 +13,15 @@ export interface BasicEmitterConfig {
   particleTtlRange: [number, number]
 
   // initial attribs
-  // TODO: rotationOffsetRange
+  orientationOffsetRange: [quat, quat] // will be transformed by orientation
   translationOffsetRange: [vec3, vec3] // will be transformed by origin & orientation
   scaleRange: [vec3, vec3] // will NOT be transformed by orientation
   colorRange: [vec4, vec4]
 
   // physics
-  // TODO: rotVelRange
   velRange: [vec3, vec3] // will be transformed by orientation
   gravity: vec3 // a constant global acceleration, will NOT be transformed by orientation
+  rotVelRange: [quat, quat] // will be transformed by orientation
 }
 
 export class BasicEmitter implements ParticleEmitter {
@@ -81,6 +81,14 @@ export class BasicEmitter implements ParticleEmitter {
         Math.random(),
       )
 
+      quat.slerp(
+        rotation,
+        this.config.orientationOffsetRange[0],
+        this.config.orientationOffsetRange[1],
+        Math.random(),
+      )
+      quat.multiply(rotation, this.config.orientation, rotation) // offset should apply before global orientation
+
       multilerp3(
         translation,
         this.config.translationOffsetRange[0],
@@ -121,9 +129,16 @@ export class BasicEmitter implements ParticleEmitter {
       )
       vec3.transformQuat(vel, vel, this.config.orientation)
 
+      quat.slerp(
+        rotVel,
+        this.config.rotVelRange[0],
+        this.config.rotVelRange[1],
+        Math.random(),
+      )
+
       add({
         ttl,
-        rotation,
+        orientation: rotation,
         translation,
         scale,
         color,

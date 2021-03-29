@@ -11,6 +11,7 @@ import {
 } from '~/renderer/interfaces'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { ShaderAttrib } from '~/renderer/shaders/common'
+import { QuatIdentity } from '~/util/math'
 import { PriorityQueue } from '~/util/PriorityQueue'
 
 class ParticleAttribData {
@@ -110,9 +111,11 @@ export class ParticleSystem {
   private vels: Float32Array // one vec3 per particle
   private accels: Float32Array // one vec3 per particle
   private rotVels: Float32Array // one quat per particle
+  private orientations: Float32Array // one quat per particle
+  private localRotations: Float32Array // one quat per particle
 
   // preallocated temporaries
-  private tempQuats: [quat, quat]
+  private tempQuats: [quat, quat, quat]
   private tempVec3: [vec3, vec3, vec3]
 
   public constructor(meshName: string, capacity: number) {
@@ -136,11 +139,13 @@ export class ParticleSystem {
       this.active.set(i, 0)
     }
 
+    this.orientations = new Float32Array(4 * capacity)
+    this.localRotations = new Float32Array(4 * capacity)
     this.vels = new Float32Array(3 * capacity)
     this.accels = new Float32Array(3 * capacity)
     this.rotVels = new Float32Array(4 * capacity)
 
-    this.tempQuats = [quat.create(), quat.create()]
+    this.tempQuats = [quat.create(), quat.create(), quat.create()]
     this.tempVec3 = [vec3.create(), vec3.create(), vec3.create()]
   }
 
@@ -179,7 +184,7 @@ export class ParticleSystem {
     this.ttls[index] = config.ttl
 
     this.active.set(index, 1)
-    this.rotations.setArray(config.rotation, index4)
+    this.rotations.setArray(config.orientation, index4)
     this.translations.setArray(config.translation, index3)
     this.scales.setArray(config.scale, index3)
     this.colors.setArray(config.color, index4)
@@ -187,6 +192,8 @@ export class ParticleSystem {
     this.vels.set(config.vel, index3)
     this.accels.set(config.accel, index3)
     this.rotVels.set(config.rotVel, index4)
+    this.orientations.set(config.orientation, index4)
+    this.localRotations.set(QuatIdentity, index4)
   }
 
   /**
@@ -231,7 +238,8 @@ export class ParticleSystem {
 
       // Alias our temporary glMatrix objects
       const rotVel = this.tempQuats[0]
-      const rotation = this.tempQuats[1]
+      const orientation = this.tempQuats[1]
+      const rotation = this.tempQuats[2]
       const vel = this.tempVec3[0]
       const accel = this.tempVec3[1]
       const trans = this.tempVec3[2]
@@ -250,11 +258,20 @@ export class ParticleSystem {
           rotVel[3] === 1
         )
       ) {
-        const rotations = this.rotations
-        rotations.getArray(rotation, index4, 4)
+        rotation[0] = this.localRotations[index4 + 0]
+        rotation[1] = this.localRotations[index4 + 1]
+        rotation[2] = this.localRotations[index4 + 2]
+        rotation[3] = this.localRotations[index4 + 3]
+        quat.multiply(rotation, rotVel, rotation)
+        this.localRotations.set(rotation, index4)
 
-        quat.multiply(rotation, rotation, rotVel)
-        rotations.setArray(rotation, index4)
+        orientation[0] = this.orientations[index4 + 0]
+        orientation[1] = this.orientations[index4 + 1]
+        orientation[2] = this.orientations[index4 + 2]
+        orientation[3] = this.orientations[index4 + 3]
+        quat.multiply(rotation, orientation, rotation)
+
+        this.rotations.setArray(rotation, index4)
       }
 
       // Apply ballistic motion. For simplicity, we apply the full acceleration

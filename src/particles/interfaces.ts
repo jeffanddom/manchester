@@ -2,7 +2,7 @@ import { quat, vec3, vec4 } from 'gl-matrix'
 
 export interface ParticleConfig {
   ttl: number
-  rotation: quat
+  orientation: quat
   translation: vec3
   scale: vec3
   color: vec4
