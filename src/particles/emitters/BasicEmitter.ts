@@ -1,7 +1,7 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
 import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
-import { lerp, multilerp3, multilerp4 } from '~/util/math'
+import { lerp, multilerp3 } from '~/util/math'
 
 export interface BasicEmitterConfig {
   emitterTtl: number | undefined // undefined = nonexpiring
@@ -110,13 +110,12 @@ export class BasicEmitter implements ParticleEmitter {
         Math.random(),
       )
 
-      multilerp4(
+      // A consistent mix constant for each channel producees a gradient, which
+      // is easier to visualize and reason about.
+      vec4.lerp(
         color,
         this.config.colorRange[0],
         this.config.colorRange[1],
-        Math.random(),
-        Math.random(),
-        Math.random(),
         Math.random(),
       )
 
