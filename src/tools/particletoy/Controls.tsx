@@ -63,16 +63,32 @@ export const Controls: React.FC<{
   return (
     <div onClick={() => updateLocatStorage(emitters)}>
       <button
+        style={{ position: 'fixed', top: 10, right: 330, fontSize: 20 }}
         onClick={() => {
           const newEmitter = addEmitter(defaultBasicEmitterConfig)
           setEmitters([...emitters, newEmitter])
         }}
       >
-        +
+        + Add Emitter
       </button>
-      {emitters.map((e, i) => (
-        <EmitterSettings key={i} emitter={e} />
-      ))}
+      <div
+        style={{
+          padding: 10,
+        }}
+      >
+        {emitters.map((e, i) => (
+          <EmitterSettings
+            key={e.id}
+            index={i}
+            emitter={e}
+            delete={() => {
+              console.log('deleting ', i)
+              emitters.splice(i, 1)
+              setEmitters([...emitters])
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
