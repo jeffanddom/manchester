@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, vec4 } from 'gl-matrix'
+import { mat4, vec4 } from 'gl-matrix'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -7,10 +7,12 @@ import { Controls } from './Controls'
 // import { WebGLDebugUtils } from './webgl-debug'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
-import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
+import {
+  BasicEmitter,
+  BasicEmitterConfig,
+} from '~/particles/emitters/BasicEmitter'
 import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
-import { One4 } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
 
 // function logGLCall(functionName: string, args: unknown): void {
@@ -74,29 +76,6 @@ const particles = new ParticleSystem('default', 100 * 1000)
 
 particles.initRender(renderer)
 
-const emitter = new BasicEmitter({
-  emitterTtl: undefined, // nonexpiring
-  origin: vec3.create(),
-  orientation: quat.fromEuler(quat.create(), -90, 0, 45),
-  spawnRate: 40,
-  particleTtlRange: [2, 3],
-  orientationOffsetRange: [quat.create(), quat.create()],
-  translationOffsetRange: [
-    vec3.fromValues(-0.1, -0.1, -0.1),
-    vec3.fromValues(0.1, 0.1, 0.1),
-  ],
-  scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
-  colorRange: [vec4.create(), vec4.clone(One4)],
-  velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
-  rotVelRange: [
-    quat.fromEuler(quat.create(), 5, 0, 0),
-    quat.fromEuler(quat.create(), 15, 0, 0),
-  ],
-  gravity: vec3.fromValues(0, -5, 0),
-})
-
-particles.addEmitter(emitter)
-
 function update(): void {
   requestAnimationFrame(update)
 
@@ -112,7 +91,14 @@ function update(): void {
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
+const addEmitter = (config: BasicEmitterConfig) => {
+  const emitter = new BasicEmitter(config)
+
+  particles.addEmitter(emitter)
+  return emitter
+}
+
 ReactDOM.render(
-  React.createElement(Controls, { emitter }),
+  React.createElement(Controls, { addEmitter }),
   document.getElementById('controls'),
 )

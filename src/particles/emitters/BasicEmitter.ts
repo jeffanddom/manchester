@@ -135,6 +135,7 @@ export class BasicEmitter implements ParticleEmitter {
         this.config.rotVelRange[1],
         Math.random(),
       )
+      // quat.multiply(rotVel, this.config.orientation, rotVel)
 
       add({
         ttl,

@@ -46,5 +46,6 @@ module.exports = {
       },
     ],
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
+    'react/prop-types': 0,
   },
 }

@@ -1,120 +1,107 @@
-import { vec3 } from 'gl-matrix'
-import React, { ReactElement, useState } from 'react'
+import { quat, vec3, vec4 } from 'gl-matrix'
+import React, { useEffect, useState } from 'react'
 
-import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
+import { EmitterSettings } from './EmitterSettings'
 
-interface SliderProps {
-  min?: number
-  max?: number
-  step?: number
-  initialValue?: number
-  onChange: (v: number) => void
-}
+import {
+  BasicEmitter,
+  BasicEmitterConfig,
+} from '~/particles/emitters/BasicEmitter'
 
-function Slider(props: SliderProps): ReactElement {
-  const [value, setValue] = useState(props.initialValue ?? 0)
-  return (
-    <input
-      type="range"
-      min={props.min ?? -5}
-      max={props.max ?? 5}
-      step={props.step ?? 0.1}
-      value={value}
-      onChange={(event) => {
-        const newValue = parseFloat(event.target.value)
-        setValue(newValue)
-        props.onChange(newValue)
-      }}
-    ></input>
+const EMITTER_STATE_STORAGE_KEY = 'emitterState'
+
+const updateLocatStorage = (emitters: BasicEmitter[]) => {
+  window.localStorage.setItem(
+    EMITTER_STATE_STORAGE_KEY,
+    JSON.stringify(emitters.map((e) => e.getMutableConfig())),
   )
 }
 
-function SliderTable(props: {
-  items: Record<string, SliderProps>
-}): ReactElement {
-  return (
-    <table>
-      <tbody>
-        {Object.keys(props.items).map((k) => {
-          return (
-            <tr key={k}>
-              <td>{k}</td>
-              <td>
-                <Slider {...props.items[k]}></Slider>
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
-  )
-}
-
-function Foldable(
-  props: React.PropsWithChildren<{
-    title: string
-    initialOpen?: boolean
-  }>,
-): ReactElement {
-  const [open, setOpen] = useState(props.initialOpen ?? false)
-  return (
-    <div>
-      <span onClick={() => setOpen(!open)}>
-        {open ? '-' : '+'} {props.title}
-      </span>
-      {open ? <div>{props.children}</div> : null}
-    </div>
-  )
-}
-
-function vec3SliderTableItems(
-  vecRef: vec3,
-  labels: [string, string, string],
-): Record<string, SliderProps> {
-  return {
-    [labels[0]]: {
-      onChange: (v) => (vecRef[0] = v),
-    },
-    [labels[1]]: {
-      onChange: (v) => (vecRef[1] = v),
-    },
-    [labels[2]]: {
-      onChange: (v) => (vecRef[2] = v),
-    },
+const deserializeConfig = (input: unknown): unknown => {
+  if (Array.isArray(input)) {
+    return input.map(deserializeConfig)
   }
+
+  if (typeof input === 'object') {
+    if (input === null) {
+      return null
+    }
+
+    if ('0' in input) {
+      return new Float32Array(Object.values(input))
+    }
+  }
+
+  // primitive types
+  return input
 }
 
-export const Controls = (props: { emitter: BasicEmitter }): ReactElement => {
-  return (
-    <table>
-      <tbody>
-        <tr>
-          <td>Spawn rate</td>
-          <td>
-            <Slider
-              min={0}
-              max={1000}
-              initialValue={props.emitter.getMutableConfig().spawnRate}
-              onChange={(v) => {
-                props.emitter.getMutableConfig().spawnRate = v
-              }}
-            ></Slider>{' '}
-          </td>
-        </tr>
+const loadFromLocalStorage = () => {
+  const stringified = window.localStorage.getItem(EMITTER_STATE_STORAGE_KEY)
+  if (stringified === null) {
+    return []
+  }
 
-        <tr>
-          <td colSpan={2}>
-            <Foldable title="Origin">
-              <SliderTable
-                items={vec3SliderTableItems(
-                  props.emitter.getMutableConfig().origin,
-                  ['X', 'Y', 'Z'],
-                )}
-              ></SliderTable>
-            </Foldable>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  const stored = JSON.parse(stringified)
+  return stored.map(deserializeConfig)
+}
+
+export const Controls: React.FC<{
+  addEmitter: (config: BasicEmitterConfig) => BasicEmitter
+}> = ({ addEmitter }) => {
+  const [emitters, setEmitters] = useState<BasicEmitter[]>([])
+
+  useEffect(() => {
+    const emitterConfigs = loadFromLocalStorage()
+
+    const newEmitters = []
+    for (const config of emitterConfigs) {
+      newEmitters.push(addEmitter(config))
+    }
+    setEmitters([...newEmitters])
+  }, [])
+
+  return (
+    <div onClick={() => updateLocatStorage(emitters)}>
+      <button
+        onClick={() => {
+          const newEmitter = addEmitter({
+            emitterTtl: undefined, // nonexpiring
+            origin: vec3.create(),
+            orientation: quat.fromEuler(quat.create(), 0, 90, 0),
+            spawnRate: 40,
+            particleTtlRange: [2, 3],
+            orientationOffsetRange: [quat.create(), quat.create()],
+            translationOffsetRange: [
+              vec3.fromValues(-0.1, -0.1, -0.1),
+              vec3.fromValues(0.1, 0.1, 0.1),
+            ],
+            scaleRange: [
+              vec3.fromValues(0.1, 0.1, 0.1),
+              vec3.fromValues(0.1, 0.1, 0.1),
+            ],
+            colorRange: [
+              vec4.fromValues(0, 0, 0, 1),
+              vec4.fromValues(1, 1, 1, 1),
+            ],
+            velRange: [
+              vec3.fromValues(-0.5, -0.5, 2),
+              vec3.fromValues(0.5, 0.5, 4.5),
+            ],
+            rotVelRange: [
+              quat.fromEuler(quat.create(), 5, 0, 0),
+              quat.fromEuler(quat.create(), 15, 0, 0),
+            ],
+            gravity: vec3.fromValues(0, 0, 0),
+          })
+          setEmitters([...emitters, newEmitter])
+        }}
+      >
+        +
+      </button>
+      {emitters.map((e, i) => (
+        <EmitterSettings key={i} emitter={e} />
+      ))}
+    </div>
   )
 }
