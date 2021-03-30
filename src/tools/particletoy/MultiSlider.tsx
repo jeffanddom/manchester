@@ -1,7 +1,17 @@
 import React from 'react'
-import { Handles, Slider, Tracks } from 'react-compound-slider'
+import {
+  GetHandleProps,
+  GetTrackProps,
+  Handles,
+  Slider,
+  SliderItem,
+  Tracks,
+} from 'react-compound-slider'
 
-export const Handle = ({ handle: { id, value, percent }, getHandleProps }) => {
+export const Handle: React.FC<{
+  handle: SliderItem
+  getHandleProps: GetHandleProps
+}> = ({ handle: { id, value, percent }, getHandleProps }) => {
   return (
     <div
       style={{
@@ -35,7 +45,11 @@ export const Handle = ({ handle: { id, value, percent }, getHandleProps }) => {
   )
 }
 
-const Track = ({ source, target, getTrackProps }) => {
+const Track: React.FC<{
+  source: SliderItem
+  target: SliderItem
+  getTrackProps: GetTrackProps
+}> = ({ source, target, getTrackProps }) => {
   return (
     <div
       style={{

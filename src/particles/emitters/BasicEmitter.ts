@@ -1,7 +1,6 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
-import { ParticleConfig, ParticleEmitter } from '../interfaces'
-
+import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
 import { lerp, multilerp3, multilerp4 } from '~/util/math'
 
 export interface BasicEmitterConfig {
@@ -153,4 +152,25 @@ export class BasicEmitter implements ParticleEmitter {
   public isActive(): boolean {
     return this.ttl === undefined || this.ttl > 0
   }
+}
+
+export const defaultBasicEmitterConfig: BasicEmitterConfig = {
+  emitterTtl: undefined, // nonexpiring
+  origin: vec3.create(),
+  orientation: quat.fromEuler(quat.create(), 0, 90, 0),
+  spawnRate: 40,
+  particleTtlRange: [2, 3],
+  orientationOffsetRange: [quat.create(), quat.create()],
+  translationOffsetRange: [
+    vec3.fromValues(-0.1, -0.1, -0.1),
+    vec3.fromValues(0.1, 0.1, 0.1),
+  ],
+  scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
+  colorRange: [vec4.fromValues(0, 0, 0, 1), vec4.fromValues(1, 1, 1, 1)],
+  velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
+  rotVelRange: [
+    quat.fromEuler(quat.create(), 5, 0, 0),
+    quat.fromEuler(quat.create(), 15, 0, 0),
+  ],
+  gravity: vec3.fromValues(0, 0, 0),
 }

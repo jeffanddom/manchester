@@ -1,9 +1,8 @@
 import { vec3 } from 'gl-matrix'
 import React, { ReactElement, useState } from 'react'
 
-import { MultiSlider } from './MultiSlider'
-
 import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
+import { MultiSlider } from '~/tools/particletoy/MultiSlider'
 
 interface SliderProps {
   min?: number
