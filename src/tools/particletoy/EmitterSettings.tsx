@@ -2,6 +2,8 @@ import Slider, { Range } from 'rc-slider'
 import React, { ReactElement, useState } from 'react'
 import 'rc-slider/assets/index.css'
 
+import { ScaledRange } from './ScaledRange'
+
 import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
 import { Foldable } from '~/tools/particletoy/Foldable'
 
@@ -79,6 +81,39 @@ export const EmitterSettings = (props: {
           value={state.origin[2] * 100}
           onChange={(v) => {
             mutableConfig.origin[2] = v / 100
+            setStateWithSideEffect()
+          }}
+        />
+      </Foldable>
+
+      <Foldable title="Scale">
+        Width
+        <ScaledRange
+          min={0}
+          max={2}
+          steps={50}
+          value={[
+            mutableConfig.scaleRange[0][0],
+            mutableConfig.scaleRange[1][0],
+          ]}
+          onChange={([min, max]) => {
+            mutableConfig.scaleRange[0][0] = min
+            mutableConfig.scaleRange[1][0] = max
+            setStateWithSideEffect()
+          }}
+        />
+        Height
+        <ScaledRange
+          min={0}
+          max={2}
+          steps={50}
+          value={[
+            mutableConfig.scaleRange[0][1],
+            mutableConfig.scaleRange[1][1],
+          ]}
+          onChange={([min, max]) => {
+            mutableConfig.scaleRange[0][1] = min
+            mutableConfig.scaleRange[1][1] = max
             setStateWithSideEffect()
           }}
         />
