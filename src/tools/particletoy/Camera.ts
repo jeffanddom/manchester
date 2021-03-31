@@ -8,8 +8,8 @@ export class Camera {
   private viewOffset: vec3
 
   constructor(canvas: HTMLCanvasElement) {
-    this.spherePos = math.sphereCoordFromValues(3, Math.PI / 2, 0)
-    this.viewOffset = vec3.create()
+    this.spherePos = math.sphereCoordFromValues(3, Math.PI / 2, Math.PI / 4)
+    this.viewOffset = vec3.fromValues(0, 3, 3)
 
     // stop right clicks from opening the context menu
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())
