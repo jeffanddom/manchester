@@ -15,7 +15,8 @@ export interface BasicEmitterConfig {
   orientationOffsetRange: [quat, quat] // will be transformed by orientation
   translationOffsetRange: [vec3, vec3] // will be transformed by origin & orientation
   scaleRange: [vec3, vec3] // will NOT be transformed by orientation
-  colorRange: [vec4, vec4]
+  colorRange: [vec3, vec3]
+  alphaRange: [number, number]
 
   // physics
   velRange: [vec3, vec3] // will be transformed by orientation
@@ -112,10 +113,25 @@ export class BasicEmitter implements ParticleEmitter {
 
       // A consistent mix constant for each channel producees a gradient, which
       // is easier to visualize and reason about.
-      vec4.lerp(
-        color,
-        this.config.colorRange[0],
-        this.config.colorRange[1],
+      const colorMix = Math.random()
+      color[0] = lerp(
+        this.config.colorRange[0][0],
+        this.config.colorRange[1][0],
+        colorMix,
+      )
+      color[1] = lerp(
+        this.config.colorRange[0][1],
+        this.config.colorRange[1][1],
+        colorMix,
+      )
+      color[2] = lerp(
+        this.config.colorRange[0][2],
+        this.config.colorRange[1][2],
+        colorMix,
+      )
+      color[3] = lerp(
+        this.config.alphaRange[0],
+        this.config.alphaRange[1],
         Math.random(),
       )
 
@@ -167,7 +183,8 @@ export const defaultBasicEmitterConfig: BasicEmitterConfig = {
     vec3.fromValues(0.1, 0.1, 0.1),
   ],
   scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
-  colorRange: [vec4.fromValues(0, 0, 0, 1), vec4.fromValues(1, 1, 1, 1)],
+  colorRange: [vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1)],
+  alphaRange: [1, 1],
   velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
   rotVelRange: [
     quat.fromEuler(quat.create(), 5, 0, 0),

@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom'
 
 import { Camera } from './Camera'
 import { Controls } from './Controls'
-// import { WebGLDebugUtils } from './webgl-debug'
 
 import { SIMULATION_PERIOD_S } from '~/constants'
 import {
@@ -15,24 +14,8 @@ import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
 import * as autoReload from '~/web/autoReload'
 
-// function logGLCall(functionName: string, args: unknown): void {
-//   console.log(
-//     'gl.' +
-//       functionName +
-//       '(' +
-//       WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
-//       ')',
-//   )
-// }
-
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
-
 const gl = canvas.getContext('webgl2')!
-// const gl = WebGLDebugUtils.makeDebugContext(
-//   canvas.getContext('webgl2')!,
-//   undefined,
-//   logGLCall,
-// )
 
 const pixelRatio = window.devicePixelRatio
 canvas.width = canvas.parentElement!.clientWidth * pixelRatio

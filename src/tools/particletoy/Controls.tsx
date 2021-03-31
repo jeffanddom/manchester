@@ -29,6 +29,12 @@ const deserializeConfig = (input: unknown): unknown => {
     if ('0' in input) {
       return new Float32Array(Object.values(input))
     }
+
+    const res: Record<string, unknown> = {}
+    for (const k in input) {
+      res[k] = deserializeConfig((input as Record<string, unknown>)[k])
+    }
+    return res
   }
 
   // primitive types
