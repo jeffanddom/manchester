@@ -68,15 +68,68 @@ export const Controls: React.FC<{
 
   return (
     <div onClick={() => updateLocatStorage(emitters)}>
-      <button
-        style={{ position: 'fixed', top: 10, right: 330, fontSize: 20 }}
-        onClick={() => {
-          const newEmitter = addEmitter(defaultBasicEmitterConfig)
-          setEmitters([...emitters, newEmitter])
+      <div
+        style={{
+          position: 'fixed',
+          top: 10,
+          right: 330,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        + Add Emitter
-      </button>
+        <button
+          style={{ fontSize: 20, marginBottom: 10 }}
+          onClick={() => {
+            const newEmitter = addEmitter(defaultBasicEmitterConfig)
+            setEmitters([...emitters, newEmitter])
+          }}
+        >
+          + Add Emitter
+        </button>
+        <button
+          style={{ fontSize: 20, marginBottom: 10 }}
+          onClick={(e) => {
+            const jsonText = window.prompt('Paste emitter JSON here')
+            if (jsonText === null) {
+              return
+            }
+
+            try {
+              const parsed = JSON.parse(jsonText)
+              if (parsed !== undefined) {
+                e.stopPropagation()
+                window.localStorage.setItem(EMITTER_STATE_STORAGE_KEY, jsonText)
+                window.location = window.location
+              }
+            } catch (err) {
+              alert('There was an error parsing JSON')
+            }
+          }}
+        >
+          Import JSON
+        </button>
+        <button
+          style={{ fontSize: 20, marginBottom: 10 }}
+          onClick={() => {
+            navigator.permissions
+              .query({ name: 'clipboard-write' })
+              .then((result) => {
+                if (result.state === 'granted' || result.state === 'prompt') {
+                  const text = window.localStorage.getItem(
+                    EMITTER_STATE_STORAGE_KEY,
+                  )
+                  navigator.clipboard
+                    .writeText(text === null ? '' : text)
+                    .then(() => {
+                      alert('Copied emitter JSON to clipboard')
+                    })
+                }
+              })
+          }}
+        >
+          Export JSON
+        </button>
+      </div>
       <div
         style={{
           padding: 10,
@@ -88,7 +141,6 @@ export const Controls: React.FC<{
             index={i}
             emitter={e}
             delete={() => {
-              console.log('deleting ', i)
               emitters.splice(i, 1)
               setEmitters([...emitters])
             }}
