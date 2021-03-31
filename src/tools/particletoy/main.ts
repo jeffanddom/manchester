@@ -74,7 +74,7 @@ function update(): void {
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
-const addEmitter = (config: BasicEmitterConfig) => {
+const createEmitter = (config: BasicEmitterConfig) => {
   const emitter = new BasicEmitter(config)
 
   particles.addEmitter(emitter)
@@ -82,6 +82,6 @@ const addEmitter = (config: BasicEmitterConfig) => {
 }
 
 ReactDOM.render(
-  React.createElement(Controls, { addEmitter }),
+  React.createElement(Controls, { createEmitter }),
   document.getElementById('controls'),
 )

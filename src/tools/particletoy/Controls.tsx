@@ -51,23 +51,32 @@ const loadFromLocalStorage = () => {
   return stored.map(deserializeConfig)
 }
 
+interface EmitterWrapper {
+  id: number
+  emitter: BasicEmitter
+}
+
+let nextEmitterId = 0
+
 export const Controls: React.FC<{
-  addEmitter: (config: BasicEmitterConfig) => BasicEmitter
-}> = ({ addEmitter }) => {
-  const [emitters, setEmitters] = useState<BasicEmitter[]>([])
+  createEmitter: (config: BasicEmitterConfig) => BasicEmitter
+}> = ({ createEmitter }) => {
+  const [emitters, setEmitters] = useState<EmitterWrapper[]>([])
 
   useEffect(() => {
-    const emitterConfigs = loadFromLocalStorage()
-
     const newEmitters = []
-    for (const config of emitterConfigs) {
-      newEmitters.push(addEmitter(config))
+    for (const config of loadFromLocalStorage()) {
+      newEmitters.push({
+        id: nextEmitterId,
+        emitter: createEmitter(config),
+      })
+      nextEmitterId++
     }
     setEmitters([...newEmitters])
   }, [])
 
   return (
-    <div onClick={() => updateLocalStorage(emitters)}>
+    <div onClick={() => updateLocalStorage(emitters.map((e) => e.emitter))}>
       <div
         style={{
           position: 'fixed',
@@ -80,8 +89,14 @@ export const Controls: React.FC<{
         <button
           style={{ fontSize: 20, marginBottom: 10 }}
           onClick={() => {
-            const newEmitter = addEmitter(defaultBasicEmitterConfig)
-            setEmitters([...emitters, newEmitter])
+            setEmitters([
+              ...emitters,
+              {
+                id: nextEmitterId,
+                emitter: createEmitter(defaultBasicEmitterConfig),
+              },
+            ])
+            nextEmitterId++
           }}
         >
           + Add Emitter
@@ -139,7 +154,7 @@ export const Controls: React.FC<{
           <EmitterSettings
             key={e.id}
             index={i}
-            emitter={e}
+            emitter={e.emitter}
             delete={() => {
               emitters.splice(i, 1)
               setEmitters([...emitters])

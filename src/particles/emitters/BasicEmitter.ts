@@ -27,7 +27,6 @@ export interface BasicEmitterConfig {
 }
 
 export class BasicEmitter implements ParticleEmitter {
-  public id: string
   private config: BasicEmitterConfig
 
   private ttl: number | undefined // ttl remaining, not initial TTL. An undefined TTL means the emitter will not expire.
@@ -44,7 +43,6 @@ export class BasicEmitter implements ParticleEmitter {
    * the calling context _after_ the constructor is called.
    */
   constructor(config: BasicEmitterConfig) {
-    this.id = (Math.random() * 16777215).toString(16)
     this.config = config
 
     for (const k of Object.keys(
