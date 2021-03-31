@@ -1,5 +1,17 @@
 import React, { useState } from 'react'
 
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    cursor: 'pointer',
+    marginTop: 5,
+  },
+  label: {
+    userSelect: 'none',
+    fontWeight: 'bold',
+    paddingBottom: 5,
+  },
+}
+
 export function Foldable(
   props: React.PropsWithChildren<{
     title: string
@@ -8,10 +20,10 @@ export function Foldable(
 ): React.ReactElement {
   const [open, setOpen] = useState(props.initialOpen ?? false)
   return (
-    <div>
-      <span onClick={() => setOpen(!open)}>
+    <div style={styles.container}>
+      <div style={styles.label} onClick={() => setOpen(!open)}>
         {open ? '-' : '+'} {props.title}
-      </span>
+      </div>
       {open ? <div>{props.children}</div> : null}
     </div>
   )

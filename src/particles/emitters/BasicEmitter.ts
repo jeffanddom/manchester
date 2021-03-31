@@ -205,7 +205,7 @@ export const defaultBasicEmitterConfig: BasicEmitterConfig = {
   origin: vec3.create(),
   orientation: quat.fromEuler(quat.create(), 0, 90, 0),
   spawnRate: 40,
-  particleTtlRange: [2, 3],
+  particleTtlRange: [1, 2],
   orientationOffsetRange: [quat.create(), quat.create()],
   translationOffsetRange: [
     vec3.fromValues(-0.1, -0.1, -0.1),

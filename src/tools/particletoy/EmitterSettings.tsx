@@ -94,6 +94,8 @@ export const EmitterSettings = (props: {
           min={0}
           max={2}
           steps={50}
+          draggableTrack
+          pushable
           value={[
             mutableConfig.scaleRange[0][0],
             mutableConfig.scaleRange[1][0],
@@ -109,6 +111,8 @@ export const EmitterSettings = (props: {
           min={0}
           max={2}
           steps={50}
+          draggableTrack
+          pushable
           value={[
             mutableConfig.scaleRange[0][1],
             mutableConfig.scaleRange[1][1],
@@ -142,6 +146,8 @@ export const EmitterSettings = (props: {
         <Range
           min={0}
           max={100}
+          draggableTrack
+          pushable
           value={[
             mutableConfig.alphaRange[0] * 100,
             mutableConfig.alphaRange[1] * 100,
@@ -154,14 +160,13 @@ export const EmitterSettings = (props: {
         />
       </Foldable>
 
-      <Foldable title="Spread" initialOpen>
+      <Foldable title="Spread">
         Spread X
         <ScaledRange
           min={-3.14}
           max={3.14}
           steps={40}
           draggableTrack
-          allowCross={false}
           pushable
           marks={{
             10: { label: '-Pi/2', style: { color: 'white' } },
@@ -181,7 +186,6 @@ export const EmitterSettings = (props: {
           max={3.14}
           steps={40}
           draggableTrack
-          allowCross={false}
           pushable
           marks={{
             10: { label: '-Pi/2', style: { color: 'white' } },
@@ -192,6 +196,25 @@ export const EmitterSettings = (props: {
           onChange={([min, max]) => {
             mutableConfig.spreadYRange[0] = min
             mutableConfig.spreadYRange[1] = max
+            setStateWithSideEffect()
+          }}
+        />
+      </Foldable>
+      <Foldable title="Lifespan">
+        Particle
+        <ScaledRange
+          min={0}
+          max={4}
+          steps={40}
+          draggableTrack
+          pushable
+          value={[
+            mutableConfig.particleTtlRange[0],
+            mutableConfig.particleTtlRange[1],
+          ]}
+          onChange={([min, max]) => {
+            mutableConfig.particleTtlRange[0] = min
+            mutableConfig.particleTtlRange[1] = max
             setStateWithSideEffect()
           }}
         />
