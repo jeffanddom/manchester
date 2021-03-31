@@ -9,7 +9,7 @@ import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 
 const EMITTER_STATE_STORAGE_KEY = 'emitterState'
 
-const updateLocatStorage = (emitters: BasicEmitter[]) => {
+const updateLocalStorage = (emitters: BasicEmitter[]) => {
   window.localStorage.setItem(
     EMITTER_STATE_STORAGE_KEY,
     JSON.stringify(emitters.map((e) => e.getMutableConfig())),
@@ -67,7 +67,7 @@ export const Controls: React.FC<{
   }, [])
 
   return (
-    <div onClick={() => updateLocatStorage(emitters)}>
+    <div onClick={() => updateLocalStorage(emitters)}>
       <div
         style={{
           position: 'fixed',
