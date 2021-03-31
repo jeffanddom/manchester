@@ -17,6 +17,8 @@ export interface BasicEmitterConfig {
   scaleRange: [vec3, vec3] // will NOT be transformed by orientation
   colorRange: [vec3, vec3]
   alphaRange: [number, number]
+  spreadXRange: [number, number]
+  spreadYRange: [number, number]
 
   // physics
   velRange: [vec3, vec3] // will be transformed by orientation
@@ -32,7 +34,7 @@ export class BasicEmitter implements ParticleEmitter {
   private potentialParticles: number
 
   // temporaries
-  private tempQuat: [quat, quat]
+  private tempQuat: [quat, quat, quat]
   private tempVec3: [vec3, vec3, vec3]
   private tempVec4: [vec4]
 
@@ -44,10 +46,22 @@ export class BasicEmitter implements ParticleEmitter {
   constructor(config: BasicEmitterConfig) {
     this.id = (Math.random() * 16777215).toString(16)
     this.config = config
+
+    for (const k of Object.keys(
+      defaultBasicEmitterConfig,
+    ) as (keyof BasicEmitterConfig)[]) {
+      if (this.config[k] === undefined) {
+        // Always include default values if data structure has changed between runs
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.config[k] = defaultBasicEmitterConfig[k]
+      }
+    }
     this.ttl = config.emitterTtl
     this.potentialParticles = 0
 
-    this.tempQuat = [quat.create(), quat.create()]
+    this.tempQuat = [quat.create(), quat.create(), quat.create()]
     this.tempVec3 = [vec3.create(), vec3.create(), vec3.create()]
     this.tempVec4 = [vec4.create()]
   }
@@ -70,7 +84,7 @@ export class BasicEmitter implements ParticleEmitter {
 
     this.potentialParticles += this.config.spawnRate * dt
 
-    const [orientation, rotVel] = this.tempQuat
+    const [orientation, rotVel, velTemp] = this.tempQuat
     const [translation, scale, vel] = this.tempVec3
     const [color] = this.tempVec4
 
@@ -145,13 +159,28 @@ export class BasicEmitter implements ParticleEmitter {
       )
       vec3.transformQuat(vel, vel, this.config.orientation)
 
+      // Spread
+      quat.identity(velTemp)
+      const xSpread = lerp(
+        this.config.spreadXRange[0],
+        this.config.spreadXRange[1],
+        Math.random(),
+      )
+      vec3.transformQuat(vel, vel, quat.rotateY(velTemp, velTemp, xSpread))
+      quat.identity(velTemp)
+      const ySpread = lerp(
+        this.config.spreadYRange[0],
+        this.config.spreadYRange[1],
+        Math.random(),
+      )
+      vec3.transformQuat(vel, vel, quat.rotateZ(velTemp, velTemp, ySpread))
+
       quat.slerp(
         rotVel,
         this.config.rotVelRange[0],
         this.config.rotVelRange[1],
         Math.random(),
       )
-      // quat.multiply(rotVel, this.config.orientation, rotVel)
 
       add({
         ttl,
@@ -191,4 +220,6 @@ export const defaultBasicEmitterConfig: BasicEmitterConfig = {
     quat.fromEuler(quat.create(), 15, 0, 0),
   ],
   gravity: vec3.fromValues(0, 0, 0),
+  spreadXRange: [0, 0],
+  spreadYRange: [0, 0],
 }

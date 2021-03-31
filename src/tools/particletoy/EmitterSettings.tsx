@@ -153,6 +153,49 @@ export const EmitterSettings = (props: {
           }}
         />
       </Foldable>
+
+      <Foldable title="Spread" initialOpen>
+        Spread X
+        <ScaledRange
+          min={-3.14}
+          max={3.14}
+          steps={40}
+          draggableTrack
+          allowCross={false}
+          pushable
+          marks={{
+            10: { label: '-Pi/2', style: { color: 'white' } },
+            20: { label: '0', style: { color: 'white' } },
+            30: { label: '-Pi/2', style: { color: 'white' } },
+          }}
+          value={[mutableConfig.spreadXRange[0], mutableConfig.spreadXRange[1]]}
+          onChange={([min, max]) => {
+            mutableConfig.spreadXRange[0] = min
+            mutableConfig.spreadXRange[1] = max
+            setStateWithSideEffect()
+          }}
+        />
+        Spread Y
+        <ScaledRange
+          min={-3.14}
+          max={3.14}
+          steps={40}
+          draggableTrack
+          allowCross={false}
+          pushable
+          marks={{
+            10: { label: '-Pi/2', style: { color: 'white' } },
+            20: { label: '0', style: { color: 'white' } },
+            30: { label: '-Pi/2', style: { color: 'white' } },
+          }}
+          value={[mutableConfig.spreadYRange[0], mutableConfig.spreadYRange[1]]}
+          onChange={([min, max]) => {
+            mutableConfig.spreadYRange[0] = min
+            mutableConfig.spreadYRange[1] = max
+            setStateWithSideEffect()
+          }}
+        />
+      </Foldable>
     </div>
   )
 }
