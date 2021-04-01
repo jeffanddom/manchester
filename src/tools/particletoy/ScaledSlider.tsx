@@ -1,17 +1,20 @@
-import Slider from 'rc-slider'
+import Slider, { SliderProps } from 'rc-slider'
 import React, { ReactElement } from 'react'
 
 import { stepToValue, valueToStep } from './util'
 
-export function ScaledSlider(props: {
-  min: number
-  max: number
-  steps: number
-  value: number
-  onChange: (value: number) => void
-}): ReactElement {
+export function ScaledSlider(
+  props: {
+    min: number
+    max: number
+    steps: number
+    value: number
+    onChange: (value: number) => void
+  } & SliderProps,
+): ReactElement {
   return (
     <Slider
+      {...props}
       min={0}
       max={props.steps}
       step={1}

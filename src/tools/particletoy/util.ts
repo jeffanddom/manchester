@@ -1,4 +1,5 @@
 import { quat, vec3 } from 'gl-matrix'
+import React from 'react'
 
 import { BasicEmitterConfig } from '~/particles/emitters/BasicEmitter'
 
@@ -104,4 +105,12 @@ export function defaultBasicEmitterConfig(): BasicEmitterConfig {
     spreadXRange: [0, 0],
     spreadYRange: [0, 0],
   }
+}
+
+export const rightPaneContainerStyle: React.CSSProperties = {
+  background: 'rgba(0, 0, 0, 0.3)',
+  padding: 10,
+  borderRadius: 10,
+  marginBottom: 10,
+  width: 300,
 }
