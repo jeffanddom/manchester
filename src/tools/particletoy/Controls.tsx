@@ -7,6 +7,37 @@ import {
 } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 
+/**
+ * Create a deep clone of an object, replacing JSON-deserialized Float32Array
+ * representations to actual Float32Array objects. When serialized to JSON,
+ * Float32Array objects are converted to key/value objects with stringified
+ * integer keys.
+ *
+ * This is a bit of a hack; we should consider making a bonafide serialization
+ * format that is typesafe and does validation.
+ */
+export function deepRehydrateFloat32Arrays(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map((elem) => deepRehydrateFloat32Arrays(elem))
+  }
+
+  if (typeof obj === 'object' && obj !== null) {
+    if ('0' in obj) {
+      return new Float32Array(Object.values(obj))
+    }
+
+    const typedObj = obj as Record<string, unknown>
+    const res: Record<string, unknown> = {}
+    for (const k in typedObj) {
+      res[k] = deepRehydrateFloat32Arrays(typedObj[k])
+    }
+    return res
+  }
+
+  // We assume that obj is a non-collection immutable value.
+  return obj
+}
+
 const EMITTER_STATE_STORAGE_KEY = 'emitterState'
 
 const updateLocalStorage = (emitters: BasicEmitter[]) => {
@@ -16,39 +47,34 @@ const updateLocalStorage = (emitters: BasicEmitter[]) => {
   )
 }
 
-const deserializeConfig = (input: unknown): unknown => {
-  if (Array.isArray(input)) {
-    return input.map(deserializeConfig)
-  }
-
-  if (typeof input === 'object') {
-    if (input === null) {
-      return null
-    }
-
-    if ('0' in input) {
-      return new Float32Array(Object.values(input))
-    }
-
-    const res: Record<string, unknown> = {}
-    for (const k in input) {
-      res[k] = deserializeConfig((input as Record<string, unknown>)[k])
-    }
-    return res
-  }
-
-  // primitive types
-  return input
-}
-
-const loadFromLocalStorage = () => {
-  const stringified = window.localStorage.getItem(EMITTER_STATE_STORAGE_KEY)
-  if (stringified === null) {
+const loadFromLocalStorage = (): BasicEmitterConfig[] => {
+  const serialized = window.localStorage.getItem(EMITTER_STATE_STORAGE_KEY)
+  if (serialized === null) {
     return []
   }
 
-  const stored = JSON.parse(stringified)
-  return stored.map(deserializeConfig)
+  // TODO: we need bonafide content validation.
+  const rawConfigs = JSON.parse(serialized) as unknown[]
+  return rawConfigs.map((raw) => {
+    // Start with default config, but overwrite with stored values.
+    const config = defaultBasicEmitterConfig()
+    const storedConfig = deepRehydrateFloat32Arrays(raw) as Record<
+      string,
+      unknown
+    >
+
+    for (const k in config) {
+      if (k in storedConfig) {
+        // This assignment requires disabling the typechecker because the values
+        // of config are strictly typed, the values in storedConfig are not.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        config[k] = storedConfig[k]
+      }
+    }
+
+    return config
+  })
 }
 
 interface EmitterWrapper {
@@ -93,7 +119,7 @@ export const Controls: React.FC<{
               ...emitters,
               {
                 id: nextEmitterId,
-                emitter: createEmitter(defaultBasicEmitterConfig),
+                emitter: createEmitter(defaultBasicEmitterConfig()),
               },
             ])
             nextEmitterId++

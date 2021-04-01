@@ -44,18 +44,6 @@ export class BasicEmitter implements ParticleEmitter {
    */
   constructor(config: BasicEmitterConfig) {
     this.config = config
-
-    for (const k of Object.keys(
-      defaultBasicEmitterConfig,
-    ) as (keyof BasicEmitterConfig)[]) {
-      if (this.config[k] === undefined) {
-        // Always include default values if data structure has changed between runs
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this.config[k] = defaultBasicEmitterConfig[k]
-      }
-    }
     this.ttl = config.emitterTtl
     this.potentialParticles = 0
 
@@ -198,26 +186,31 @@ export class BasicEmitter implements ParticleEmitter {
   }
 }
 
-export const defaultBasicEmitterConfig: BasicEmitterConfig = {
-  emitterTtl: undefined, // nonexpiring
-  origin: vec3.create(),
-  orientation: quat.fromEuler(quat.create(), 0, 90, 0),
-  spawnRate: 40,
-  particleTtlRange: [1, 2],
-  orientationOffsetRange: [quat.create(), quat.create()],
-  translationOffsetRange: [
-    vec3.fromValues(-0.1, -0.1, -0.1),
-    vec3.fromValues(0.1, 0.1, 0.1),
-  ],
-  scaleRange: [vec3.fromValues(0.1, 0.1, 0.1), vec3.fromValues(0.1, 0.1, 0.1)],
-  colorRange: [vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1)],
-  alphaRange: [1, 1],
-  velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
-  rotVelRange: [
-    quat.fromEuler(quat.create(), 5, 0, 0),
-    quat.fromEuler(quat.create(), 15, 0, 0),
-  ],
-  gravity: vec3.fromValues(0, 0, 0),
-  spreadXRange: [0, 0],
-  spreadYRange: [0, 0],
+export function defaultBasicEmitterConfig(): BasicEmitterConfig {
+  return {
+    emitterTtl: undefined, // nonexpiring
+    origin: vec3.create(),
+    orientation: quat.fromEuler(quat.create(), 0, 90, 0),
+    spawnRate: 40,
+    particleTtlRange: [1, 2],
+    orientationOffsetRange: [quat.create(), quat.create()],
+    translationOffsetRange: [
+      vec3.fromValues(-0.1, -0.1, -0.1),
+      vec3.fromValues(0.1, 0.1, 0.1),
+    ],
+    scaleRange: [
+      vec3.fromValues(0.1, 0.1, 0.1),
+      vec3.fromValues(0.1, 0.1, 0.1),
+    ],
+    colorRange: [vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1)],
+    alphaRange: [1, 1],
+    velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
+    rotVelRange: [
+      quat.fromEuler(quat.create(), 5, 0, 0),
+      quat.fromEuler(quat.create(), 15, 0, 0),
+    ],
+    gravity: vec3.fromValues(0, 0, 0),
+    spreadXRange: [0, 0],
+    spreadYRange: [0, 0],
+  }
 }
