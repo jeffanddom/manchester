@@ -85,7 +85,6 @@ export function defaultBasicEmitterConfig(): BasicEmitterConfig {
     orientation: quat.create(),
     spawnRate: 40,
     particleTtlRange: [1, 2],
-    orientationOffsetRange: [quat.create(), quat.create()],
     translationOffsetRange: [
       vec3.fromValues(-0.1, -0.1, -0.1),
       vec3.fromValues(0.1, 0.1, 0.1),
