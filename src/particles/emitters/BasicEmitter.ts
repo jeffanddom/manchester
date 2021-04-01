@@ -1,7 +1,16 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
 import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
-import { lerp, multilerp3 } from '~/util/math'
+import {
+  PlusY3,
+  PlusZ3,
+  Zero3,
+  lerp,
+  multilerp3,
+  quatLookAt,
+  sphereCoordFromValues,
+  sphereCoordToVec3,
+} from '~/util/math'
 
 export interface BasicEmitterConfig {
   emitterTtl: number | undefined // undefined = nonexpiring
@@ -20,7 +29,7 @@ export interface BasicEmitterConfig {
   spreadYRange: [number, number]
 
   // physics
-  velRange: [vec3, vec3] // will be transformed by orientation
+  speedRange: [number, number]
   gravity: vec3 // a constant global acceleration, will NOT be transformed by orientation
   rotVelRange: [quat, quat] // will be transformed by orientation
 }
@@ -32,8 +41,8 @@ export class BasicEmitter implements ParticleEmitter {
   private potentialParticles: number
 
   // temporaries
-  private tempQuat: [quat, quat, quat]
-  private tempVec3: [vec3, vec3, vec3]
+  private tempQuat: [quat, quat]
+  private tempVec3: [vec3, vec3, vec3, vec3]
   private tempVec4: [vec4]
 
   /**
@@ -46,8 +55,8 @@ export class BasicEmitter implements ParticleEmitter {
     this.ttl = config.emitterTtl
     this.potentialParticles = 0
 
-    this.tempQuat = [quat.create(), quat.create(), quat.create()]
-    this.tempVec3 = [vec3.create(), vec3.create(), vec3.create()]
+    this.tempQuat = [quat.create(), quat.create()]
+    this.tempVec3 = [vec3.create(), vec3.create(), vec3.create(), vec3.create()]
     this.tempVec4 = [vec4.create()]
   }
 
@@ -69,8 +78,8 @@ export class BasicEmitter implements ParticleEmitter {
 
     this.potentialParticles += this.config.spawnRate * dt
 
-    const [orientation, rotVel, velTemp] = this.tempQuat
-    const [translation, scale, vel] = this.tempVec3
+    const [orientation, rotVel] = this.tempQuat
+    const [translation, scale, vel, motionDir] = this.tempVec3
     const [color] = this.tempVec4
 
     while (this.potentialParticles >= 1) {
@@ -126,31 +135,45 @@ export class BasicEmitter implements ParticleEmitter {
         Math.random(),
       )
 
-      multilerp3(
-        vel,
-        this.config.velRange[0],
-        this.config.velRange[1],
-        Math.random(),
-        Math.random(),
-        Math.random(),
-      )
-      vec3.transformQuat(vel, vel, this.config.orientation)
-
-      // Spread
-      quat.identity(velTemp)
-      const xSpread = lerp(
+      // Spread represents a spherical coordinate range, expressed as:
+      // - X spread: a pair of rotations around the Y axis, relative to +Z.
+      // - Y spread: a pair of rotations around the X axis, relative to +Z.
+      //
+      // We want to convert these to theta/phi values. The X spread is equal to
+      // phi without modification. The Y spread is equal to (theta - pi/2).
+      // Converting these to a vec3 gives us a motion vector.
+      const xrot = lerp(
         this.config.spreadXRange[0],
         this.config.spreadXRange[1],
         Math.random(),
       )
-      vec3.transformQuat(vel, vel, quat.rotateY(velTemp, velTemp, xSpread))
-      quat.identity(velTemp)
-      const ySpread = lerp(
+      const yrot = lerp(
         this.config.spreadYRange[0],
         this.config.spreadYRange[1],
         Math.random(),
       )
-      vec3.transformQuat(vel, vel, quat.rotateZ(velTemp, velTemp, ySpread))
+      sphereCoordToVec3(
+        motionDir,
+        sphereCoordFromValues(1, yrot + Math.PI / 2, xrot),
+      )
+
+      // We will orient the particle locally to face along the motion vector.
+      // We then use the resulting orientation as a base rotation, which we
+      // modify by the emitter's rotation to get the final post rotation value.
+      quatLookAt(orientation, Zero3, motionDir, PlusZ3, PlusY3)
+      quat.multiply(orientation, this.config.orientation, orientation)
+
+      // Now apply the final orientation to velocity, and scaled by speed.
+      vec3.transformQuat(motionDir, PlusZ3, orientation)
+      vec3.scale(
+        vel,
+        motionDir,
+        lerp(
+          this.config.speedRange[0],
+          this.config.speedRange[1],
+          Math.random(),
+        ),
+      )
 
       quat.slerp(
         rotVel,

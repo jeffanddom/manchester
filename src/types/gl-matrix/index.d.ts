@@ -75,6 +75,11 @@ declare module 'gl-matrix' {
       a: Immutable<vec3>,
       b: Immutable<vec3>,
     ): vec3
+    export function transformQuat(
+      out: vec3,
+      a: Immutable<vec3>,
+      b: Immutable<quat>,
+    ): vec3
   }
 
   export namespace vec4 {

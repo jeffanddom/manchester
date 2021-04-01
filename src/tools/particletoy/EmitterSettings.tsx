@@ -163,8 +163,24 @@ export const EmitterSettings = (props: {
           }}
         />
       </Foldable>
-      <Foldable title="Lifespan">
-        Particle
+
+      <Foldable title="Speed">
+        <ScaledRange
+          min={0}
+          max={10}
+          steps={100}
+          draggableTrack
+          pushable
+          value={[mutableConfig.speedRange[0], mutableConfig.speedRange[1]]}
+          onChange={([min, max]) => {
+            mutableConfig.speedRange[0] = min
+            mutableConfig.speedRange[1] = max
+            setStateWithSideEffect()
+          }}
+        />
+      </Foldable>
+
+      <Foldable title="Particle TTL">
         <ScaledRange
           min={0}
           max={4}

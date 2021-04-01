@@ -95,7 +95,7 @@ export function defaultBasicEmitterConfig(): BasicEmitterConfig {
     ],
     colorRange: [vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1)],
     alphaRange: [1, 1],
-    velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
+    speedRange: [2, 4.5],
     rotVelRange: [
       quat.fromEuler(quat.create(), 5, 0, 0),
       quat.fromEuler(quat.create(), 15, 0, 0),
