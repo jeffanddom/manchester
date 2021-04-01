@@ -181,19 +181,11 @@ export const Controls: React.FC<{
         <button
           style={{ fontSize: 20, marginBottom: 10 }}
           onClick={() => {
-            navigator.permissions
-              .query({ name: 'clipboard-write' })
-              .then((result) => {
-                if (result.state === 'granted' || result.state === 'prompt') {
-                  const text = window.localStorage.getItem(
-                    EMITTER_STATE_STORAGE_KEY,
-                  )
-                  navigator.clipboard
-                    .writeText(text === null ? '' : text)
-                    .then(() => {
-                      alert('Copied emitter JSON to clipboard')
-                    })
-                }
+            const text = window.localStorage.getItem(EMITTER_STATE_STORAGE_KEY)
+            navigator.clipboard
+              .writeText(text === null ? '' : text)
+              .then(() => {
+                alert('Copied emitter JSON to clipboard')
               })
           }}
         >
