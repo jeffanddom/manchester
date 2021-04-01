@@ -1,23 +1,7 @@
 import { Range, RangeProps } from 'rc-slider'
 import React, { ReactElement } from 'react'
 
-function valueToStep(
-  value: number,
-  config: { min: number; max: number; steps: number },
-): number {
-  const stepSize = (config.max - config.min) / config.steps
-  const res = Math.round((value - config.min) / stepSize)
-  return res
-}
-
-function stepToValue(
-  step: number,
-  config: { min: number; max: number; steps: number },
-): number {
-  const stepSize = (config.max - config.min) / config.steps
-  const res = config.min + step * stepSize
-  return res
-}
+import { stepToValue, valueToStep } from './util'
 
 export function ScaledRange(
   props: {

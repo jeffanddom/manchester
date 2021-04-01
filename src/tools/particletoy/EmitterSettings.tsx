@@ -1,12 +1,24 @@
+import { vec3 } from 'gl-matrix'
 import Slider, { Range } from 'rc-slider'
 import React, { ReactElement, useState } from 'react'
 import 'rc-slider/assets/index.css'
 
 import { GradientPicker } from './GradientPicker'
 import { ScaledRange } from './ScaledRange'
+import { ScaledSlider } from './ScaledSlider'
 
 import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
 import { Foldable } from '~/tools/particletoy/Foldable'
+import {
+  PlusY3,
+  PlusZ3,
+  SphereCoord,
+  SphereElement,
+  Zero3,
+  quatLookAt,
+  sphereCoordFromValues,
+  sphereCoordToVec3,
+} from '~/util/math'
 import { floatRgbToWebcolor, webcolorToFloatRgb } from '~/util/web'
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -33,7 +45,17 @@ export const EmitterSettings = (props: {
   const mutableConfig = props.emitter.getMutableConfig()
 
   const [state, setState] = useState(mutableConfig)
+  const [sphereOrientation, setSphereOrientation] = useState(
+    // TODO: derive this from original orientation value
+    sphereCoordFromValues(1, 0, 0),
+  )
   const setStateWithSideEffect = () => setState({ ...mutableConfig })
+
+  const updateSphereOrientation = (coord: SphereCoord): void => {
+    const target = sphereCoordToVec3(vec3.create(), coord)
+    quatLookAt(mutableConfig.orientation, Zero3, target, PlusZ3, PlusY3)
+    setSphereOrientation([...coord])
+  }
 
   return (
     <div style={styles.container}>
@@ -54,6 +76,31 @@ export const EmitterSettings = (props: {
           }}
         />
       </div>
+
+      <Foldable title="Orientation">
+        θ
+        <ScaledSlider
+          min={0}
+          max={Math.PI}
+          steps={100}
+          value={sphereOrientation[SphereElement.Theta]}
+          onChange={(v) => {
+            sphereOrientation[SphereElement.Theta] = v
+            updateSphereOrientation(sphereOrientation)
+          }}
+        />
+        φ
+        <ScaledSlider
+          min={-Math.PI}
+          max={Math.PI}
+          steps={100}
+          value={sphereOrientation[SphereElement.Phi]}
+          onChange={(v) => {
+            sphereOrientation[SphereElement.Phi] = v
+            updateSphereOrientation(sphereOrientation)
+          }}
+        />
+      </Foldable>
 
       <Foldable title="Origin">
         X

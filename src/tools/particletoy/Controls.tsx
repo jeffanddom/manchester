@@ -11,7 +11,7 @@ function defaultBasicEmitterConfig(): BasicEmitterConfig {
   return {
     emitterTtl: undefined, // nonexpiring
     origin: vec3.create(),
-    orientation: quat.fromEuler(quat.create(), 0, 90, 0),
+    orientation: quat.create(),
     spawnRate: 40,
     particleTtlRange: [1, 2],
     orientationOffsetRange: [quat.create(), quat.create()],
