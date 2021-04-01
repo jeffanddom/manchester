@@ -1,4 +1,5 @@
 import { quat } from 'gl-matrix'
+import { glMatrix } from 'gl-matrix'
 import { mat2d, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { Immutable } from '~/types/immutable'
@@ -38,6 +39,12 @@ export const QuatIdentity: Immutable<quat> = quat.create()
 
 export type SphereCoord = [number, number, number] // [r, theta, phi]
 
+export enum SphereElement {
+  Radius,
+  Theta,
+  Phi,
+}
+
 export function sphereCoordFromValues(
   r: number, // radius
   theta: number, // inclination
@@ -57,10 +64,11 @@ export function sphereCoordToVec3(
   out: vec3,
   coord: Immutable<SphereCoord>,
 ): vec3 {
-  const rSinTheta = coord[0] * Math.sin(coord[1])
-  out[0] = rSinTheta * Math.sin(coord[2]) // r * sin(theta) * sin(phi)
-  out[1] = coord[0] * Math.cos(coord[1]) // r * cos(theta)
-  out[2] = rSinTheta * Math.cos(coord[2]) // r *  sin(theta) * cos(phi)
+  const rSinTheta =
+    coord[SphereElement.Radius] * Math.sin(coord[SphereElement.Theta])
+  out[0] = rSinTheta * Math.sin(coord[SphereElement.Phi]) // r * sin(theta) * sin(phi)
+  out[1] = coord[SphereElement.Radius] * Math.cos(coord[SphereElement.Theta]) // r * cos(theta)
+  out[2] = rSinTheta * Math.cos(coord[SphereElement.Phi]) // r *  sin(theta) * cos(phi)
   return out
 }
 
@@ -234,4 +242,33 @@ export function multilerp4(
   out[1] = lerp(from[1], to[1], a1)
   out[2] = lerp(from[2], to[2], a2)
   out[3] = lerp(from[3], to[3], a3)
+}
+/**
+ * Currently, we're borrowing the logic from the following solution:
+ * https://stackoverflow.com/a/51170230
+ *
+ * What we want:
+ * - use a separate slider for "roll" value
+ * - assuming a fixed roll value, particles should behave as if affixed to a
+ *   stick attached to the origin for any change of spherical coords
+ */
+export function quatLookAt(
+  out: quat,
+  src: Immutable<vec3>,
+  dst: Immutable<vec3>,
+  front: Immutable<vec3>,
+  up: Immutable<vec3>,
+): quat {
+  const delta = vec3.sub(vec3.create(), dst, src)
+  vec3.normalize(delta, delta)
+
+  const axis = vec3.cross(vec3.create(), front, delta)
+  vec3.normalize(axis, axis)
+  if (glMatrix.equals(vec3.sqrLen(axis), 0)) {
+    vec3.copy(axis, up)
+  }
+
+  const angle = Math.acos(vec3.dot(front, delta))
+
+  return quat.setAxisAngle(out, axis, angle)
 }

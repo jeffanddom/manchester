@@ -4,19 +4,14 @@ import 'rc-slider/assets/index.css'
 
 import { GradientPicker } from './GradientPicker'
 import { ScaledRange } from './ScaledRange'
+import { rightPaneContainerStyle } from './util'
 
 import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
 import { Foldable } from '~/tools/particletoy/Foldable'
 import { floatRgbToWebcolor, webcolorToFloatRgb } from '~/util/web'
 
 const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    background: 'rgba(0, 0, 0, 0.3)',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    width: 300,
-  },
+  container: rightPaneContainerStyle,
   row: {},
   header: {
     display: 'flex',
@@ -33,6 +28,7 @@ export const EmitterSettings = (props: {
   const mutableConfig = props.emitter.getMutableConfig()
 
   const [state, setState] = useState(mutableConfig)
+
   const setStateWithSideEffect = () => setState({ ...mutableConfig })
 
   return (
@@ -54,39 +50,6 @@ export const EmitterSettings = (props: {
           }}
         />
       </div>
-
-      <Foldable title="Origin">
-        X
-        <Slider
-          min={-500}
-          max={500}
-          value={state.origin[0] * 100}
-          onChange={(v) => {
-            mutableConfig.origin[0] = v / 100
-            setStateWithSideEffect()
-          }}
-        />
-        Y
-        <Slider
-          min={-500}
-          max={500}
-          value={state.origin[1] * 100}
-          onChange={(v) => {
-            mutableConfig.origin[1] = v / 100
-            setStateWithSideEffect()
-          }}
-        />
-        Z
-        <Slider
-          min={-500}
-          max={500}
-          value={state.origin[2] * 100}
-          onChange={(v) => {
-            mutableConfig.origin[2] = v / 100
-            setStateWithSideEffect()
-          }}
-        />
-      </Foldable>
 
       <Foldable title="Scale">
         Width

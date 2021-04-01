@@ -1,70 +1,54 @@
 import { quat, vec3 } from 'gl-matrix'
 import React, { useEffect, useState } from 'react'
 
+import { Foldable } from './Foldable'
+import { ScaledSlider } from './ScaledSlider'
+import {
+  deepClone,
+  deepRehydrateFloat32Arrays,
+  defaultBasicEmitterConfig,
+  rightPaneContainerStyle,
+} from './util'
+
 import {
   BasicEmitter,
   BasicEmitterConfig,
 } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
+import {
+  PlusY3,
+  PlusZ3,
+  SphereCoord,
+  SphereElement,
+  Zero3,
+  quatLookAt,
+  sphereCoordFromValues,
+  sphereCoordToVec3,
+} from '~/util/math'
 
-function defaultBasicEmitterConfig(): BasicEmitterConfig {
-  return {
-    emitterTtl: undefined, // nonexpiring
-    origin: vec3.create(),
-    orientation: quat.fromEuler(quat.create(), 0, 90, 0),
-    spawnRate: 40,
-    particleTtlRange: [1, 2],
-    orientationOffsetRange: [quat.create(), quat.create()],
-    translationOffsetRange: [
-      vec3.fromValues(-0.1, -0.1, -0.1),
-      vec3.fromValues(0.1, 0.1, 0.1),
-    ],
-    scaleRange: [
-      vec3.fromValues(0.1, 0.1, 0.1),
-      vec3.fromValues(0.1, 0.1, 0.1),
-    ],
-    colorRange: [vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1)],
-    alphaRange: [1, 1],
-    velRange: [vec3.fromValues(-0.5, -0.5, 2), vec3.fromValues(0.5, 0.5, 4.5)],
-    rotVelRange: [
-      quat.fromEuler(quat.create(), 5, 0, 0),
-      quat.fromEuler(quat.create(), 15, 0, 0),
-    ],
-    gravity: vec3.fromValues(0, 0, 0),
-    spreadXRange: [0, 0],
-    spreadYRange: [0, 0],
-  }
-}
+function sanitizeConfig(
+  config: Partial<BasicEmitterConfig>,
+): BasicEmitterConfig {
+  // Start with default config, but overwrite with valid incoming values.
+  const newConfig = defaultBasicEmitterConfig()
 
-/**
- * Create a deep clone of an object, replacing JSON-deserialized Float32Array
- * representations to actual Float32Array objects. When serialized to JSON,
- * Float32Array objects are converted to key/value objects with stringified
- * integer keys.
- *
- * This is a bit of a hack; we should consider making a bonafide serialization
- * format that is typesafe and does validation.
- */
-export function deepRehydrateFloat32Arrays(obj: unknown): unknown {
-  if (Array.isArray(obj)) {
-    return obj.map((elem) => deepRehydrateFloat32Arrays(elem))
-  }
+  for (const k in newConfig) {
+    if (k in config) {
+      // Skip orientation and origin, which are meant to be set via runtime
+      // code.
+      if (k === 'orientation' || k === 'origin') {
+        continue
+      }
 
-  if (typeof obj === 'object' && obj !== null) {
-    if ('0' in obj) {
-      return new Float32Array(Object.values(obj))
+      // This assignment requires disabling the typechecker it does not
+      // recognize that we're copying record values key over key.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      newConfig[k] = deepClone(config[k])
     }
-
-    const typedObj = obj as Record<string, unknown>
-    const res: Record<string, unknown> = {}
-    for (const k in typedObj) {
-      res[k] = deepRehydrateFloat32Arrays(typedObj[k])
-    }
-    return res
   }
 
-  // We assume that obj is a non-collection immutable value.
-  return obj
+  return newConfig
 }
 
 const EMITTER_STATE_STORAGE_KEY = 'emitterState'
@@ -72,7 +56,7 @@ const EMITTER_STATE_STORAGE_KEY = 'emitterState'
 const updateLocalStorage = (emitters: BasicEmitter[]) => {
   window.localStorage.setItem(
     EMITTER_STATE_STORAGE_KEY,
-    JSON.stringify(emitters.map((e) => e.getMutableConfig())),
+    JSON.stringify(emitters.map((e) => sanitizeConfig(e.getMutableConfig()))),
   )
 }
 
@@ -85,24 +69,8 @@ const loadFromLocalStorage = (): BasicEmitterConfig[] => {
   // TODO: we need bonafide content validation.
   const rawConfigs = JSON.parse(serialized) as unknown[]
   return rawConfigs.map((raw) => {
-    // Start with default config, but overwrite with stored values.
-    const config = defaultBasicEmitterConfig()
-    const storedConfig = deepRehydrateFloat32Arrays(raw) as Record<
-      string,
-      unknown
-    >
-
-    for (const k in config) {
-      if (k in storedConfig) {
-        // This assignment requires disabling the typechecker because the values
-        // of config are strictly typed, the values in storedConfig are not.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        config[k] = storedConfig[k]
-      }
-    }
-
-    return config
+    const storedConfig = deepRehydrateFloat32Arrays(raw)
+    return sanitizeConfig(storedConfig as Partial<BasicEmitterConfig>)
   })
 }
 
@@ -117,6 +85,29 @@ export const Controls: React.FC<{
   createEmitter: (config: BasicEmitterConfig) => BasicEmitter
 }> = ({ createEmitter }) => {
   const [emitters, setEmitters] = useState<EmitterWrapper[]>([])
+  const [commonOrientation, setCommonOrientation] = useState(
+    sphereCoordFromValues(1, Math.PI / 2, 0),
+  )
+
+  const onCommonOrientationChange = (coord: SphereCoord): void => {
+    // Calculate quaternion representation.
+    const target = sphereCoordToVec3(vec3.create(), coord)
+    const quatOrientation = quatLookAt(
+      quat.create(),
+      Zero3,
+      target,
+      PlusZ3,
+      PlusY3,
+    )
+
+    // Update emitters
+    for (const e of emitters) {
+      quat.copy(e.emitter.getMutableConfig().orientation, quatOrientation)
+    }
+
+    // Update UI
+    setCommonOrientation([...coord])
+  }
 
   useEffect(() => {
     const newEmitters = []
@@ -197,6 +188,35 @@ export const Controls: React.FC<{
           padding: 10,
         }}
       >
+        <div style={rightPaneContainerStyle}>
+          <Foldable title="Orientation">
+            θ Inclination
+            <ScaledSlider
+              min={0}
+              max={Math.PI}
+              marks={{ 50: { label: 'π/2', style: { color: 'white' } } }}
+              steps={100}
+              value={commonOrientation[SphereElement.Theta]}
+              onChange={(v) => {
+                commonOrientation[SphereElement.Theta] = v
+                onCommonOrientationChange(commonOrientation)
+              }}
+            />
+            φ Azimuth
+            <ScaledSlider
+              min={-Math.PI}
+              max={Math.PI}
+              marks={{ 50: { label: '0', style: { color: 'white' } } }}
+              steps={100}
+              value={commonOrientation[SphereElement.Phi]}
+              onChange={(v) => {
+                commonOrientation[SphereElement.Phi] = v
+                onCommonOrientationChange(commonOrientation)
+              }}
+            />
+          </Foldable>
+        </div>
+
         {emitters.map((e, i) => (
           <EmitterSettings
             key={e.id}
