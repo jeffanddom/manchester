@@ -30,6 +30,14 @@ declare module 'gl-matrix' {
     )
   }
 
+  export namespace quat {
+    export function setAxisAngle(
+      out: quat,
+      axis: Immutable<vec3>,
+      rad: number,
+    ): quat
+  }
+
   export namespace vec2 {
     export function add(out: vec2, a: Immutable<vec2>, b: Immutable<vec2>): vec2
     export function angle(a: Immutable<vec2>, b: Immutable<vec2>): number
@@ -83,16 +91,9 @@ declare module 'gl-matrix' {
   }
 
   export namespace vec4 {
+    export function copy(out: vec4, a: Immutable<vec4>): vec4
     export function clone(a: Immutable<vec4>): vec4
     export function equals(a: Immutable<vec4>, b: Immutable<vec4>): boolean
-  }
-
-  export namespace quat {
-    export function setAxisAngle(
-      out: quat,
-      axis: Immutable<vec3>,
-      rad: number,
-    ): quat
   }
 
   // Any type that extends Float32Array

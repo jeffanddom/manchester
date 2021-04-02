@@ -1,6 +1,7 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
 import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
+import { Immutable } from '~/types/immutable'
 import {
   PlusY3,
   PlusZ3,
@@ -14,8 +15,6 @@ import {
 
 export interface BasicEmitterConfig {
   emitterTtl: number | undefined // undefined = nonexpiring
-  origin: vec3
-  orientation: quat
   spawnRate: number
 
   particleTtlRange: [number, number]
@@ -35,6 +34,9 @@ export interface BasicEmitterConfig {
 }
 
 export class BasicEmitter implements ParticleEmitter {
+  private origin: vec3
+  private orientation: quat
+
   private config: BasicEmitterConfig
 
   private ttl: number | undefined // ttl remaining, not initial TTL. An undefined TTL means the emitter will not expire.
@@ -50,7 +52,14 @@ export class BasicEmitter implements ParticleEmitter {
    * objects inside config. Don't pass in objects or arrays that are used in
    * the calling context _after_ the constructor is called.
    */
-  constructor(config: BasicEmitterConfig) {
+  constructor(
+    origin: Immutable<vec3>,
+    orientation: Immutable<quat>,
+    config: BasicEmitterConfig,
+  ) {
+    this.origin = vec3.copy(vec3.create(), origin)
+    this.orientation = quat.copy(quat.create(), orientation)
+
     this.config = config
     this.ttl = config.emitterTtl
     this.potentialParticles = 0
@@ -58,6 +67,14 @@ export class BasicEmitter implements ParticleEmitter {
     this.tempQuat = [quat.create(), quat.create()]
     this.tempVec3 = [vec3.create(), vec3.create(), vec3.create(), vec3.create()]
     this.tempVec4 = [vec4.create()]
+  }
+
+  public setOrigin(pos: Immutable<vec3>): void {
+    vec3.copy(this.origin, pos)
+  }
+
+  public setOrientation(rot: Immutable<quat>): void {
+    quat.copy(this.orientation, rot)
   }
 
   /**
@@ -99,8 +116,8 @@ export class BasicEmitter implements ParticleEmitter {
         Math.random(),
         Math.random(),
       )
-      vec3.transformQuat(translation, translation, this.config.orientation)
-      vec3.add(translation, translation, this.config.origin)
+      vec3.transformQuat(translation, translation, this.orientation)
+      vec3.add(translation, translation, this.origin)
 
       multilerp3(
         scale,
@@ -161,7 +178,7 @@ export class BasicEmitter implements ParticleEmitter {
       // We then use the resulting orientation as a base rotation, which we
       // modify by the emitter's rotation to get the final post rotation value.
       quatLookAt(orientation, Zero3, motionDir, PlusZ3, PlusY3)
-      quat.multiply(orientation, this.config.orientation, orientation)
+      quat.multiply(orientation, this.orientation, orientation)
 
       // Now apply the final orientation to velocity, and scaled by speed.
       vec3.transformQuat(motionDir, PlusZ3, orientation)

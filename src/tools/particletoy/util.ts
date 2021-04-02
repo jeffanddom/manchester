@@ -81,8 +81,6 @@ export function deepRehydrateFloat32Arrays(obj: unknown): unknown {
 export function defaultBasicEmitterConfig(): BasicEmitterConfig {
   return {
     emitterTtl: undefined, // nonexpiring
-    origin: vec3.create(),
-    orientation: quat.create(),
     spawnRate: 40,
     particleTtlRange: [1, 2],
     translationOffsetRange: [

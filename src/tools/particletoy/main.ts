@@ -1,4 +1,6 @@
 import { mat4, vec4 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
+import { quat } from 'gl-matrix'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -12,6 +14,7 @@ import {
 } from '~/particles/emitters/BasicEmitter'
 import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
+import { Immutable } from '~/types/immutable'
 import * as autoReload from '~/web/autoReload'
 
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
@@ -74,8 +77,12 @@ function update(): void {
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
-const createEmitter = (config: BasicEmitterConfig) => {
-  const emitter = new BasicEmitter(config)
+const createEmitter = (
+  origin: Immutable<vec3>,
+  orientation: Immutable<quat>,
+  config: BasicEmitterConfig,
+) => {
+  const emitter = new BasicEmitter(origin, orientation, config)
 
   particles.addEmitter(emitter)
   return emitter

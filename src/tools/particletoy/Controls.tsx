@@ -15,6 +15,7 @@ import {
   BasicEmitterConfig,
 } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
+import { Immutable } from '~/types/immutable'
 import {
   PlusY3,
   PlusZ3,
@@ -82,7 +83,11 @@ interface EmitterWrapper {
 let nextEmitterId = 0
 
 export const Controls: React.FC<{
-  createEmitter: (config: BasicEmitterConfig) => BasicEmitter
+  createEmitter: (
+    origin: Immutable<vec3>,
+    orientation: Immutable<quat>,
+    config: BasicEmitterConfig,
+  ) => BasicEmitter
 }> = ({ createEmitter }) => {
   const [emitters, setEmitters] = useState<EmitterWrapper[]>([])
   const [commonOrientation, setCommonOrientation] = useState(
@@ -102,7 +107,7 @@ export const Controls: React.FC<{
 
     // Update emitters
     for (const e of emitters) {
-      quat.copy(e.emitter.getMutableConfig().orientation, quatOrientation)
+      e.emitter.setOrientation(quatOrientation)
     }
 
     // Update UI
@@ -114,7 +119,7 @@ export const Controls: React.FC<{
     for (const config of loadFromLocalStorage()) {
       newEmitters.push({
         id: nextEmitterId,
-        emitter: createEmitter(config),
+        emitter: createEmitter(vec3.create(), quat.create(), config),
       })
       nextEmitterId++
     }
@@ -135,11 +140,24 @@ export const Controls: React.FC<{
         <button
           style={{ fontSize: 20, marginBottom: 10 }}
           onClick={() => {
+            const target = sphereCoordToVec3(vec3.create(), commonOrientation)
+            const quatOrientation = quatLookAt(
+              quat.create(),
+              Zero3,
+              target,
+              PlusZ3,
+              PlusY3,
+            )
+
             setEmitters([
               ...emitters,
               {
                 id: nextEmitterId,
-                emitter: createEmitter(defaultBasicEmitterConfig()),
+                emitter: createEmitter(
+                  vec3.create(),
+                  quatOrientation,
+                  defaultBasicEmitterConfig(),
+                ),
               },
             ])
             nextEmitterId++
