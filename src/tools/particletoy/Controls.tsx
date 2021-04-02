@@ -119,7 +119,7 @@ export const Controls: React.FC<{
       })
       nextEmitterId++
     }
-    setEmitters([...newEmitters])
+    setEmitters(newEmitters)
   }, [])
 
   return (
@@ -239,6 +239,7 @@ export const Controls: React.FC<{
             index={i}
             settings={e.settings}
             delete={() => {
+              e.emitter.terminate()
               emitterData.splice(i, 1)
               setEmitters([...emitterData])
             }}

@@ -200,6 +200,10 @@ export class BasicEmitter implements ParticleEmitter {
     }
   }
 
+  public terminate(): void {
+    this.ttl = 0
+  }
+
   public isActive(): boolean {
     return this.ttl === undefined || this.ttl > 0
   }

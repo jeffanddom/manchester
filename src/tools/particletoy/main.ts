@@ -83,7 +83,6 @@ const createEmitter = (
   config: BasicEmitterSettings,
 ) => {
   const emitter = new BasicEmitter(origin, orientation, config)
-
   particles.addEmitter(emitter)
   return emitter
 }
