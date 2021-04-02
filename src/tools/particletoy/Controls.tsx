@@ -6,13 +6,13 @@ import { ScaledSlider } from './ScaledSlider'
 import {
   deepClone,
   deepRehydrateFloat32Arrays,
-  defaultBasicEmitterConfig,
+  defaultBasicEmitterConfig as defaultBasicEmitterSettings,
   rightPaneContainerStyle,
 } from './util'
 
 import {
   BasicEmitter,
-  BasicEmitterConfig,
+  BasicEmitterSettings,
 } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 import { Immutable } from '~/types/immutable'
@@ -27,57 +27,52 @@ import {
   sphereCoordToVec3,
 } from '~/util/math'
 
-function sanitizeConfig(
-  config: Partial<BasicEmitterConfig>,
-): BasicEmitterConfig {
+function sanitizeSettings(
+  settings: Partial<BasicEmitterSettings>,
+): BasicEmitterSettings {
   // Start with default config, but overwrite with valid incoming values.
-  const newConfig = defaultBasicEmitterConfig()
+  const newSettings = defaultBasicEmitterSettings()
 
-  for (const k in newConfig) {
-    if (k in config) {
-      // Skip orientation and origin, which are meant to be set via runtime
-      // code.
-      if (k === 'orientation' || k === 'origin') {
-        continue
-      }
-
+  for (const k in newSettings) {
+    if (k in settings) {
       // This assignment requires disabling the typechecker it does not
       // recognize that we're copying record values key over key.
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      newConfig[k] = deepClone(config[k])
+      newSettings[k] = deepClone(settings[k])
     }
   }
 
-  return newConfig
+  return newSettings
 }
 
 const EMITTER_STATE_STORAGE_KEY = 'emitterState'
 
-const updateLocalStorage = (emitters: BasicEmitter[]) => {
+const updateLocalStorage = (settings: BasicEmitterSettings[]) => {
   window.localStorage.setItem(
     EMITTER_STATE_STORAGE_KEY,
-    JSON.stringify(emitters.map((e) => sanitizeConfig(e.getMutableConfig()))),
+    JSON.stringify(settings.map((s) => sanitizeSettings(s))),
   )
 }
 
-const loadFromLocalStorage = (): BasicEmitterConfig[] => {
+const loadFromLocalStorage = (): BasicEmitterSettings[] => {
   const serialized = window.localStorage.getItem(EMITTER_STATE_STORAGE_KEY)
   if (serialized === null) {
     return []
   }
 
   // TODO: we need bonafide content validation.
-  const rawConfigs = JSON.parse(serialized) as unknown[]
-  return rawConfigs.map((raw) => {
-    const storedConfig = deepRehydrateFloat32Arrays(raw)
-    return sanitizeConfig(storedConfig as Partial<BasicEmitterConfig>)
+  const rawSettings = JSON.parse(serialized) as unknown[]
+  return rawSettings.map((raw) => {
+    const settings = deepRehydrateFloat32Arrays(raw)
+    return sanitizeSettings(settings as Partial<BasicEmitterSettings>)
   })
 }
 
 interface EmitterWrapper {
   id: number
   emitter: BasicEmitter
+  settings: BasicEmitterSettings
 }
 
 let nextEmitterId = 0
@@ -86,10 +81,10 @@ export const Controls: React.FC<{
   createEmitter: (
     origin: Immutable<vec3>,
     orientation: Immutable<quat>,
-    config: BasicEmitterConfig,
+    config: BasicEmitterSettings,
   ) => BasicEmitter
 }> = ({ createEmitter }) => {
-  const [emitters, setEmitters] = useState<EmitterWrapper[]>([])
+  const [emitterData, setEmitters] = useState<EmitterWrapper[]>([])
   const [commonOrientation, setCommonOrientation] = useState(
     sphereCoordFromValues(1, Math.PI / 2, 0),
   )
@@ -106,8 +101,8 @@ export const Controls: React.FC<{
     )
 
     // Update emitters
-    for (const e of emitters) {
-      e.emitter.setOrientation(quatOrientation)
+    for (const d of emitterData) {
+      d.emitter.setOrientation(quatOrientation)
     }
 
     // Update UI
@@ -116,10 +111,11 @@ export const Controls: React.FC<{
 
   useEffect(() => {
     const newEmitters = []
-    for (const config of loadFromLocalStorage()) {
+    for (const settings of loadFromLocalStorage()) {
       newEmitters.push({
         id: nextEmitterId,
-        emitter: createEmitter(vec3.create(), quat.create(), config),
+        emitter: createEmitter(vec3.create(), quat.create(), settings),
+        settings,
       })
       nextEmitterId++
     }
@@ -127,7 +123,7 @@ export const Controls: React.FC<{
   }, [])
 
   return (
-    <div onClick={() => updateLocalStorage(emitters.map((e) => e.emitter))}>
+    <div onClick={() => updateLocalStorage(emitterData.map((e) => e.settings))}>
       <div
         style={{
           position: 'fixed',
@@ -148,16 +144,18 @@ export const Controls: React.FC<{
               PlusZ3,
               PlusY3,
             )
+            const settings = defaultBasicEmitterSettings()
 
             setEmitters([
-              ...emitters,
+              ...emitterData,
               {
                 id: nextEmitterId,
                 emitter: createEmitter(
                   vec3.create(),
                   quatOrientation,
-                  defaultBasicEmitterConfig(),
+                  settings,
                 ),
+                settings,
               },
             ])
             nextEmitterId++
@@ -235,14 +233,14 @@ export const Controls: React.FC<{
           </Foldable>
         </div>
 
-        {emitters.map((e, i) => (
+        {emitterData.map((e, i) => (
           <EmitterSettings
             key={e.id}
             index={i}
-            emitter={e.emitter}
+            settings={e.settings}
             delete={() => {
-              emitters.splice(i, 1)
-              setEmitters([...emitters])
+              emitterData.splice(i, 1)
+              setEmitters([...emitterData])
             }}
           />
         ))}

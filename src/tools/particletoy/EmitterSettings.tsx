@@ -6,7 +6,7 @@ import { GradientPicker } from './GradientPicker'
 import { ScaledRange } from './ScaledRange'
 import { rightPaneContainerStyle } from './util'
 
-import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 import { Foldable } from '~/tools/particletoy/Foldable'
 import { floatRgbToWebcolor, webcolorToFloatRgb } from '~/util/web'
 
@@ -22,14 +22,13 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 export const EmitterSettings = (props: {
   index: number
-  emitter: BasicEmitter
+  settings: BasicEmitterSettings
   delete: () => void
 }): ReactElement => {
-  const mutableConfig = props.emitter.getMutableConfig()
-
-  const [state, setState] = useState(mutableConfig)
-
-  const setStateWithSideEffect = () => setState({ ...mutableConfig })
+  const [state, setState] = useState(0)
+  const forceUpdate = () => {
+    setState(state + 1)
+  }
 
   return (
     <div style={styles.container}>
@@ -43,10 +42,10 @@ export const EmitterSettings = (props: {
         <Slider
           min={0}
           max={1000}
-          value={state.spawnRate}
+          value={props.settings.spawnRate}
           onChange={(v) => {
-            mutableConfig.spawnRate = v
-            setStateWithSideEffect()
+            props.settings.spawnRate = v
+            forceUpdate()
           }}
         />
       </div>
@@ -60,13 +59,13 @@ export const EmitterSettings = (props: {
           draggableTrack
           pushable
           value={[
-            mutableConfig.scaleRange[0][0],
-            mutableConfig.scaleRange[1][0],
+            props.settings.scaleRange[0][0],
+            props.settings.scaleRange[1][0],
           ]}
           onChange={([min, max]) => {
-            mutableConfig.scaleRange[0][0] = min
-            mutableConfig.scaleRange[1][0] = max
-            setStateWithSideEffect()
+            props.settings.scaleRange[0][0] = min
+            props.settings.scaleRange[1][0] = max
+            forceUpdate()
           }}
         />
         Height
@@ -77,32 +76,32 @@ export const EmitterSettings = (props: {
           draggableTrack
           pushable
           value={[
-            mutableConfig.scaleRange[0][1],
-            mutableConfig.scaleRange[1][1],
+            props.settings.scaleRange[0][1],
+            props.settings.scaleRange[1][1],
           ]}
           onChange={([min, max]) => {
-            mutableConfig.scaleRange[0][1] = min
-            mutableConfig.scaleRange[1][1] = max
-            setStateWithSideEffect()
+            props.settings.scaleRange[0][1] = min
+            props.settings.scaleRange[1][1] = max
+            forceUpdate()
           }}
         />
       </Foldable>
 
       <Foldable title="Color">
         <GradientPicker
-          min={floatRgbToWebcolor(mutableConfig.colorRange[0])}
-          max={floatRgbToWebcolor(mutableConfig.colorRange[1])}
+          min={floatRgbToWebcolor(props.settings.colorRange[0])}
+          max={floatRgbToWebcolor(props.settings.colorRange[1])}
           onChange={(min, max) => {
             const rgbMin = webcolorToFloatRgb(min)
-            mutableConfig.colorRange[0][0] = rgbMin[0]
-            mutableConfig.colorRange[0][1] = rgbMin[1]
-            mutableConfig.colorRange[0][2] = rgbMin[2]
+            props.settings.colorRange[0][0] = rgbMin[0]
+            props.settings.colorRange[0][1] = rgbMin[1]
+            props.settings.colorRange[0][2] = rgbMin[2]
 
             const rgbMax = webcolorToFloatRgb(max)
-            mutableConfig.colorRange[1][0] = rgbMax[0]
-            mutableConfig.colorRange[1][1] = rgbMax[1]
-            mutableConfig.colorRange[1][2] = rgbMax[2]
-            setStateWithSideEffect()
+            props.settings.colorRange[1][0] = rgbMax[0]
+            props.settings.colorRange[1][1] = rgbMax[1]
+            props.settings.colorRange[1][2] = rgbMax[2]
+            forceUpdate()
           }}
         ></GradientPicker>
         Alpha
@@ -112,13 +111,13 @@ export const EmitterSettings = (props: {
           draggableTrack
           pushable
           value={[
-            mutableConfig.alphaRange[0] * 100,
-            mutableConfig.alphaRange[1] * 100,
+            props.settings.alphaRange[0] * 100,
+            props.settings.alphaRange[1] * 100,
           ]}
           onChange={([min, max]) => {
-            mutableConfig.alphaRange[0] = min / 100.0
-            mutableConfig.alphaRange[1] = max / 100.0
-            setStateWithSideEffect()
+            props.settings.alphaRange[0] = min / 100.0
+            props.settings.alphaRange[1] = max / 100.0
+            forceUpdate()
           }}
         />
       </Foldable>
@@ -136,11 +135,14 @@ export const EmitterSettings = (props: {
             20: { label: '0', style: { color: 'white' } },
             30: { label: '-Pi/2', style: { color: 'white' } },
           }}
-          value={[mutableConfig.spreadXRange[0], mutableConfig.spreadXRange[1]]}
+          value={[
+            props.settings.spreadXRange[0],
+            props.settings.spreadXRange[1],
+          ]}
           onChange={([min, max]) => {
-            mutableConfig.spreadXRange[0] = min
-            mutableConfig.spreadXRange[1] = max
-            setStateWithSideEffect()
+            props.settings.spreadXRange[0] = min
+            props.settings.spreadXRange[1] = max
+            forceUpdate()
           }}
         />
         Spread Y
@@ -155,11 +157,14 @@ export const EmitterSettings = (props: {
             20: { label: '0', style: { color: 'white' } },
             30: { label: '-Pi/2', style: { color: 'white' } },
           }}
-          value={[mutableConfig.spreadYRange[0], mutableConfig.spreadYRange[1]]}
+          value={[
+            props.settings.spreadYRange[0],
+            props.settings.spreadYRange[1],
+          ]}
           onChange={([min, max]) => {
-            mutableConfig.spreadYRange[0] = min
-            mutableConfig.spreadYRange[1] = max
-            setStateWithSideEffect()
+            props.settings.spreadYRange[0] = min
+            props.settings.spreadYRange[1] = max
+            forceUpdate()
           }}
         />
       </Foldable>
@@ -171,11 +176,11 @@ export const EmitterSettings = (props: {
           steps={100}
           draggableTrack
           pushable
-          value={[mutableConfig.speedRange[0], mutableConfig.speedRange[1]]}
+          value={[props.settings.speedRange[0], props.settings.speedRange[1]]}
           onChange={([min, max]) => {
-            mutableConfig.speedRange[0] = min
-            mutableConfig.speedRange[1] = max
-            setStateWithSideEffect()
+            props.settings.speedRange[0] = min
+            props.settings.speedRange[1] = max
+            forceUpdate()
           }}
         />
       </Foldable>
@@ -188,13 +193,13 @@ export const EmitterSettings = (props: {
           draggableTrack
           pushable
           value={[
-            mutableConfig.particleTtlRange[0],
-            mutableConfig.particleTtlRange[1],
+            props.settings.particleTtlRange[0],
+            props.settings.particleTtlRange[1],
           ]}
           onChange={([min, max]) => {
-            mutableConfig.particleTtlRange[0] = min
-            mutableConfig.particleTtlRange[1] = max
-            setStateWithSideEffect()
+            props.settings.particleTtlRange[0] = min
+            props.settings.particleTtlRange[1] = max
+            forceUpdate()
           }}
         />
       </Foldable>

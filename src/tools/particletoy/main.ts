@@ -10,7 +10,7 @@ import { Controls } from './Controls'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import {
   BasicEmitter,
-  BasicEmitterConfig,
+  BasicEmitterSettings,
 } from '~/particles/emitters/BasicEmitter'
 import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
@@ -80,7 +80,7 @@ autoReload.poll(1000)
 const createEmitter = (
   origin: Immutable<vec3>,
   orientation: Immutable<quat>,
-  config: BasicEmitterConfig,
+  config: BasicEmitterSettings,
 ) => {
   const emitter = new BasicEmitter(origin, orientation, config)
 

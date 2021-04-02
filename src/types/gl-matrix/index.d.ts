@@ -36,6 +36,12 @@ declare module 'gl-matrix' {
       axis: Immutable<vec3>,
       rad: number,
     ): quat
+    export function slerp(
+      out: quat,
+      a: Immutable<quat>,
+      b: Immutable<quat>,
+      t: number,
+    )
   }
 
   export namespace vec2 {

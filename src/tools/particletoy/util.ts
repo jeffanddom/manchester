@@ -1,7 +1,7 @@
 import { quat, vec3 } from 'gl-matrix'
 import React from 'react'
 
-import { BasicEmitterConfig } from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 
 export function valueToStep(
   value: number,
@@ -78,7 +78,7 @@ export function deepRehydrateFloat32Arrays(obj: unknown): unknown {
   return obj
 }
 
-export function defaultBasicEmitterConfig(): BasicEmitterConfig {
+export function defaultBasicEmitterConfig(): BasicEmitterSettings {
   return {
     emitterTtl: undefined, // nonexpiring
     spawnRate: 40,

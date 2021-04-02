@@ -13,7 +13,7 @@ import {
   sphereCoordToVec3,
 } from '~/util/math'
 
-export interface BasicEmitterConfig {
+export interface BasicEmitterSettings {
   emitterTtl: number | undefined // undefined = nonexpiring
   spawnRate: number
 
@@ -37,7 +37,7 @@ export class BasicEmitter implements ParticleEmitter {
   private origin: vec3
   private orientation: quat
 
-  private config: BasicEmitterConfig
+  private settings: Immutable<BasicEmitterSettings>
 
   private ttl: number | undefined // ttl remaining, not initial TTL. An undefined TTL means the emitter will not expire.
   private potentialParticles: number
@@ -47,21 +47,16 @@ export class BasicEmitter implements ParticleEmitter {
   private tempVec3: [vec3, vec3, vec3, vec3]
   private tempVec4: [vec4]
 
-  /**
-   * The caller should assume that the emitter will take ownership of the
-   * objects inside config. Don't pass in objects or arrays that are used in
-   * the calling context _after_ the constructor is called.
-   */
   constructor(
     origin: Immutable<vec3>,
     orientation: Immutable<quat>,
-    config: BasicEmitterConfig,
+    settings: Immutable<BasicEmitterSettings>,
   ) {
     this.origin = vec3.copy(vec3.create(), origin)
     this.orientation = quat.copy(quat.create(), orientation)
 
-    this.config = config
-    this.ttl = config.emitterTtl
+    this.settings = settings
+    this.ttl = settings.emitterTtl
     this.potentialParticles = 0
 
     this.tempQuat = [quat.create(), quat.create()]
@@ -77,13 +72,6 @@ export class BasicEmitter implements ParticleEmitter {
     quat.copy(this.orientation, rot)
   }
 
-  /**
-   * Retrieve a modifiable reference to the emitter's internal configuration.
-   */
-  public getMutableConfig(): BasicEmitterConfig {
-    return this.config
-  }
-
   public update(dt: number, add: (config: ParticleConfig) => void): void {
     if (this.ttl !== undefined) {
       if (this.ttl <= 0) {
@@ -93,7 +81,7 @@ export class BasicEmitter implements ParticleEmitter {
       this.ttl -= dt
     }
 
-    this.potentialParticles += this.config.spawnRate * dt
+    this.potentialParticles += this.settings.spawnRate * dt
 
     const [orientation, rotVel] = this.tempQuat
     const [translation, scale, vel, motionDir] = this.tempVec3
@@ -103,15 +91,15 @@ export class BasicEmitter implements ParticleEmitter {
       this.potentialParticles -= 1
 
       const ttl = lerp(
-        this.config.particleTtlRange[0],
-        this.config.particleTtlRange[1],
+        this.settings.particleTtlRange[0],
+        this.settings.particleTtlRange[1],
         Math.random(),
       )
 
       multilerp3(
         translation,
-        this.config.translationOffsetRange[0],
-        this.config.translationOffsetRange[1],
+        this.settings.translationOffsetRange[0],
+        this.settings.translationOffsetRange[1],
         Math.random(),
         Math.random(),
         Math.random(),
@@ -121,8 +109,8 @@ export class BasicEmitter implements ParticleEmitter {
 
       multilerp3(
         scale,
-        this.config.scaleRange[0],
-        this.config.scaleRange[1],
+        this.settings.scaleRange[0],
+        this.settings.scaleRange[1],
         Math.random(),
         Math.random(),
         Math.random(),
@@ -132,23 +120,23 @@ export class BasicEmitter implements ParticleEmitter {
       // is easier to visualize and reason about.
       const colorMix = Math.random()
       color[0] = lerp(
-        this.config.colorRange[0][0],
-        this.config.colorRange[1][0],
+        this.settings.colorRange[0][0],
+        this.settings.colorRange[1][0],
         colorMix,
       )
       color[1] = lerp(
-        this.config.colorRange[0][1],
-        this.config.colorRange[1][1],
+        this.settings.colorRange[0][1],
+        this.settings.colorRange[1][1],
         colorMix,
       )
       color[2] = lerp(
-        this.config.colorRange[0][2],
-        this.config.colorRange[1][2],
+        this.settings.colorRange[0][2],
+        this.settings.colorRange[1][2],
         colorMix,
       )
       color[3] = lerp(
-        this.config.alphaRange[0],
-        this.config.alphaRange[1],
+        this.settings.alphaRange[0],
+        this.settings.alphaRange[1],
         Math.random(),
       )
 
@@ -160,13 +148,13 @@ export class BasicEmitter implements ParticleEmitter {
       // phi without modification. The Y spread is equal to (theta - pi/2).
       // Converting these to a vec3 gives us a motion vector.
       const xrot = lerp(
-        this.config.spreadXRange[0],
-        this.config.spreadXRange[1],
+        this.settings.spreadXRange[0],
+        this.settings.spreadXRange[1],
         Math.random(),
       )
       const yrot = lerp(
-        this.config.spreadYRange[0],
-        this.config.spreadYRange[1],
+        this.settings.spreadYRange[0],
+        this.settings.spreadYRange[1],
         Math.random(),
       )
       sphereCoordToVec3(
@@ -186,16 +174,16 @@ export class BasicEmitter implements ParticleEmitter {
         vel,
         motionDir,
         lerp(
-          this.config.speedRange[0],
-          this.config.speedRange[1],
+          this.settings.speedRange[0],
+          this.settings.speedRange[1],
           Math.random(),
         ),
       )
 
       quat.slerp(
         rotVel,
-        this.config.rotVelRange[0],
-        this.config.rotVelRange[1],
+        this.settings.rotVelRange[0],
+        this.settings.rotVelRange[1],
         Math.random(),
       )
 
@@ -206,7 +194,7 @@ export class BasicEmitter implements ParticleEmitter {
         scale,
         color,
         vel,
-        accel: this.config.gravity,
+        accel: this.settings.gravity,
         rotVel,
       })
     }

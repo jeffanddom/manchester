@@ -1,14 +1,16 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
+import { Immutable } from '~/types/immutable'
+
 export interface ParticleConfig {
   ttl: number
-  orientation: quat
-  translation: vec3
-  scale: vec3
-  color: vec4
-  vel: vec3
-  accel: vec3
-  rotVel: quat
+  orientation: Immutable<quat>
+  translation: Immutable<vec3>
+  scale: Immutable<vec3>
+  color: Immutable<vec4>
+  vel: Immutable<vec3>
+  accel: Immutable<vec3>
+  rotVel: Immutable<quat>
 }
 
 export interface ParticleEmitter {
