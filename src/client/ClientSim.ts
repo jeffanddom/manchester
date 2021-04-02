@@ -3,7 +3,7 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 import { CameraController } from './CameraController'
 import { DedupLog } from './DedupLog'
 
-import { getGltfDocument } from '~/assets/models'
+import { ClientAssets } from '~/assets/ClientAssets'
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
 import {
@@ -179,7 +179,11 @@ export class ClientSim {
       'wall',
       'shiba',
     ]) {
-      gltf.loadAllModels(this.modelLoader, getGltfDocument(m))
+      const gltfDoc = ClientAssets.models.get(m)
+      if (gltfDoc === undefined) {
+        throw `model not found: ${m}`
+      }
+      gltf.loadAllModels(this.modelLoader, gltfDoc)
     }
 
     const playerPos = vec3.create()

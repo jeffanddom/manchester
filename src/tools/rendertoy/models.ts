@@ -1,7 +1,7 @@
 import { quat } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
-import { getGltfDocument } from '~/assets/models'
+import { ClientAssets } from '~/assets/ClientAssets'
 import {
   makeCubeModel,
   triModelAddEdgeOn,
@@ -99,15 +99,15 @@ function makeCubeComplex(): ModelNode {
 }
 
 export function load(renderer: Renderer3d): void {
-  const tank = gltf.getModels(getGltfDocument('tank'))[0]
+  const tank = gltf.getModels(ClientAssets.models.get('tank')!)[0]
   renderer.loadModel('tank', triModelAddEdgeOn(tank))
   renderer.loadModel('tank-line', triModelToWiresolidLineModel(tank))
 
-  const shiba = gltf.getModels(getGltfDocument('shiba'))[0]
+  const shiba = gltf.getModels(ClientAssets.models.get('shiba')!)[0]
   renderer.loadModel('shiba', triModelAddEdgeOn(shiba))
   renderer.loadModel('shiba-line', triModelToWiresolidLineModel(shiba))
 
-  const turret = gltf.getModels(getGltfDocument('turret'))[0]
+  const turret = gltf.getModels(ClientAssets.models.get('turret')!)[0]
   renderer.loadModel('turret', triModelAddEdgeOn(turret))
   renderer.loadModel('turret-line', triModelToWiresolidLineModel(turret))
 

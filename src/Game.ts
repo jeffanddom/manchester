@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import { maps } from '~/assets/maps'
+import { CommonAssets } from './assets/CommonAssets'
+
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { EntityManager } from '~/entities/EntityManager'
@@ -16,9 +17,9 @@ export enum GameState {
 }
 
 export const gameProgression = [
-  maps.bigMap,
-  maps.quadtreeTest,
-  maps.collisionTest,
+  CommonAssets.maps.get('bigMap')!,
+  CommonAssets.maps.get('quadtreeTest')!,
+  CommonAssets.maps.get('collisionTest')!,
 ]
 
 export const initMap = (

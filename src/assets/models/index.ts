@@ -20,11 +20,3 @@ export const gltfs: Map<string, gltf.Document> = new Map(
     shiba: shibaGltf as gltf.Document,
   }),
 )
-
-export function getGltfDocument(name: string): gltf.Document {
-  const doc = gltfs.get(name)
-  if (doc === undefined) {
-    throw new Error(`no GLTF named ${name}`)
-  }
-  return doc
-}
