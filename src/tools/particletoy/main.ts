@@ -77,17 +77,31 @@ function update(): void {
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
+const emitters: BasicEmitter[] = []
+const emitterSettings: BasicEmitterSettings[] = []
+
 const createEmitter = (
   origin: Immutable<vec3>,
   orientation: Immutable<quat>,
-  config: BasicEmitterSettings,
+  settings: BasicEmitterSettings,
 ) => {
-  const emitter = new BasicEmitter(origin, orientation, config)
+  const emitter = new BasicEmitter(origin, orientation, settings)
+  emitters.push(emitter)
+  emitterSettings.push(settings)
+
   particles.addEmitter(emitter)
+
   return emitter
 }
 
+function removeEmitter(index: number): void {
+  emitters[index].terminate()
+
+  emitters.splice(index, 1)
+  emitterSettings.splice(index, 1)
+}
+
 ReactDOM.render(
-  React.createElement(Controls, { createEmitter }),
+  React.createElement(Controls, { createEmitter, removeEmitter }),
   document.getElementById('controls'),
 )

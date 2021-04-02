@@ -16,7 +16,7 @@ export class Camera {
     )
 
     this.spherePos = math.sphereCoordFromValues(dist, theta, 0)
-    this.viewOffset = vec3.create()
+    this.viewOffset = vec3.fromValues(0, 2.5, 0)
 
     // stop right clicks from opening the context menu
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())

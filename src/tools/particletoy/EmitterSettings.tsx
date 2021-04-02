@@ -39,6 +39,8 @@ export const EmitterSettings = (props: {
 
       <div style={styles.row}>
         <label>Spawn rate</label>
+
+      <Foldable title="Spawn rate">
         <Slider
           min={0}
           max={1000}
@@ -48,7 +50,7 @@ export const EmitterSettings = (props: {
             forceUpdate()
           }}
         />
-      </div>
+      </Foldable>
 
       <Foldable title="Scale">
         Width

@@ -81,9 +81,10 @@ export const Controls: React.FC<{
   createEmitter: (
     origin: Immutable<vec3>,
     orientation: Immutable<quat>,
-    config: BasicEmitterSettings,
+    settings: BasicEmitterSettings,
   ) => BasicEmitter
-}> = ({ createEmitter }) => {
+  removeEmitter: (index: number) => void
+}> = ({ createEmitter, removeEmitter }) => {
   const [emitterData, setEmitters] = useState<EmitterWrapper[]>([])
   const [commonOrientation, setCommonOrientation] = useState(
     sphereCoordFromValues(1, Math.PI / 2, 0),
@@ -239,7 +240,7 @@ export const Controls: React.FC<{
             index={i}
             settings={e.settings}
             delete={() => {
-              e.emitter.terminate()
+              removeEmitter(i)
               emitterData.splice(i, 1)
               setEmitters([...emitterData])
             }}
