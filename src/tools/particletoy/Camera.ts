@@ -1,5 +1,6 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
+import { CAMERA_MAX_Y_OFFSET, CAMERA_Z_OFFSET } from '~/constants'
 import { MouseButton, mouseButtonsFromBitmask } from '~/input/interfaces'
 import * as math from '~/util/math'
 
@@ -8,8 +9,14 @@ export class Camera {
   private viewOffset: vec3
 
   constructor(canvas: HTMLCanvasElement) {
-    this.spherePos = math.sphereCoordFromValues(3, Math.PI / 2.25, Math.PI / 6)
-    this.viewOffset = vec3.fromValues(0, 0.5, 3)
+    const theta = Math.atan2(CAMERA_Z_OFFSET, CAMERA_MAX_Y_OFFSET)
+    const dist = Math.sqrt(
+      CAMERA_Z_OFFSET * CAMERA_Z_OFFSET +
+        CAMERA_MAX_Y_OFFSET * CAMERA_MAX_Y_OFFSET,
+    )
+
+    this.spherePos = math.sphereCoordFromValues(dist, theta, 0)
+    this.viewOffset = vec3.create()
 
     // stop right clicks from opening the context menu
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())
