@@ -24,3 +24,8 @@ export const DASH_COOLDOWN = 25
 export const EXTERNAL_VELOCITY_DECELERATION = 0.05
 export const DEFAULT_GUN_KICK = -0.3
 export const DEFAULT_GUN_KNOCKBACK = 0.15
+
+// Camera
+export const CAMERA_MIN_Y_OFFSET = 3
+export const CAMERA_MAX_Y_OFFSET = 12
+export const CAMERA_Z_OFFSET = 3

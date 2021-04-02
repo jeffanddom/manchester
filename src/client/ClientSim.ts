@@ -7,6 +7,9 @@ import { getGltfDocument } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
 import {
+  CAMERA_MAX_Y_OFFSET,
+  CAMERA_MIN_Y_OFFSET,
+  CAMERA_Z_OFFSET,
   MAX_PREDICTED_FRAMES,
   SIMULATION_PERIOD_S,
   TILE_SIZE,
@@ -224,7 +227,7 @@ export class ClientSim {
 
     // Position the 3D camera at a fixed offset from the player, and
     // point the camera directly at the player.
-    const offset = vec3.fromValues(0, this.zoomLevel, 3)
+    const offset = vec3.fromValues(0, this.zoomLevel, CAMERA_Z_OFFSET)
     this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
     this.camera.setTarget(targetPos)
   }
@@ -249,7 +252,11 @@ export class ClientSim {
     ])
 
     this.zoomLevel += this.mouse.getScroll() * 0.025
-    this.zoomLevel = math.clamp(this.zoomLevel, 3, 12)
+    this.zoomLevel = math.clamp(
+      this.zoomLevel,
+      CAMERA_MIN_Y_OFFSET,
+      CAMERA_MAX_Y_OFFSET,
+    )
 
     this.debugDraw.draw2d(() => {
       const text = [
