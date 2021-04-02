@@ -13,7 +13,10 @@ import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Immutable } from '~/types/immutable'
 
 export class Client {
-  location: Location
+  apiLocation: {
+    host: string
+    protocol: string
+  }
   viewportDimensions: vec2
   pixelRatio: number
 
@@ -32,11 +35,14 @@ export class Client {
 
   constructor(params: {
     document: Document
-    location: Location
+    apiLocation: {
+      host: string
+      protocol: string
+    }
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
   }) {
-    this.location = params.location
+    this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
     this.pixelRatio = params.pixelRatio
 
@@ -130,36 +136,9 @@ export class Client {
   }
 
   connectToServer(): Promise<void> {
-    const schema = this.location.protocol === 'https:' ? 'wss' : 'ws'
+    const schema = this.apiLocation.protocol === 'https:' ? 'wss' : 'ws'
     return createServerConnectionWs(
-      `${schema}://${this.location.host}/api/connect`,
+      `${schema}://${this.apiLocation.host}/api/connect`,
     ).then((conn) => this.sim.connectServer(conn))
-  }
-
-  restartServer(): Promise<void> {
-    return fetch(
-      `${this.location.protocol}//${this.location.host}/api/restart`,
-    ).then(() => {
-      this.keyboard.reset()
-      this.mouse.reset()
-      this.debugDraw = new DebugDraw()
-
-      this.renderManager = new ClientRenderManager({
-        gl: this.gl,
-        ctx2d: this.ctx2d,
-        debugDraw: this.debugDraw,
-      })
-
-      this.sim = new ClientSim({
-        keyboard: this.keyboard,
-        mouse: this.mouse,
-        modelLoader: this.renderManager.getModelLoader(),
-        debugDraw: this.debugDraw,
-        viewportDimensions: this.viewportDimensions,
-        addEmitter: (emitter) => this.particleSystem.addEmitter(emitter),
-      })
-
-      return this.connectToServer()
-    })
   }
 }

@@ -11,7 +11,7 @@ declare global {
 
 const client = new Client({
   document,
-  location,
+  apiLocation: location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
   pixelRatio: window.devicePixelRatio,
 })
@@ -43,7 +43,11 @@ document.addEventListener('keyup', (event) => {
       restartHotkeyTimeout = undefined
     }, 500)
 
-    client.restartServer()
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/restart`,
+    ).then(() => {
+      window.location.reload()
+    })
   }
 })
 
