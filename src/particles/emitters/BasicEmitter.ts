@@ -3,6 +3,7 @@ import { quat, vec3, vec4 } from 'gl-matrix'
 import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
 import { Immutable } from '~/types/immutable'
 import {
+  MinusZ3,
   PlusY3,
   PlusZ3,
   Zero3,
@@ -165,7 +166,7 @@ export class BasicEmitter implements ParticleEmitter {
       // We will orient the particle locally to face along the motion vector.
       // We then use the resulting orientation as a base rotation, which we
       // modify by the emitter's rotation to get the final post rotation value.
-      quatLookAt(orientation, Zero3, motionDir, PlusZ3, PlusY3)
+      quatLookAt(orientation, Zero3, motionDir, MinusZ3, PlusY3)
       quat.multiply(orientation, this.orientation, orientation)
 
       // Now apply the final orientation to velocity, and scaled by speed.

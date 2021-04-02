@@ -395,47 +395,9 @@ export class ClientSim {
           )
 
           this.syncCameraToPlayer(dt)
+          this.updateFrameSideEffects(frameEvents)
+
           this.simulationFrame++
-
-          // Non-simulation effects
-          for (const [frameNumber, events] of frameEvents) {
-            for (const event of events) {
-              if (this.dedupLog.contains(frameNumber, event)) {
-                continue
-              }
-
-              this.dedupLog.add(frameNumber, event)
-
-              switch (event.type) {
-                case FrameEventType.TankShoot:
-                  const entitiyTransform = this.entityManager.transforms.get(
-                    event.entityId,
-                  )!
-                  const origin = vec3.fromValues(
-                    entitiyTransform.position[0],
-                    0.5,
-                    entitiyTransform.position[1],
-                  )
-                  const orientation = quat.setAxisAngle(
-                    quat.create(),
-                    math.PlusY3,
-                    Math.PI - event.orientation,
-                  )
-                  const emitterConfig = defaultBasicEmitterConfig()
-                  emitterConfig.emitterTtl = 0.25
-
-                  const emitter = new BasicEmitter(
-                    origin,
-                    orientation,
-                    emitterConfig,
-                  )
-                  this.addEmitter(emitter)
-              }
-            }
-          }
-
-          // GC de-duplication log
-          // drop everything earlier than server committed frame - 1
         }
         break
     }
@@ -544,5 +506,46 @@ export class ClientSim {
   sendClientMessage(m: ClientMessage): void {
     this.uncommittedMessageHistory.push(m)
     this.serverConnection!.send(m)
+  }
+
+  private updateFrameSideEffects(frameEvents: Map<number, FrameEvent[]>): void {
+    // Non-simulation effects
+    for (const [frameNumber, events] of frameEvents) {
+      for (const event of events) {
+        if (this.dedupLog.contains(frameNumber, event)) {
+          continue
+        }
+
+        this.dedupLog.add(frameNumber, event)
+
+        switch (event.type) {
+          case FrameEventType.TankShoot:
+            const entitiyTransform = this.entityManager.transforms.get(
+              event.entityId,
+            )!
+            const origin = vec3.fromValues(
+              entitiyTransform.position[0],
+              0.5,
+              entitiyTransform.position[1],
+            )
+            const orientation = quat.setAxisAngle(
+              quat.create(),
+              math.PlusY3,
+              // Sim orientation is expressed as clockwise rotation on a 2D
+              // plane, but it needs to be negated when the Y axis is translated
+              // to the Z axis.
+              -event.orientation,
+            )
+            const emitterConfig = defaultBasicEmitterConfig()
+            emitterConfig.emitterTtl = 0.25
+
+            const emitter = new BasicEmitter(origin, orientation, emitterConfig)
+            this.addEmitter(emitter)
+        }
+      }
+    }
+
+    // GC de-duplication log
+    // drop everything earlier than server committed frame - 1
   }
 }
