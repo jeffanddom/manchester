@@ -87,6 +87,14 @@ declare module 'gl-matrix' {
     export function equals(a: Immutable<vec4>, b: Immutable<vec4>): boolean
   }
 
+  export namespace quat {
+    export function setAxisAngle(
+      out: quat,
+      axis: Immutable<vec3>,
+      rad: number,
+    ): quat
+  }
+
   // Any type that extends Float32Array
   export type DerivedFloat32Array =
     | Float32Array

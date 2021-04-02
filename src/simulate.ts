@@ -7,7 +7,6 @@ import { ClientMessage } from '~/network/ClientMessage'
 import * as systems from '~/systems'
 import { FrameEvent } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
-import { Immutable } from '~/types/immutable'
 
 export enum SimulationPhase {
   ServerTick,
@@ -35,7 +34,7 @@ export function simulationPhaseDebugColor(
 export type SimState = {
   entityManager: EntityManager
   messages: ClientMessage[]
-  frameEvents: Immutable<FrameEvent>[]
+  frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer
   frame: number
   debugDraw: IDebugDrawWriter
@@ -68,4 +67,8 @@ export const simulate = (
   systems.damageable(simState)
 
   simState.entityManager.update()
+
+  // Particles
+  if (simState.phase !== SimulationPhase.ServerTick) {
+  }
 }

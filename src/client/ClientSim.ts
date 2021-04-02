@@ -1,6 +1,7 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { CameraController } from './CameraController'
+import { DedupLog } from './DedupLog'
 
 import { getGltfDocument } from '~/assets/models'
 import { Camera3d } from '~/camera/Camera3d'
@@ -14,10 +15,12 @@ import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
-import { Map } from '~/map/interfaces'
+import { Map as GameMap } from '~/map/interfaces'
 import { ClientMessage } from '~/network/ClientMessage'
 import { IServerConnection } from '~/network/ServerConnection'
 import { ServerMessage, ServerMessageType } from '~/network/ServerMessage'
+import { BasicEmitter } from '~/particles/emitters/BasicEmitter'
+import { ParticleEmitter } from '~/particles/interfaces'
 import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
@@ -25,7 +28,9 @@ import { UnlitObjectType } from '~/renderer/Renderer3d'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
+import { FrameEvent, FrameEventType } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
+import { defaultBasicEmitterConfig } from '~/tools/particletoy/util'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { discardUntil } from '~/util/array'
@@ -70,13 +75,16 @@ export class ClientSim {
   modelLoader: IModelLoader
   debugDraw: IDebugDrawWriter
 
+  dedupLog: DedupLog
+  addEmitter: (emitter: ParticleEmitter) => void
+
   // Common game state
   state: GameState
   nextState: GameState | undefined
 
   currentLevel: number
 
-  map: Map
+  map: GameMap
   terrainLayer: terrain.Layer
 
   constructor(config: {
@@ -85,6 +93,7 @@ export class ClientSim {
     modelLoader: IModelLoader
     debugDraw: IDebugDrawWriter
     viewportDimensions: Immutable<vec2>
+    addEmitter: (emitter: ParticleEmitter) => void
   }) {
     this.keyboard = config.keyboard
     this.mouse = config.mouse
@@ -116,6 +125,8 @@ export class ClientSim {
     this.tickDurations = new RunningAverage(3 * 60)
     this.updateFrameDurations = new RunningAverage(3 * 60)
     this.framesAheadOfServer = new RunningAverage(3 * 60)
+    this.dedupLog = new DedupLog()
+    this.addEmitter = config.addEmitter
 
     // Common
     this.state = GameState.Connecting
@@ -123,7 +134,7 @@ export class ClientSim {
 
     this.currentLevel = 0
 
-    this.map = Map.empty()
+    this.map = GameMap.empty()
     this.terrainLayer = new terrain.Layer({
       tileOrigin: vec2.create(),
       tileDimensions: vec2.create(),
@@ -141,7 +152,7 @@ export class ClientSim {
 
   startPlay(): void {
     // Level setup
-    this.map = Map.fromRaw(gameProgression[this.currentLevel])
+    this.map = GameMap.fromRaw(gameProgression[this.currentLevel])
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
     const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
@@ -283,6 +294,7 @@ export class ClientSim {
   }
 
   tick(dt: number): void {
+    const frameEvents: Map<number, FrameEvent[]> = new Map()
     let serverMessages: ServerMessage[] = []
     if (this.serverConnection !== undefined) {
       serverMessages = this.serverConnection.consume()
@@ -346,20 +358,22 @@ export class ClientSim {
             break
           }
 
-          this.syncServerState(dt)
+          this.syncServerState(dt, frameEvents)
           this.framesAheadOfServer.sample(
             this.simulationFrame - this.committedFrame,
           )
 
           systems.playerInput(this, this.simulationFrame)
 
+          const nextFrameEvents: FrameEvent[] = []
+          frameEvents.set(this.simulationFrame, nextFrameEvents)
           simulate(
             {
               entityManager: this.entityManager,
               messages: this.uncommittedMessageHistory.filter(
                 (m) => m.frame === this.simulationFrame,
               ),
-              frameEvents: [],
+              frameEvents: nextFrameEvents,
               terrainLayer: this.terrainLayer,
               frame: this.simulationFrame,
               debugDraw: this.debugDraw,
@@ -371,12 +385,49 @@ export class ClientSim {
 
           this.syncCameraToPlayer(dt)
           this.simulationFrame++
+
+          // Non-simulation effects
+          for (const [frameNumber, events] of frameEvents) {
+            for (const event of events) {
+              if (this.dedupLog.contains(frameNumber, event)) {
+                continue
+              }
+
+              this.dedupLog.add(frameNumber, event)
+
+              switch (event.type) {
+                case FrameEventType.TankShoot:
+                  const emitterConfig = defaultBasicEmitterConfig()
+                  const entitiyTransform = this.entityManager.transforms.get(
+                    event.entityId,
+                  )!
+                  emitterConfig.emitterTtl = 0.25
+                  emitterConfig.origin = vec3.fromValues(
+                    entitiyTransform.position[0],
+                    0.5,
+                    entitiyTransform.position[1],
+                  )
+
+                  emitterConfig.orientation = quat.setAxisAngle(
+                    quat.create(),
+                    math.PlusY3,
+                    Math.PI - event.orientation,
+                  )
+
+                  const emitter = new BasicEmitter(emitterConfig)
+                  this.addEmitter(emitter)
+              }
+            }
+          }
+
+          // GC de-duplication log
+          // drop everything earlier than server committed frame - 1
         }
         break
     }
   }
 
-  syncServerState(dt: number): void {
+  syncServerState(dt: number, frameEvents: Map<number, FrameEvent[]>): void {
     this.serverFrameUpdates = discardUntil(
       this.serverFrameUpdates,
       (u) => u.frame > this.committedFrame,
@@ -403,11 +454,13 @@ export class ClientSim {
     this.entityManager.undoPrediction()
 
     for (const update of toProcess) {
+      const nextFrameEvents: FrameEvent[] = []
+      frameEvents.set(update.frame, nextFrameEvents)
       simulate(
         {
           entityManager: this.entityManager,
           messages: update.inputs,
-          frameEvents: [],
+          frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
           frame: update.frame,
           debugDraw: this.debugDraw,
@@ -427,11 +480,14 @@ export class ClientSim {
 
     // Repredict already-simulated frames
     for (let f = this.committedFrame + 1; f < this.simulationFrame; f++) {
+      const nextFrameEvents: FrameEvent[] = []
+      frameEvents.set(f, nextFrameEvents)
+
       simulate(
         {
           entityManager: this.entityManager,
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
-          frameEvents: [],
+          frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
           frame: f,
           debugDraw: this.debugDraw,

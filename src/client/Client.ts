@@ -2,12 +2,14 @@ import { mat4, vec2 } from 'gl-matrix'
 
 import { ClientRenderManager } from '~/client/ClientRenderManager'
 import { ClientSim } from '~/client/ClientSim'
+import { SIMULATION_PERIOD_S } from '~/constants'
 import { DebugDraw } from '~/DebugDraw'
 import { GameState } from '~/Game'
 import { BrowserKeyboard } from '~/input/BrowserKeyboard'
 import { BrowserMouse } from '~/input/BrowserMouse'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { createServerConnectionWs } from '~/network/ServerConnection'
+import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Immutable } from '~/types/immutable'
 
 export class Client {
@@ -26,6 +28,7 @@ export class Client {
   debugDraw: DebugDraw
   renderManager: ClientRenderManager
   sim: ClientSim
+  particleSystem: ParticleSystem
 
   constructor(params: {
     document: Document
@@ -61,6 +64,7 @@ export class Client {
     this.keyboard = new BrowserKeyboard(params.document)
     this.mouse = new BrowserMouse(params.document)
     this.debugDraw = new DebugDraw()
+    this.particleSystem = new ParticleSystem('particle', 10000)
 
     const gl = this.canvas3d.getContext('webgl2')
     if (gl === null) {
@@ -80,12 +84,15 @@ export class Client {
       debugDraw: this.debugDraw,
     })
 
+    this.particleSystem.initRender(this.renderManager.renderer3d)
+
     this.sim = new ClientSim({
       keyboard: this.keyboard,
       mouse: this.mouse,
       modelLoader: this.renderManager.getModelLoader(),
       debugDraw: this.debugDraw,
       viewportDimensions: this.viewportDimensions,
+      addEmitter: (emitter) => this.particleSystem.addEmitter(emitter),
     })
   }
 
@@ -101,6 +108,8 @@ export class Client {
         this.sim.getRenderables(),
         this.sim.camera.getWvTransform(mat4.create()),
       )
+      this.particleSystem.update(SIMULATION_PERIOD_S)
+      this.particleSystem.render(this.renderManager.renderer3d)
     }
 
     this.keyboard.update()
@@ -147,6 +156,7 @@ export class Client {
         modelLoader: this.renderManager.getModelLoader(),
         debugDraw: this.debugDraw,
         viewportDimensions: this.viewportDimensions,
+        addEmitter: (emitter) => this.particleSystem.addEmitter(emitter),
       })
 
       return this.connectToServer()
