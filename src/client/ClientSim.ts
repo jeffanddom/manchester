@@ -404,24 +404,27 @@ export class ClientSim {
 
               switch (event.type) {
                 case FrameEventType.TankShoot:
-                  const emitterConfig = defaultBasicEmitterConfig()
                   const entitiyTransform = this.entityManager.transforms.get(
                     event.entityId,
                   )!
-                  emitterConfig.emitterTtl = 0.25
-                  emitterConfig.origin = vec3.fromValues(
+                  const origin = vec3.fromValues(
                     entitiyTransform.position[0],
                     0.5,
                     entitiyTransform.position[1],
                   )
-
-                  emitterConfig.orientation = quat.setAxisAngle(
+                  const orientation = quat.setAxisAngle(
                     quat.create(),
                     math.PlusY3,
                     Math.PI - event.orientation,
                   )
+                  const emitterConfig = defaultBasicEmitterConfig()
+                  emitterConfig.emitterTtl = 0.25
 
-                  const emitter = new BasicEmitter(emitterConfig)
+                  const emitter = new BasicEmitter(
+                    origin,
+                    orientation,
+                    emitterConfig,
+                  )
                   this.addEmitter(emitter)
               }
             }
