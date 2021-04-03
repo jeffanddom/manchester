@@ -5,7 +5,6 @@ import { Foldable } from './Foldable'
 import { ScaledSlider } from './ScaledSlider'
 import {
   deepClone,
-  deepRehydrateFloat32Arrays,
   defaultBasicEmitterConfig as defaultBasicEmitterSettings,
   rightPaneContainerStyle,
 } from './util'
@@ -13,6 +12,7 @@ import {
 import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 import { Immutable } from '~/types/immutable'
+import { deepRehydrateFloat32Arrays } from '~/util/convert'
 import {
   PlusY3,
   PlusZ3,

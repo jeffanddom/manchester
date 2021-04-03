@@ -8,7 +8,7 @@ import turretGltf from '~/assets/models/turret.gltf'
 import wallGltf from '~/assets/models/wall.gltf'
 import * as gltf from '~/renderer/gltf'
 
-export const gltfs: Map<string, gltf.Document> = new Map(
+export const models: Map<string, gltf.Document> = new Map(
   Object.entries({
     bullet: bulletGltf as gltf.Document,
     core: coreGltf as gltf.Document,
