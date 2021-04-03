@@ -545,7 +545,6 @@ export class ClientSim {
               emitterConfig.emitterTtl = 0.25
 
               const settings = ClientAssets.emitters.get('tankShot')!
-              console.log(settings)
               createEmitterSet({
                 origin,
                 orientation,
