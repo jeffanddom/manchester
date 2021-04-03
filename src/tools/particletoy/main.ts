@@ -1,6 +1,4 @@
-import { mat4, vec4 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
-import { quat } from 'gl-matrix'
+import { mat4, quat, vec4 } from 'gl-matrix'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -15,7 +13,70 @@ import {
 import { ParticleSystem } from '~/particles/ParticleSystem'
 import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
 import { Immutable } from '~/types/immutable'
+import { Zero3 } from '~/util/math'
 import * as autoReload from '~/web/autoReload'
+
+const LOOP_GAP = 1.5
+
+class EmitterManager {
+  private particleSystem: ParticleSystem
+  private slots: {
+    settings: Immutable<BasicEmitterSettings>
+    emitter: BasicEmitter
+  }[]
+  private orientation: quat
+  private loopGapTimer: number
+
+  public constructor(particleSystem: ParticleSystem) {
+    this.particleSystem = particleSystem
+    this.slots = []
+    this.orientation = quat.create()
+    this.loopGapTimer = 0
+  }
+
+  public add(settings: Immutable<BasicEmitterSettings>): void {
+    const emitter = new BasicEmitter(Zero3, this.orientation, settings)
+    this.slots.push({ settings, emitter })
+    this.particleSystem.addEmitter(emitter)
+  }
+
+  public remove(index: number): void {
+    this.slots[index].emitter.deactivate()
+    this.slots.splice(index, 1)
+  }
+
+  public setOrientation(orientation: Immutable<quat>): void {
+    quat.copy(this.orientation, orientation)
+    for (const { emitter } of this.slots) {
+      emitter.setOrientation(this.orientation)
+    }
+  }
+
+  public update(dt: number): void {
+    if (this.particleSystem.numActiveEmitters() > 0) {
+      return
+    }
+
+    if (this.loopGapTimer < LOOP_GAP) {
+      this.loopGapTimer += dt
+      return
+    }
+
+    this.loopGapTimer = 0
+
+    // None of the emitters are currently active. Now that we've waited
+    // LOOP_GAP seconds, reactivate the emitters so they play in a loop.
+    for (let i = 0; i < this.slots.length; i++) {
+      this.slots[i].emitter = new BasicEmitter(
+        Zero3,
+        this.orientation,
+        this.slots[i].settings,
+      )
+
+      this.particleSystem.addEmitter(this.slots[i].emitter)
+    }
+  }
+}
 
 const canvas = document.getElementById('renderer') as HTMLCanvasElement
 const gl = canvas.getContext('webgl2')!
@@ -58,50 +119,35 @@ for (let axis = 0; axis < 3; axis++) {
   })
 }
 
-const particles = new ParticleSystem('default', 100 * 1000)
+const particleSystem = new ParticleSystem('default', 100 * 1000)
+const emitterManager = new EmitterManager(particleSystem)
 
-particles.initRender(renderer)
+particleSystem.initRender(renderer)
 
 function update(): void {
   requestAnimationFrame(update)
+
+  emitterManager.update(SIMULATION_PERIOD_S)
 
   renderer.clear(0.5, 0.5, 0.5)
   renderer.setWvTransform(camera.world2View(mat4.create()))
 
   renderer.renderUnlit(axes)
 
-  particles.update(SIMULATION_PERIOD_S)
-  particles.render(renderer)
+  particleSystem.update(SIMULATION_PERIOD_S)
+  particleSystem.render(renderer)
 }
 
 requestAnimationFrame(update)
 autoReload.poll(1000)
 
-const emitters: BasicEmitter[] = []
-const emitterSettings: BasicEmitterSettings[] = []
-
-const createEmitter = (
-  origin: Immutable<vec3>,
-  orientation: Immutable<quat>,
-  settings: BasicEmitterSettings,
-) => {
-  const emitter = new BasicEmitter(origin, orientation, settings)
-  emitters.push(emitter)
-  emitterSettings.push(settings)
-
-  particles.addEmitter(emitter)
-
-  return emitter
-}
-
-function removeEmitter(index: number): void {
-  emitters[index].terminate()
-
-  emitters.splice(index, 1)
-  emitterSettings.splice(index, 1)
-}
-
 ReactDOM.render(
-  React.createElement(Controls, { createEmitter, removeEmitter }),
+  React.createElement(Controls, {
+    createEmitter: (settings: Immutable<BasicEmitterSettings>) =>
+      emitterManager.add(settings),
+    removeEmitter: (index: number) => emitterManager.remove(index),
+    setOrientation: (orientation: Immutable<quat>) =>
+      emitterManager.setOrientation(orientation),
+  }),
   document.getElementById('controls'),
 )

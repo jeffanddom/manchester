@@ -10,10 +10,7 @@ import {
   rightPaneContainerStyle,
 } from './util'
 
-import {
-  BasicEmitter,
-  BasicEmitterSettings,
-} from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 import { Immutable } from '~/types/immutable'
 import {
@@ -69,62 +66,59 @@ const loadFromLocalStorage = (): BasicEmitterSettings[] => {
   })
 }
 
-interface EmitterWrapper {
+interface EmitterSettingsWrapper {
   id: number
-  emitter: BasicEmitter
   settings: BasicEmitterSettings
 }
 
 let nextEmitterId = 0
 
-export const Controls: React.FC<{
-  createEmitter: (
-    origin: Immutable<vec3>,
-    orientation: Immutable<quat>,
-    settings: BasicEmitterSettings,
-  ) => BasicEmitter
+export function Controls(props: {
+  createEmitter: (settings: Immutable<BasicEmitterSettings>) => void
   removeEmitter: (index: number) => void
-}> = ({ createEmitter, removeEmitter }) => {
-  const [emitterData, setEmitters] = useState<EmitterWrapper[]>([])
-  const [commonOrientation, setCommonOrientation] = useState(
+  setOrientation: (orientation: Immutable<quat>) => void
+}): React.ReactElement {
+  const [emitterSettingsState, setEmitterSettingsState] = useState<
+    EmitterSettingsWrapper[]
+  >([])
+  const [orientation, setOrientation] = useState(
     sphereCoordFromValues(1, Math.PI / 2, 0),
   )
 
-  const onCommonOrientationChange = (coord: SphereCoord): void => {
-    // Calculate quaternion representation.
+  const onOrientationChange = (coord: SphereCoord): void => {
     const target = sphereCoordToVec3(vec3.create(), coord)
-    const quatOrientation = quatLookAt(
-      quat.create(),
-      Zero3,
-      target,
-      PlusZ3,
-      PlusY3,
+    props.setOrientation(
+      quatLookAt(quat.create(), Zero3, target, PlusZ3, PlusY3),
     )
 
-    // Update emitters
-    for (const d of emitterData) {
-      d.emitter.setOrientation(quatOrientation)
-    }
-
     // Update UI
-    setCommonOrientation([...coord])
+    setOrientation([...coord])
+  }
+
+  const appendEmitter = (settings: BasicEmitterSettings): void => {
+    props.createEmitter(settings)
+
+    emitterSettingsState.push({
+      id: nextEmitterId,
+      settings,
+    })
+    setEmitterSettingsState([...emitterSettingsState])
+
+    nextEmitterId++
   }
 
   useEffect(() => {
-    const newEmitters = []
     for (const settings of loadFromLocalStorage()) {
-      newEmitters.push({
-        id: nextEmitterId,
-        emitter: createEmitter(vec3.create(), quat.create(), settings),
-        settings,
-      })
-      nextEmitterId++
+      appendEmitter(settings)
     }
-    setEmitters(newEmitters)
   }, [])
 
   return (
-    <div onClick={() => updateLocalStorage(emitterData.map((e) => e.settings))}>
+    <div
+      onClick={() =>
+        updateLocalStorage(emitterSettingsState.map((e) => e.settings))
+      }
+    >
       <div
         style={{
           position: 'fixed',
@@ -136,31 +130,7 @@ export const Controls: React.FC<{
       >
         <button
           style={{ fontSize: 20, marginBottom: 10 }}
-          onClick={() => {
-            const target = sphereCoordToVec3(vec3.create(), commonOrientation)
-            const quatOrientation = quatLookAt(
-              quat.create(),
-              Zero3,
-              target,
-              PlusZ3,
-              PlusY3,
-            )
-            const settings = defaultBasicEmitterSettings()
-
-            setEmitters([
-              ...emitterData,
-              {
-                id: nextEmitterId,
-                emitter: createEmitter(
-                  vec3.create(),
-                  quatOrientation,
-                  settings,
-                ),
-                settings,
-              },
-            ])
-            nextEmitterId++
-          }}
+          onClick={() => appendEmitter(defaultBasicEmitterSettings())}
         >
           + Add Emitter
         </button>
@@ -213,10 +183,10 @@ export const Controls: React.FC<{
               max={Math.PI}
               marks={{ 50: { label: 'π/2', style: { color: 'white' } } }}
               steps={100}
-              value={commonOrientation[SphereElement.Theta]}
+              value={orientation[SphereElement.Theta]}
               onChange={(v) => {
-                commonOrientation[SphereElement.Theta] = v
-                onCommonOrientationChange(commonOrientation)
+                orientation[SphereElement.Theta] = v
+                onOrientationChange(orientation)
               }}
             />
             φ Azimuth
@@ -225,24 +195,24 @@ export const Controls: React.FC<{
               max={Math.PI}
               marks={{ 50: { label: '0', style: { color: 'white' } } }}
               steps={100}
-              value={commonOrientation[SphereElement.Phi]}
+              value={orientation[SphereElement.Phi]}
               onChange={(v) => {
-                commonOrientation[SphereElement.Phi] = v
-                onCommonOrientationChange(commonOrientation)
+                orientation[SphereElement.Phi] = v
+                onOrientationChange(orientation)
               }}
             />
           </Foldable>
         </div>
 
-        {emitterData.map((e, i) => (
+        {emitterSettingsState.map((e, i) => (
           <EmitterSettings
             key={e.id}
             index={i}
             settings={e.settings}
             delete={() => {
-              removeEmitter(i)
-              emitterData.splice(i, 1)
-              setEmitters([...emitterData])
+              props.removeEmitter(i)
+              emitterSettingsState.splice(i, 1)
+              setEmitterSettingsState([...emitterSettingsState])
             }}
           />
         ))}

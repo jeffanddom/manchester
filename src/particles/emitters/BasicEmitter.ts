@@ -15,7 +15,9 @@ import {
 } from '~/util/math'
 
 export interface BasicEmitterSettings {
-  emitterTtl: number | undefined // undefined = nonexpiring
+  nonexpiring: boolean
+  emitterTtl: number // ignore if nonexpiring
+  startOffset: number
   spawnRate: number
 
   particleTtlRange: [number, number]
@@ -40,7 +42,8 @@ export class BasicEmitter implements ParticleEmitter {
 
   private settings: Immutable<BasicEmitterSettings>
 
-  private ttl: number | undefined // ttl remaining, not initial TTL. An undefined TTL means the emitter will not expire.
+  private active: boolean
+  private elapsed: number
   private potentialParticles: number
 
   // temporaries
@@ -57,7 +60,9 @@ export class BasicEmitter implements ParticleEmitter {
     this.orientation = quat.copy(quat.create(), orientation)
 
     this.settings = settings
-    this.ttl = settings.emitterTtl
+
+    this.active = true
+    this.elapsed = 0
     this.potentialParticles = 0
 
     this.tempQuat = [quat.create(), quat.create()]
@@ -74,12 +79,21 @@ export class BasicEmitter implements ParticleEmitter {
   }
 
   public update(dt: number, add: (config: ParticleConfig) => void): void {
-    if (this.ttl !== undefined) {
-      if (this.ttl <= 0) {
+    if (!this.active) {
+      return
+    }
+
+    if (!this.settings.nonexpiring) {
+      this.elapsed += dt
+
+      if (this.elapsed >= this.settings.emitterTtl) {
+        this.active = false
         return
       }
 
-      this.ttl -= dt
+      if (this.elapsed < this.settings.startOffset) {
+        return
+      }
     }
 
     this.potentialParticles += this.settings.spawnRate * dt
@@ -201,11 +215,11 @@ export class BasicEmitter implements ParticleEmitter {
     }
   }
 
-  public terminate(): void {
-    this.ttl = 0
+  public deactivate(): void {
+    this.active = false
   }
 
   public isActive(): boolean {
-    return this.ttl === undefined || this.ttl > 0
+    return this.active
   }
 }

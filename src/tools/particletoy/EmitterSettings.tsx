@@ -4,6 +4,7 @@ import 'rc-slider/assets/index.css'
 
 import { GradientPicker } from './GradientPicker'
 import { ScaledRange } from './ScaledRange'
+import { ScaledSlider } from './ScaledSlider'
 import { rightPaneContainerStyle } from './util'
 
 import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
@@ -37,8 +38,32 @@ export const EmitterSettings = (props: {
         <button onClick={props.delete}>Delete</button>
       </div>
 
-      <div style={styles.row}>
-        <label>Spawn rate</label>
+      <Foldable title="Timing">
+        Emitter TTL
+        <ScaledSlider
+          min={0}
+          max={10}
+          steps={100}
+          value={props.settings.emitterTtl}
+          onChange={(v) => {
+            props.settings.emitterTtl = v
+            props.settings.startOffset = Math.min(props.settings.startOffset, v)
+            forceUpdate()
+          }}
+        />
+        Start offset
+        <ScaledSlider
+          min={0}
+          max={10}
+          steps={100}
+          value={props.settings.startOffset}
+          onChange={(v) => {
+            props.settings.startOffset = v
+            props.settings.emitterTtl = Math.max(props.settings.emitterTtl, v)
+            forceUpdate()
+          }}
+        />
+      </Foldable>
 
       <Foldable title="Spawn rate">
         <Slider

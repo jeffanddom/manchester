@@ -80,7 +80,9 @@ export function deepRehydrateFloat32Arrays(obj: unknown): unknown {
 
 export function defaultBasicEmitterConfig(): BasicEmitterSettings {
   return {
-    emitterTtl: undefined, // nonexpiring
+    nonexpiring: false,
+    emitterTtl: 2,
+    startOffset: 0,
     spawnRate: 40,
     particleTtlRange: [1, 2],
     translationOffsetRange: [

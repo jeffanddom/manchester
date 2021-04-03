@@ -281,6 +281,10 @@ export class ParticleSystem {
     return this.capacity
   }
 
+  public numActiveEmitters(): number {
+    return this.emitters.length
+  }
+
   public initRender(renderer: Renderer3d): void {
     const attribBuffers: Map<number, MeshBuffer> = new Map()
     attribBuffers.set(ShaderAttrib.Position, {
