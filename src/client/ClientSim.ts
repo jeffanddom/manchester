@@ -27,7 +27,6 @@ import {
   BasicEmitterSettings,
 } from '~/particles/emitters/BasicEmitter'
 import { ParticleEmitter } from '~/particles/interfaces'
-import { ParticleSystem } from '~/particles/ParticleSystem'
 import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
