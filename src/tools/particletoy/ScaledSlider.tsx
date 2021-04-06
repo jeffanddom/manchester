@@ -9,6 +9,7 @@ export function ScaledSlider(
     max: number
     steps: number
     value: number
+    logarithmic?: boolean
     onChange: (value: number) => void
   } & SliderProps,
 ): ReactElement {

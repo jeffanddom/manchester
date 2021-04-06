@@ -1,5 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
+import { FrameEventType } from './FrameEvent'
+
 import { PickupConstructors } from '~/entities/pickups'
 import { SimState } from '~/simulate'
 
@@ -15,6 +17,11 @@ export const update = (simState: SimState): void => {
         simState.entityManager.register(core)
       }
       simState.entityManager.markForDeletion(id)
+
+      simState.frameEvents.push({
+        type: FrameEventType.EntityDestroyed,
+        position: vec2.clone(transform.position),
+      })
     }
   }
 }

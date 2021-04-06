@@ -1,3 +1,4 @@
+import { vec3 } from 'gl-matrix'
 import Slider, { Range } from 'rc-slider'
 import React, { ReactElement, useState } from 'react'
 import 'rc-slider/assets/index.css'
@@ -40,7 +41,9 @@ export const EmitterSettings = (props: {
 
       <Foldable title="Timing">
         Emitter TTL
+        {props.settings.emitterTtl}
         <ScaledSlider
+          logarithmic
           min={0}
           max={10}
           steps={100}
@@ -226,6 +229,19 @@ export const EmitterSettings = (props: {
           onChange={([min, max]) => {
             props.settings.particleTtlRange[0] = min
             props.settings.particleTtlRange[1] = max
+            forceUpdate()
+          }}
+        />
+      </Foldable>
+
+      <Foldable title="Gravity">
+        <ScaledSlider
+          min={0}
+          max={10}
+          steps={100}
+          value={-props.settings.gravity[1]}
+          onChange={(v) => {
+            props.settings.gravity = vec3.fromValues(0, -v, 0)
             forceUpdate()
           }}
         />

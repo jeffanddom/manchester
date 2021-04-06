@@ -5,20 +5,37 @@ import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 
 export function valueToStep(
   value: number,
-  config: { min: number; max: number; steps: number },
+  config: { min: number; max: number; steps: number; logarithmic?: boolean },
 ): number {
-  const stepSize = (config.max - config.min) / config.steps
-  const res = Math.round((value - config.min) / stepSize)
-  return res
+  if (config.logarithmic ?? false) {
+    const shift = config.min > 0 ? 0 : 1 - config.min
+    const scaleMin = config.min + shift
+    const scaleMax = config.max + shift
+    const root = Math.pow(scaleMax / scaleMin, 1 / (config.steps - 1))
+    return Math.log((value + shift) / scaleMin) / Math.log(root)
+  } else {
+    const stepSize = (config.max - config.min) / config.steps
+    const res = Math.round((value - config.min) / stepSize)
+    return res
+  }
 }
 
 export function stepToValue(
   step: number,
-  config: { min: number; max: number; steps: number },
+  config: { min: number; max: number; steps: number; logarithmic?: boolean },
 ): number {
-  const stepSize = (config.max - config.min) / config.steps
-  const res = config.min + step * stepSize
-  return res
+  if (config.logarithmic ?? false) {
+    const shift = config.min > 0 ? 0 : 1 - config.min
+    const scaleMin = config.min + shift
+    const scaleMax = config.max + shift
+    const root = Math.pow(scaleMax / scaleMin, 1 / (config.steps - 1))
+    const scaleVal = scaleMin * Math.pow(root, step)
+    return scaleVal - shift
+  } else {
+    const stepSize = (config.max - config.min) / config.steps
+    const res = config.min + step * stepSize
+    return res
+  }
 }
 
 /**

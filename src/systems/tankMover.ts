@@ -119,7 +119,7 @@ export const update = (simState: SimState, dt: number): void => {
 
     // apply sources of external velocity
     for (const event of simState.frameEvents) {
-      if (event.entityId !== id) {
+      if (!('entityId' in event) || event.entityId !== id) {
         continue
       }
 

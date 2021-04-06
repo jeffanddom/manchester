@@ -1,6 +1,8 @@
 import { mat4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
+import { FrameEventType } from './FrameEvent'
+
 import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
@@ -179,5 +181,11 @@ export const update = (simState: SimState, dt: number): void => {
         owner: id,
       }),
     )
+
+    simState.frameEvents.push({
+      type: FrameEventType.TurretShoot,
+      position: vec2.clone(bulletPos),
+      orientation: newOrientation,
+    })
   }
 }

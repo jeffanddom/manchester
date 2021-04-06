@@ -10,5 +10,5 @@ export const ClientAssets: {
   readonly models: Map<string, gltf.Document>
 } = {
   emitters,
-  models: models,
+  models,
 }

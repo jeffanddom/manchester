@@ -5,6 +5,7 @@ import { stepToValue, valueToStep } from './util'
 
 export function ScaledRange(
   props: {
+    logarithmic?: boolean
     min: number
     max: number
     steps: number

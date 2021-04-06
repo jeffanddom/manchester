@@ -1,4 +1,5 @@
 import { mat4, quat, vec3, vec4 } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
@@ -102,6 +103,11 @@ export const update = (simState: SimState): void => {
       type: FrameEventType.TankHit,
       entityId: targetId,
       hitAngle: transform.orientation,
+    })
+
+    simState.frameEvents.push({
+      type: FrameEventType.BulletHit,
+      position: vec2.clone(transform.position),
     })
 
     // Debug draw hits

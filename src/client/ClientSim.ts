@@ -36,7 +36,6 @@ import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import { FrameEvent, FrameEventType } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
-import { defaultBasicEmitterConfig } from '~/tools/particletoy/util'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { discardUntil } from '~/util/array'
@@ -522,6 +521,39 @@ export class ClientSim {
         this.dedupLog.add(frameNumber, event)
 
         switch (event.type) {
+          case FrameEventType.BulletHit:
+            {
+              const origin = vec3.fromValues(
+                event.position[0],
+                0.5,
+                event.position[1],
+              )
+              createEmitterSet({
+                origin,
+                orientation: math.QuatIdentity,
+                settings: ClientAssets.emitters.get('bulletExplosion')!,
+                addEmitter: this.addEmitter,
+              })
+            }
+            break
+
+          case FrameEventType.EntityDestroyed:
+            {
+              const origin = vec3.fromValues(
+                event.position[0],
+                0.5,
+                event.position[1],
+              )
+              const orientation = quat.fromEuler(quat.create(), 90, 0, 0)
+              createEmitterSet({
+                origin,
+                orientation,
+                settings: ClientAssets.emitters.get('entityExplosion')!,
+                addEmitter: this.addEmitter,
+              })
+            }
+            break
+
           case FrameEventType.TankShoot:
             {
               const entitiyTransform = this.entityManager.transforms.get(
@@ -540,8 +572,32 @@ export class ClientSim {
                 // to the Z axis.
                 -event.orientation,
               )
-              const emitterConfig = defaultBasicEmitterConfig()
-              emitterConfig.emitterTtl = 0.25
+
+              const settings = ClientAssets.emitters.get('tankShot')!
+              createEmitterSet({
+                origin,
+                orientation,
+                settings,
+                addEmitter: this.addEmitter,
+              })
+            }
+            break
+
+          case FrameEventType.TurretShoot:
+            {
+              const origin = vec3.fromValues(
+                event.position[0],
+                0.5,
+                event.position[1],
+              )
+              const orientation = quat.setAxisAngle(
+                quat.create(),
+                math.PlusY3,
+                // Sim orientation is expressed as clockwise rotation on a 2D
+                // plane, but it needs to be negated when the Y axis is translated
+                // to the Z axis.
+                -event.orientation,
+              )
 
               const settings = ClientAssets.emitters.get('tankShot')!
               createEmitterSet({
