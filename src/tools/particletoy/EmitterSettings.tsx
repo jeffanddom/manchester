@@ -1,5 +1,4 @@
 import { vec3 } from 'gl-matrix'
-import Slider, { Range } from 'rc-slider'
 import React, { ReactElement, useState } from 'react'
 import 'rc-slider/assets/index.css'
 
