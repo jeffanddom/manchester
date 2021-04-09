@@ -22,6 +22,28 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 }
 
+function Label(props: {
+  text: string
+  value: number | [number, number]
+}): ReactElement {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+      }}
+    >
+      <span>{props.text}</span>
+      <span>
+        {Array.isArray(props.value)
+          ? props.value.map((n) => n.toFixed(2)).join('-')
+          : props.value.toFixed(2)}
+      </span>
+    </div>
+  )
+}
+
 export const EmitterSettings = (props: {
   index: number
   settings: BasicEmitterSettings
@@ -40,10 +62,9 @@ export const EmitterSettings = (props: {
       </div>
 
       <Foldable title="Timing">
-        Emitter TTL
-        {props.settings.emitterTtl}
+        <Label text="Emitter TTL" value={props.settings.emitterTtl} />
         <ScaledSlider
-          logarithmic
+          exponential
           min={0}
           max={10}
           steps={100}
@@ -54,7 +75,7 @@ export const EmitterSettings = (props: {
             forceUpdate()
           }}
         />
-        Start offset
+        <Label text="Start offset" value={props.settings.startOffset} />
         <ScaledSlider
           min={0}
           max={10}
@@ -69,9 +90,12 @@ export const EmitterSettings = (props: {
       </Foldable>
 
       <Foldable title="Spawn rate">
-        <Slider
+        <Label text="Particles per second" value={props.settings.spawnRate} />
+        <ScaledSlider
+          exponential
           min={0}
-          max={1000}
+          max={2000}
+          steps={100}
           value={props.settings.spawnRate}
           onChange={(v) => {
             props.settings.spawnRate = v
@@ -81,8 +105,15 @@ export const EmitterSettings = (props: {
       </Foldable>
 
       <Foldable title="Scale">
-        Width
+        <Label
+          text="Width"
+          value={[
+            props.settings.scaleRange[0][0],
+            props.settings.scaleRange[1][0],
+          ]}
+        />
         <ScaledRange
+          exponential
           min={0}
           max={2}
           steps={50}
@@ -98,8 +129,15 @@ export const EmitterSettings = (props: {
             forceUpdate()
           }}
         />
-        Height
+        <Label
+          text="Width"
+          value={[
+            props.settings.scaleRange[0][1],
+            props.settings.scaleRange[1][1],
+          ]}
+        />
         <ScaledRange
+          exponential
           min={0}
           max={2}
           steps={50}
@@ -134,26 +172,33 @@ export const EmitterSettings = (props: {
             forceUpdate()
           }}
         ></GradientPicker>
-        Alpha
-        <Range
+        <Label
+          text="Alpha"
+          value={[props.settings.alphaRange[0], props.settings.alphaRange[1]]}
+        />
+        <ScaledRange
           min={0}
-          max={100}
+          max={1}
+          steps={100}
           draggableTrack
           pushable
-          value={[
-            props.settings.alphaRange[0] * 100,
-            props.settings.alphaRange[1] * 100,
-          ]}
+          value={[props.settings.alphaRange[0], props.settings.alphaRange[1]]}
           onChange={([min, max]) => {
-            props.settings.alphaRange[0] = min / 100.0
-            props.settings.alphaRange[1] = max / 100.0
+            props.settings.alphaRange[0] = min
+            props.settings.alphaRange[1] = max
             forceUpdate()
           }}
         />
       </Foldable>
 
       <Foldable title="Spread">
-        Spread X
+        <Label
+          text="Spread X"
+          value={[
+            props.settings.spreadXRange[0],
+            props.settings.spreadXRange[1],
+          ]}
+        />
         <ScaledRange
           min={-3.14}
           max={3.14}
@@ -175,7 +220,13 @@ export const EmitterSettings = (props: {
             forceUpdate()
           }}
         />
-        Spread Y
+        <Label
+          text="Spread Y"
+          value={[
+            props.settings.spreadYRange[0],
+            props.settings.spreadYRange[1],
+          ]}
+        />
         <ScaledRange
           min={-3.14}
           max={3.14}
@@ -199,8 +250,94 @@ export const EmitterSettings = (props: {
         />
       </Foldable>
 
-      <Foldable title="Speed">
+      <Foldable title="Position offset">
+        <Label
+          text="X"
+          value={[
+            props.settings.translationOffsetRange[0][0],
+            props.settings.translationOffsetRange[1][0],
+          ]}
+        />
         <ScaledRange
+          min={-10}
+          max={10}
+          steps={100}
+          draggableTrack
+          pushable
+          marks={{
+            50: { label: '0', style: { color: 'white' } },
+          }}
+          value={[
+            props.settings.translationOffsetRange[0][0],
+            props.settings.translationOffsetRange[1][0],
+          ]}
+          onChange={([min, max]) => {
+            props.settings.translationOffsetRange[0][0] = min
+            props.settings.translationOffsetRange[1][0] = max
+            forceUpdate()
+          }}
+        />
+        <Label
+          text="Y"
+          value={[
+            props.settings.translationOffsetRange[0][1],
+            props.settings.translationOffsetRange[1][1],
+          ]}
+        />
+        <ScaledRange
+          min={-10}
+          max={10}
+          steps={100}
+          draggableTrack
+          pushable
+          marks={{
+            50: { label: '0', style: { color: 'white' } },
+          }}
+          value={[
+            props.settings.translationOffsetRange[0][1],
+            props.settings.translationOffsetRange[1][1],
+          ]}
+          onChange={([min, max]) => {
+            props.settings.translationOffsetRange[0][1] = min
+            props.settings.translationOffsetRange[1][1] = max
+            forceUpdate()
+          }}
+        />
+        <Label
+          text="Z"
+          value={[
+            props.settings.translationOffsetRange[0][2],
+            props.settings.translationOffsetRange[1][2],
+          ]}
+        />
+        <ScaledRange
+          min={-10}
+          max={10}
+          steps={100}
+          draggableTrack
+          pushable
+          marks={{
+            50: { label: '0', style: { color: 'white' } },
+          }}
+          value={[
+            props.settings.translationOffsetRange[0][2],
+            props.settings.translationOffsetRange[1][2],
+          ]}
+          onChange={([min, max]) => {
+            props.settings.translationOffsetRange[0][2] = min
+            props.settings.translationOffsetRange[1][2] = max
+            forceUpdate()
+          }}
+        />
+      </Foldable>
+
+      <Foldable title="Speed">
+        <Label
+          text="Tiles per second"
+          value={[props.settings.speedRange[0], props.settings.speedRange[1]]}
+        />
+        <ScaledRange
+          exponential
           min={0}
           max={10}
           steps={100}
@@ -216,7 +353,15 @@ export const EmitterSettings = (props: {
       </Foldable>
 
       <Foldable title="Particle TTL">
+        <Label
+          text="Seconds"
+          value={[
+            props.settings.particleTtlRange[0],
+            props.settings.particleTtlRange[1],
+          ]}
+        />
         <ScaledRange
+          exponential
           min={0}
           max={4}
           steps={40}
@@ -235,13 +380,14 @@ export const EmitterSettings = (props: {
       </Foldable>
 
       <Foldable title="Gravity">
+        <Label text="Tiles/second/second" value={props.settings.gravity[1]} />
         <ScaledSlider
-          min={0}
-          max={10}
+          min={-25}
+          max={25}
           steps={100}
-          value={-props.settings.gravity[1]}
+          value={props.settings.gravity[1]}
           onChange={(v) => {
-            props.settings.gravity = vec3.fromValues(0, -v, 0)
+            props.settings.gravity = vec3.fromValues(0, v, 0)
             forceUpdate()
           }}
         />

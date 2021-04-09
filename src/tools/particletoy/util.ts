@@ -5,9 +5,9 @@ import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
 
 export function valueToStep(
   value: number,
-  config: { min: number; max: number; steps: number; logarithmic?: boolean },
+  config: { min: number; max: number; steps: number; exponential?: boolean },
 ): number {
-  if (config.logarithmic ?? false) {
+  if (config.exponential ?? false) {
     const shift = config.min > 0 ? 0 : 1 - config.min
     const scaleMin = config.min + shift
     const scaleMax = config.max + shift
@@ -22,9 +22,9 @@ export function valueToStep(
 
 export function stepToValue(
   step: number,
-  config: { min: number; max: number; steps: number; logarithmic?: boolean },
+  config: { min: number; max: number; steps: number; exponential?: boolean },
 ): number {
-  if (config.logarithmic ?? false) {
+  if (config.exponential ?? false) {
     const shift = config.min > 0 ? 0 : 1 - config.min
     const scaleMin = config.min + shift
     const scaleMax = config.max + shift

@@ -191,6 +191,14 @@ export class ClientSim {
     const playerPos = vec3.create()
     this.getPlayerPos(playerPos)
     this.cameraController.reset(playerPos)
+
+    // Add some environmental effects
+    createEmitterSet({
+      origin: vec3.create(),
+      orientation: quat.fromEuler(quat.create(), 0, 230, 0),
+      settings: ClientAssets.emitters.get('fallingLeaves')!,
+      addEmitter: this.addEmitter,
+    })
   }
 
   setState(s: GameState): void {
@@ -561,7 +569,7 @@ export class ClientSim {
               )!
               const origin = vec3.fromValues(
                 entitiyTransform.position[0],
-                0.5,
+                0.7,
                 entitiyTransform.position[1],
               )
               const orientation = quat.setAxisAngle(
@@ -587,7 +595,7 @@ export class ClientSim {
             {
               const origin = vec3.fromValues(
                 event.position[0],
-                0.5,
+                0.8,
                 event.position[1],
               )
               const orientation = quat.setAxisAngle(
