@@ -15,6 +15,8 @@ import * as AWS from 'aws-sdk'
 import * as util from '../util'
 
 import * as awsUtils from './awsUtils'
+import { Config, getConfig } from './config'
+import * as slack from './slack'
 import * as sshUtils from './sshUtils'
 
 class CloudDev {
@@ -39,7 +41,9 @@ class CloudDev {
       }
     | undefined
 
-  constructor() {
+  config: Config
+
+  constructor(config: Config) {
     this.ec2 = new AWS.EC2({ region: 'us-west-1' })
     this.az = 'us-west-1a'
     this.launchTemplateName = 'jeffanddom-cloud-dev-template-1'
@@ -49,6 +53,7 @@ class CloudDev {
     this.sshKnownHostsPath = process.env['HOME'] + '/.ssh/known_hosts'
     this.localPort = 3000
     this.remotePort = 3000
+    this.config = config
   }
 
   async run(): Promise<void> {
@@ -85,7 +90,13 @@ class CloudDev {
     }
     console.log(`instance: ${this.instanceId}`)
 
+    let quitting = false
     const onQuit = () => {
+      if (quitting) {
+        return
+      }
+      quitting = true
+
       this.cleanup()
         .then(() => {
           process.exit()
@@ -156,6 +167,7 @@ class CloudDev {
     // OS signal instead.
     util.preventDefaultTermination()
 
+    // Print some diagnostics
     console.log(`---
 cloud-dev is ready!
 * Remote hostname: ${this.remoteHost.name}
@@ -164,6 +176,22 @@ cloud-dev is ready!
   * Local port ${this.localPort} will be fowarded to remote port ${this.remotePort}
 * Press CTRL+C to stop instance
 ---`)
+
+    // Attempt to post to Slack
+    if (
+      this.config['slackApiToken'] !== undefined &&
+      this.config['slackChannel'] !== undefined
+    ) {
+      try {
+        await slack.postMessage({
+          message: `${this.awsUsername}'s dev server available at http://${this.remoteHost.name}:${this.remotePort}`,
+          token: this.config['slackApiToken'],
+          channel: this.config['slackChannel'],
+        })
+      } catch (err) {
+        console.error(`Error posting Slack notification: ${err}`)
+      }
+    }
   }
 
   async cleanup(): Promise<void> {
@@ -189,8 +217,8 @@ cloud-dev is ready!
   }
 }
 
-const cd = new CloudDev()
+const cd = new CloudDev(getConfig())
 cd.run().catch((e) => {
-  console.log(e)
+  console.error(e)
   process.exit(1)
 })

@@ -15,6 +15,21 @@ Get an IAM access key for your user account via the AWS console. Make sure the u
     - `jeffanddom-cloud-dev-1.pem`
     - The key you use for Github access, usually `~/.ssh/id_rsa`
 
+#### Slack
+
+For Slack notifications, add a file called `.cloud-dev` to your home directory with the following structure:
+
+```
+{
+  "slackApiToken": "token-goes-here",
+  "slackChannel": "#cloud-dev"
+}
+```
+
+The token should have `chat:write` scope, and be capable of posting messages to the channel specified by the `slackChannel` property.
+
+A token for the `jeffanddom` workspace is available [here](https://api.slack.com/apps/A01U093KANR/install-on-team).
+
 #### VSCode
 
 - Add the [Remote SSH extension](https://code.visualstudio.com/docs/remote/ssh).

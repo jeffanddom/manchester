@@ -108,9 +108,7 @@ async function main(): Promise<void> {
   await httpServer.start()
 }
 
-main()
-
-process.on('unhandledRejection', (err) => {
-  console.log(err)
+main().catch((err) => {
+  console.error(err)
   process.exit(1)
 })
