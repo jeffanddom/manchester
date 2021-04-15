@@ -92,6 +92,7 @@ class ParticleAttribData {
 export class ParticleSystem {
   private meshName: string
   private capacity: number
+  private droppedParticles: number
 
   // emitters
   private emitters: ParticleEmitter[]
@@ -121,6 +122,7 @@ export class ParticleSystem {
   public constructor(meshName: string, capacity: number) {
     this.meshName = meshName
     this.capacity = capacity
+    this.droppedParticles = 0
 
     this.emitters = []
 
@@ -170,7 +172,8 @@ export class ParticleSystem {
   public add(config: ParticleConfig): void {
     const index = this.freeList.pop()
     if (index === undefined) {
-      throw `particle system is full, can't add particle`
+      this.droppedParticles += 1
+      return
     }
 
     if (index > this.highWatermark) {
@@ -274,6 +277,11 @@ export class ParticleSystem {
       this.translations.getArray(trans, index3)
       vec3.add(trans, trans, vel)
       this.translations.setArray(trans, index3)
+    }
+
+    if (this.droppedParticles > 0) {
+      console.warn(`particle system (capacity ${this.capacity}) dropped particles: ${this.droppedParticles}`)
+      this.droppedParticles = 0
     }
   }
 
