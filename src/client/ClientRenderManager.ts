@@ -3,7 +3,7 @@ import { mat2d, mat4, vec4 } from 'gl-matrix'
 import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
 import { ModelModifiers } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
-import { Renderer2d } from '~/renderer/Renderer2d'
+import { Renderable2d, Renderer2d } from '~/renderer/Renderer2d'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { Immutable } from '~/types/immutable'
 import { RunningAverage } from '~/util/RunningAverage'
@@ -63,7 +63,11 @@ export class ClientRenderManager {
     this.renderer3d.syncViewportDimensions()
   }
 
-  update(renderables: Renderable[], world2ViewTransform: mat4): void {
+  update(
+    renderables: Renderable[],
+    world2ViewTransform: mat4,
+    renderables2d: Renderable2d[],
+  ): void {
     const now = time.current()
     this.renderFrameDurations.sample(now - this.lastRenderAt)
     this.lastRenderAt = now
@@ -93,6 +97,9 @@ export class ClientRenderManager {
     // Screenspace debug draw
     this.renderer2d.clear()
     this.renderer2d.setTransform(mat2d.identity(mat2d.create()))
+    for (const r of renderables2d) {
+      this.renderer2d.render(r)
+    }
     for (const r of this.debugDraw.get2d()) {
       this.renderer2d.render(r)
     }

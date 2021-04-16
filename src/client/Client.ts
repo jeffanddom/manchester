@@ -113,6 +113,7 @@ export class Client {
       this.renderManager.update(
         this.sim.getRenderables(),
         this.sim.camera.getWvTransform(mat4.create()),
+        this.sim.getRenderables2d(),
       )
       this.particleSystem.update(SIMULATION_PERIOD_S)
       this.particleSystem.render(this.renderManager.renderer3d)

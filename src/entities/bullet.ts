@@ -1,6 +1,7 @@
 import { vec2, vec4 } from 'gl-matrix'
 
 import * as bullet from '~/components/Bullet'
+import { BulletType } from '~/components/Bullet'
 import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import {
@@ -9,14 +10,21 @@ import {
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 
+const bulletColor: Record<BulletType, [number, number, number, number]> = {
+  [BulletType.Standard]: [1, 0, 0, 1],
+  [BulletType.Rocket]: [1, 1, 0, 1],
+}
+
 export const makeBullet = ({
-  position,
-  owner,
   orientation,
+  owner,
+  position,
+  type,
 }: {
-  position: vec2
-  owner: EntityId
   orientation: number
+  owner: EntityId
+  position: vec2
+  type: BulletType
 }): EntityComponents => {
   const e = makeDefaultEntity()
 
@@ -26,10 +34,10 @@ export const makeBullet = ({
   e.transform.position = vec2.clone(position)
   e.transform.orientation = orientation
 
-  e.bullet = bullet.make(e.transform.position)
+  e.bullet = bullet.make(e.transform.position, type)
   e.entityModel = {
     name: 'bullet',
-    color: vec4.fromValues(1, 0, 0, 1),
+    color: vec4.fromValues(...bulletColor[type]),
     modifiers: {},
   }
 

@@ -513,6 +513,13 @@ export class ClientSim {
     return res
   }
 
+  getRenderables2d(): Renderable2d[] {
+    return [
+      ...systems.playerHealthBar(this.entityManager, this.playerNumber!),
+      ...systems.weaponDisplay(this.entityManager, this.playerNumber!),
+    ]
+  }
+
   sendClientMessage(m: ClientMessage): void {
     this.uncommittedMessageHistory.push(m)
     this.serverConnection!.send(m)

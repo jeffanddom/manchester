@@ -17,4 +17,5 @@ export type ClientMessage = {
   playerNumber: number
   move?: ClientMoveUpdate
   attack?: ClientAttackUpdate
+  changeWeapon: boolean
 }

@@ -1,25 +1,34 @@
 import { vec2 } from 'gl-matrix'
 
-import { TILE_SIZE } from '~/constants'
 import { Immutable } from '~/types/immutable'
 
-const BULLET_RANGE = 10 * TILE_SIZE
+export enum BulletType {
+  Standard,
+  Rocket,
+}
+export const BULLET_TYPE_LENGTH = Object.values(BulletType).length / 2
 
 export type Bullet = {
   origin: vec2
-  range: number
+  lifetime: number
+  type: BulletType
+
+  currentSpeed?: number
 }
 
-export function make(origin: vec2): Bullet {
+export function make(origin: vec2, type: BulletType): Bullet {
   return {
     origin: vec2.clone(origin),
-    range: BULLET_RANGE,
+    lifetime: 0,
+    type: type,
   }
 }
 
 export function clone(b: Immutable<Bullet>): Bullet {
   return {
     origin: vec2.clone(b.origin),
-    range: b.range,
+    type: b.type,
+    lifetime: b.lifetime,
+    currentSpeed: b.currentSpeed,
   }
 }

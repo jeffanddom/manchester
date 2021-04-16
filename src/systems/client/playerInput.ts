@@ -16,6 +16,7 @@ export const keyMap = {
   moveDown: 'KeyS',
   moveLeft: 'KeyA',
   moveRight: 'KeyD',
+  switchWeapon: 'KeyQ',
   harvestMode: 'Digit1',
   buildTurretMode: 'Digit2',
   buildWallMode: 'Digit3',
@@ -42,6 +43,7 @@ export const update = (client: ClientSim, frame: number): void => {
   }
 
   const moveUpdate = handleMoveInput(client.keyboard)
+
   const attackUpdate = handleAttackInput({
     mouse: client.mouse,
     camera: client.camera,
@@ -52,6 +54,7 @@ export const update = (client: ClientSim, frame: number): void => {
     playerNumber: client.playerNumber,
     move: moveUpdate,
     attack: attackUpdate,
+    changeWeapon: client.keyboard.upKeys.has(keyMap.switchWeapon),
   })
 
   const playerPos = client.entityManager.transforms.get(playerId)!.position
@@ -66,9 +69,9 @@ export const update = (client: ClientSim, frame: number): void => {
           type: UnlitObjectType.Lines,
           // prettier-ignore
           positions: new Float32Array([
-              playerPos[0], 0, playerPos[1],
-              attackUpdate.targetPos[0], 0, attackUpdate.targetPos[1],
-            ]),
+            playerPos[0], 0, playerPos[1],
+            attackUpdate.targetPos[0], 0, attackUpdate.targetPos[1],
+          ]),
           color: vec4.fromValues(1, 0, 0, 1),
         },
       },

@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
+import { BulletType } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
@@ -176,9 +177,10 @@ export const update = (simState: SimState, dt: number): void => {
 
     entityManager.register(
       makeBullet({
-        position: bulletPos,
         orientation: newOrientation,
         owner: id,
+        position: bulletPos,
+        type: BulletType.Standard,
       }),
     )
 
