@@ -95,6 +95,7 @@ export const update = (simState: SimState): void => {
       type: FrameEventType.TankShoot,
       entityId: id,
       orientation: shooter.orientation,
+      bulletType: shooter.bulletType,
     })
 
     const bulletPos = radialTranslate2(

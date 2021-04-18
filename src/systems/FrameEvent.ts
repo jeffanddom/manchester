@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import { BulletType } from '~/components/Bullet'
 import { EntityId } from '~/entities/EntityId'
 
 export enum FrameEventType {
@@ -24,6 +25,7 @@ export interface TankShootEvent {
   type: FrameEventType.TankShoot
   entityId: EntityId
   orientation: number
+  bulletType: BulletType
 }
 
 export interface TankHitEvent {

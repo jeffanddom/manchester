@@ -2,6 +2,7 @@ import { mat4, vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
+import { BulletType } from '~/components/Bullet'
 import {
   DASH_COOLDOWN,
   DASH_DURATION,
@@ -138,11 +139,27 @@ export const update = (simState: SimState, dt: number): void => {
 
         case FrameEventType.TankShoot:
           {
-            const knockback = vec2.scale(
-              vec2.create(),
-              vec2.rotate(vec2.create(), North2, Zero2, event.orientation),
-              DEFAULT_HIT_KNOCKBACK,
-            )
+            const knockback = vec2.create()
+            switch (event.bulletType) {
+              case BulletType.Standard:
+                {
+                  vec2.scale(
+                    knockback,
+                    vec2.rotate(
+                      vec2.create(),
+                      North2,
+                      Zero2,
+                      event.orientation,
+                    ),
+                    DEFAULT_HIT_KNOCKBACK,
+                  )
+                }
+                break
+
+              default:
+                // no knockback by default
+                break
+            }
 
             vec2.sub(externalVelocity, externalVelocity, knockback)
           }
