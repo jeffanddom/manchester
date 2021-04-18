@@ -7,8 +7,8 @@ import {
   DASH_COOLDOWN,
   DASH_DURATION,
   DASH_SPEED,
-  DEFAULT_GUN_KICK as DEFAULT_GUN_RECOIL,
-  DEFAULT_GUN_KNOCKBACK as DEFAULT_HIT_KNOCKBACK,
+  DEFAULT_BULLET_KNOCKBACK,
+  DEFAULT_SHOT_RECOIL,
   EXTERNAL_VELOCITY_DECELERATION,
   TANK_ROT_SPEED,
   TANK_SPEED,
@@ -127,41 +127,46 @@ export const update = (simState: SimState, dt: number): void => {
       switch (event.type) {
         case FrameEventType.TankHit:
           {
-            const recoil = vec2.scale(
+            const knockback = vec2.scale(
               vec2.create(),
-              vec2.rotate(vec2.create(), North2, Zero2, event.hitAngle),
-              DEFAULT_GUN_RECOIL,
+              vec2.rotate(
+                vec2.create(),
+                North2,
+                Zero2,
+                event.hitAngle + Math.PI,
+              ),
+              DEFAULT_BULLET_KNOCKBACK,
             )
 
-            vec2.sub(externalVelocity, externalVelocity, recoil)
+            vec2.sub(externalVelocity, externalVelocity, knockback)
           }
           break
 
         case FrameEventType.TankShoot:
           {
-            const knockback = vec2.create()
+            const recoil = vec2.create()
             switch (event.bulletType) {
               case BulletType.Standard:
                 {
                   vec2.scale(
-                    knockback,
+                    recoil,
                     vec2.rotate(
                       vec2.create(),
                       North2,
                       Zero2,
                       event.orientation,
                     ),
-                    DEFAULT_HIT_KNOCKBACK,
+                    DEFAULT_SHOT_RECOIL,
                   )
                 }
                 break
 
               default:
-                // no knockback by default
+                // no recoil by default
                 break
             }
 
-            vec2.sub(externalVelocity, externalVelocity, knockback)
+            vec2.sub(externalVelocity, externalVelocity, recoil)
           }
           break
       }
