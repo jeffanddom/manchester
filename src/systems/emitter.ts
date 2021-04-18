@@ -113,22 +113,22 @@ export function update(entityManager: EntityManager, dt: number): void {
   }
 }
 
+// temporaries
+const rotatedPosOffset = vec2.create()
+const baseTranslation = vec3.create()
+const baseOrientation = quat.create()
+const translation = vec3.create()
+const orientation = quat.create()
+const rotVel = quat.create()
+const scale = vec3.create()
+const vel = vec3.create()
+const motionDir = vec3.create()
+const color = vec4.create()
+
 export function render(
   entityManager: EntityManager,
   add: (config: ParticleConfig) => void,
 ): void {
-  // temporaries
-  const rotatedPosOffset = vec2.create()
-  const baseTranslation = vec3.create()
-  const baseOrientation = quat.create()
-  const translation = vec3.create()
-  const orientation = quat.create()
-  const rotVel = quat.create()
-  const scale = vec3.create()
-  const vel = vec3.create()
-  const motionDir = vec3.create()
-  const color = vec4.create()
-
   for (const [entityId, ec] of entityManager.emitters) {
     const transform = entityManager.transforms.get(entityId)!
 
