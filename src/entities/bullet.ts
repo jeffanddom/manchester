@@ -12,7 +12,7 @@ import { EntityId } from '~/entities/EntityId'
 
 const bulletColor: Record<BulletType, [number, number, number, number]> = {
   [BulletType.Standard]: [1, 0, 0, 1],
-  [BulletType.Rocket]: [1, 1, 0, 1],
+  [BulletType.Rocket]: [1, 1, 0.5, 1],
 }
 
 export const makeBullet = ({
@@ -35,6 +35,7 @@ export const makeBullet = ({
   e.transform.orientation = orientation
 
   e.bullet = bullet.make(e.transform.position, type)
+
   e.entityModel = {
     name: 'bullet',
     color: vec4.fromValues(...bulletColor[type]),

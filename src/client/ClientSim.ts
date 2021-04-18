@@ -4,6 +4,7 @@ import { CameraController } from './CameraController'
 import { DedupLog } from './DedupLog'
 
 import { ClientAssets } from '~/assets/ClientAssets'
+import { CommonAssets } from '~/assets/CommonAssets'
 import { Camera3d } from '~/camera/Camera3d'
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
 import {
@@ -196,7 +197,7 @@ export class ClientSim {
     createEmitterSet({
       origin: vec3.create(),
       orientation: quat.fromEuler(quat.create(), 0, 230, 0),
-      settings: ClientAssets.emitters.get('fallingLeaves')!,
+      settings: CommonAssets.emitters.get('fallingLeaves')!,
       addEmitter: this.addEmitter,
     })
   }
@@ -546,7 +547,7 @@ export class ClientSim {
               createEmitterSet({
                 origin,
                 orientation: math.QuatIdentity,
-                settings: ClientAssets.emitters.get('bulletExplosion')!,
+                settings: CommonAssets.emitters.get('bulletExplosion')!,
                 addEmitter: this.addEmitter,
               })
             }
@@ -563,7 +564,7 @@ export class ClientSim {
               createEmitterSet({
                 origin,
                 orientation,
-                settings: ClientAssets.emitters.get('entityExplosion')!,
+                settings: CommonAssets.emitters.get('entityExplosion')!,
                 addEmitter: this.addEmitter,
               })
             }
@@ -588,7 +589,7 @@ export class ClientSim {
                 -event.orientation,
               )
 
-              const settings = ClientAssets.emitters.get('tankShot')!
+              const settings = CommonAssets.emitters.get('tankShot')!
               createEmitterSet({
                 origin,
                 orientation,
@@ -614,7 +615,7 @@ export class ClientSim {
                 -event.orientation,
               )
 
-              const settings = ClientAssets.emitters.get('tankShot')!
+              const settings = CommonAssets.emitters.get('tankShot')!
               createEmitterSet({
                 origin,
                 orientation,

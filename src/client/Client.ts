@@ -9,7 +9,9 @@ import { BrowserKeyboard } from '~/input/BrowserKeyboard'
 import { BrowserMouse } from '~/input/BrowserMouse'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { createServerConnectionWs } from '~/network/ServerConnection'
+import { ParticleConfig } from '~/particles/interfaces'
 import { ParticleSystem } from '~/particles/ParticleSystem'
+import * as emitter from '~/systems/emitter'
 import { Immutable } from '~/types/immutable'
 
 export class Client {
@@ -115,6 +117,13 @@ export class Client {
         this.sim.camera.getWvTransform(mat4.create()),
         this.sim.getRenderables2d(),
       )
+
+      // Collect new particles from emitter components
+      emitter.render(this.sim.entityManager, (config: ParticleConfig) => {
+        this.particleSystem.add(config)
+      })
+
+      // Simulate particles
       this.particleSystem.update(SIMULATION_PERIOD_S)
       this.particleSystem.render(this.renderManager.renderer3d)
     }

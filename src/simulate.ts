@@ -50,6 +50,7 @@ export const simulate = (
   gameState: GameState,
   dt: number,
 ): void => {
+  // Init transforms before any system can modify them.
   systems.transformInit(simState)
 
   systems.hiding(simState.entityManager)
@@ -66,9 +67,7 @@ export const simulate = (
 
   systems.damageable(simState)
 
-  simState.entityManager.update()
+  systems.emitter(simState.entityManager, dt)
 
-  // Particles
-  if (simState.phase !== SimulationPhase.ServerTick) {
-  }
+  simState.entityManager.update()
 }
