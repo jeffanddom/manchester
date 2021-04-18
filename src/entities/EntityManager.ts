@@ -15,6 +15,7 @@ import { EntityId } from '~/entities/EntityId'
 import { EntitySet } from '~/entities/EntitySet'
 import { EntityStateContainer } from '~/entities/EntityStateContainer'
 import { Type } from '~/entities/types'
+import { EmitterComponent, emitterClone } from '~/systems/emitter'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
 import {
@@ -47,6 +48,7 @@ export class EntityManager {
   damageables: ComponentTable<Damageable>
   damagers: ComponentTable<Damager>
   dropTypes: ComponentTable<PickupType>
+  emitters: ComponentTable<EmitterComponent>
   hitboxes: ComponentTable<Hitbox>
   moveables: EntitySet
   obscureds: EntitySet
@@ -83,6 +85,7 @@ export class EntityManager {
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new ComponentTable(damager.clone)
     this.dropTypes = new ComponentTable((c) => c)
+    this.emitters = new ComponentTable(emitterClone)
     this.entityModels = new ComponentTable((c) => c) // TODO: should we clone this?
     this.hitboxes = new ComponentTable(hitboxClone)
     this.moveables = new EntitySet()
@@ -105,6 +108,8 @@ export class EntityManager {
       this.damageables,
       this.damagers,
       this.dropTypes,
+      this.emitters,
+      this.entityModels,
       this.hitboxes,
       this.moveables,
       this.obscureds,
@@ -112,7 +117,6 @@ export class EntityManager {
       this.playerNumbers,
       this.playfieldClamped,
       this.renderables,
-      this.entityModels,
       this.shooters,
       this.tankMovers,
       this.targetables,
@@ -205,16 +209,20 @@ export class EntityManager {
       this.dropTypes.set(id, e.dropType)
     }
 
+    if (e.emitter !== undefined) {
+      this.emitters.set(id, e.emitter)
+    }
+
+    if (e.entityModel !== undefined) {
+      this.entityModels.set(id, e.entityModel)
+    }
+
     if (e.hitbox !== undefined) {
       this.hitboxes.set(id, e.hitbox)
     }
 
     if (e.moveable ?? false) {
       this.moveables.add(id)
-    }
-
-    if (e.playfieldClamped ?? false) {
-      this.playfieldClamped.add(id)
     }
 
     if (e.obscured ?? false) {
@@ -225,6 +233,10 @@ export class EntityManager {
       this.obscurings.add(id)
     }
 
+    if (e.playfieldClamped ?? false) {
+      this.playfieldClamped.add(id)
+    }
+
     if (e.playerNumber !== undefined) {
       this.playerNumbers.set(id, e.playerNumber)
     }
@@ -233,8 +245,8 @@ export class EntityManager {
       this.renderables.set(id, e.renderable)
     }
 
-    if (e.entityModel !== undefined) {
-      this.entityModels.set(id, e.entityModel)
+    if (e.shooter !== undefined) {
+      this.shooters.set(id, e.shooter)
     }
 
     if (e.tankMover !== undefined) {
@@ -247,10 +259,6 @@ export class EntityManager {
 
     if (e.team !== undefined) {
       this.teams.set(id, e.team)
-    }
-
-    if (e.shooter !== undefined) {
-      this.shooters.set(id, e.shooter)
     }
 
     if (e.transform !== undefined) {

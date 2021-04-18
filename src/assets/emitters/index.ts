@@ -1,6 +1,7 @@
 import bulletExplosion from './bulletExplosion.json'
 import entityExplosion from './entityExplosion.json'
 import fallingLeaves from './fallingLeaves.json'
+import rocketExhaust from './rocketExhaust.json'
 import tankShot from './tankShot.json'
 
 import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
@@ -11,14 +12,15 @@ const raw: Record<string, unknown> = {
   bulletExplosion,
   entityExplosion,
   fallingLeaves,
+  rocketExhaust,
   tankShot,
 }
 
-const record = Object.keys(raw).reduce((accum, k) => {
-  accum[k] = deepRehydrateFloat32Arrays(raw[k]) as BasicEmitterSettings[]
-  return accum
-}, {} as Record<string, BasicEmitterSettings[]>)
+const entries: [string, Immutable<BasicEmitterSettings>[]][] = Object.keys(
+  raw,
+).map((k) => [
+  k,
+  deepRehydrateFloat32Arrays(raw[k]) as Immutable<BasicEmitterSettings>[],
+])
 
-export const emitters: Map<string, Immutable<BasicEmitterSettings>[]> = new Map(
-  Object.entries(record),
-)
+export const emitters = new Map(entries)

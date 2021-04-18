@@ -7,6 +7,7 @@ import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { Type } from '~/entities/types'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
+import { EmitterComponent } from '~/systems/emitter'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent } from '~/systems/shooter'
 import { TankMoverComponent } from '~/systems/tankMover'
@@ -17,6 +18,8 @@ export interface EntityComponents {
   damageable?: Damageable
   damager?: Damager
   dropType?: PickupType
+  emitter?: EmitterComponent
+  entityModel?: EntityModel
   hitbox?: Hitbox
   moveable?: boolean
   obscured?: boolean
@@ -24,10 +27,9 @@ export interface EntityComponents {
   playerNumber?: number
   playfieldClamped?: boolean
   renderable?: string
-  entityModel?: EntityModel
   shooter?: ShooterComponent
-  targetable?: boolean
   tankMover?: TankMoverComponent
+  targetable?: boolean
   team?: Team
   transform?: Transform
   turret?: TurretComponent
