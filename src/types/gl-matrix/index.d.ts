@@ -31,6 +31,11 @@ declare module 'gl-matrix' {
   }
 
   export namespace quat {
+    export function multiply(
+      out: quat,
+      a: Immutable<quat>,
+      b: Immutable<quat>,
+    ): quat
     export function setAxisAngle(
       out: quat,
       axis: Immutable<vec3>,
@@ -75,6 +80,7 @@ declare module 'gl-matrix' {
   }
 
   export namespace vec3 {
+    export function add(out: vec3, a: Immutable<vec3>, b: Immutable<vec3>): vec3
     export function clone(a: Immutable<vec3>): vec3
     export function copy(out: vec3, src: Immutable<vec3>): vec3
     export function cross(
