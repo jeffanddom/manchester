@@ -1,7 +1,7 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
-import { SIMULATION_PERIOD_S } from '~/constants'
 import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
+import { Immutable } from '~/types/immutable'
 import { lerp } from '~/util/math'
 
 export class BellagioEmitter implements ParticleEmitter {
@@ -20,11 +20,11 @@ export class BellagioEmitter implements ParticleEmitter {
   }
 
   public update(
-    _dt: number,
-    addParticle: (config: ParticleConfig) => void,
+    dt: number,
+    addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void {
-    this.potentialParticles += 1000 * SIMULATION_PERIOD_S
-    this.direction += SIMULATION_PERIOD_S * 2
+    this.potentialParticles += 1000 * dt
+    this.direction += dt * 2
     while (this.potentialParticles >= 1) {
       this.potentialParticles -= 1
 

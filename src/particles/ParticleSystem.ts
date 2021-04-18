@@ -11,6 +11,7 @@ import {
 } from '~/renderer/interfaces'
 import { Renderer3d } from '~/renderer/Renderer3d'
 import { ShaderAttrib } from '~/renderer/shaders/common'
+import { Immutable } from '~/types/immutable'
 import { QuatIdentity } from '~/util/math'
 import { PriorityQueue } from '~/util/PriorityQueue'
 
@@ -169,7 +170,7 @@ export class ParticleSystem {
     this.emitters.push(emitter)
   }
 
-  public add(config: ParticleConfig): void {
+  public add(config: Immutable<ParticleConfig>): void {
     const index = this.freeList.pop()
     if (index === undefined) {
       this.droppedParticles += 1
@@ -209,7 +210,7 @@ export class ParticleSystem {
    */
   public update(dt: number): void {
     // Simulate emitters
-    const addParticle = (config: ParticleConfig): void => {
+    const addParticle = (config: Immutable<ParticleConfig>): void => {
       this.add(config)
     }
     for (const emitter of this.emitters) {
@@ -280,7 +281,9 @@ export class ParticleSystem {
     }
 
     if (this.droppedParticles > 0) {
-      console.warn(`particle system (capacity ${this.capacity}) dropped particles: ${this.droppedParticles}`)
+      console.warn(
+        `particle system (capacity ${this.capacity}) dropped particles: ${this.droppedParticles}`,
+      )
       this.droppedParticles = 0
     }
   }

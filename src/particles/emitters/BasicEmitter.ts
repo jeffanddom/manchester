@@ -42,9 +42,9 @@ export interface BasicEmitterSettings {
  */
 export const emit: (
   settings: Immutable<BasicEmitterSettings>,
-  baseTranslation: vec3,
-  baseOrientation: quat,
-  addParticle: (config: ParticleConfig) => void,
+  baseTranslation: Immutable<vec3>,
+  baseOrientation: Immutable<quat>,
+  addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
   // We use an immediately-evaluated function to close over some temporary
   // buffers that don't need to be re-allocated on every call.
@@ -61,7 +61,7 @@ export const emit: (
     settings: Immutable<BasicEmitterSettings>,
     baseTranslation: Immutable<vec3>,
     baseOrientation: Immutable<quat>,
-    addParticle: (config: ParticleConfig) => void,
+    addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void => {
     const ttl = lerp(
       settings.particleTtlRange[0],
@@ -216,7 +216,7 @@ export class BasicEmitter implements ParticleEmitter {
 
   public update(
     dt: number,
-    addParticle: (config: ParticleConfig) => void,
+    addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void {
     if (!this.active) {
       return

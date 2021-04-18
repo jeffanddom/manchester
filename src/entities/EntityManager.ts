@@ -233,12 +233,12 @@ export class EntityManager {
       this.obscurings.add(id)
     }
 
-    if (e.playfieldClamped ?? false) {
-      this.playfieldClamped.add(id)
-    }
-
     if (e.playerNumber !== undefined) {
       this.playerNumbers.set(id, e.playerNumber)
+    }
+
+    if (e.playfieldClamped ?? false) {
+      this.playfieldClamped.add(id)
     }
 
     if (e.renderable !== undefined) {

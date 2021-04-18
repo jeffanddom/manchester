@@ -104,7 +104,7 @@ export function update(entityManager: EntityManager, dt: number): void {
 
 export const render: (
   entityManager: EntityManager,
-  addParticle: (config: ParticleConfig) => void,
+  addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
   // We use an immediately-evaluated function to close over some temporary
   // buffers that don't need to be re-allocated on every call.
@@ -115,7 +115,7 @@ export const render: (
 
   return (
     entityManager: EntityManager,
-    addParticle: (config: ParticleConfig) => void,
+    addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void => {
     for (const [entityId, ec] of entityManager.emitters) {
       const transform = entityManager.transforms.get(entityId)!

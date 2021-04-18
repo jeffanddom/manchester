@@ -119,9 +119,12 @@ export class Client {
       )
 
       // Collect new particles from emitter components
-      emitter.render(this.sim.entityManager, (config: ParticleConfig) => {
-        this.particleSystem.add(config)
-      })
+      emitter.render(
+        this.sim.entityManager,
+        (config: Immutable<ParticleConfig>) => {
+          this.particleSystem.add(config)
+        },
+      )
 
       // Simulate particles
       this.particleSystem.update(SIMULATION_PERIOD_S)

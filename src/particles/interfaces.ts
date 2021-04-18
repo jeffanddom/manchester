@@ -14,6 +14,9 @@ export interface ParticleConfig {
 }
 
 export interface ParticleEmitter {
-  update(dt: number, addParticle: (config: ParticleConfig) => void): void
+  update(
+    dt: number,
+    addParticle: (config: Immutable<ParticleConfig>) => void,
+  ): void
   isActive(): boolean
 }
