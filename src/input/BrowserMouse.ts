@@ -5,12 +5,14 @@ import { IMouse, MouseButton, mouseButtonFromRaw } from './interfaces'
 export class BrowserMouse implements IMouse {
   private pos: vec2 | undefined
   private down: Set<MouseButton>
+  private held: Set<MouseButton>
   private up: Set<MouseButton>
   private scroll: number
 
   constructor(document: Document) {
     this.pos = undefined
     this.down = new Set()
+    this.held = new Set()
     this.up = new Set()
     this.scroll = 0
 
@@ -22,15 +24,17 @@ export class BrowserMouse implements IMouse {
       const b = mouseButtonFromRaw(event.button)
       if (b !== undefined) {
         this.down.add(b)
+        this.held.add(b)
       }
     })
 
     document.addEventListener('mouseup', (event) => {
       const b = mouseButtonFromRaw(event.button)
       if (b !== undefined) {
-        if (this.down.has(b)) {
+        if (this.held.has(b)) {
           this.up.add(b)
           this.down.delete(b)
+          this.held.delete(b)
         }
       }
     })
@@ -48,11 +52,13 @@ export class BrowserMouse implements IMouse {
     // focus
     document.addEventListener('mouseout', (_event) => {
       this.pos = undefined
+      this.held = new Set()
       this.down = new Set()
     })
 
     document.addEventListener('focusout', () => {
       this.pos = undefined
+      this.held = new Set()
       this.down = new Set()
     })
   }
@@ -72,6 +78,10 @@ export class BrowserMouse implements IMouse {
     return this.scroll
   }
 
+  isHeld(b: MouseButton): boolean {
+    return this.held.has(b)
+  }
+
   isDown(b: MouseButton): boolean {
     return this.down.has(b)
   }
@@ -81,6 +91,7 @@ export class BrowserMouse implements IMouse {
   }
 
   update(): void {
+    this.down.clear()
     this.up.clear()
     this.scroll = 0
   }

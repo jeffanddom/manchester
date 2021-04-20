@@ -155,6 +155,7 @@ const handleAttackInput = ({
 
   return {
     targetPos,
-    firing: mouse.isDown(MouseButton.LEFT),
+    fireHeld: mouse.isHeld(MouseButton.LEFT),
+    fireDown: mouse.isDown(MouseButton.LEFT),
   }
 }

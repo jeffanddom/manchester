@@ -7,7 +7,16 @@ import { BULLET_TYPE_LENGTH, BulletType } from '~/components/Bullet'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { SimState } from '~/simulate'
+import * as emitter from '~/systems/emitter'
 import { PlusY3, getAngle, radialTranslate2 } from '~/util/math'
+
+const firingInformation: Record<
+  BulletType,
+  { cooldown: number; mode: 'down' | 'held' }
+> = {
+  [BulletType.Standard]: { cooldown: 15, mode: 'held' },
+  [BulletType.Rocket]: { cooldown: 18, mode: 'down' },
+}
 
 export type ShooterComponent = {
   lastFiredFrame: number
@@ -75,11 +84,21 @@ export const update = (simState: SimState): void => {
       },
     })
 
-    if (
-      !message.attack.firing ||
-      (shooter.lastFiredFrame !== -1 &&
-        message.frame - shooter.lastFiredFrame < 15)
-    ) {
+    let fireTriggered = false
+    switch (firingInformation[shooter.bulletType].mode) {
+      case 'held':
+        fireTriggered = message.attack.fireHeld
+        break
+      case 'down':
+        fireTriggered = message.attack.fireDown
+        break
+    }
+    const cooldown = firingInformation[shooter.bulletType].cooldown
+    const coolingDown =
+      shooter.lastFiredFrame !== -1 &&
+      message.frame - shooter.lastFiredFrame < cooldown
+
+    if (!fireTriggered || coolingDown) {
       if (!glMatrix.equals(newAngle, shooter.orientation)) {
         simState.entityManager.shooters.update(id, { orientation: newAngle })
       }
@@ -97,6 +116,11 @@ export const update = (simState: SimState): void => {
       orientation: shooter.orientation,
       bulletType: shooter.bulletType,
     })
+
+    simState.entityManager.emitters.set(
+      id,
+      emitter.make('tankShot', vec2.fromValues(0, 0), 0),
+    )
 
     const bulletPos = radialTranslate2(
       vec2.create(),

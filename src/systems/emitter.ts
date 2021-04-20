@@ -6,7 +6,7 @@ import { EntityManager } from '~/entities/EntityManager'
 import { BasicEmitterSettings, emit } from '~/particles/emitters/BasicEmitter'
 import { ParticleConfig } from '~/particles/interfaces'
 import { Immutable } from '~/types/immutable'
-import { Zero2 } from '~/util/math'
+import { PlusY3, Zero2 } from '~/util/math'
 
 export interface EmitterComponent {
   // TODO: support multiple emitter sets
@@ -102,7 +102,7 @@ export function update(entityManager: EntityManager, dt: number): void {
   }
 }
 
-export const render: (
+export const emitParticles: (
   entityManager: EntityManager,
   addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
@@ -119,20 +119,26 @@ export const render: (
   ): void => {
     for (const [entityId, ec] of entityManager.emitters) {
       const transform = entityManager.transforms.get(entityId)!
+      const shooter = entityManager.shooters.get(entityId)
+
+      let orientation2: number = transform.orientation + ec.rotOffset
+      let yOffset = 0.5
+      if (shooter !== undefined) {
+        orientation2 = shooter.orientation
+        yOffset = 0.7
+      }
 
       // Set base translation and orientation for particles
-      const orientation2 = transform.orientation + ec.rotOffset
       vec2.rotate(rotatedPosOffset, ec.posOffset, Zero2, orientation2)
 
       baseTranslation[0] = transform.position[0] + rotatedPosOffset[0]
-      baseTranslation[1] = 0.5 // TODO: make this configurable when entities are in 3-space
+      baseTranslation[1] = yOffset // TODO: make this configurable when entities are in 3-space
       baseTranslation[2] = transform.position[1] + rotatedPosOffset[1]
 
-      quat.fromEuler(
+      quat.setAxisAngle(
         baseOrientation,
-        0,
+        PlusY3,
         -orientation2, // negate when mapping 2-space +Y to 3-space -Z
-        0,
       )
 
       for (let e = 0; e < ec.settings.length; e++) {

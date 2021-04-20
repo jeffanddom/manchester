@@ -57,6 +57,7 @@ export function mouseButtonFromRaw(raw: number): MouseButton | undefined {
 export interface IMouse {
   getPos: () => vec2 | undefined
   isDown: (b: MouseButton) => boolean
+  isHeld: (b: MouseButton) => boolean
   isUp: (b: MouseButton) => boolean
   getScroll: () => number
   reset: () => void

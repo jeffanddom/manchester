@@ -572,30 +572,6 @@ export class ClientSim {
 
           case FrameEventType.TankShoot:
             {
-              const entitiyTransform = this.entityManager.transforms.get(
-                event.entityId,
-              )!
-              const origin = vec3.fromValues(
-                entitiyTransform.position[0],
-                0.7,
-                entitiyTransform.position[1],
-              )
-              const orientation = quat.setAxisAngle(
-                quat.create(),
-                math.PlusY3,
-                // Sim orientation is expressed as clockwise rotation on a 2D
-                // plane, but it needs to be negated when the Y axis is translated
-                // to the Z axis.
-                -event.orientation,
-              )
-
-              const settings = CommonAssets.emitters.get('tankShot')!
-              createEmitterSet({
-                origin,
-                orientation,
-                settings,
-                addEmitter: this.addEmitter,
-              })
             }
             break
 

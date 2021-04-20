@@ -9,7 +9,8 @@ export type ClientMoveUpdate = {
 
 export type ClientAttackUpdate = {
   targetPos: vec2
-  firing: boolean
+  fireHeld: boolean
+  fireDown: boolean
 }
 
 export type ClientMessage = {

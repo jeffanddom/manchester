@@ -43,7 +43,7 @@ export const makeBullet = ({
   }
 
   e.damager = {
-    damageValue: 1,
+    damageValue: type === BulletType.Rocket ? 5 : 1,
     hitbox: {
       offset: vec2.fromValues(-TILE_SIZE / 12, -TILE_SIZE / 12),
       dimensions: vec2.fromValues(TILE_SIZE / 6, TILE_SIZE / 6),
