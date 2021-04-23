@@ -13,42 +13,44 @@ import { EntityId } from '~/entities/EntityId'
 const bulletColor: Record<BulletType, [number, number, number, number]> = {
   [BulletType.Standard]: [1, 0, 0, 1],
   [BulletType.Rocket]: [1, 1, 0.5, 1],
+  [BulletType.Mortar]: [0.2, 0.2, 0.5, 1],
 }
 
 export const makeBullet = ({
   orientation,
   owner,
-  position,
-  type,
+  config,
 }: {
   orientation: number
   owner: EntityId
-  position: vec2
-  type: BulletType
+  config: bullet.BulletConfig
 }): EntityComponents => {
   const e = makeDefaultEntity()
 
   e.moveable = true
 
   e.transform = transform.make()
-  e.transform.position = vec2.clone(position)
+  e.transform.position = vec2.clone(config.origin)
   e.transform.orientation = orientation
 
-  e.bullet = bullet.make(e.transform.position, type)
+  e.bullet = bullet.make(config)
 
   e.entityModel = {
     name: 'bullet',
-    color: vec4.fromValues(...bulletColor[type]),
+    color: vec4.fromValues(...bulletColor[config.type]),
     modifiers: {},
   }
 
-  e.damager = {
-    damageValue: type === BulletType.Rocket ? 5 : 1,
-    hitbox: {
-      offset: vec2.fromValues(-TILE_SIZE / 12, -TILE_SIZE / 12),
-      dimensions: vec2.fromValues(TILE_SIZE / 6, TILE_SIZE / 6),
-    },
-    immuneList: [owner],
+  // Mortars don't do damage until they reach their target.
+  if (config.type !== BulletType.Mortar) {
+    e.damager = {
+      damageValue: config.type === BulletType.Rocket ? 5 : 1,
+      hitbox: {
+        offset: vec2.fromValues(-TILE_SIZE / 12, -TILE_SIZE / 12),
+        dimensions: vec2.fromValues(TILE_SIZE / 6, TILE_SIZE / 6),
+      },
+      immuneList: [owner],
+    }
   }
 
   return e

@@ -49,6 +49,7 @@ export class EntityManager {
   damagers: ComponentTable<Damager>
   dropTypes: ComponentTable<PickupType>
   emitters: ComponentTable<EmitterComponent>
+  explosions: EntitySet
   hitboxes: ComponentTable<Hitbox>
   moveables: EntitySet
   obscureds: EntitySet
@@ -87,6 +88,7 @@ export class EntityManager {
     this.dropTypes = new ComponentTable((c) => c)
     this.emitters = new ComponentTable(emitterClone)
     this.entityModels = new ComponentTable((c) => c) // TODO: should we clone this?
+    this.explosions = new EntitySet()
     this.hitboxes = new ComponentTable(hitboxClone)
     this.moveables = new EntitySet()
     this.obscureds = new EntitySet()
@@ -110,6 +112,7 @@ export class EntityManager {
       this.dropTypes,
       this.emitters,
       this.entityModels,
+      this.explosions,
       this.hitboxes,
       this.moveables,
       this.obscureds,
@@ -138,18 +141,6 @@ export class EntityManager {
     })
   }
 
-  public update(): void {
-    for (const id of this.toDelete) {
-      for (const container of this.allContainers) {
-        container.delete(id)
-      }
-
-      this.unindexEntity(id)
-      this.predictedDeletes.add(id)
-    }
-    this.toDelete = new SortedSet()
-  }
-
   public undoPrediction(): void {
     for (const container of this.allContainers) {
       container.rollback()
@@ -176,6 +167,24 @@ export class EntityManager {
     this.nextEntityIdCommitted = this.nextEntityIdUncommitted
     this.predictedRegistrations = new SortedSet()
     this.predictedDeletes = new SortedSet()
+  }
+
+  public postFrameUpdate(): void {
+    for (const id of this.toDelete) {
+      for (const container of this.allContainers) {
+        container.delete(id)
+      }
+
+      this.unindexEntity(id)
+
+      if (this.predictedRegistrations.has(id)) {
+        // Single-frame entity case
+        this.predictedRegistrations.delete(id)
+      } else {
+        this.predictedDeletes.add(id)
+      }
+    }
+    this.toDelete = new SortedSet()
   }
 
   public getPlayerId(playerNumber: number): EntityId | undefined {
@@ -215,6 +224,10 @@ export class EntityManager {
 
     if (e.entityModel !== undefined) {
       this.entityModels.set(id, e.entityModel)
+    }
+
+    if (e.explosion ?? false) {
+      this.explosions.add(id)
     }
 
     if (e.hitbox !== undefined) {

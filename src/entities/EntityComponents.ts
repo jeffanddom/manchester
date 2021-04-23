@@ -20,6 +20,7 @@ export interface EntityComponents {
   dropType?: PickupType
   emitter?: EmitterComponent
   entityModel?: EntityModel
+  explosion?: boolean
   hitbox?: Hitbox
   moveable?: boolean
   obscured?: boolean

@@ -3,7 +3,11 @@ import { glMatrix, vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
-import { BULLET_TYPE_LENGTH, BulletType } from '~/components/Bullet'
+import {
+  BULLET_TYPE_LENGTH,
+  BulletConfig,
+  BulletType,
+} from '~/components/Bullet'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { SimState } from '~/simulate'
@@ -16,6 +20,7 @@ const firingInformation: Record<
 > = {
   [BulletType.Standard]: { cooldown: 15, mode: 'held' },
   [BulletType.Rocket]: { cooldown: 18, mode: 'down' },
+  [BulletType.Mortar]: { cooldown: 18, mode: 'down' },
 }
 
 export type ShooterComponent = {
@@ -129,12 +134,28 @@ export const update = (simState: SimState): void => {
       TILE_SIZE * 0.25,
     )
 
+    let config: BulletConfig
+    switch (shooter.bulletType) {
+      case BulletType.Standard:
+        config = { origin: bulletPos, type: shooter.bulletType }
+        break
+      case BulletType.Rocket:
+        config = { origin: bulletPos, type: shooter.bulletType }
+        break
+      case BulletType.Mortar:
+        config = {
+          origin: bulletPos,
+          type: shooter.bulletType,
+          target: message.attack.targetPos,
+        }
+        break
+    }
+
     simState.entityManager.register(
       makeBullet({
-        position: bulletPos,
         orientation: newAngle,
-        type: shooter.bulletType,
         owner: id,
+        config,
       }),
     )
   })

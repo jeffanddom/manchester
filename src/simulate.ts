@@ -58,6 +58,7 @@ export const simulate = (
   systems.shooter(simState)
   systems.turret(simState, dt)
   systems.bullet(simState, dt)
+  systems.explosion(simState)
   // systems.pickups(this, this.entityManager)
   systems.attack(simState)
 
@@ -69,5 +70,5 @@ export const simulate = (
 
   systems.emitter(simState.entityManager, dt)
 
-  simState.entityManager.update()
+  simState.entityManager.postFrameUpdate()
 }

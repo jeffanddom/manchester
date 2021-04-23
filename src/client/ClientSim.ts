@@ -570,6 +570,29 @@ export class ClientSim {
             }
             break
 
+          case FrameEventType.MortarExplosion:
+            {
+              const origin = vec3.fromValues(
+                event.position[0],
+                0,
+                event.position[1],
+              )
+              const orientation = quat.setAxisAngle(
+                quat.create(),
+                math.PlusX3,
+                Math.PI / 2,
+              )
+
+              const settings = CommonAssets.emitters.get('mortarExplosion')!
+              createEmitterSet({
+                origin,
+                orientation,
+                settings,
+                addEmitter: this.addEmitter,
+              })
+            }
+            break
+
           case FrameEventType.TankShoot:
             {
             }

@@ -179,8 +179,10 @@ export const update = (simState: SimState, dt: number): void => {
       makeBullet({
         orientation: newOrientation,
         owner: id,
-        position: bulletPos,
-        type: BulletType.Standard,
+        config: {
+          origin: bulletPos,
+          type: BulletType.Standard,
+        },
       }),
     )
 

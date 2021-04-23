@@ -6,8 +6,9 @@ import { EntityId } from '~/entities/EntityId'
 export enum FrameEventType {
   BulletHit,
   EntityDestroyed,
-  TankShoot,
+  MortarExplosion,
   TankHit,
+  TankShoot,
   TurretShoot,
 }
 
@@ -18,6 +19,11 @@ export interface BulletHitEvent {
 
 export interface EntityDestroyed {
   type: FrameEventType.EntityDestroyed
+  position: vec2
+}
+
+export interface Explosion {
+  type: FrameEventType.MortarExplosion
   position: vec2
 }
 
@@ -43,6 +49,7 @@ export interface TurretShootEvent {
 export type FrameEvent =
   | BulletHitEvent
   | EntityDestroyed
+  | Explosion
   | TankShootEvent
   | TankHitEvent
   | TurretShootEvent
