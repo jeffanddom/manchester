@@ -3,12 +3,12 @@ import { vec2, vec4 } from 'gl-matrix'
 import * as bullet from '~/components/Bullet'
 import { BulletType } from '~/components/Bullet'
 import * as transform from '~/components/Transform'
-import { TILE_SIZE } from '~/constants'
 import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
+import { DamageAreaType } from '~/systems/damager'
 
 const bulletColor: Record<BulletType, [number, number, number, number]> = {
   [BulletType.Standard]: [1, 0, 0, 1],
@@ -45,10 +45,8 @@ export const makeBullet = ({
   if (config.type !== BulletType.Mortar) {
     e.damager = {
       damageValue: config.type === BulletType.Rocket ? 5 : 1,
-      hitbox: {
-        offset: vec2.fromValues(-TILE_SIZE / 12, -TILE_SIZE / 12),
-        dimensions: vec2.fromValues(TILE_SIZE / 6, TILE_SIZE / 6),
-      },
+      area: { type: DamageAreaType.Point },
+      splash: false,
       immuneList: [owner],
     }
   }

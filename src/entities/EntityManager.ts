@@ -2,8 +2,6 @@ import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
 import { Damageable } from '~/components/Damageable'
-import * as damager from '~/components/Damager'
-import { Damager } from '~/components/Damager'
 import { EntityModel } from '~/components/EntityModel'
 import { Hitbox, clone as hitboxClone } from '~/components/Hitbox'
 import { Team } from '~/components/team'
@@ -15,6 +13,7 @@ import { EntityId } from '~/entities/EntityId'
 import { EntitySet } from '~/entities/EntitySet'
 import { EntityStateContainer } from '~/entities/EntityStateContainer'
 import { Type } from '~/entities/types'
+import * as attack from '~/systems/damager'
 import { EmitterComponent, emitterClone } from '~/systems/emitter'
 import { PickupType } from '~/systems/pickups'
 import { ShooterComponent, clone as shooterClone } from '~/systems/shooter'
@@ -46,7 +45,7 @@ export class EntityManager {
   // components
   bullets: ComponentTable<Bullet>
   damageables: ComponentTable<Damageable>
-  damagers: ComponentTable<Damager>
+  damagers: ComponentTable<attack.Damager>
   dropTypes: ComponentTable<PickupType>
   emitters: ComponentTable<EmitterComponent>
   explosions: EntitySet
@@ -84,7 +83,7 @@ export class EntityManager {
     // components
     this.bullets = new ComponentTable(bullet.clone)
     this.damageables = new ComponentTable(damageable.clone)
-    this.damagers = new ComponentTable(damager.clone)
+    this.damagers = new ComponentTable(attack.clone)
     this.dropTypes = new ComponentTable((c) => c)
     this.emitters = new ComponentTable(emitterClone)
     this.entityModels = new ComponentTable((c) => c) // TODO: should we clone this?

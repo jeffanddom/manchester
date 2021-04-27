@@ -60,7 +60,7 @@ export const simulate = (
   systems.bullet(simState, dt)
   systems.explosion(simState)
   // systems.pickups(this, this.entityManager)
-  systems.attack(simState)
+  systems.damager(simState)
 
   systems.tankMover(simState, dt)
   systems.wallCollider(simState)

@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import { DamageAreaType } from './damager'
 import { FrameEventType } from './FrameEvent'
 
 import * as transform from '~/components/Transform'
@@ -18,13 +19,13 @@ export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
   e.transform = transform.make()
   e.transform.position = vec2.clone(pos)
 
-  const size = 3
   e.damager = {
     damageValue: 5,
-    hitbox: {
-      offset: vec2.fromValues(-size / 2, -size / 2),
-      dimensions: vec2.fromValues(size, size),
+    area: {
+      type: DamageAreaType.Circle,
+      radius: 1,
     },
+    splash: true,
     immuneList: [],
   }
 

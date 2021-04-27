@@ -1,4 +1,4 @@
-export { update as attack } from '~/systems/attack'
+export { update as damager } from '~/systems/damager'
 export { update as builder } from '~/systems/builder'
 export { update as bullet } from '~/systems/bullet'
 export { update as crosshair } from '~/systems/hud/crosshair'

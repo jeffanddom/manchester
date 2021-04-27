@@ -1,3 +1,5 @@
+import { vec2 } from 'gl-matrix'
+
 import { Immutable } from '~/types/immutable'
 
 // x1, y1, x2, y2
@@ -50,5 +52,17 @@ export const overlapArea = (
       0,
       Math.min(a[Elem.y2], b[Elem.y2]) - Math.max(a[Elem.y1], b[Elem.y1]),
     )
+  )
+}
+
+export function contains(
+  aabb: Immutable<Aabb2>,
+  pos: Immutable<vec2>,
+): boolean {
+  return (
+    aabb[0] <= pos[0] &&
+    pos[0] <= aabb[2] &&
+    aabb[1] <= pos[1] &&
+    pos[1] <= aabb[3]
   )
 }
