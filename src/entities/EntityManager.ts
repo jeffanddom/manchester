@@ -7,6 +7,8 @@ import { Hitbox, clone as hitboxClone } from '~/components/Hitbox'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { Transform } from '~/components/Transform'
+import * as transform3 from '~/components/Transform3'
+import { Transform3 } from '~/components/Transform3'
 import { ComponentTable } from '~/entities/ComponentTable'
 import { EntityComponents } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
@@ -62,6 +64,7 @@ export class EntityManager {
   targetables: EntitySet
   teams: ComponentTable<Team>
   transforms: ComponentTable<Transform>
+  transform3s: ComponentTable<Transform3>
   turrets: ComponentTable<TurretComponent>
   types: ComponentTable<Type>
   walls: EntitySet
@@ -100,6 +103,7 @@ export class EntityManager {
     this.targetables = new EntitySet()
     this.teams = new ComponentTable((c) => c)
     this.transforms = new ComponentTable(transform.clone)
+    this.transform3s = new ComponentTable(transform3.clone)
     this.turrets = new ComponentTable(turret.clone)
     this.types = new ComponentTable((c) => c)
     this.walls = new EntitySet()
@@ -124,6 +128,7 @@ export class EntityManager {
       this.targetables,
       this.teams,
       this.transforms,
+      this.transform3s,
       this.turrets,
       this.types,
       this.walls,
@@ -275,6 +280,10 @@ export class EntityManager {
 
     if (e.transform !== undefined) {
       this.transforms.set(id, e.transform)
+    }
+
+    if (e.transform3 !== undefined) {
+      this.transform3s.set(id, e.transform3)
     }
 
     if (e.turret !== undefined) {

@@ -1,4 +1,5 @@
 import { mat4, vec2 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { makeExplosion } from './explosion'
 
@@ -78,6 +79,13 @@ export const update = (
             transform.orientation,
             bullet.currentSpeed! * dt,
           )
+
+          const percentage = nextLifetime / MORTAR_TTL
+          const maxHeight = 3
+          const newY = maxHeight * (-Math.pow(2 * percentage - 1, 2) + 1)
+          const newPos3 = vec3.fromValues(newPos[0], newY, newPos[1])
+
+          simState.entityManager.transform3s.update(id, { position: newPos3 })
 
           if (nextLifetime >= MORTAR_TTL) {
             simState.entityManager.markForDeletion(id)

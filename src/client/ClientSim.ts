@@ -498,15 +498,28 @@ export class ClientSim {
 
     for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!
+      const transform3 = this.entityManager.transform3s.get(entityId)
+
+      const m2w = mat4.create()
+      if (transform3 !== undefined) {
+        mat4.fromRotationTranslation(
+          m2w,
+          transform3.orientation,
+          transform3.position,
+        )
+      } else {
+        mat4.fromRotationTranslation(
+          m2w,
+          quat.identity(quat.create()),
+          vec3.fromValues(transform.position[0], 0, transform.position[1]),
+        )
+      }
+
       res.push({
         type: RenderableType.UniformColor,
         modelName: entityModel.name,
         modelModifiers: entityModel.modifiers,
-        model2World: mat4.fromRotationTranslation(
-          mat4.create(),
-          quat.identity(quat.create()),
-          vec3.fromValues(transform.position[0], 0, transform.position[1]),
-        ),
+        model2World: m2w,
         color: entityModel.color,
       })
     }

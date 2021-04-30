@@ -12,6 +12,12 @@ declare module 'gl-matrix' {
   export namespace mat4 {
     export function fromRotation(out: mat4, rad: number, axis: Immutable<vec3>)
 
+    export function fromRotationTranslation(
+      out: mat4,
+      q: Immutable<quat>,
+      v: Immutable<vec3>,
+    )
+
     export function multiply(
       out: mat4,
       a: Immutable<mat4>,

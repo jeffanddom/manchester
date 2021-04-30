@@ -4,6 +4,7 @@ import { EntityModel } from '~/components/EntityModel'
 import { Hitbox } from '~/components/Hitbox'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
+import { Transform3 } from '~/components/Transform3'
 import { Type } from '~/entities/types'
 import { BuilderComponent, BuilderCreator } from '~/systems/builder'
 import { Damager } from '~/systems/damager'
@@ -33,6 +34,7 @@ export interface EntityComponents {
   targetable?: boolean
   team?: Team
   transform?: Transform
+  transform3?: Transform3
   turret?: TurretComponent
   type?: Type
   wall?: boolean

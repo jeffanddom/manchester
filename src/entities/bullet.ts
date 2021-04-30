@@ -3,6 +3,7 @@ import { vec2, vec4 } from 'gl-matrix'
 import * as bullet from '~/components/Bullet'
 import { BulletType } from '~/components/Bullet'
 import * as transform from '~/components/Transform'
+import * as transform3 from '~/components/Transform3'
 import {
   EntityComponents,
   makeDefaultEntity,
@@ -49,6 +50,11 @@ export const makeBullet = ({
       splash: false,
       immuneList: [owner],
     }
+  }
+
+  // Mortar 3D animation
+  if (config.type === BulletType.Mortar) {
+    e.transform3 = transform3.make()
   }
 
   return e
