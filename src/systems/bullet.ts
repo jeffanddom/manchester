@@ -4,7 +4,7 @@ import { vec3 } from 'gl-matrix'
 import { makeExplosion } from './explosion'
 
 import { BulletType } from '~/components/Bullet'
-import { MORTAR_TTL, TILE_SIZE } from '~/constants'
+import { MORTAR_FIRING_HEIGHT, MORTAR_GRAVITY, TILE_SIZE } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import * as emitter from '~/systems/emitter'
@@ -73,25 +73,29 @@ export const update = (
 
       case BulletType.Mortar:
         {
-          newPos = radialTranslate2(
-            vec2.create(),
-            transform.position,
-            transform.orientation,
-            bullet.currentSpeed! * dt,
-          )
+          const disp = vec3.scale(vec3.create(), bullet.vel!, dt)
+          disp[1] += MORTAR_GRAVITY * dt * dt
 
-          const percentage = nextLifetime / MORTAR_TTL
-          const maxHeight = 3
-          const newY = maxHeight * (-Math.pow(2 * percentage - 1, 2) + 1)
-          const newPos3 = vec3.fromValues(newPos[0], newY, newPos[1])
+          const transform3 = simState.entityManager.transform3s.get(id)!
+          const newPos3 = vec3.clone(transform3.position)
+          vec3.add(newPos3, newPos3, disp)
 
-          simState.entityManager.transform3s.update(id, { position: newPos3 })
-
-          if (nextLifetime >= MORTAR_TTL) {
+          if (newPos3[1] < MORTAR_FIRING_HEIGHT) {
             simState.entityManager.markForDeletion(id)
             simState.entityManager.register(makeExplosion(transform.position))
             return
           }
+
+          // TODO: Orient bullet
+
+          simState.entityManager.transform3s.update(id, { position: newPos3 })
+
+          const newVel = vec3.clone(bullet.vel!)
+          newVel[1] += MORTAR_GRAVITY * dt
+          simState.entityManager.bullets.update(id, { vel: newVel })
+
+          // Use some fake 2d value
+          newPos = vec2.fromValues(newPos3[0], newPos3[2])
         }
         break
     }

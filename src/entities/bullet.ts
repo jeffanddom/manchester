@@ -4,6 +4,7 @@ import * as bullet from '~/components/Bullet'
 import { BulletType } from '~/components/Bullet'
 import * as transform from '~/components/Transform'
 import * as transform3 from '~/components/Transform3'
+import { MORTAR_FIRING_HEIGHT } from '~/constants'
 import {
   EntityComponents,
   makeDefaultEntity,
@@ -55,6 +56,9 @@ export const makeBullet = ({
   // Mortar 3D animation
   if (config.type === BulletType.Mortar) {
     e.transform3 = transform3.make()
+    e.transform3.position[0] = config.origin[0]
+    e.transform3.position[1] = MORTAR_FIRING_HEIGHT
+    e.transform3.position[2] = config.origin[1]
   }
 
   return e

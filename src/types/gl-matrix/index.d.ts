@@ -95,6 +95,7 @@ declare module 'gl-matrix' {
       b: Immutable<vec3>,
     ): vec3
     export function dot(a: Immutable<vec3>, b: Immutable<vec3>): number
+    export function scale(out: vec3, v: Immutable<vec3>, s: number): vec3
     export function sub(out: vec3, a: Immutable<vec3>, b: Immutable<vec3>): vec3
     export function subtract(
       out: vec3,

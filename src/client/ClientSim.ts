@@ -502,11 +502,11 @@ export class ClientSim {
 
       const m2w = mat4.create()
       if (transform3 !== undefined) {
-        mat4.fromRotationTranslation(
-          m2w,
-          transform3.orientation,
-          transform3.position,
-        )
+        // bullet model hack
+        const p = vec3.clone(transform3.position)
+        p[1] -= 0.5
+
+        mat4.fromRotationTranslation(m2w, transform3.orientation, p)
       } else {
         mat4.fromRotationTranslation(
           m2w,
