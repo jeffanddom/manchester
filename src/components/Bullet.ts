@@ -93,12 +93,19 @@ export function make(config: BulletConfig): Bullet {
       }
 
       const theta = Math.acos(sqw)
-      if (bestTheta === undefined || bestTheta < theta) {
+      if (
+        bestTheta === undefined ||
+        (0 < theta && theta <= Math.PI / 2 && bestTheta < theta)
+      ) {
         bestTheta = theta
       }
 
       const otherTheta = Math.acos(-sqw)
-      if (bestTheta < otherTheta) {
+      if (
+        0 < otherTheta &&
+        otherTheta <= Math.PI / 2 &&
+        bestTheta < otherTheta
+      ) {
         bestTheta = otherTheta
       }
     }
@@ -106,8 +113,6 @@ export function make(config: BulletConfig): Bullet {
     if (bestTheta === undefined) {
       throw new Error('out of range 2')
     }
-
-    console.log(bestTheta)
 
     const hVel = MORTAR_MUZZLE_SPEED * Math.cos(bestTheta) // along origin-target axis
     const vVel = MORTAR_MUZZLE_SPEED * Math.sin(bestTheta) // along +Y3 axis
