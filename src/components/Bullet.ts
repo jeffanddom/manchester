@@ -40,7 +40,7 @@ export interface MortarConfig {
 
 export type BulletConfig = StandardConfig | RocketConfig | MortarConfig
 
-export function make(config: BulletConfig): Bullet {
+export function make(config: BulletConfig): Bullet | undefined {
   const bullet: Bullet = {
     origin: vec2.clone(config.origin),
     lifetime: 0,
@@ -57,7 +57,7 @@ export function make(config: BulletConfig): Bullet {
     const discriminant =
       speedPow4 - MORTAR_GRAVITY * MORTAR_GRAVITY * dist * dist
     if (discriminant < 0) {
-      throw new Error('out of range')
+      return undefined
     }
 
     // There are usually two possible solutions, but we want the one that
@@ -89,4 +89,25 @@ export function clone(b: Immutable<Bullet>): Bullet {
     currentSpeed: b.currentSpeed,
     vel: b.vel !== undefined ? vec3.clone(b.vel) : undefined,
   }
+}
+
+// TODO: expand range check to all bullet types?
+// Does this belong in the bullet system?
+export function mortarInRange({
+  target,
+  origin,
+}: {
+  target: Immutable<vec2>
+  origin: Immutable<vec2>
+}): boolean {
+  const delta = vec2.sub(vec2.create(), target, origin)
+  const dist = vec2.length(delta)
+
+  const speedPow2 = MORTAR_MUZZLE_SPEED * MORTAR_MUZZLE_SPEED
+  const speedPow4 = speedPow2 * speedPow2
+  const discriminant = speedPow4 - MORTAR_GRAVITY * MORTAR_GRAVITY * dist * dist
+  if (discriminant < 0) {
+    return false
+  }
+  return true
 }

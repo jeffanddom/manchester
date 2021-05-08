@@ -12,7 +12,7 @@ import { PlusY3, radialTranslate2 } from '~/util/math'
 const range: Record<BulletType, number> = {
   [BulletType.Standard]: 8 * TILE_SIZE,
   [BulletType.Rocket]: 12 * TILE_SIZE,
-  [BulletType.Mortar]: 15,
+  [BulletType.Mortar]: 0,
 }
 const speed: Record<BulletType, number> = {
   [BulletType.Standard]: 15 * TILE_SIZE,

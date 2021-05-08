@@ -33,7 +33,7 @@ export class DebugDraw implements IDebugDrawWriter, IDebugDrawReader {
   constructor() {
     this.debugDraw2dRenderables = []
     this.debugDraw3dModels = []
-    this.enabled = true
+    this.enabled = false
   }
 
   isEnabled(): boolean {

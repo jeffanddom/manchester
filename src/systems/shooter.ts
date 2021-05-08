@@ -105,27 +105,13 @@ export const update = (simState: SimState): void => {
 
     if (!fireTriggered || coolingDown) {
       if (!glMatrix.equals(newAngle, shooter.orientation)) {
-        simState.entityManager.shooters.update(id, { orientation: newAngle })
+        simState.entityManager.shooters.update(id, {
+          input: { ...shooter.input, target: message.attack.targetPos },
+          orientation: newAngle,
+        })
       }
       return
     }
-
-    simState.entityManager.shooters.update(id, {
-      lastFiredFrame: message.frame,
-      orientation: newAngle,
-    })
-
-    simState.frameEvents.push({
-      type: FrameEventType.TankShoot,
-      entityId: id,
-      orientation: shooter.orientation,
-      bulletType: shooter.bulletType,
-    })
-
-    simState.entityManager.emitters.set(
-      id,
-      emitter.make('tankShot', vec2.fromValues(0, 0), 0),
-    )
 
     const bulletPos = radialTranslate2(
       vec2.create(),
@@ -151,12 +137,33 @@ export const update = (simState: SimState): void => {
         break
     }
 
-    simState.entityManager.register(
-      makeBullet({
+    const newBullet = makeBullet({
+      orientation: newAngle,
+      owner: id,
+      config,
+    })
+
+    // Shoot the bullet if creation was successful
+    if (newBullet.bullet !== undefined) {
+      simState.entityManager.shooters.update(id, {
+        input: { ...shooter.input, target: message.attack.targetPos },
+        lastFiredFrame: message.frame,
         orientation: newAngle,
-        owner: id,
-        config,
-      }),
-    )
+      })
+
+      simState.frameEvents.push({
+        type: FrameEventType.TankShoot,
+        entityId: id,
+        orientation: shooter.orientation,
+        bulletType: shooter.bulletType,
+      })
+
+      simState.entityManager.emitters.set(
+        id,
+        emitter.make('tankShot', vec2.fromValues(0, 0), 0),
+      )
+
+      simState.entityManager.register(newBullet)
+    }
   })
 }

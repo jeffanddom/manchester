@@ -26,7 +26,7 @@ export const DEFAULT_BULLET_KNOCKBACK = 0.3
 export const DEFAULT_SHOT_RECOIL = 0.15
 export const MORTAR_TTL = 1
 export const MORTAR_GRAVITY = -15
-export const MORTAR_MUZZLE_SPEED = 15
+export const MORTAR_MUZZLE_SPEED = 12
 export const MORTAR_FIRING_HEIGHT = 0.5
 
 // Camera

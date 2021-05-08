@@ -524,6 +524,8 @@ export class ClientSim {
       })
     }
 
+    res.push(...systems.crosshair(this.entityManager))
+
     return res
   }
 

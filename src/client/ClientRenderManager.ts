@@ -4,7 +4,7 @@ import { IDebugDrawReader, IDebugDrawWriter } from '~/DebugDraw'
 import { ModelModifiers } from '~/renderer/interfaces'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Renderable2d, Renderer2d } from '~/renderer/Renderer2d'
-import { Renderer3d } from '~/renderer/Renderer3d'
+import { Renderer3d, UnlitObject } from '~/renderer/Renderer3d'
 import { Immutable } from '~/types/immutable'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
@@ -12,6 +12,7 @@ import * as time from '~/util/time'
 export enum RenderableType {
   VColor, // per-vertex coloring
   UniformColor, // uniform coloring
+  Unlit,
 }
 
 interface RenderableBase {
@@ -29,7 +30,15 @@ interface RenderableUniformColor extends RenderableBase {
   color: Immutable<vec4>
 }
 
-export type Renderable = RenderableVColor | RenderableUniformColor
+interface RenderableUnlit {
+  type: RenderableType.Unlit
+  object: UnlitObject
+}
+
+export type Renderable =
+  | RenderableVColor
+  | RenderableUniformColor
+  | RenderableUnlit
 
 export class ClientRenderManager {
   renderer3d: Renderer3d
@@ -77,6 +86,7 @@ export class ClientRenderManager {
 
     const vcolor: RenderableVColor[] = []
     const uniformColor: RenderableUniformColor[] = []
+    const unlit: UnlitObject[] = []
     for (const r of renderables) {
       switch (r.type) {
         case RenderableType.VColor:
@@ -85,21 +95,29 @@ export class ClientRenderManager {
         case RenderableType.UniformColor:
           uniformColor.push(r)
           break
+        case RenderableType.Unlit:
+          unlit.push(r.object)
+          break
       }
     }
 
     this.renderer3d.renderVColor(vcolor)
     this.renderer3d.renderWiresolid(uniformColor)
+    this.renderer3d.renderUnlit(unlit)
 
-    // World-space debug draw
-    this.renderer3d.renderUnlit(this.debugDraw.get3d())
-
-    // Screenspace debug draw
     this.renderer2d.clear()
     this.renderer2d.setTransform(mat2d.identity(mat2d.create()))
     for (const r of renderables2d) {
       this.renderer2d.render(r)
     }
+
+    // Debug draw
+    //////////////////////////
+
+    // World-space (grid, hitboxes, etc)
+    this.renderer3d.renderUnlit(this.debugDraw.get3d())
+
+    // Screenspace (game stats)
     for (const r of this.debugDraw.get2d()) {
       this.renderer2d.render(r)
     }
