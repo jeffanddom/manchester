@@ -1,10 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import {
-  MORTAR_FIRING_HEIGHT,
-  MORTAR_GRAVITY,
-  MORTAR_MUZZLE_SPEED,
-} from '~/constants'
+import { MORTAR_GRAVITY, MORTAR_MUZZLE_SPEED } from '~/constants'
 import { Immutable } from '~/types/immutable'
 
 export enum BulletType {
