@@ -1,5 +1,4 @@
-import { mat4, vec2 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 import { makeExplosion } from './explosion'
 
@@ -74,21 +73,39 @@ export const update = (
       case BulletType.Mortar:
         {
           const disp = vec3.scale(vec3.create(), bullet.vel!, dt)
-          disp[1] += MORTAR_GRAVITY * dt * dt
+          disp[1] += 0.5 * MORTAR_GRAVITY * dt * dt
 
           const transform3 = simState.entityManager.transform3s.get(id)!
           const newPos3 = vec3.clone(transform3.position)
           vec3.add(newPos3, newPos3, disp)
 
-          if (newPos3[1] < MORTAR_FIRING_HEIGHT) {
+          if (newPos3[1] <= MORTAR_FIRING_HEIGHT) {
             simState.entityManager.markForDeletion(id)
             simState.entityManager.register(makeExplosion(transform.position))
             return
           }
 
-          // TODO: Orient bullet
+          // Calculate bullet orientation
+          const vDir = vec3.create()
+          vec3.normalize(vDir, bullet.vel!)
 
-          simState.entityManager.transform3s.update(id, { position: newPos3 })
+          const vRight = vec3.create()
+          vec3.cross(vRight, vDir, PlusY3)
+          vec3.normalize(vRight, vRight)
+
+          const vForward = vec3.create()
+          vec3.cross(vForward, PlusY3, vRight)
+          vec3.normalize(vForward, vForward)
+
+          let angle = Math.acos(vec3.dot(vForward, vDir))
+          if (vDir[1] < 0) {
+            angle = -angle
+          }
+
+          simState.entityManager.transform3s.update(id, {
+            position: newPos3,
+            orientation: quat.setAxisAngle(quat.create(), vRight, angle),
+          })
 
           const newVel = vec3.clone(bullet.vel!)
           newVel[1] += MORTAR_GRAVITY * dt

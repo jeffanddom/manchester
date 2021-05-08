@@ -55,67 +55,26 @@ export function make(config: BulletConfig): Bullet {
     const delta = vec2.sub(vec2.create(), config.target, config.origin)
     const dist = vec2.length(delta)
 
-    // Here's the math for this:
-    // https://qr.ae/pGhqrV
-    // const theta =
-    //   Math.asin(
-    //     (-MORTAR_GRAVITY * dist) /
-    //       (2 * MORTAR_MUZZLE_SPEED * MORTAR_MUZZLE_SPEED),
-    //   ) / 2
-
-    const a = dist / MORTAR_FIRING_HEIGHT
-    const b =
-      (-MORTAR_GRAVITY * dist * dist) /
-      (MORTAR_FIRING_HEIGHT * MORTAR_MUZZLE_SPEED * MORTAR_MUZZLE_SPEED)
-
-    const qa = a * a + 1
-    const qb = 2 * b * b - a * a
-    const qc = b * b
-
-    const disc = qb * qb - 4 * qa * qc
-    if (disc < 0) {
-      throw new Error('out of range 1')
-    }
-    const sqrtDisc = Math.sqrt(disc)
-
-    const w1 = (-qb + sqrtDisc) / (2 * qa)
-    const w2 = (-qb - sqrtDisc) / (2 * qa)
-
-    let bestTheta: number | undefined
-    for (const w of [w1, w2]) {
-      if (w < 0) {
-        continue
-      }
-
-      const sqw = Math.sqrt(w)
-      if (Math.abs(sqw) > 1) {
-        continue
-      }
-
-      const theta = Math.acos(sqw)
-      if (
-        bestTheta === undefined ||
-        (0 < theta && theta <= Math.PI / 2 && bestTheta < theta)
-      ) {
-        bestTheta = theta
-      }
-
-      const otherTheta = Math.acos(-sqw)
-      if (
-        0 < otherTheta &&
-        otherTheta <= Math.PI / 2 &&
-        bestTheta < otherTheta
-      ) {
-        bestTheta = otherTheta
-      }
+    // See https://gamedev.stackexchange.com/a/53563
+    const speedPow2 = MORTAR_MUZZLE_SPEED * MORTAR_MUZZLE_SPEED
+    const speedPow4 = speedPow2 * speedPow2
+    const discriminant =
+      speedPow4 - MORTAR_GRAVITY * MORTAR_GRAVITY * dist * dist
+    if (discriminant < 0) {
+      throw new Error('out of range')
     }
 
-    if (bestTheta === undefined) {
-      throw new Error('out of range 2')
-    }
+    // There are usually two possible solutions, but we want the one that
+    // produces the highest angle. Because atan() increases with its input, we
+    // select the solution that adds the square root of the discriminant, and
+    // discard the solution that subtracts.
+    const theta = Math.atan2(
+      speedPow2 + Math.sqrt(discriminant),
+      -MORTAR_GRAVITY * dist,
+    )
 
-    const hVel = MORTAR_MUZZLE_SPEED * Math.cos(bestTheta) // along origin-target axis
-    const vVel = MORTAR_MUZZLE_SPEED * Math.sin(bestTheta) // along +Y3 axis
+    const hVel = MORTAR_MUZZLE_SPEED * Math.cos(theta) // along origin-target axis
+    const vVel = MORTAR_MUZZLE_SPEED * Math.sin(theta) // along +Y3 axis
     bullet.vel = vec3.fromValues(
       (hVel * delta[0]) / dist,
       vVel,
