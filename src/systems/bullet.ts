@@ -7,7 +7,7 @@ import { MORTAR_FIRING_HEIGHT, MORTAR_GRAVITY, TILE_SIZE } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import * as emitter from '~/systems/emitter'
-import { PlusY3, radialTranslate2 } from '~/util/math'
+import { PlusX3, PlusY3, radialTranslate2 } from '~/util/math'
 
 const range: Record<BulletType, number> = {
   [BulletType.Standard]: 8 * TILE_SIZE,
@@ -19,11 +19,6 @@ const speed: Record<BulletType, number> = {
   [BulletType.Rocket]: 3,
   [BulletType.Mortar]: 0,
 }
-// const acceleration: Record<BulletType, Record<number, number> | undefined> = {
-//   [BulletType.Standard]: undefined,
-//   [BulletType.Rocket]: { 0: TILE_SIZE, 30: TILE_SIZE * 20 },
-//   // [BulletType.Rocket]: TILE_SIZE * 20,
-// }
 
 export const update = (
   simState: { entityManager: EntityManager; debugDraw: IDebugDrawWriter },
@@ -86,25 +81,22 @@ export const update = (
           }
 
           // Calculate bullet orientation
-          const vDir = vec3.create()
-          vec3.normalize(vDir, bullet.vel!)
+          const xangle = Math.asin(bullet.vel![1] / vec3.length(bullet.vel!))
+          const xrot = quat.setAxisAngle(quat.create(), PlusX3, xangle)
+          const yangle =
+            Math.atan2(bullet.vel![2], bullet.vel![0]) - Math.PI / 2
+          const yrot = quat.setAxisAngle(quat.create(), PlusY3, yangle)
 
-          const vRight = vec3.create()
-          vec3.cross(vRight, vDir, PlusY3)
-          vec3.normalize(vRight, vRight)
-
-          const vForward = vec3.create()
-          vec3.cross(vForward, PlusY3, vRight)
-          vec3.normalize(vForward, vForward)
-
-          let angle = Math.acos(vec3.dot(vForward, vDir))
-          if (vDir[1] < 0) {
-            angle = -angle
-          }
+          // console.log(
+          //   'x',
+          //   (xangle * 180) / Math.PI,
+          //   'y',
+          //   (yangle * 180) / Math.PI,
+          // )
 
           simState.entityManager.transform3s.update(id, {
             position: newPos3,
-            orientation: quat.setAxisAngle(quat.create(), vRight, angle),
+            orientation: quat.multiply(quat.create(), yrot, xrot),
           })
 
           const newVel = vec3.clone(bullet.vel!)

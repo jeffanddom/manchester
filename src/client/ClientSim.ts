@@ -176,11 +176,12 @@ export class ClientSim {
     for (const m of [
       'bullet',
       'core',
-      'tank',
-      'turret',
-      'tree',
-      'wall',
+      'mortar',
       'shiba',
+      'tank',
+      'tree',
+      'turret',
+      'wall',
     ]) {
       const gltfDoc = ClientAssets.models.get(m)
       if (gltfDoc === undefined) {

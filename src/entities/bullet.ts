@@ -18,6 +18,12 @@ const bulletColor: Record<BulletType, [number, number, number, number]> = {
   [BulletType.Mortar]: [0.2, 0.2, 0.5, 1],
 }
 
+const bulletModel: Record<BulletType, string> = {
+  [BulletType.Standard]: 'bullet',
+  [BulletType.Rocket]: 'bullet',
+  [BulletType.Mortar]: 'mortar',
+}
+
 export const makeBullet = ({
   orientation,
   owner,
@@ -38,7 +44,7 @@ export const makeBullet = ({
   e.bullet = bullet.make(config)
 
   e.entityModel = {
-    name: 'bullet',
+    name: bulletModel[config.type],
     color: vec4.fromValues(...bulletColor[config.type]),
     modifiers: {},
   }
