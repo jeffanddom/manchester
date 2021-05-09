@@ -1,6 +1,5 @@
-import { shuffle } from 'lodash'
-
 import { PriorityQueue } from '../PriorityQueue'
+import { shuffle } from '../random'
 
 const permutations = <T>(values: Array<T>): Array<Array<T>> => {
   if (values.length === 0) {

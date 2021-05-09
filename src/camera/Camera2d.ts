@@ -1,7 +1,7 @@
 import { mat2d, vec2 } from 'gl-matrix'
-import { sample } from 'lodash'
 
 import { Immutable } from '~/types/immutable'
+import { sample } from '~/util/random'
 
 export class Camera2d {
   private position: vec2

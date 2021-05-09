@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 
 import { mat2d, vec2 } from 'gl-matrix'
-import * as _ from 'lodash'
 
 import { Camera2d } from '~/camera/Camera2d'
 import { TILE_SIZE } from '~/constants'
@@ -96,8 +95,8 @@ export class Editor {
     this.cursorTilePos = undefined
     this.brush = {
       mode: BrushMode.TERRAIN,
-      terrain: _.first(TERRAIN_TYPES)!,
-      entity: _.first(ENTITY_TYPES)!,
+      terrain: TERRAIN_TYPES[0],
+      entity: ENTITY_TYPES[0],
     }
 
     this.showTerrain = true
@@ -164,8 +163,8 @@ export class Editor {
       } else {
         this.brush.terrain =
           TERRAIN_TYPES[
-          (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
-          TERRAIN_TYPES.length
+            (TERRAIN_TYPES.indexOf(this.brush.terrain) + 1) %
+              TERRAIN_TYPES.length
           ]
       }
 
@@ -188,7 +187,7 @@ export class Editor {
       } else {
         this.brush.entity =
           ENTITY_TYPES[
-          (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
+            (ENTITY_TYPES.indexOf(this.brush.entity) + 1) % ENTITY_TYPES.length
           ]
       }
 
