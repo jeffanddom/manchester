@@ -1,4 +1,4 @@
-import { mat4, vec2 } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
@@ -16,13 +16,7 @@ import {
 import { DirectionMove } from '~/input/interfaces'
 import { ClientMoveUpdate } from '~/network/ClientMessage'
 import { SimState } from '~/simulate'
-import {
-  North2,
-  PlusY3,
-  Zero2,
-  radialTranslate2,
-  rotateUntil,
-} from '~/util/math'
+import { North2, Zero2, radialTranslate2, rotateUntil } from '~/util/math'
 
 export type TankMoverComponent = {
   dashDirection: DirectionMove
@@ -100,20 +94,6 @@ export const update = (simState: SimState, dt: number): void => {
 
         radialTranslate2(position, position, message.direction, TANK_SPEED * dt)
       }
-
-      const entityModel = simState.entityManager.entityModels.get(id)!
-      simState.entityManager.entityModels.update(id, {
-        modifiers: {
-          ...entityModel.modifiers,
-          'shiba:post': mat4.fromRotation(
-            mat4.create(),
-
-            // This angle is a rotation on the XY plane. We need to negate when moving to XZ.
-            -orientation,
-            PlusY3,
-          ),
-        },
-      })
     }
 
     const externalVelocity = vec2.clone(tankMover.externalVelocity)

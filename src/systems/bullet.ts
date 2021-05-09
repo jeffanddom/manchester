@@ -1,4 +1,4 @@
-import { mat4, quat, vec2, vec3 } from 'gl-matrix'
+import { quat, vec2, vec3 } from 'gl-matrix'
 
 import { makeExplosion } from './explosion'
 
@@ -125,20 +125,6 @@ export const update = (
         simState.entityManager.markForDeletion(id)
         return
       }
-    }
-
-    const model = simState.entityManager.entityModels.get(id)
-    if (model !== undefined) {
-      simState.entityManager.entityModels.update(id, {
-        modifiers: {
-          ...model.modifiers,
-          'bullet:post': mat4.fromRotation(
-            mat4.create(),
-            -transform.orientation, // rotations on XZ plane need to be negated
-            PlusY3,
-          ),
-        },
-      })
     }
   }
 }

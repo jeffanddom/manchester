@@ -24,14 +24,15 @@ const COOLDOWN_PERIOD = 0.33
 
 export type TurretComponent = {
   cooldownTtl: number
+  orientation: number
 }
 
 export function make(): TurretComponent {
-  return { cooldownTtl: 0 }
+  return { cooldownTtl: 0, orientation: 0 }
 }
 
 export function clone(t: TurretComponent): TurretComponent {
-  return { cooldownTtl: t.cooldownTtl }
+  return { cooldownTtl: t.cooldownTtl, orientation: t.orientation }
 }
 
 export const update = (simState: SimState, dt: number): void => {
@@ -135,12 +136,12 @@ export const update = (simState: SimState, dt: number): void => {
     // II. Move toward target
 
     const newOrientation = rotateUntil({
-      from: transform.orientation,
+      from: turret.orientation,
       to: getAngle(transform.position, target.transform!.position),
       amount: TURRET_ROT_SPEED * dt,
     })
 
-    simState.entityManager.transforms.update(id, {
+    simState.entityManager.turrets.update(id, {
       orientation: newOrientation,
     })
 

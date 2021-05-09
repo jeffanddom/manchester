@@ -496,6 +496,8 @@ export class ClientSim {
       },
     ]
 
+    const tempQuat = quat.create()
+
     for (const [entityId, entityModel] of this.entityManager.entityModels) {
       const transform = this.entityManager.transforms.get(entityId)!
       const transform3 = this.entityManager.transform3s.get(entityId)
@@ -510,7 +512,9 @@ export class ClientSim {
       } else {
         mat4.fromRotationTranslation(
           m2w,
-          quat.identity(quat.create()),
+          // Orientation is a CW rotation on the XY plane. We need to negate it
+          // when expressing it as a rotation on the XZ plane.
+          quat.setAxisAngle(tempQuat, math.PlusY3, -transform.orientation),
           vec3.fromValues(transform.position[0], 0, transform.position[1]),
         )
       }
