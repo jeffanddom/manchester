@@ -80,19 +80,17 @@ export const update = (
             return
           }
 
-          // Calculate bullet orientation
+          // Calculate bullet orientation by composing two rotations: a vertical
+          // rotation (around the +X3 axis), then a horizontal rotation (around
+          // the +Y3 axis).
           const xangle = Math.asin(bullet.vel![1] / vec3.length(bullet.vel!))
           const xrot = quat.setAxisAngle(quat.create(), PlusX3, xangle)
-          const yangle =
-            Math.atan2(bullet.vel![2], bullet.vel![0]) - Math.PI / 2
-          const yrot = quat.setAxisAngle(quat.create(), PlusY3, yangle)
 
-          // console.log(
-          //   'x',
-          //   (xangle * 180) / Math.PI,
-          //   'y',
-          //   (yangle * 180) / Math.PI,
-          // )
+          // Because the model is facing -Z3, we need to calculate the XZ
+          // rotation angle assuming that -Z3 is angle zero, and -X3 is 90
+          // degrees.
+          const yangle = Math.atan2(-bullet.vel![0], -bullet.vel![2])
+          const yrot = quat.setAxisAngle(quat.create(), PlusY3, yangle)
 
           simState.entityManager.transform3s.update(id, {
             position: newPos3,
