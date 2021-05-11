@@ -3,6 +3,7 @@ import { mat4, vec4 } from 'gl-matrix'
 
 import * as models from './models'
 
+import { CAMERA_DEFAULT_FOV } from '~/constants'
 import {
   FragmentShaderError,
   Renderer3d,
@@ -108,6 +109,7 @@ canvas.width = canvas.parentElement!.clientWidth * pixelRatio
 canvas.height = canvas.parentElement!.clientHeight * pixelRatio
 
 const renderer = new Renderer3d(gl)
+renderer.setFov(CAMERA_DEFAULT_FOV)
 models.load(renderer)
 
 window.addEventListener('resize', () => {

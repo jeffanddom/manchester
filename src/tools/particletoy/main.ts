@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom'
 import { Camera } from './Camera'
 import { Controls } from './Controls'
 
-import { SIMULATION_PERIOD_S } from '~/constants'
+import { CAMERA_DEFAULT_FOV, SIMULATION_PERIOD_S } from '~/constants'
 import {
   BasicEmitter,
   BasicEmitterSettings,
@@ -86,6 +86,7 @@ canvas.width = canvas.parentElement!.clientWidth * pixelRatio
 canvas.height = canvas.parentElement!.clientHeight * pixelRatio
 
 const renderer = new Renderer3d(gl)
+renderer.setFov(CAMERA_DEFAULT_FOV)
 
 window.addEventListener('resize', () => {
   canvas.width = canvas.parentElement!.clientWidth * pixelRatio

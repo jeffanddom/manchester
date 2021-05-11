@@ -124,7 +124,7 @@ export class Renderer3d implements IModelLoader {
 
     this.particleMeshes = new Map()
 
-    this.fov = (75 * Math.PI) / 180 // set some sane default
+    this.fov = Math.PI / 2 // set some sane default
 
     this.viewportDimensions = vec2.create()
     this.syncViewportDimensions()
@@ -295,7 +295,6 @@ export class Renderer3d implements IModelLoader {
     return this.fov
   }
 
-  // TODO: connect this with Camera3d#fov
   setFov(fov: number): void {
     this.fov = fov
   }

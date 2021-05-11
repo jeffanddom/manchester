@@ -1,5 +1,6 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
+import { CAMERA_DEFAULT_FOV } from '~/constants'
 import { Immutable } from '~/types/immutable'
 import * as math from '~/util/math'
 
@@ -12,7 +13,7 @@ export class Camera3d {
   constructor(params: { viewportDimensions: Immutable<vec2> }) {
     this.pos = vec3.create()
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
-    this.fov = (75 * Math.PI) / 180
+    this.fov = CAMERA_DEFAULT_FOV
     this.target = vec3.create()
   }
 
@@ -32,7 +33,6 @@ export class Camera3d {
     return this.viewportDimensions
   }
 
-  // TODO: Connect this with Renderer3d#fov
   getFov(): number {
     return this.fov
   }

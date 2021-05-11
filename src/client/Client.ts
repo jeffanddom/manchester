@@ -115,6 +115,7 @@ export class Client {
       this.renderManager.update(
         this.sim.getRenderables(),
         this.sim.camera.getWvTransform(mat4.create()),
+        this.sim.camera.getFov(),
         this.sim.getRenderables2d(),
       )
 

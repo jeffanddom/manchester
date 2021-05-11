@@ -33,3 +33,4 @@ export const MORTAR_FIRING_HEIGHT = 0.5
 export const CAMERA_MIN_Y_OFFSET = 3
 export const CAMERA_MAX_Y_OFFSET = 12
 export const CAMERA_Z_OFFSET = 3
+export const CAMERA_DEFAULT_FOV = (75 * Math.PI) / 180

@@ -75,6 +75,7 @@ export class ClientRenderManager {
   update(
     renderables: Renderable[],
     world2ViewTransform: mat4,
+    fov: number,
     renderables2d: Renderable2d[],
   ): void {
     const now = time.current()
@@ -83,6 +84,7 @@ export class ClientRenderManager {
 
     this.renderer3d.clear()
     this.renderer3d.setWvTransform(world2ViewTransform)
+    this.renderer3d.setFov(fov)
 
     const vcolor: RenderableVColor[] = []
     const uniformColor: RenderableUniformColor[] = []
