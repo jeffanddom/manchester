@@ -393,8 +393,6 @@ function triMeshAddEdgeOn(src: DataMesh): DataMesh {
     componentsPerAttrib: srcPositions.componentsPerAttrib,
   })
   attribBuffers.set(ShaderAttrib.EdgeOn, {
-    // TODO: we may be able to use unsigned byte here, as long as we convert
-    // to a float value in the vertex shader.
     bufferData: new Float32Array(edgeOn),
     componentsPerAttrib: 3,
   })

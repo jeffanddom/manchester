@@ -8,7 +8,6 @@ import { UnlitObjectType } from '~/renderer/Renderer3d'
 export const update = (entityManger: EntityManager): Renderable[] => {
   const renderables: Renderable[] = []
 
-  // const message = simState.messages.find((m) => m.frame === simState.frame)
   for (const [id, shooter] of entityManger.shooters) {
     const target = shooter.input.target
     if (target !== undefined) {
