@@ -529,7 +529,9 @@ export class ClientSim {
       })
     }
 
-    res.push(...systems.crosshair(this.entityManager))
+    if (this.playerNumber !== undefined) {
+      res.push(...systems.crosshair(this.playerNumber, this.entityManager))
+    }
 
     return res
   }
