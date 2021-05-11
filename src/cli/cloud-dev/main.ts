@@ -58,37 +58,48 @@ class CloudDev {
 
   async run(): Promise<void> {
     // Get IAM username
-    console.log(`fetching IAM username...`)
+    console.info(`fetching IAM username...`)
     this.awsUsername = (await awsUtils.getUser()).UserName
-    console.log(`user: ${this.awsUsername}`)
+    console.info(`user: ${this.awsUsername}`)
 
     // Get user-associated EBS volume
     // TODO: ensure the volume is not currently in use (maybe detach before termination)
-    console.log(`locating EBS volume...`)
+    console.info(`locating EBS volume...`)
     const volumeTags = new Map()
     volumeTags.set('app', 'jeffanddom-cloud-dev')
     volumeTags.set('user', this.awsUsername)
-    const volume = await awsUtils.getEbsVolume(this.ec2, volumeTags)
+    const volume = await awsUtils.getEbsVolumeByTag(this.ec2, volumeTags)
     this.ebsVolumeId = volume.VolumeId
     if (this.ebsVolumeId === undefined) {
       throw new Error(`invalid volume ID`)
     }
-    console.log(`volume: ${this.ebsVolumeId}`)
+    console.info(`volume: ${this.ebsVolumeId}`)
 
-    // Launch new EC2 instance
-    console.log(
-      `launching new instance of template ${this.launchTemplateName} for user ${this.awsUsername}...`,
+    console.info(`Finding or creating instance...`)
+    const [instance, volumeAttached] = await awsUtils.getInstanceForVolume(
+      this.ec2,
+      volume,
+      {
+        launch: {
+          templateName: this.launchTemplateName,
+          userTag: this.awsUsername,
+          az: this.az,
+        },
+      },
     )
-    const instance = await awsUtils.launch(this.ec2, {
-      templateName: this.launchTemplateName,
-      userTag: this.awsUsername,
-      az: this.az,
-    })
-    this.instanceId = instance.InstanceId
-    if (this.instanceId === undefined) {
-      throw new Error('no instance ID returned')
+
+    if (instance.InstanceId === undefined) {
+      throw `InstsanceID is undefined`
     }
-    console.log(`instance: ${this.instanceId}`)
+    this.instanceId = instance.InstanceId
+
+    if (volumeAttached) {
+      console.info(`instance ${this.instanceId} already attached, reusing...`)
+    } else {
+      console.info(
+        `launched new instance ${this.instanceId} with template ${this.launchTemplateName} for user ${this.awsUsername}...`,
+      )
+    }
 
     let quitting = false
     const onQuit = () => {
@@ -102,7 +113,7 @@ class CloudDev {
           process.exit()
         })
         .catch((err) => {
-          console.log(err)
+          console.info(err)
           process.exit(1)
         })
     }
@@ -111,28 +122,30 @@ class CloudDev {
     process.on('SIGHUP', onQuit) // Window/tab close
 
     // Fetch and print the public hostname.
-    console.log(`waiting for public hostname...`)
+    console.info(`waiting for public hostname...`)
     this.remoteHost = await awsUtils.waitForPublicDnsName(
       this.ec2,
       this.instanceId,
     )
-    console.log(`hostname: ${this.remoteHost.name}`)
+    console.info(`hostname: ${this.remoteHost.name}`)
 
     // Attach volume to instance
-    console.log(`attaching EBS volume...`)
-    await awsUtils.attachVolume(this.ec2, this.instanceId, this.ebsVolumeId)
+    if (!volumeAttached) {
+      console.info(`attaching EBS volume...`)
+      await awsUtils.attachVolume(this.ec2, this.instanceId, this.ebsVolumeId)
+    }
 
     // wait for sshd to accept connections
-    console.log('waiting for SSH availability...')
+    console.info('waiting for SSH availability...')
     const hostPubkeys = await sshUtils.waitForHostPubkeys(this.remoteHost.name)
 
-    console.log(`extending ${this.sshKnownHostsPath} with host pubkeys...`)
+    console.info(`extending ${this.sshKnownHostsPath} with host pubkeys...`)
     await sshUtils.extendKnownHosts(hostPubkeys, {
       knownHostsPath: this.sshKnownHostsPath,
     })
 
     // Update SSH config with new remote host
-    console.log(`updating ${this.sshConfigPath}...`)
+    console.info(`updating ${this.sshConfigPath}...`)
     await sshUtils.updateConfig({
       sshConfigPath: this.sshConfigPath,
       localHostAlias: this.localHostAlias,
@@ -145,16 +158,21 @@ class CloudDev {
     // Mount the volume to the filesystem
     const remoteUserdir = '/home/' + this.remoteUser
     const mountpoint = remoteUserdir + '/data'
-    console.log(`mounting volume...`)
+    console.info(`mounting volume...`)
     sshUtils.exec(
       this.localHostAlias,
-      `sudo mkdir -p ${mountpoint} && sudo mount /dev/nvme1n1 ${mountpoint} && sudo chown ${this.remoteUser}:${this.remoteUser} ${mountpoint}`,
+      `(mount | grep -q "${mountpoint}") || \
+      ( \
+        sudo mkdir -p ${mountpoint} && \
+        sudo mount /dev/nvme1n1 ${mountpoint} && \
+        sudo chown ${this.remoteUser}:${this.remoteUser} ${mountpoint} \
+      )`,
     )
 
     // Copy gitconfig
     const gitconfigPath = process.env['HOME'] + '/.gitconfig'
     if (fs.existsSync(gitconfigPath)) {
-      console.log(`uploading gitconfig...`)
+      console.info(`uploading gitconfig...`)
       sshUtils.upload({
         remoteUser: this.remoteUser,
         remoteHost: this.remoteHost.name,
@@ -168,7 +186,7 @@ class CloudDev {
     util.preventDefaultTermination()
 
     // Print some diagnostics
-    console.log(`---
+    console.info(`---
 cloud-dev is ready!
 * Remote hostname: ${this.remoteHost.name}
 * SSH alias: ${this.localHostAlias}
@@ -196,15 +214,15 @@ cloud-dev is ready!
 
   async cleanup(): Promise<void> {
     // ensure visual space after "^C" termination character
-    console.log('')
+    console.info('')
 
     if (this.instanceId !== undefined) {
-      console.log(`terminating ${this.instanceId}...`)
+      console.info(`terminating ${this.instanceId}...`)
       await awsUtils.terminate(this.ec2, this.instanceId)
     }
 
     if (this.remoteHost !== undefined) {
-      console.log(
+      console.info(
         `removing ${this.remoteHost.name} from ${this.sshKnownHostsPath}...`,
       )
       await sshUtils.removeFromKnownHosts(
