@@ -24,8 +24,9 @@ declare module 'gl-matrix' {
       b: Immutable<mat4>,
     ): mat4
 
-    // TODO: glMatrix type annotations are not strict. invert() will return null
-    // if the determinant is zero, i.e., if the matrix is not invertible.
+    // invert() will return null if the determinant is zero, i.e., if the matrix
+    // is not invertible. glMatrix's built-in type annotations are not strict,
+    // so let's provide a more accurate version here.
     export function invert(out: mat4, input: mat4): mat4 | null
 
     export function targetTo(
