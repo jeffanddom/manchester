@@ -21,7 +21,11 @@ export class Camera3d {
   }
 
   getWvTransform(out: mat4): mat4 {
-    return mat4.invert(out, this.targetTo(out))
+    const res = mat4.invert(out, this.targetTo(out))
+    if (res === null) {
+      throw `cannot invert targetTo matrix`
+    }
+    return out
   }
 
   getViewportDimensions(): Immutable<vec2> {

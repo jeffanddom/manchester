@@ -69,6 +69,11 @@ export class Camera {
     )
 
     mat4.multiply(out, offset, out)
-    return mat4.invert(out, out)
+    const res = mat4.invert(out, out)
+    if (res === null) {
+      throw `cannot invert matrix`
+    }
+
+    return out
   }
 }
