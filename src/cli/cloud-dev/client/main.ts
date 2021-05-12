@@ -12,12 +12,11 @@ import * as fs from 'fs'
 
 import * as AWS from 'aws-sdk'
 
-import * as util from '../util'
-
-import * as awsUtils from './awsUtils'
-import { Config, getConfig } from './config'
-import * as slack from './slack'
-import * as sshUtils from './sshUtils'
+import * as util from '../../util'
+import * as awsUtils from '../awsUtils'
+import { Config, getConfig } from '../config'
+import * as slack from '../slack'
+import * as sshUtils from '../sshUtils'
 
 class CloudDev {
   ec2: AWS.EC2
@@ -44,8 +43,8 @@ class CloudDev {
   config: Config
 
   constructor(config: Config) {
-    this.ec2 = new AWS.EC2({ region: 'us-west-1' })
-    this.az = 'us-west-1a'
+    this.ec2 = new AWS.EC2({ region: config.awsRegion })
+    this.az = config.awsAZ
     this.launchTemplateName = 'jeffanddom-cloud-dev-template-1'
     this.localHostAlias = 'jeffanddom-cloud-dev'
     this.remoteUser = 'ubuntu'
@@ -80,9 +79,10 @@ class CloudDev {
       this.ec2,
       volume,
       {
-        launch: {
+        instance: {
           templateName: this.launchTemplateName,
           userTag: this.awsUsername,
+          appTag: this.config.instanceAppTag,
           az: this.az,
         },
       },

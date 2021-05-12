@@ -96,9 +96,10 @@ export async function getInstanceForVolume(
   ec2: AWS.EC2,
   volume: AWS.EC2.Volume,
   config: {
-    launch: {
+    instance: {
       templateName: string
       userTag: string // a tag that can be used to distinguish this instance from others
+      appTag: string // a tag that can be used to distinguish this instance from others
       az: string
     }
     retries?: number
@@ -111,7 +112,7 @@ export async function getInstanceForVolume(
   }
 
   if (volume.Attachments === undefined || volume.Attachments.length === 0) {
-    return [await launch(ec2, config.launch), false]
+    return [await launch(ec2, config.instance), false]
   }
 
   if (volume.Attachments.length !== 1) {
@@ -147,7 +148,7 @@ export async function getInstanceForVolume(
   switch (attachment.State) {
     case 'detached':
       return [
-        await launch(ec2, config.launch),
+        await launch(ec2, config.instance),
         false, // volume is not attached to the instance
       ]
 
@@ -184,17 +185,20 @@ export async function getInstanceForVolume(
   }
 }
 
+export interface InstanceConfig {
+  templateName: string
+  userTag: string // a tag that can be used to distinguish this instance from others
+  appTag: string // a tag for grouping instances by application name
+  az: string
+}
+
 /**
  * Launches a new instance based on the provided launch template, identified by
  * name.
  */
 export async function launch(
   ec2: AWS.EC2,
-  config: {
-    templateName: string
-    userTag: string // a tag that can be used to distinguish this instance from others
-    az: string
-  },
+  config: InstanceConfig,
 ): Promise<AWS.EC2.Instance> {
   const res = await ec2
     .runInstances({
@@ -207,7 +211,10 @@ export async function launch(
       TagSpecifications: [
         {
           ResourceType: 'instance',
-          Tags: [{ Key: 'user', Value: config.userTag }],
+          Tags: [
+            { Key: 'user', Value: config.userTag },
+            { Key: 'app', Value: config.appTag },
+          ],
         },
         {
           ResourceType: 'volume',

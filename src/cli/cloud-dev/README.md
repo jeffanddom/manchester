@@ -37,6 +37,17 @@ A token for the `jeffanddom` workspace is available [here](https://api.slack.com
 
 ### Usage
 
+#### Configuration
+
+For Slack alerts, create a `~/.cloud-dev` JSON file with the following properties:
+
+```
+{
+  "slackApiToken": "xoxb-...",
+  "slackChannel": "#cloud-dev"
+}
+```
+
 #### Provisioning the instance
 
 From your local manchester repo, run `bin/cloud-dev`.
@@ -49,19 +60,20 @@ fetching IAM username...
 user: jeff
 locating EBS volume...
 volume: vol-03071059b0eeb17e7
-launching new instance of template jeffanddom-cloud-dev-template-1 for user jeff...
-instance: i-07d436b8954575685
+Finding or creating instance...
+launched new instance i-0425b085bd9cb5363 with template jeffanddom-cloud-dev-template-1 for user jeff...
 waiting for public hostname...
+hostname: ec2-13-56-229-41.us-west-1.compute.amazonaws.com
 attaching EBS volume...
-updating /Users/jeff/.ssh/config...
 waiting for SSH availability...
-The authenticity of host 'ec2-18-144-30-187.us-west-1.compute.amazonaws.com (18.144.30.187)' can't be established.
-ECDSA key fingerprint is SHA256:qJjz9J6jT43oU61FixXyhjsjtTzV1XR03v5JquijQ4k.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+extending /Users/jefflee/.ssh/known_hosts with host pubkeys...
+updating /Users/jefflee/.ssh/config...
 mounting volume...
+Warning: Permanently added the ECDSA host key for IP address '13.56.229.41' to the list of known hosts.
+uploading gitconfig...
 ---
 cloud-dev is ready!
-* Remote hostname: ec2-18-144-30-187.us-west-1.compute.amazonaws.com
+* Remote hostname: ec2-13-56-229-41.us-west-1.compute.amazonaws.com
 * SSH alias: jeffanddom-cloud-dev
   * Connect via: ssh jeffanddom-cloud-dev
   * Local port 3000 will be fowarded to remote port 3000
