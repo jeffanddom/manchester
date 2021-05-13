@@ -58,12 +58,7 @@ async function getInstancesByTag(
     return []
   }
 
-  return res.Reservations.flatMap((r) => {
-    if (r.Instances === undefined) {
-      return []
-    }
-    return r.Instances
-  })
+  return res.Reservations.flatMap((r) => r.Instances ?? [])
 }
 
 export async function run(): Promise<void> {
