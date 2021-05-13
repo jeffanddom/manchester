@@ -95,94 +95,78 @@ export async function attachVolume(
 export async function getInstanceForVolume(
   ec2: AWS.EC2,
   volume: AWS.EC2.Volume,
-  config: {
-    instance: {
-      templateName: string
-      userTag: string // a tag that can be used to distinguish this instance from others
-      appTag: string // a tag that can be used to distinguish this instance from others
-      az: string
-    }
-    retries?: number
-    retryDelay?: number
+  instanceConfig: {
+    templateName: string
+    userTag: string // a tag that can be used to distinguish this instance from others
+    appTag: string // a tag that can be used to distinguish this instance from others
+    az: string
   },
 ): Promise<[AWS.EC2.Instance, boolean]> {
-  const volumeId = volume.VolumeId
-  if (volumeId === undefined) {
-    throw `volume has undefined ID`
-  }
+  let retryDelay = 3000
 
-  if (volume.Attachments === undefined || volume.Attachments.length === 0) {
-    return [await launch(ec2, config.instance), false]
-  }
-
-  if (volume.Attachments.length !== 1) {
-    throw `volume has unusual number of attachments: ${volume.Attachments.length}`
-  }
-
-  const attachment = volume.Attachments[0]
-  if (attachment.State === undefined) {
-    throw `volume attachment has undefined state`
-  }
-
-  const tryAgain = async () => {
-    const retries = config.retries ?? 5
-    if (retries === 0) {
-      throw `too many retries attempting to get instance for volume`
+  for (let retries = 0; retries < 5; retries++) {
+    const volumeId = volume.VolumeId
+    if (volumeId === undefined) {
+      throw `volume has undefined ID`
     }
 
-    const retryDelay = config.retryDelay ?? 3000
-    await util.sleep(retryDelay)
-
-    const volume = await getEbsVolumeById(ec2, volumeId)
-    if (volume === undefined) {
-      throw `volume not found with ID ${volumeId}`
-    }
-
-    return await getInstanceForVolume(ec2, volume, {
-      ...config,
-      retries: retries - 1,
-      retryDelay: retryDelay * 2,
-    })
-  }
-
-  switch (attachment.State) {
-    case 'detached':
+    if (volume.Attachments === undefined || volume.Attachments.length === 0) {
       return [
-        await launch(ec2, config.instance),
+        await launch(ec2, instanceConfig),
         false, // volume is not attached to the instance
       ]
+    }
 
-    case 'attached':
-    case 'attaching': {
+    if (volume.Attachments.length !== 1) {
+      throw `volume has unusual number of attachments: ${volume.Attachments.length}`
+    }
+
+    const attachment = volume.Attachments[0]
+    if (attachment.State === undefined) {
+      throw `volume attachment has undefined state`
+    }
+
+    if (attachment.State === 'detached') {
+      return [
+        await launch(ec2, instanceConfig),
+        false, // volume is not attached to the instance
+      ]
+    }
+
+    if (attachment.State === 'attached' || attachment.State === 'attaching') {
       const instanceId = attachment.InstanceId
       if (instanceId === undefined) {
         throw `volume in attached or attaching state, but InstanceId is undefined`
       }
 
       const instance = await getInstanceById(ec2, instanceId)
-      if (instance === undefined) {
-        return await tryAgain()
-      }
+      if (instance !== undefined) {
+        const state = instance.State?.Name
+        if (state === undefined) {
+          throw `could not read state for instance ${instanceId}`
+        }
 
-      const state = instance.State?.Name
-      if (state === undefined) {
-        throw `could not read state for instance ${instanceId}`
+        if (state === 'pending' || state === 'running') {
+          return [
+            instance,
+            true, // volume is attached to the instance
+          ]
+        }
       }
-
-      if (state === 'pending' || state === 'running') {
-        return [
-          instance,
-          true, // volume is attached to the instance
-        ]
-      }
-
-      // If we got this far, the instance is being torn down, so let's wait.
-      return await tryAgain()
     }
 
-    default:
-      return await tryAgain()
+    retryDelay *= 2
+    await util.sleep(retryDelay)
+
+    const nextVolume = await getEbsVolumeById(ec2, volumeId)
+    if (nextVolume === undefined) {
+      throw `volume not found with ID ${volumeId}`
+    }
+
+    volume = nextVolume
   }
+
+  throw `too many retries attempting to get instance for volume`
 }
 
 export interface InstanceConfig {

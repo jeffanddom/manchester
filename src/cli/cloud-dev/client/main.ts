@@ -79,12 +79,10 @@ class CloudDev {
       this.ec2,
       volume,
       {
-        instance: {
-          templateName: this.launchTemplateName,
-          userTag: this.awsUsername,
-          appTag: this.config.instanceAppTag,
-          az: this.az,
-        },
+        templateName: this.launchTemplateName,
+        userTag: this.awsUsername,
+        appTag: this.config.instanceAppTag,
+        az: this.az,
       },
     )
 
