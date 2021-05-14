@@ -9,7 +9,6 @@ import {
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
 import { Type } from '~/entities/types'
-import { BuilderCreator } from '~/systems/builder'
 import * as shooter from '~/systems/shooter'
 import * as tankMover from '~/systems/tankMover'
 
@@ -21,7 +20,6 @@ export const makePlayer = (): EntityComponents => {
   e.targetable = true
   e.team = Team.Friendly
   e.moveable = true
-  e.builderCreator = new BuilderCreator()
   e.damageable = damageable.make(PLAYER_HEALTH, {
     offset: vec2.fromValues(-TILE_SIZE * 0.3, -TILE_SIZE * 0.5),
     dimensions: vec2.fromValues(TILE_SIZE * 0.6, TILE_SIZE),

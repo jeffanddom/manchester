@@ -54,7 +54,7 @@ export const simulate = (
   systems.transformInit(simState)
 
   systems.hiding(simState.entityManager)
-  // systems.builder(this, this.entityManager, dt)
+  systems.builder(simState, dt)
   systems.shooter(simState)
   systems.turret(simState, dt)
   systems.bullet(simState, dt)

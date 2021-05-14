@@ -16,12 +16,14 @@ const bulletColor: Record<BulletType, [number, number, number, number]> = {
   [BulletType.Standard]: [1, 0, 0, 1],
   [BulletType.Rocket]: [1, 1, 0.5, 1],
   [BulletType.Mortar]: [0.2, 0.2, 0.5, 1],
+  [BulletType.Builder]: [0, 0, 0, 0],
 }
 
 const bulletModel: Record<BulletType, string> = {
   [BulletType.Standard]: 'bullet',
   [BulletType.Rocket]: 'bullet',
   [BulletType.Mortar]: 'mortar',
+  [BulletType.Builder]: '',
 }
 
 export const makeBullet = ({

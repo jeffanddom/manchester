@@ -13,11 +13,13 @@ const range: Record<BulletType, number> = {
   [BulletType.Standard]: 8 * TILE_SIZE,
   [BulletType.Rocket]: 12 * TILE_SIZE,
   [BulletType.Mortar]: 0,
+  [BulletType.Builder]: 0,
 }
 const speed: Record<BulletType, number> = {
   [BulletType.Standard]: 15 * TILE_SIZE,
   [BulletType.Rocket]: 3,
   [BulletType.Mortar]: 0,
+  [BulletType.Builder]: 0,
 }
 
 export const update = (
@@ -105,6 +107,8 @@ export const update = (
           newPos = vec2.fromValues(newPos3[0], newPos3[2])
         }
         break
+      case BulletType.Builder:
+        continue
     }
 
     simState.entityManager.transforms.update(id, { position: newPos })

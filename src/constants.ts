@@ -29,6 +29,9 @@ export const MORTAR_GRAVITY = -15
 export const MORTAR_MUZZLE_SPEED = 12
 export const MORTAR_FIRING_HEIGHT = 0.5
 
+// Builder stuff
+export const BUILDER_SPEED = 3
+
 // Camera
 export const CAMERA_MIN_Y_OFFSET = 3
 export const CAMERA_MAX_Y_OFFSET = 12

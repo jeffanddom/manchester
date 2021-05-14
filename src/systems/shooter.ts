@@ -9,6 +9,7 @@ import {
   BulletType,
 } from '~/components/Bullet'
 import { TILE_SIZE } from '~/constants'
+import { makeBuilder } from '~/entities/builder'
 import { makeBullet } from '~/entities/bullet'
 import { SimState } from '~/simulate'
 import * as emitter from '~/systems/emitter'
@@ -21,6 +22,7 @@ const firingInformation: Record<
   [BulletType.Standard]: { cooldown: 15, mode: 'held' },
   [BulletType.Rocket]: { cooldown: 18, mode: 'down' },
   [BulletType.Mortar]: { cooldown: 18, mode: 'down' },
+  [BulletType.Builder]: { cooldown: 1, mode: 'down' },
 }
 
 export type ShooterComponent = {
@@ -119,6 +121,15 @@ export const update = (simState: SimState): void => {
       newAngle,
       TILE_SIZE * 0.25,
     )
+
+    if (shooter.bulletType === BulletType.Builder) {
+      const newBuilder = makeBuilder({
+        source: bulletPos,
+        destination: message.attack.targetPos,
+      })
+      simState.entityManager.register(newBuilder)
+      return
+    }
 
     let config: BulletConfig
     switch (shooter.bulletType) {

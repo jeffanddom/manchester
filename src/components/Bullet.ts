@@ -7,6 +7,7 @@ export enum BulletType {
   Standard,
   Rocket,
   Mortar,
+  Builder,
 }
 export const BULLET_TYPE_LENGTH = Object.values(BulletType).length / 2
 

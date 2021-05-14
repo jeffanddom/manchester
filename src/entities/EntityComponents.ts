@@ -6,7 +6,7 @@ import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { Transform3 } from '~/components/Transform3'
 import { Type } from '~/entities/types'
-import { BuilderComponent, BuilderCreator } from '~/systems/builder'
+import { Builder } from '~/systems/builder'
 import { Damager } from '~/systems/damager'
 import { EmitterComponent } from '~/systems/emitter'
 import { PickupType } from '~/systems/pickups'
@@ -40,8 +40,7 @@ export interface EntityComponents {
   wall?: boolean
 
   // Components that are currently not used by simulation
-  builder?: BuilderComponent
-  builderCreator?: BuilderCreator
+  builder?: Builder
   harvestType?: PickupType
   inventory?: PickupType[]
   pickupType?: PickupType

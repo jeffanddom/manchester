@@ -1,3 +1,6 @@
+import { vec2 } from 'gl-matrix'
+import ndarray from 'ndarray'
+
 import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
@@ -15,6 +18,7 @@ import { EntityId } from '~/entities/EntityId'
 import { EntitySet } from '~/entities/EntitySet'
 import { EntityStateContainer } from '~/entities/EntityStateContainer'
 import { Type } from '~/entities/types'
+import * as builder from '~/systems/builder'
 import * as attack from '~/systems/damager'
 import { EmitterComponent, emitterClone } from '~/systems/emitter'
 import { PickupType } from '~/systems/pickups'
@@ -29,7 +33,11 @@ import { Aabb2 } from '~/util/aabb2'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
-import { tileBox } from '~/util/tileMath'
+import { tileBox, tileCoords } from '~/util/tileMath'
+
+// l1-path-finder is not typed. Fix this, Jeff and Dom.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const createPlanner = require('l1-path-finder')
 
 type QuadtreeEntity = {
   id: EntityId
@@ -45,6 +53,7 @@ export class EntityManager {
   private predictedRegistrations: SortedSet<EntityId>
 
   // components
+  builders: ComponentTable<builder.Builder>
   bullets: ComponentTable<Bullet>
   damageables: ComponentTable<Damageable>
   damagers: ComponentTable<attack.Damager>
@@ -74,6 +83,9 @@ export class EntityManager {
   // indexes
   friendlyTeam: SortedSet<EntityId>
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
+  private obstacleGrid: ndarray.NdArray
+  private obstacleGridDirty: boolean
+  routePlanner: any
 
   constructor(playfieldAabb: Aabb2) {
     this.nextEntityIdUncommitted = 0
@@ -84,6 +96,7 @@ export class EntityManager {
     this.predictedRegistrations = new SortedSet()
 
     // components
+    this.builders = new ComponentTable(builder.clone)
     this.bullets = new ComponentTable(bullet.clone)
     this.damageables = new ComponentTable(damageable.clone)
     this.damagers = new ComponentTable(attack.clone)
@@ -109,6 +122,7 @@ export class EntityManager {
     this.walls = new EntitySet()
 
     this.allContainers = [
+      this.builders,
       this.bullets,
       this.damageables,
       this.damagers,
@@ -143,6 +157,9 @@ export class EntityManager {
         return minBiasAabbOverlap(aabb, e.aabb)
       },
     })
+    this.obstacleGrid = ndarray(new Float32Array(4096), [64, 64])
+    this.obstacleGridDirty = false
+    this.routePlanner = createPlanner(this.obstacleGrid)
   }
 
   public undoPrediction(): void {
@@ -189,6 +206,10 @@ export class EntityManager {
       }
     }
     this.toDelete = new SortedSet()
+    if (this.obstacleGridDirty) {
+      this.obstacleGridDirty = false
+      this.routePlanner = createPlanner(this.obstacleGrid)
+    }
   }
 
   public getPlayerId(playerNumber: number): EntityId | undefined {
@@ -205,6 +226,10 @@ export class EntityManager {
     const id = this.nextEntityIdUncommitted as EntityId
     this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
+
+    if (e.builder !== undefined) {
+      this.builders.set(id, e.builder)
+    }
 
     if (e.bullet !== undefined) {
       this.bullets.set(id, e.bullet)
@@ -320,12 +345,26 @@ export class EntityManager {
       const entityAabb = tileBox(this.transforms.get(id)!.position)
       this.quadtree.insert({ aabb: entityAabb, id: id })
     }
+
+    if (this.walls.has(id)) {
+      const wallCoord = vec2.create()
+      tileCoords(wallCoord, this.transforms.get(id)!.position)
+      this.obstacleGrid.set(wallCoord[0] + 32, wallCoord[1] + 32, 1)
+      this.obstacleGridDirty = true
+    }
   }
 
   // FIXME: unindexing only occurs on deletes, not updates.
   private unindexEntity(id: EntityId): void {
     this.friendlyTeam.delete(id)
     this.quadtree.remove(id)
+
+    if (this.walls.has(id)) {
+      const wallCoord = vec2.create()
+      tileCoords(wallCoord, this.transforms.get(id)!.position)
+      this.obstacleGrid.set(wallCoord[0] + 32, wallCoord[1] + 32, 0)
+      this.obstacleGridDirty = true
+    }
   }
 
   public queryByWorldPos(aabb: Aabb2): EntityId[] {
