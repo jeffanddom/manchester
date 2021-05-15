@@ -1,12 +1,11 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
-import { CameraController } from './CameraController'
-import { DedupLog } from './DedupLog'
-
 import { ClientAssets } from '~/assets/ClientAssets'
 import { CommonAssets } from '~/assets/CommonAssets'
 import { Camera3d } from '~/camera/Camera3d'
+import { CameraController } from '~/client/CameraController'
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
+import { DedupLog } from '~/client/DedupLog'
 import {
   CAMERA_MAX_Y_OFFSET,
   CAMERA_MIN_Y_OFFSET,

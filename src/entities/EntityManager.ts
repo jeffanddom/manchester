@@ -85,6 +85,9 @@ export class EntityManager {
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
   private obstacleGrid: ndarray.NdArray
   private obstacleGridDirty: boolean
+
+  // TODO: we still need to add type annotations for l1-path-finder.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routePlanner: any
 
   constructor(playfieldAabb: Aabb2) {

@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import { BulletType } from '~/components/Bullet'
+import { WeaponType } from '../WeaponType'
+
 import { EntityManager } from '~/entities/EntityManager'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
 
@@ -14,12 +15,12 @@ export const update = (
   }
 
   const shooter = entityManager.shooters.get(playerId)!
-  shooter.bulletType
+  shooter.weaponType
 
   return [
     {
       primitive: Primitive2d.TEXT,
-      text: BulletType[shooter.bulletType].toUpperCase(),
+      text: WeaponType[shooter.weaponType].toUpperCase(),
       pos: vec2.fromValues(40, 15),
       hAlign: TextAlign.Min,
       vAlign: TextAlign.Min,

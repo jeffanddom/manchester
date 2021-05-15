@@ -1,15 +1,13 @@
 import { vec2, vec3 } from 'gl-matrix'
 
 import { MORTAR_GRAVITY, MORTAR_MUZZLE_SPEED } from '~/constants'
+import { WeaponType } from '~/systems/WeaponType'
 import { Immutable } from '~/types/immutable'
 
-export enum BulletType {
-  Standard,
-  Rocket,
-  Mortar,
-  Builder,
-}
-export const BULLET_TYPE_LENGTH = Object.values(BulletType).length / 2
+export type BulletType =
+  | typeof WeaponType.Standard
+  | typeof WeaponType.Rocket
+  | typeof WeaponType.Mortar
 
 export type Bullet = {
   origin: vec2
@@ -24,17 +22,17 @@ export type Bullet = {
 }
 
 export interface StandardConfig {
-  type: BulletType.Standard
+  type: WeaponType.Standard
   origin: vec2
 }
 
 export interface RocketConfig {
-  type: BulletType.Rocket
+  type: WeaponType.Rocket
   origin: vec2
 }
 
 export interface MortarConfig {
-  type: BulletType.Mortar
+  type: WeaponType.Mortar
   origin: vec2
   target: vec2
 }
@@ -48,7 +46,7 @@ export function make(config: BulletConfig): Bullet | undefined {
     type: config.type,
   }
 
-  if (config.type === BulletType.Mortar) {
+  if (config.type === WeaponType.Mortar) {
     const delta = vec2.sub(vec2.create(), config.target, config.origin)
     const dist = vec2.length(delta)
 

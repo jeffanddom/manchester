@@ -22,7 +22,7 @@ export class ClientConnectionWs implements IClientConnection {
 
     this.socket.addEventListener('message', (ev) => {
       // TODO: validate, find a way to convey parse/validation errs
-      const incoming = (JSON.parse(ev.data) as ClientMessage)
+      const incoming = JSON.parse(ev.data) as ClientMessage
       this.received.push(incoming)
     })
   }

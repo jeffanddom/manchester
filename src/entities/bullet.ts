@@ -11,19 +11,18 @@ import {
 } from '~/entities/EntityComponents'
 import { EntityId } from '~/entities/EntityId'
 import { DamageAreaType } from '~/systems/damager'
+import { WeaponType } from '~/systems/WeaponType'
 
 const bulletColor: Record<BulletType, [number, number, number, number]> = {
-  [BulletType.Standard]: [1, 0, 0, 1],
-  [BulletType.Rocket]: [1, 1, 0.5, 1],
-  [BulletType.Mortar]: [0.2, 0.2, 0.5, 1],
-  [BulletType.Builder]: [0, 0, 0, 0],
+  [WeaponType.Standard]: [1, 0, 0, 1],
+  [WeaponType.Rocket]: [1, 1, 0.5, 1],
+  [WeaponType.Mortar]: [0.2, 0.2, 0.5, 1],
 }
 
 const bulletModel: Record<BulletType, string> = {
-  [BulletType.Standard]: 'bullet',
-  [BulletType.Rocket]: 'bullet',
-  [BulletType.Mortar]: 'mortar',
-  [BulletType.Builder]: '',
+  [WeaponType.Standard]: 'bullet',
+  [WeaponType.Rocket]: 'bullet',
+  [WeaponType.Mortar]: 'mortar',
 }
 
 export const makeBullet = ({
@@ -52,9 +51,9 @@ export const makeBullet = ({
   }
 
   // Mortars don't do damage until they reach their target.
-  if (config.type !== BulletType.Mortar) {
+  if (config.type !== WeaponType.Mortar) {
     e.damager = {
-      damageValue: config.type === BulletType.Rocket ? 5 : 1,
+      damageValue: config.type === WeaponType.Rocket ? 5 : 1,
       area: { type: DamageAreaType.Point },
       splash: false,
       immuneList: [owner],
@@ -62,7 +61,7 @@ export const makeBullet = ({
   }
 
   // Mortar 3D animation
-  if (config.type === BulletType.Mortar) {
+  if (config.type === WeaponType.Mortar) {
     e.transform3 = transform3.make()
     e.transform3.position[0] = config.origin[0]
     e.transform3.position[1] = MORTAR_FIRING_HEIGHT

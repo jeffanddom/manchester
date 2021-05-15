@@ -1,9 +1,8 @@
 import { mat4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
-import { FrameEventType } from './FrameEvent'
+import { WeaponType } from './WeaponType'
 
-import { BulletType } from '~/components/Bullet'
 import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
@@ -11,6 +10,7 @@ import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
 import { SimState } from '~/simulate'
+import { FrameEventType } from '~/systems/FrameEvent'
 import { Immutable } from '~/types/immutable'
 import { Aabb2 } from '~/util/aabb2'
 import { segmentToAabb } from '~/util/collision'
@@ -182,7 +182,7 @@ export const update = (simState: SimState, dt: number): void => {
         owner: id,
         config: {
           origin: bulletPos,
-          type: BulletType.Standard,
+          type: WeaponType.Standard,
         },
       }),
     )

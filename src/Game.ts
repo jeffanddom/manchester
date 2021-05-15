@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { CommonAssets } from './assets/CommonAssets'
-
+import { CommonAssets } from '~/assets/CommonAssets'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { EntityManager } from '~/entities/EntityManager'

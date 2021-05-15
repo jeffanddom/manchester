@@ -1,7 +1,9 @@
 import { vec4 } from 'gl-matrix'
 
+import { WeaponType } from '../WeaponType'
+
 import { Renderable, RenderableType } from '~/client/ClientRenderManager'
-import { BulletType, mortarInRange } from '~/components/Bullet'
+import { mortarInRange } from '~/components/Bullet'
 import { EntityManager } from '~/entities/EntityManager'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
 
@@ -26,7 +28,7 @@ export const update = (
 
   const renderables: Renderable[] = []
 
-  if (shooter.bulletType === BulletType.Mortar) {
+  if (shooter.weaponType === WeaponType.Mortar) {
     const transform = entityManager.transforms.get(id)!
 
     if (

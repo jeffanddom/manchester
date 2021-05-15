@@ -1,34 +1,30 @@
 import { mat4 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { FrameEventType } from './FrameEvent'
-
-import {
-  BULLET_TYPE_LENGTH,
-  BulletConfig,
-  BulletType,
-} from '~/components/Bullet'
+import { BulletConfig } from '~/components/Bullet'
 import { TILE_SIZE } from '~/constants'
 import { makeBuilder } from '~/entities/builder'
 import { makeBullet } from '~/entities/bullet'
 import { SimState } from '~/simulate'
 import * as emitter from '~/systems/emitter'
+import { FrameEventType } from '~/systems/FrameEvent'
+import { WEAPON_TYPE_LENGTH, WeaponType } from '~/systems/WeaponType'
 import { PlusY3, getAngle, radialTranslate2 } from '~/util/math'
 
 const firingInformation: Record<
-  BulletType,
+  WeaponType,
   { cooldown: number; mode: 'down' | 'held' }
 > = {
-  [BulletType.Standard]: { cooldown: 15, mode: 'held' },
-  [BulletType.Rocket]: { cooldown: 18, mode: 'down' },
-  [BulletType.Mortar]: { cooldown: 18, mode: 'down' },
-  [BulletType.Builder]: { cooldown: 1, mode: 'down' },
+  [WeaponType.Standard]: { cooldown: 15, mode: 'held' },
+  [WeaponType.Rocket]: { cooldown: 18, mode: 'down' },
+  [WeaponType.Mortar]: { cooldown: 18, mode: 'down' },
+  [WeaponType.Builder]: { cooldown: 15, mode: 'down' },
 }
 
 export type ShooterComponent = {
   lastFiredFrame: number
   orientation: number
-  bulletType: BulletType
+  weaponType: WeaponType
   input: {
     target: vec2 | undefined
     fire: boolean
@@ -39,7 +35,7 @@ export function make(): ShooterComponent {
   return {
     lastFiredFrame: -1,
     orientation: 0,
-    bulletType: BulletType.Standard,
+    weaponType: WeaponType.Standard,
     input: { target: undefined, fire: false },
   }
 }
@@ -48,7 +44,7 @@ export function clone(s: ShooterComponent): ShooterComponent {
   return {
     lastFiredFrame: s.lastFiredFrame,
     orientation: s.orientation,
-    bulletType: s.bulletType,
+    weaponType: s.weaponType,
     input: {
       target:
         s.input.target !== undefined ? vec2.clone(s.input.target) : undefined,
@@ -63,11 +59,11 @@ export const update = (simState: SimState): void => {
     const shooter = simState.entityManager.shooters.get(id)!
 
     if (message.changeWeapon) {
-      let nextType = shooter.bulletType + 1
-      if (nextType >= BULLET_TYPE_LENGTH) {
-        nextType = 0 as BulletType
+      let nextType = shooter.weaponType + 1
+      if (nextType >= WEAPON_TYPE_LENGTH) {
+        nextType = 0 as WeaponType
       }
-      simState.entityManager.shooters.update(id, { bulletType: nextType })
+      simState.entityManager.shooters.update(id, { weaponType: nextType })
     }
     if (message.attack === undefined) {
       return
@@ -92,7 +88,7 @@ export const update = (simState: SimState): void => {
     })
 
     let fireTriggered = false
-    switch (firingInformation[shooter.bulletType].mode) {
+    switch (firingInformation[shooter.weaponType].mode) {
       case 'held':
         fireTriggered = message.attack.fireHeld
         break
@@ -100,7 +96,7 @@ export const update = (simState: SimState): void => {
         fireTriggered = message.attack.fireDown
         break
     }
-    const cooldown = firingInformation[shooter.bulletType].cooldown
+    const cooldown = firingInformation[shooter.weaponType].cooldown
     const coolingDown =
       shooter.lastFiredFrame !== -1 &&
       message.frame - shooter.lastFiredFrame < cooldown
@@ -122,7 +118,7 @@ export const update = (simState: SimState): void => {
       TILE_SIZE * 0.25,
     )
 
-    if (shooter.bulletType === BulletType.Builder) {
+    if (shooter.weaponType === WeaponType.Builder) {
       const newBuilder = makeBuilder({
         source: bulletPos,
         destination: message.attack.targetPos,
@@ -132,17 +128,17 @@ export const update = (simState: SimState): void => {
     }
 
     let config: BulletConfig
-    switch (shooter.bulletType) {
-      case BulletType.Standard:
-        config = { origin: bulletPos, type: shooter.bulletType }
+    switch (shooter.weaponType) {
+      case WeaponType.Standard:
+        config = { origin: bulletPos, type: shooter.weaponType }
         break
-      case BulletType.Rocket:
-        config = { origin: bulletPos, type: shooter.bulletType }
+      case WeaponType.Rocket:
+        config = { origin: bulletPos, type: shooter.weaponType }
         break
-      case BulletType.Mortar:
+      case WeaponType.Mortar:
         config = {
           origin: bulletPos,
-          type: shooter.bulletType,
+          type: shooter.weaponType,
           target: message.attack.targetPos,
         }
         break
@@ -166,7 +162,7 @@ export const update = (simState: SimState): void => {
         type: FrameEventType.TankShoot,
         entityId: id,
         orientation: shooter.orientation,
-        bulletType: shooter.bulletType,
+        bulletType: shooter.weaponType,
       })
 
       simState.entityManager.emitters.set(

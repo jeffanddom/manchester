@@ -22,8 +22,11 @@ export type ServerFrameUpdateMessage = {
 }
 
 export type RemoteClientMessage = {
-  type: ServerMessageType.REMOTE_CLIENT_MESSAGE,
+  type: ServerMessageType.REMOTE_CLIENT_MESSAGE
   message: ClientMessage
 }
 
-export type ServerMessage = ServerStartGameMessage | ServerFrameUpdateMessage | RemoteClientMessage
+export type ServerMessage =
+  | ServerStartGameMessage
+  | ServerFrameUpdateMessage
+  | RemoteClientMessage

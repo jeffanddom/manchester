@@ -1,25 +1,23 @@
 import { quat, vec2, vec3 } from 'gl-matrix'
 
-import { makeExplosion } from './explosion'
-
 import { BulletType } from '~/components/Bullet'
 import { MORTAR_FIRING_HEIGHT, MORTAR_GRAVITY, TILE_SIZE } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
 import { EntityManager } from '~/entities/EntityManager'
 import * as emitter from '~/systems/emitter'
+import { makeExplosion } from '~/systems/explosion'
+import { WeaponType } from '~/systems/WeaponType'
 import { PlusX3, PlusY3, radialTranslate2 } from '~/util/math'
 
 const range: Record<BulletType, number> = {
-  [BulletType.Standard]: 8 * TILE_SIZE,
-  [BulletType.Rocket]: 12 * TILE_SIZE,
-  [BulletType.Mortar]: 0,
-  [BulletType.Builder]: 0,
+  [WeaponType.Standard]: 8 * TILE_SIZE,
+  [WeaponType.Rocket]: 12 * TILE_SIZE,
+  [WeaponType.Mortar]: 0,
 }
 const speed: Record<BulletType, number> = {
-  [BulletType.Standard]: 15 * TILE_SIZE,
-  [BulletType.Rocket]: 3,
-  [BulletType.Mortar]: 0,
-  [BulletType.Builder]: 0,
+  [WeaponType.Standard]: 15 * TILE_SIZE,
+  [WeaponType.Rocket]: 3,
+  [WeaponType.Mortar]: 0,
 }
 
 export const update = (
@@ -32,7 +30,7 @@ export const update = (
     const transform = simState.entityManager.transforms.get(id)!
     let newPos
     switch (bullet.type) {
-      case BulletType.Standard:
+      case WeaponType.Standard:
         {
           newPos = radialTranslate2(
             vec2.create(),
@@ -43,7 +41,7 @@ export const update = (
         }
         break
 
-      case BulletType.Rocket:
+      case WeaponType.Rocket:
         {
           const currentSpeed = bullet.currentSpeed ?? speed[bullet.type]
 
@@ -67,7 +65,7 @@ export const update = (
         }
         break
 
-      case BulletType.Mortar:
+      case WeaponType.Mortar:
         {
           const disp = vec3.scale(vec3.create(), bullet.vel!, dt)
           disp[1] += 0.5 * MORTAR_GRAVITY * dt * dt
@@ -107,14 +105,12 @@ export const update = (
           newPos = vec2.fromValues(newPos3[0], newPos3[2])
         }
         break
-      case BulletType.Builder:
-        continue
     }
 
     simState.entityManager.transforms.update(id, { position: newPos })
     simState.entityManager.bullets.update(id, { lifetime: nextLifetime })
 
-    if (bullet.type !== BulletType.Mortar) {
+    if (bullet.type !== WeaponType.Mortar) {
       if (vec2.distance(newPos, bullet.origin) >= range[bullet.type]) {
         simState.entityManager.markForDeletion(id)
         return

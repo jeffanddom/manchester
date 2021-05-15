@@ -1,8 +1,5 @@
 import { vec2 } from 'gl-matrix'
 
-import { FrameEventType } from './FrameEvent'
-
-import { BulletType } from '~/components/Bullet'
 import {
   DASH_COOLDOWN,
   DASH_DURATION,
@@ -16,6 +13,8 @@ import {
 import { DirectionMove } from '~/input/interfaces'
 import { ClientMoveUpdate } from '~/network/ClientMessage'
 import { SimState } from '~/simulate'
+import { FrameEventType } from '~/systems/FrameEvent'
+import { WeaponType } from '~/systems/WeaponType'
 import { North2, Zero2, radialTranslate2, rotateUntil } from '~/util/math'
 
 export type TankMoverComponent = {
@@ -126,7 +125,7 @@ export const update = (simState: SimState, dt: number): void => {
           {
             const recoil = vec2.create()
             switch (event.bulletType) {
-              case BulletType.Standard:
+              case WeaponType.Standard:
                 {
                   vec2.scale(
                     recoil,

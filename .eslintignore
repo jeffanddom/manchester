@@ -1,4 +1,6 @@
 out/*
+src/cli/cloud-dev/monitor/out/*
 dist/*
 src/assets/**/*.json
 jest.config.js
+src/web/ephemeral/buildVersion.ts
