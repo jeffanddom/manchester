@@ -166,16 +166,17 @@ export class EntityManager {
   }
 
   public undoPrediction(): void {
+    // Make sure to unindex using the current container state.
+    for (const id of this.predictedRegistrations) {
+      this.unindexEntity(id)
+    }
+
     for (const container of this.allContainers) {
       container.rollback()
     }
 
     for (const id of this.predictedDeletes) {
       this.indexEntity(id)
-    }
-
-    for (const id of this.predictedRegistrations) {
-      this.unindexEntity(id)
     }
 
     this.nextEntityIdUncommitted = this.nextEntityIdCommitted
@@ -195,11 +196,12 @@ export class EntityManager {
 
   public postFrameUpdate(): void {
     for (const id of this.toDelete) {
+      // Make sure to unindex using the current container state.
+      this.unindexEntity(id)
+
       for (const container of this.allContainers) {
         container.delete(id)
       }
-
-      this.unindexEntity(id)
 
       if (this.predictedRegistrations.has(id)) {
         // Single-frame entity case
