@@ -160,7 +160,7 @@ export class EntityManager {
         return minBiasAabbOverlap(aabb, e.aabb)
       },
     })
-    this.obstacleGrid = ndarray(new Float32Array(4096), [64, 64])
+    this.obstacleGrid = ndarray(new Uint8Array(4096), [64, 64])
     this.obstacleGridDirty = false
     this.routePlanner = createPlanner(this.obstacleGrid)
   }
@@ -210,7 +210,9 @@ export class EntityManager {
         this.predictedDeletes.add(id)
       }
     }
+
     this.toDelete = new SortedSet()
+
     if (this.obstacleGridDirty) {
       this.obstacleGridDirty = false
       this.routePlanner = createPlanner(this.obstacleGrid)
