@@ -20,12 +20,15 @@
     "paths": {
       "~/*": [
         "./src/*"
+      ],
+      "*": [
+        "./src/types/untyped-modules/*"
       ]
     },
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "typeRoots": [
-      "./src/types",
+      "./src/types/overrides",
       "./node_modules/@types",
     ]
   },

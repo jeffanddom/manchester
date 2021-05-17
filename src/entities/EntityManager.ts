@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+import createPlanner from 'l1-path-finder'
 import ndarray from 'ndarray'
 
 import * as bullet from '~/components/Bullet'
@@ -34,10 +35,6 @@ import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
 import { tileBox, tileCoords } from '~/util/tileMath'
-
-// l1-path-finder is not typed. Fix this, Jeff and Dom.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const createPlanner = require('l1-path-finder')
 
 type QuadtreeEntity = {
   id: EntityId
