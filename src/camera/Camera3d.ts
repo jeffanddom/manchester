@@ -65,4 +65,8 @@ export class Camera3d {
   setViewportDimensions(v: vec2): void {
     vec2.copy(this.viewportDimensions, v)
   }
+
+  setFov(fov: number): void {
+    this.fov = fov
+  }
 }
