@@ -5,7 +5,7 @@ import { BulletConfig } from '~/components/Bullet'
 import { TILE_SIZE } from '~/constants'
 import { makeBuilder } from '~/entities/builder'
 import { makeBullet } from '~/entities/bullet'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 import * as emitter from '~/systems/emitter'
 import { FrameEventType } from '~/systems/FrameEvent'
 import { WEAPON_TYPE_LENGTH, WeaponType } from '~/systems/WeaponType'
@@ -53,7 +53,7 @@ export function clone(s: ShooterComponent): ShooterComponent {
   }
 }
 
-export const update = (simState: SimState): void => {
+export const update = (simState: FrameState): void => {
   simState.messages.forEach((message) => {
     const id = simState.entityManager.getPlayerId(message.playerNumber)!
     const shooter = simState.entityManager.shooters.get(id)!

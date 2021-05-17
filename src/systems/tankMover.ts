@@ -12,7 +12,7 @@ import {
 } from '~/constants'
 import { DirectionMove } from '~/input/interfaces'
 import { ClientMoveUpdate } from '~/network/ClientMessage'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 import { FrameEventType } from '~/systems/FrameEvent'
 import { WeaponType } from '~/systems/WeaponType'
 import { North2, Zero2, radialTranslate2, rotateUntil } from '~/util/math'
@@ -38,7 +38,7 @@ export function clone(t: TankMoverComponent): TankMoverComponent {
   }
 }
 
-export const update = (simState: SimState, dt: number): void => {
+export const update = (simState: FrameState, dt: number): void => {
   const messages = new Map<number, ClientMoveUpdate>()
   simState.messages.forEach((m) => {
     if (m.move !== undefined) {

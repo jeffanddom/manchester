@@ -3,9 +3,9 @@ import { vec2 } from 'gl-matrix'
 import { FrameEventType } from './FrameEvent'
 
 import { PickupConstructors } from '~/entities/pickups'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 
-export const update = (simState: SimState): void => {
+export const update = (simState: FrameState): void => {
   for (const [id, damageable] of simState.entityManager.damageables) {
     const transform = simState.entityManager.transforms.get(id)!
 

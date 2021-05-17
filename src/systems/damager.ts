@@ -10,7 +10,7 @@ import { DebugDrawObject } from '~/DebugDraw'
 import { EntityId } from '~/entities/EntityId'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
 import {
-  SimState,
+  FrameState,
   SimulationPhase,
   simulationPhaseDebugColor,
 } from '~/simulate'
@@ -135,7 +135,7 @@ export function clone(d: Immutable<Damager>): Damager {
   }
 }
 
-export const update = (simState: SimState): void => {
+export const update = (simState: FrameState): void => {
   simState.debugDraw.draw3d(() => {
     const objects: DebugDrawObject[] = []
 

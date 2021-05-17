@@ -5,7 +5,7 @@ import { BUILDER_SPEED } from '~/constants'
 // import { TILE_SIZE } from '~/constants'
 // import { make } from '~/entities/builder'
 // import { Entity } from '~/entities/Entity'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 // import { makeTurret } from '~/entities/turret'
 // import { makeWall } from '~/entities/wall'
 // import { pathfind } from '~/map/PathFinder'
@@ -51,7 +51,7 @@ const tilePos = vec2.create()
 const destTilePos = vec2.create()
 const nextTilePos = vec2.create()
 
-export const update = (simState: SimState, dt: number): void => {
+export const update = (simState: FrameState, dt: number): void => {
   for (const [id, builder] of simState.entityManager.builders) {
     const pos = simState.entityManager.transforms.get(id)!.position
     tileCoords(tilePos, pos)

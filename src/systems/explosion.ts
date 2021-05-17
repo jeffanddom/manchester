@@ -8,7 +8,7 @@ import {
   EntityComponents,
   makeDefaultEntity,
 } from '~/entities/EntityComponents'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 
 export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
@@ -32,7 +32,7 @@ export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
   return e
 }
 
-export function update(simState: SimState): void {
+export function update(simState: FrameState): void {
   for (const id of simState.entityManager.explosions) {
     simState.frameEvents.push({
       type: FrameEventType.MortarExplosion,

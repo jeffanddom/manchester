@@ -31,7 +31,7 @@ export function simulationPhaseDebugColor(
   }
 }
 
-export type SimState = {
+export type FrameState = {
   entityManager: EntityManager
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
@@ -46,7 +46,7 @@ export type SimState = {
 }
 
 export const simulate = (
-  simState: SimState,
+  simState: FrameState,
   gameState: GameState,
   dt: number,
 ): void => {

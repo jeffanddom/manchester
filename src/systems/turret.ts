@@ -9,7 +9,7 @@ import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
 import { EntityId } from '~/entities/EntityId'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 import { FrameEventType } from '~/systems/FrameEvent'
 import { Immutable } from '~/types/immutable'
 import { Aabb2 } from '~/util/aabb2'
@@ -35,7 +35,7 @@ export function clone(t: TurretComponent): TurretComponent {
   return { cooldownTtl: t.cooldownTtl, orientation: t.orientation }
 }
 
-export const update = (simState: SimState, dt: number): void => {
+export const update = (simState: FrameState, dt: number): void => {
   const { entityManager } = simState
 
   const turretIds = new SortedSet<EntityId>()

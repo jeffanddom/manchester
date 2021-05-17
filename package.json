@@ -25,6 +25,7 @@
     "codemirror": "^5.59.1",
     "file-saver": "^2.0.2",
     "gl-matrix": "^3.3.0",
+    "hash-wasm": "^4.6.0",
     "l1-path-finder": "^1.0.0",
     "ndarray": "^1.0.19",
     "rc-slider": "^9.7.2",

@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { Aabb2 } from '~/util/aabb2'
@@ -15,7 +15,7 @@ enum DirectionCollision {
   West = 'W',
 }
 
-export const update = (simState: Pick<SimState, 'entityManager'>): void => {
+export const update = (simState: Pick<FrameState, 'entityManager'>): void => {
   for (const [id] of simState.entityManager.playerNumbers) {
     const transform = simState.entityManager.transforms.get(id)!
     const position = transform.position

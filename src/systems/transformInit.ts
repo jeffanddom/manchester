@@ -1,8 +1,8 @@
 import { vec2 } from 'gl-matrix'
 
-import { SimState } from '~/simulate'
+import { FrameState } from '~/simulate'
 
-export const update = (simState: Pick<SimState, 'entityManager'>): void => {
+export const update = (simState: Pick<FrameState, 'entityManager'>): void => {
   for (const id of simState.entityManager.moveables) {
     const transform = simState.entityManager.transforms.get(id)!
     if (!vec2.equals(transform.position, transform.previousPosition)) {
