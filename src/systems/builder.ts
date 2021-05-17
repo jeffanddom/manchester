@@ -57,17 +57,15 @@ export const update = (simState: FrameState, dt: number): void => {
     tileCoords(tilePos, pos)
     tileCoords(destTilePos, builder.target)
 
-    const path: number[] = []
-
-    // prettier-ignore
-    simState.simState.routePlanner.search(
-      tilePos[0] + 32, tilePos[1] + 32,
-      destTilePos[0] + 32, destTilePos[1] + 32,
-      path
+    const path = simState.simState.pathfinder.getPath(
+      tilePos[0],
+      tilePos[1],
+      destTilePos[0],
+      destTilePos[1],
     )
 
-    if (path.length > 2) {
-      vec2.set(nextTilePos, path[2] - 32, path[3] - 32)
+    if (path !== undefined && path.length > 2) {
+      vec2.set(nextTilePos, path[2], path[3])
       tileToWorld(nextTilePos, nextTilePos)
 
       // Aim for the next path element and step by dt

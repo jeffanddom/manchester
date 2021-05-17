@@ -1,6 +1,4 @@
 import { vec2 } from 'gl-matrix'
-import createPlanner from 'l1-path-finder'
-import ndarray from 'ndarray'
 
 import * as bullet from '~/components/Bullet'
 import { Bullet } from '~/components/Bullet'
@@ -19,6 +17,7 @@ import { EntityComponents } from '~/sim/EntityComponents'
 import { EntityId } from '~/sim/EntityId'
 import { EntitySet } from '~/sim/EntitySet'
 import { EntityStateContainer } from '~/sim/EntityStateContainer'
+import { Pathfinder } from '~/sim/indexes/Pathfinder'
 import * as builder from '~/systems/builder'
 import * as attack from '~/systems/damager'
 import { EmitterComponent, emitterClone } from '~/systems/emitter'
@@ -80,12 +79,7 @@ export class SimState {
   // indexes
   friendlyTeam: SortedSet<EntityId>
   private quadtree: Quadtree<EntityId, QuadtreeEntity>
-  private obstacleGrid: ndarray.NdArray
-  private obstacleGridDirty: boolean
-
-  // TODO: we still need to add type annotations for l1-path-finder.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  routePlanner: any
+  public pathfinder: Pathfinder
 
   constructor(playfieldAabb: Aabb2) {
     this.nextEntityIdUncommitted = 0
@@ -157,9 +151,12 @@ export class SimState {
         return minBiasAabbOverlap(aabb, e.aabb)
       },
     })
-    this.obstacleGrid = ndarray(new Uint8Array(4096), [64, 64])
-    this.obstacleGridDirty = false
-    this.routePlanner = createPlanner(this.obstacleGrid)
+    this.pathfinder = new Pathfinder({
+      width: 64,
+      height: 64,
+      worldToGridOffsetX: 32,
+      worldToGridOffsetY: 32,
+    })
   }
 
   public undoPrediction(): void {
@@ -210,10 +207,7 @@ export class SimState {
 
     this.toDelete = new SortedSet()
 
-    if (this.obstacleGridDirty) {
-      this.obstacleGridDirty = false
-      this.routePlanner = createPlanner(this.obstacleGrid)
-    }
+    this.pathfinder.frameUpdate()
   }
 
   public getPlayerId(playerNumber: number): EntityId | undefined {
@@ -353,8 +347,7 @@ export class SimState {
     if (this.walls.has(id)) {
       const wallCoord = vec2.create()
       tileCoords(wallCoord, this.transforms.get(id)!.position)
-      this.obstacleGrid.set(wallCoord[0] + 32, wallCoord[1] + 32, 1)
-      this.obstacleGridDirty = true
+      this.pathfinder.setOn(wallCoord[0], wallCoord[1])
     }
   }
 
@@ -366,8 +359,7 @@ export class SimState {
     if (this.walls.has(id)) {
       const wallCoord = vec2.create()
       tileCoords(wallCoord, this.transforms.get(id)!.position)
-      this.obstacleGrid.set(wallCoord[0] + 32, wallCoord[1] + 32, 0)
-      this.obstacleGridDirty = true
+      this.pathfinder.setOff(wallCoord[0], wallCoord[1])
     }
   }
 

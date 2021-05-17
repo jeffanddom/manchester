@@ -1,9 +1,11 @@
 import ndarray from 'ndarray'
 
 declare module 'l1-path-finder' {
-  declare function createPlanner(grid: ndarray): L1PathPlanner
+  export default function createPlanner(
+    grid: ndarray.NdArray,
+  ): l1PathFinder.Planner
 
-  declare class L1PathPlanner {
+  export class Planner {
     search(
       tx: number,
       ty: number,
@@ -12,6 +14,4 @@ declare module 'l1-path-finder' {
       path: number[],
     ): number
   }
-
-  export = createPlanner
 }
