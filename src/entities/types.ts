@@ -1,9 +1,9 @@
-import { EntityComponents } from '~/entities/EntityComponents'
 import { makeCorePickup } from '~/entities/pickups/core'
 import { makePlayer } from '~/entities/player'
 import { makeTree } from '~/entities/tree'
 import { makeTurret } from '~/entities/turret'
 import { makeWall } from '~/entities/wall'
+import { EntityComponents } from '~/sim/EntityComponents'
 
 export enum Type {
   PLAYER = 'PLAYER',

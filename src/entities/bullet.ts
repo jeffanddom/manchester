@@ -5,11 +5,8 @@ import { BulletType } from '~/components/Bullet'
 import * as transform from '~/components/Transform'
 import * as transform3 from '~/components/Transform3'
 import { MORTAR_FIRING_HEIGHT } from '~/constants'
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/entities/EntityComponents'
-import { EntityId } from '~/entities/EntityId'
+import { EntityComponents, makeDefaultEntity } from '~/sim/EntityComponents'
+import { EntityId } from '~/sim/EntityId'
 import { DamageAreaType } from '~/systems/damager'
 import { WeaponType } from '~/systems/WeaponType'
 

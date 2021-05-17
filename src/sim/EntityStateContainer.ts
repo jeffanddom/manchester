@@ -1,4 +1,4 @@
-import { EntityId } from '~/entities/EntityId'
+import { EntityId } from '~/sim/EntityId'
 
 export interface EntityStateContainer {
   has: (id: EntityId) => boolean

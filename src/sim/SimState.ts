@@ -13,12 +13,12 @@ import * as transform from '~/components/Transform'
 import { Transform } from '~/components/Transform'
 import * as transform3 from '~/components/Transform3'
 import { Transform3 } from '~/components/Transform3'
-import { ComponentTable } from '~/entities/ComponentTable'
-import { EntityComponents } from '~/entities/EntityComponents'
-import { EntityId } from '~/entities/EntityId'
-import { EntitySet } from '~/entities/EntitySet'
-import { EntityStateContainer } from '~/entities/EntityStateContainer'
 import { Type } from '~/entities/types'
+import { ComponentTable } from '~/sim/ComponentTable'
+import { EntityComponents } from '~/sim/EntityComponents'
+import { EntityId } from '~/sim/EntityId'
+import { EntitySet } from '~/sim/EntitySet'
+import { EntityStateContainer } from '~/sim/EntityStateContainer'
 import * as builder from '~/systems/builder'
 import * as attack from '~/systems/damager'
 import { EmitterComponent, emitterClone } from '~/systems/emitter'
@@ -41,7 +41,7 @@ type QuadtreeEntity = {
   aabb: Aabb2
 }
 
-export class EntityManager {
+export class SimState {
   public currentPlayer: number
   private nextEntityIdUncommitted: number
   private nextEntityIdCommitted: number

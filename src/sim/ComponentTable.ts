@@ -1,5 +1,5 @@
-import { EntityId } from '~/entities/EntityId'
-import { EntityStateContainer } from '~/entities/EntityStateContainer'
+import { EntityId } from '~/sim/EntityId'
+import { EntityStateContainer } from '~/sim/EntityStateContainer'
 import { Immutable } from '~/types/immutable'
 import { SortedMap } from '~/util/SortedMap'
 

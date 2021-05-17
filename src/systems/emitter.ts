@@ -1,10 +1,10 @@
 import { quat, vec2, vec3 } from 'gl-matrix'
 
 import { CommonAssets } from '~/assets/CommonAssets'
-import { EntityId } from '~/entities/EntityId'
-import { EntityManager } from '~/entities/EntityManager'
 import { BasicEmitterSettings, emit } from '~/particles/emitters/BasicEmitter'
 import { ParticleConfig } from '~/particles/interfaces'
+import { EntityId } from '~/sim/EntityId'
+import { SimState } from '~/sim/SimState'
 import { Immutable } from '~/types/immutable'
 import { PlusY3, Zero2 } from '~/util/math'
 
@@ -51,10 +51,10 @@ export function emitterClone(
   }
 }
 
-export function update(entityManager: EntityManager, dt: number): void {
+export function update(simState: SimState, dt: number): void {
   const toDelete: EntityId[] = []
 
-  for (const [entityId, ec] of entityManager.emitters) {
+  for (const [entityId, ec] of simState.emitters) {
     const elapsed = ec.elapsed + dt
     const leftoverParticles: number[] = []
     const particlesToRender: number[] = []
@@ -88,7 +88,7 @@ export function update(entityManager: EntityManager, dt: number): void {
       continue
     }
 
-    entityManager.emitters.update(entityId, {
+    simState.emitters.update(entityId, {
       elapsed,
       leftoverParticles,
       particlesToRender,
@@ -98,12 +98,12 @@ export function update(entityManager: EntityManager, dt: number): void {
   // Note: this is one place where we remove a component before the entire
   // entity is removed.
   for (const entityId of toDelete) {
-    entityManager.emitters.delete(entityId)
+    simState.emitters.delete(entityId)
   }
 }
 
 export const emitParticles: (
-  entityManager: EntityManager,
+  simState: SimState,
   addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
   // We use an immediately-evaluated function to close over some temporary
@@ -114,12 +114,12 @@ export const emitParticles: (
   const baseOrientation = quat.create()
 
   return (
-    entityManager: EntityManager,
+    simState: SimState,
     addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void => {
-    for (const [entityId, ec] of entityManager.emitters) {
-      const transform = entityManager.transforms.get(entityId)!
-      const shooter = entityManager.shooters.get(entityId)
+    for (const [entityId, ec] of simState.emitters) {
+      const transform = simState.transforms.get(entityId)!
+      const shooter = simState.shooters.get(entityId)
 
       let orientation2: number = transform.orientation + ec.rotOffset
       let yOffset = 0.5

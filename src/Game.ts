@@ -3,9 +3,9 @@ import { vec2 } from 'gl-matrix'
 import { CommonAssets } from '~/assets/CommonAssets'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
-import { EntityManager } from '~/entities/EntityManager'
 import { Type } from '~/entities/types'
 import { Map } from '~/map/interfaces'
+import { SimState } from '~/sim/SimState'
 import * as terrain from '~/terrain'
 
 export enum GameState {
@@ -21,10 +21,7 @@ export const gameProgression = [
   CommonAssets.maps.get('collisionTest')!,
 ]
 
-export const initMap = (
-  entityManager: EntityManager,
-  map: Map,
-): terrain.Layer => {
+export const initMap = (simState: SimState, map: Map): terrain.Layer => {
   // Level setup
   const terrainLayer = new terrain.Layer({
     tileOrigin: map.origin,
@@ -58,11 +55,11 @@ export const initMap = (
         )
       }
 
-      entityManager.register(entity)
+      simState.register(entity)
     }
   }
 
-  entityManager.commitPrediction()
+  simState.commitPrediction()
 
   return terrainLayer
 }

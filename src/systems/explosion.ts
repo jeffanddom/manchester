@@ -4,10 +4,7 @@ import { DamageAreaType } from './damager'
 import { FrameEventType } from './FrameEvent'
 
 import * as transform from '~/components/Transform'
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/entities/EntityComponents'
+import { EntityComponents, makeDefaultEntity } from '~/sim/EntityComponents'
 import { FrameState } from '~/simulate'
 import { Immutable } from '~/types/immutable'
 
@@ -33,11 +30,11 @@ export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
 }
 
 export function update(simState: FrameState): void {
-  for (const id of simState.entityManager.explosions) {
+  for (const id of simState.simState.explosions) {
     simState.frameEvents.push({
       type: FrameEventType.MortarExplosion,
-      position: vec2.clone(simState.entityManager.transforms.get(id)!.position),
+      position: vec2.clone(simState.simState.transforms.get(id)!.position),
     })
-    simState.entityManager.markForDeletion(id)
+    simState.simState.markForDeletion(id)
   }
 }

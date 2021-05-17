@@ -1,9 +1,9 @@
 import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { EntityManager } from '~/entities/EntityManager'
 import { GameState } from '~/Game'
 import { ClientMessage } from '~/network/ClientMessage'
+import { SimState } from '~/sim/SimState'
 import * as systems from '~/systems'
 import { FrameEvent } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
@@ -32,7 +32,7 @@ export function simulationPhaseDebugColor(
 }
 
 export type FrameState = {
-  entityManager: EntityManager
+  simState: SimState
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer
@@ -46,29 +46,29 @@ export type FrameState = {
 }
 
 export const simulate = (
-  simState: FrameState,
+  frameState: FrameState,
   gameState: GameState,
   dt: number,
 ): void => {
   // Init transforms before any system can modify them.
-  systems.transformInit(simState)
+  systems.transformInit(frameState)
 
-  systems.hiding(simState.entityManager)
-  systems.builder(simState, dt)
-  systems.shooter(simState)
-  systems.turret(simState, dt)
-  systems.bullet(simState, dt)
-  systems.explosion(simState)
-  // systems.pickups(this, this.entityManager)
-  systems.damager(simState)
+  systems.hiding(frameState.simState)
+  systems.builder(frameState, dt)
+  systems.shooter(frameState)
+  systems.turret(frameState, dt)
+  systems.bullet(frameState, dt)
+  systems.explosion(frameState)
+  // systems.pickups(this, this.simState)
+  systems.damager(frameState)
 
-  systems.tankMover(simState, dt)
-  systems.wallCollider(simState)
-  systems.playfieldClamping(simState)
+  systems.tankMover(frameState, dt)
+  systems.wallCollider(frameState)
+  systems.playfieldClamping(frameState)
 
-  systems.damageable(simState)
+  systems.damageable(frameState)
 
-  systems.emitter(simState.entityManager, dt)
+  systems.emitter(frameState.simState, dt)
 
-  simState.entityManager.postFrameUpdate()
+  frameState.simState.postFrameUpdate()
 }

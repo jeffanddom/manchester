@@ -2,19 +2,19 @@ import { vec2 } from 'gl-matrix'
 
 import { WeaponType } from '../WeaponType'
 
-import { EntityManager } from '~/entities/EntityManager'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
+import { SimState } from '~/sim/SimState'
 
 export const update = (
-  entityManager: EntityManager,
+  simState: SimState,
   playerNumber: number,
 ): Renderable2d[] => {
-  const playerId = entityManager.getPlayerId(playerNumber)
+  const playerId = simState.getPlayerId(playerNumber)
   if (playerId === undefined) {
     return []
   }
 
-  const shooter = entityManager.shooters.get(playerId)!
+  const shooter = simState.shooters.get(playerId)!
   shooter.weaponType
 
   return [

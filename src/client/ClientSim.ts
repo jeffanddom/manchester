@@ -15,7 +15,6 @@ import {
   TILE_SIZE,
 } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map as GameMap } from '~/map/interfaces'
@@ -31,6 +30,7 @@ import * as gltf from '~/renderer/gltf'
 import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
+import { SimState } from '~/sim/SimState'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
@@ -49,7 +49,7 @@ interface ServerFrameUpdate {
 }
 
 export class ClientSim {
-  entityManager: EntityManager
+  simState: SimState
   uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
@@ -105,7 +105,7 @@ export class ClientSim {
     this.modelLoader = config.modelLoader
     this.debugDraw = config.debugDraw
 
-    this.entityManager = new EntityManager(aabb2.create())
+    this.simState = new SimState(aabb2.create())
     this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
@@ -161,15 +161,15 @@ export class ClientSim {
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
     const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
-    this.entityManager = new EntityManager([
+    this.simState = new SimState([
       worldOrigin[0],
       worldOrigin[1],
       worldOrigin[0] + dimensions[0],
       worldOrigin[1] + dimensions[1],
     ])
-    this.entityManager.currentPlayer = this.playerNumber!
+    this.simState.currentPlayer = this.playerNumber!
 
-    this.terrainLayer = initMap(this.entityManager, this.map)
+    this.terrainLayer = initMap(this.simState, this.map)
     this.modelLoader.loadModel('terrain', this.terrainLayer.getModel())
 
     for (const m of [
@@ -215,12 +215,12 @@ export class ClientSim {
       return // TODO: should be an error
     }
 
-    const playerId = this.entityManager.getPlayerId(this.playerNumber)
+    const playerId = this.simState.getPlayerId(this.playerNumber)
     if (playerId === undefined) {
       return
     }
 
-    const transform = this.entityManager.transforms.get(playerId)
+    const transform = this.simState.transforms.get(playerId)
     if (transform === undefined) {
       return
     }
@@ -391,7 +391,7 @@ export class ClientSim {
           frameEvents.set(this.simulationFrame, nextFrameEvents)
           simulate(
             {
-              entityManager: this.entityManager,
+              simState: this.simState,
               messages: this.uncommittedMessageHistory.filter(
                 (m) => m.frame === this.simulationFrame,
               ),
@@ -438,14 +438,14 @@ export class ClientSim {
       return
     }
 
-    this.entityManager.undoPrediction()
+    this.simState.undoPrediction()
 
     for (const update of toProcess) {
       const nextFrameEvents: FrameEvent[] = []
       frameEvents.set(update.frame, nextFrameEvents)
       simulate(
         {
-          entityManager: this.entityManager,
+          simState: this.simState,
           messages: update.inputs,
           frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
@@ -459,7 +459,7 @@ export class ClientSim {
       this.committedFrame = update.frame
     }
 
-    this.entityManager.commitPrediction()
+    this.simState.commitPrediction()
 
     this.uncommittedMessageHistory = this.uncommittedMessageHistory.filter(
       (m) => m.frame > this.committedFrame,
@@ -472,7 +472,7 @@ export class ClientSim {
 
       simulate(
         {
-          entityManager: this.entityManager,
+          simState: this.simState,
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
           frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
@@ -498,9 +498,9 @@ export class ClientSim {
 
     const tempQuat = quat.create()
 
-    for (const [entityId, entityModel] of this.entityManager.entityModels) {
-      const transform = this.entityManager.transforms.get(entityId)!
-      const transform3 = this.entityManager.transform3s.get(entityId)
+    for (const [entityId, entityModel] of this.simState.entityModels) {
+      const transform = this.simState.transforms.get(entityId)!
+      const transform3 = this.simState.transform3s.get(entityId)
 
       const m2w = mat4.create()
       if (transform3 !== undefined) {
@@ -529,7 +529,7 @@ export class ClientSim {
     }
 
     if (this.playerNumber !== undefined) {
-      res.push(...systems.crosshair(this.playerNumber, this.entityManager))
+      res.push(...systems.crosshair(this.playerNumber, this.simState))
     }
 
     return res
@@ -537,8 +537,8 @@ export class ClientSim {
 
   getRenderables2d(): Renderable2d[] {
     return [
-      ...systems.playerHealthBar(this.entityManager, this.playerNumber!),
-      ...systems.weaponDisplay(this.entityManager, this.playerNumber!),
+      ...systems.playerHealthBar(this.simState, this.playerNumber!),
+      ...systems.weaponDisplay(this.simState, this.playerNumber!),
     ]
   }
 

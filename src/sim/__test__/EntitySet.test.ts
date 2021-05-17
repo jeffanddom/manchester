@@ -1,5 +1,5 @@
-import { EntityId } from '~/entities/EntityId'
-import { EntitySet } from '~/entities/EntitySet'
+import { EntityId } from '~/sim/EntityId'
+import { EntitySet } from '~/sim/EntitySet'
 
 describe('EntitySet', () => {
   it('#has', () => {

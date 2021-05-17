@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { BulletType } from '~/components/Bullet'
-import { EntityId } from '~/entities/EntityId'
+import { EntityId } from '~/sim/EntityId'
 
 export enum FrameEventType {
   BulletHit,

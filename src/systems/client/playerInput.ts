@@ -37,7 +37,7 @@ export const update = (client: ClientSim, frame: number): void => {
     return
   }
 
-  const playerId = client.entityManager.getPlayerId(client.playerNumber)
+  const playerId = client.simState.getPlayerId(client.playerNumber)
   if (playerId === undefined) {
     return
   }
@@ -57,7 +57,7 @@ export const update = (client: ClientSim, frame: number): void => {
     changeWeapon: client.keyboard.upKeys.has(keyMap.switchWeapon),
   })
 
-  const playerPos = client.entityManager.transforms.get(playerId)!.position
+  const playerPos = client.simState.transforms.get(playerId)!.position
   client.debugDraw.draw3d(() => {
     if (attackUpdate === undefined) {
       return []

@@ -7,8 +7,8 @@ import { aabb as damageableAabb } from '~/components/Damageable'
 import * as hitbox from '~/components/Hitbox'
 import { Transform } from '~/components/Transform'
 import { DebugDrawObject } from '~/DebugDraw'
-import { EntityId } from '~/entities/EntityId'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
+import { EntityId } from '~/sim/EntityId'
 import {
   FrameState,
   SimulationPhase,
@@ -139,8 +139,8 @@ export const update = (simState: FrameState): void => {
   simState.debugDraw.draw3d(() => {
     const objects: DebugDrawObject[] = []
 
-    for (const [entityId, d] of simState.entityManager.damageables) {
-      const xform = simState.entityManager.transforms.get(entityId)!
+    for (const [entityId, d] of simState.simState.damageables) {
+      const xform = simState.simState.transforms.get(entityId)!
       const [center, size] = aabb2.centerSize(damageableAabb(d, xform))
       objects.push({
         object: {
@@ -160,10 +160,10 @@ export const update = (simState: FrameState): void => {
     return objects
   })
 
-  for (const [id, damager] of simState.entityManager.damagers) {
-    const transform = simState.entityManager.transforms.get(id)!
+  for (const [id, damager] of simState.simState.damagers) {
+    const transform = simState.simState.transforms.get(id)!
 
-    const candidateIds = simState.entityManager.queryByWorldPos(
+    const candidateIds = simState.simState.queryByWorldPos(
       damageAreaAabb(transform, damager.area),
     )
 
@@ -177,14 +177,12 @@ export const update = (simState: FrameState): void => {
         continue
       }
 
-      const damageable = simState.entityManager.damageables.get(candidateId)
+      const damageable = simState.simState.damageables.get(candidateId)
       if (damageable === undefined) {
         continue
       }
 
-      const targetTransform = simState.entityManager.transforms.get(
-        candidateId,
-      )!
+      const targetTransform = simState.simState.transforms.get(candidateId)!
       if (
         damageAreaAabbOverlap(
           transform,
@@ -204,12 +202,12 @@ export const update = (simState: FrameState): void => {
       // For now, the only behavior for damagers is "bullet" style: apply
       // damage to the damageable, and then remove self from simulation.
 
-      const damageable = simState.entityManager.damageables.get(targetId)!
-      simState.entityManager.damageables.update(targetId, {
+      const damageable = simState.simState.damageables.get(targetId)!
+      simState.simState.damageables.update(targetId, {
         health: damageable.health - damager.damageValue,
       })
 
-      simState.entityManager.markForDeletion(id)
+      simState.simState.markForDeletion(id)
 
       // Knockback
       simState.frameEvents.push({
@@ -228,9 +226,7 @@ export const update = (simState: FrameState): void => {
         if (simState.phase !== SimulationPhase.ClientAuthoritative) {
           return []
         }
-        const damageableTransform = simState.entityManager.transforms.get(
-          targetId,
-        )!
+        const damageableTransform = simState.simState.transforms.get(targetId)!
         const [center, size] = aabb2.centerSize(
           damageableAabb(damageable, damageableTransform),
         )

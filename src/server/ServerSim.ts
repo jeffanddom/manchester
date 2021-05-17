@@ -2,12 +2,12 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { mockDebugDraw } from '~/DebugDraw'
-import { EntityManager } from '~/entities/EntityManager'
 import { GameState, gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
 import { ClientMessage } from '~/network/ClientMessage'
 import { ServerMessageType } from '~/network/ServerMessage'
+import { SimState } from '~/sim/SimState'
 import { SimulationPhase, simulate } from '~/simulate'
 import * as terrain from '~/terrain'
 import * as aabb2 from '~/util/aabb2'
@@ -15,7 +15,7 @@ import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export class ServerSim {
-  entityManager: EntityManager
+  simState: SimState
 
   // A buffer of unprocessed client messages received from clients. The messages
   // are grouped by frame, and the groups are indexed by the number of frames
@@ -44,7 +44,7 @@ export class ServerSim {
 
   constructor(config: { playerCount: number }) {
     this.clientMessagesByFrame = []
-    this.entityManager = new EntityManager(aabb2.create())
+    this.simState = new SimState(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
     this.simulationFrame = 0
@@ -164,13 +164,13 @@ export class ServerSim {
             TILE_SIZE,
           )
 
-          this.entityManager = new EntityManager([
+          this.simState = new SimState([
             worldOrigin[0],
             worldOrigin[1],
             worldOrigin[0] + dimensions[0],
             worldOrigin[1] + dimensions[1],
           ])
-          this.terrainLayer = initMap(this.entityManager, this.map)
+          this.terrainLayer = initMap(this.simState, this.map)
 
           this.clients.forEach((client, index) => {
             client.conn.send({
@@ -224,7 +224,7 @@ export class ServerSim {
 
           simulate(
             {
-              entityManager: this.entityManager,
+              simState: this.simState,
               messages: frameMessages,
               frameEvents: [],
               terrainLayer: this.terrainLayer,
@@ -244,6 +244,6 @@ export class ServerSim {
 
     // On the server, there is no reason to accumulate prediction state, because
     // the server simulation is authoritative.
-    this.entityManager.commitPrediction()
+    this.simState.commitPrediction()
   }
 }

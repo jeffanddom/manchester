@@ -4,11 +4,8 @@ import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { PLAYER_HEALTH, TILE_SIZE } from '~/constants'
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/entities/EntityComponents'
 import { Type } from '~/entities/types'
+import { EntityComponents, makeDefaultEntity } from '~/sim/EntityComponents'
 import * as shooter from '~/systems/shooter'
 import * as tankMover from '~/systems/tankMover'
 

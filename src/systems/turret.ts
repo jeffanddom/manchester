@@ -8,7 +8,7 @@ import { Team } from '~/components/team'
 import { Transform } from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
 import { makeBullet } from '~/entities/bullet'
-import { EntityId } from '~/entities/EntityId'
+import { EntityId } from '~/sim/EntityId'
 import { FrameState } from '~/simulate'
 import { FrameEventType } from '~/systems/FrameEvent'
 import { Immutable } from '~/types/immutable'
@@ -35,12 +35,12 @@ export function clone(t: TurretComponent): TurretComponent {
   return { cooldownTtl: t.cooldownTtl, orientation: t.orientation }
 }
 
-export const update = (simState: FrameState, dt: number): void => {
-  const { entityManager } = simState
+export const update = (frameState: FrameState, dt: number): void => {
+  const { simState } = frameState
 
   const turretIds = new SortedSet<EntityId>()
-  for (const id of entityManager.friendlyTeam) {
-    const position = entityManager.transforms.get(id)!.position
+  for (const id of simState.friendlyTeam) {
+    const position = simState.transforms.get(id)!.position
     const searchSpace: Aabb2 = [
       position[0] - RANGE,
       position[1] - RANGE,
@@ -48,17 +48,17 @@ export const update = (simState: FrameState, dt: number): void => {
       position[1] + RANGE,
     ]
 
-    for (const turretId of entityManager.queryByWorldPos(searchSpace)) {
-      if (entityManager.turrets.has(turretId)) {
+    for (const turretId of simState.queryByWorldPos(searchSpace)) {
+      if (simState.turrets.has(turretId)) {
         turretIds.add(turretId)
       }
     }
   }
 
   for (const id of turretIds) {
-    const turret = entityManager.turrets.get(id)!
-    const transform = entityManager.transforms.get(id)!
-    const team = entityManager.teams.get(id)!
+    const turret = simState.turrets.get(id)!
+    const transform = simState.transforms.get(id)!
+    const team = simState.teams.get(id)!
 
     // I. Find a target
 
@@ -70,16 +70,16 @@ export const update = (simState: FrameState, dt: number): void => {
       transform.position[1] + RANGE,
     ]
 
-    for (const targetId of entityManager.queryByWorldPos(searchSpace)) {
+    for (const targetId of simState.queryByWorldPos(searchSpace)) {
       if (
         targetId === id ||
-        !entityManager.targetables.has(targetId) ||
-        entityManager.obscureds.has(targetId)
+        !simState.targetables.has(targetId) ||
+        simState.obscureds.has(targetId)
       ) {
         continue
       }
 
-      const targetTransform = entityManager.transforms.get(targetId)!
+      const targetTransform = simState.transforms.get(targetId)!
       if (
         vec2.squaredDistance(targetTransform.position, transform.position) >
         RANGE_SQUARED
@@ -100,7 +100,7 @@ export const update = (simState: FrameState, dt: number): void => {
     )
 
     const target = shootables.find((candidate, n) => {
-      const candidateTeam = entityManager.teams.get(candidate.id)
+      const candidateTeam = simState.teams.get(candidate.id)
       if (candidateTeam === Team.Neutral || candidateTeam === team) {
         return false
       }
@@ -111,10 +111,8 @@ export const update = (simState: FrameState, dt: number): void => {
       ]
 
       for (let i = 0; i < n; i++) {
-        const closerDamageable = entityManager.damageables.get(
-          shootables[i].id,
-        )!
-        const closerTransform = entityManager.transforms.get(shootables[i].id)!
+        const closerDamageable = simState.damageables.get(shootables[i].id)!
+        const closerTransform = simState.transforms.get(shootables[i].id)!
 
         if (
           segmentToAabb(
@@ -141,11 +139,11 @@ export const update = (simState: FrameState, dt: number): void => {
       amount: TURRET_ROT_SPEED * dt,
     })
 
-    simState.entityManager.turrets.update(id, {
+    frameState.simState.turrets.update(id, {
       orientation: newOrientation,
     })
 
-    simState.entityManager.entityModels.update(id, {
+    frameState.simState.entityModels.update(id, {
       modifiers: {
         'turret.cannon_root:post': mat4.fromRotation(
           mat4.create(),
@@ -161,13 +159,13 @@ export const update = (simState: FrameState, dt: number): void => {
     // III. Shoot at target
 
     if (turret.cooldownTtl > 0) {
-      simState.entityManager.turrets.update(id, {
+      frameState.simState.turrets.update(id, {
         cooldownTtl: turret.cooldownTtl - dt,
       })
       continue
     }
 
-    simState.entityManager.turrets.update(id, { cooldownTtl: COOLDOWN_PERIOD })
+    frameState.simState.turrets.update(id, { cooldownTtl: COOLDOWN_PERIOD })
 
     const bulletPos = radialTranslate2(
       vec2.create(),
@@ -176,7 +174,7 @@ export const update = (simState: FrameState, dt: number): void => {
       TILE_SIZE * 0.25,
     )
 
-    entityManager.register(
+    simState.register(
       makeBullet({
         orientation: newOrientation,
         owner: id,
@@ -187,7 +185,7 @@ export const update = (simState: FrameState, dt: number): void => {
       }),
     )
 
-    simState.frameEvents.push({
+    frameState.frameEvents.push({
       type: FrameEventType.TurretShoot,
       position: vec2.clone(bulletPos),
       orientation: newOrientation,

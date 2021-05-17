@@ -1,21 +1,21 @@
-import { EntityManager } from '~/entities/EntityManager'
+import { SimState } from '~/sim/SimState'
 
 export enum PickupType {
   Core = 'Core',
   Wood = 'Wood',
 }
 
-export const update = (_entityManager: EntityManager): void => {
-  // const player = entityManager.getPlayer()!
+export const update = (_simState: SimState): void => {
+  // const player = simState.getPlayer()!
   // const playerAabb = player.damageable!.aabb(player.transform!)
-  // for (const [id, e] of entityManager.entities) {
+  // for (const [id, e] of simState.entities) {
   //   if (e.pickupType === undefined) {
   //     continue
   //   }
   //   const aabb = e.hitbox!.aabb(e.transform!.position)
   //   if (aabbOverlap(playerAabb, aabb)) {
   //     player.inventory!.push(e.pickupType)
-  //     entityManager.markForDeletion(e.id)
+  //     simState.markForDeletion(e.id)
   //   }
   // }
 }

@@ -5,10 +5,7 @@ import * as damageable from '~/components/Damageable'
 import { Team } from '~/components/team'
 import * as transform from '~/components/Transform'
 import { TILE_SIZE } from '~/constants'
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/entities/EntityComponents'
+import { EntityComponents, makeDefaultEntity } from '~/sim/EntityComponents'
 
 export const makeBuilder = (params: {
   source: vec2

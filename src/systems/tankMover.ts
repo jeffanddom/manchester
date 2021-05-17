@@ -46,9 +46,9 @@ export const update = (simState: FrameState, dt: number): void => {
     }
   })
 
-  for (const [id, tankMover] of simState.entityManager.tankMovers) {
-    const playerNumber = simState.entityManager.playerNumbers.get(id)!
-    const transform = simState.entityManager.transforms.get(id)!
+  for (const [id, tankMover] of simState.simState.tankMovers) {
+    const playerNumber = simState.simState.playerNumbers.get(id)!
+    const transform = simState.simState.transforms.get(id)!
     const message = messages.get(playerNumber)
 
     // Apply active dash
@@ -61,12 +61,12 @@ export const update = (simState: FrameState, dt: number): void => {
           DASH_SPEED * dt,
         )
 
-        simState.entityManager.transforms.update(id, { position })
+        simState.simState.transforms.update(id, { position })
         continue // TODO: this should not short circuit external velocity
       }
 
       if (simState.frame - tankMover.lastDashFrame >= DASH_COOLDOWN) {
-        simState.entityManager.tankMovers.update(id, {
+        simState.simState.tankMovers.update(id, {
           lastDashFrame: undefined,
         })
       }
@@ -78,12 +78,12 @@ export const update = (simState: FrameState, dt: number): void => {
     let orientation = transform.orientation
     if (message !== undefined) {
       if (message.dash && tankMover.lastDashFrame === undefined) {
-        simState.entityManager.tankMovers.update(id, {
+        simState.simState.tankMovers.update(id, {
           lastDashFrame: simState.frame,
           dashDirection: message.direction,
         })
         orientation = message.direction
-        simState.entityManager.transforms.update(id, { orientation })
+        simState.simState.transforms.update(id, { orientation })
       } else {
         orientation = rotateUntil({
           from: transform.orientation,
@@ -168,7 +168,7 @@ export const update = (simState: FrameState, dt: number): void => {
       }
     }
 
-    simState.entityManager.tankMovers.update(id, { externalVelocity })
-    simState.entityManager.transforms.update(id, { position, orientation })
+    simState.simState.tankMovers.update(id, { externalVelocity })
+    simState.simState.transforms.update(id, { position, orientation })
   }
 }
