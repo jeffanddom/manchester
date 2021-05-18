@@ -64,6 +64,12 @@ export const update = (simState: FrameState, dt: number): void => {
       destTilePos[1],
     )
 
+    // TODO:
+    // - save entire path on builder
+    // - the builder somehow knows where along the path it is
+    // - save grid checksum (== version of path) on builder
+    // - we check every frame to see if grid checksum has changed
+
     if (path !== undefined && path.length > 2) {
       vec2.set(nextTilePos, path[2], path[3])
       tileToWorld(nextTilePos, nextTilePos)

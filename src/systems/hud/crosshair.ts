@@ -69,18 +69,6 @@ export const update = (
     })
   }
 
-  const cursor: Renderable = {
-    type: RenderableType.Unlit,
-    object: {
-      type: UnlitObjectType.Lines,
-      // prettier-ignore
-      positions: new Float32Array(),
-      color: vec4.fromValues(1, 1, 1, 1),
-    },
-  }
-
-  renderables.push(cursor)
-
   return renderables
 }
 

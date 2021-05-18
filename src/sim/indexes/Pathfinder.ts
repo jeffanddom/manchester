@@ -4,6 +4,23 @@ import ndarray from 'ndarray'
 import { crc32 } from '~/util/crc32'
 import { Lru } from '~/util/Lru'
 
+/**
+ * TODO: new pathfinder
+ * GOAL: do diagonals
+ *
+ * Preprocessing:
+ * - list of waypoints (exterior corners)
+ * - connect waypoints by line of sight
+ * - for every non-waypoint open tile, get list of waypoints that have line of sight
+ *   - this seems dicey
+ *   - do this lazily and cache
+ *
+ * Actual search:
+ * - Extend graph with source and destination
+ * - Just do euclidean A*
+ * - Maybe figure out a way not to cheat around corners
+ */
+
 export class Pathfinder {
   private grid: ndarray.NdArray
   private planner: Planner

@@ -537,9 +537,6 @@ export class Renderer3d implements IModelLoader {
   /**
    * Render using the unlit shader. Intended for debug draw.
    */
-  /**
-   * Render using the unlit shader. Intended for debug draw.
-   */
   renderUnlit(objects: UnlitObject[]): void {
     this.useShader('unlit')
 
