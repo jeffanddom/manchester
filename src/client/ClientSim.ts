@@ -15,7 +15,7 @@ import {
   TILE_SIZE,
 } from '~/constants'
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { GameState, gameProgression, initMap } from '~/Game'
+import { gameProgression, initMap } from '~/Game'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { Map as GameMap } from '~/map/interfaces'
 import { ClientMessage } from '~/network/ClientMessage'
@@ -31,7 +31,7 @@ import { IModelLoader } from '~/renderer/ModelLoader'
 import { Primitive2d, Renderable2d, TextAlign } from '~/renderer/Renderer2d'
 import { UnlitObjectType } from '~/renderer/Renderer3d'
 import { SimState } from '~/sim/SimState'
-import { SimulationPhase, simulate } from '~/simulate'
+import { SimulationPhase, SimulationStep } from '~/simulate'
 import * as systems from '~/systems'
 import { CursorMode } from '~/systems/client/playerInput'
 import { FrameEvent, FrameEventType } from '~/systems/FrameEvent'
@@ -49,6 +49,7 @@ interface ServerFrameUpdate {
 }
 
 export class ClientSim {
+  simulationStep: SimulationStep
   simState: SimState
   uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
@@ -60,6 +61,7 @@ export class ClientSim {
   committedFrame: number
   simulationFrame: number
   waitingForServer: boolean
+  allClientsReady: boolean
 
   camera: Camera3d
   zoomLevel: number
@@ -84,9 +86,6 @@ export class ClientSim {
   addEmitter: (emitter: ParticleEmitter) => void
 
   // Common game state
-  state: GameState
-  nextState: GameState | undefined
-
   currentLevel: number
 
   map: GameMap
@@ -99,12 +98,14 @@ export class ClientSim {
     debugDraw: IDebugDrawWriter
     viewportDimensions: Immutable<vec2>
     addEmitter: (emitter: ParticleEmitter) => void
+    simulationStep: SimulationStep
   }) {
     this.keyboard = config.keyboard
     this.mouse = config.mouse
     this.modelLoader = config.modelLoader
     this.debugDraw = config.debugDraw
 
+    this.simulationStep = config.simulationStep
     this.simState = new SimState(aabb2.create())
     this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
@@ -114,6 +115,7 @@ export class ClientSim {
     this.committedFrame = -1
     this.simulationFrame = 0
     this.waitingForServer = false
+    this.allClientsReady = false
 
     this.camera = new Camera3d({
       viewportDimensions: config.viewportDimensions,
@@ -134,9 +136,6 @@ export class ClientSim {
     this.addEmitter = config.addEmitter
 
     // Common
-    this.state = GameState.Connecting
-    this.nextState = undefined
-
     this.currentLevel = 0
 
     this.map = GameMap.empty()
@@ -200,10 +199,6 @@ export class ClientSim {
       settings: CommonAssets.emitters.get('fallingLeaves')!,
       addEmitter: this.addEmitter,
     })
-  }
-
-  setState(s: GameState): void {
-    this.nextState = s
   }
 
   connectServer(conn: IServerConnection): void {
@@ -322,96 +317,71 @@ export class ClientSim {
       serverMessages = this.serverConnection.consume()
     }
 
-    if (this.nextState !== undefined) {
-      this.state = this.nextState
-      this.nextState = undefined
+    if (!this.allClientsReady) {
+      for (const msg of serverMessages) {
+        if (msg.type === ServerMessageType.START_GAME) {
+          this.playerNumber = msg.playerNumber
+          this.allClientsReady = true
 
-      switch (this.state) {
-        case GameState.Running:
           this.startPlay()
+        }
+      }
+      return
+    }
+
+    // push frame updates from server into list
+    for (const msg of serverMessages) {
+      switch (msg.type) {
+        case ServerMessageType.FRAME_UPDATE:
+          this.serverFrameUpdates.push({
+            frame: msg.frame,
+            inputs: msg.inputs,
+          })
+          this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
+
+          this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
+          this.serverSimulationDurationAvg = msg.simulationDurationAvg
           break
-        case GameState.YouDied:
-          this.currentLevel = 0
-          break
-        case GameState.LevelComplete:
-          // this.currentLevel = (this.currentLevel + 1) % Object.keys(maps).length
+
+        case ServerMessageType.REMOTE_CLIENT_MESSAGE:
+          this.uncommittedMessageHistory.push(msg.message)
           break
       }
     }
 
-    switch (this.state) {
-      case GameState.Connecting:
-        {
-          for (const msg of serverMessages) {
-            if (msg.type === ServerMessageType.START_GAME) {
-              this.playerNumber = msg.playerNumber
-              this.setState(GameState.Running)
-              break
-            }
-          }
-        }
-        break
-      case GameState.Running:
-        {
-          // push frame updates from server into list
-          for (const msg of serverMessages) {
-            switch (msg.type) {
-              case ServerMessageType.FRAME_UPDATE:
-                this.serverFrameUpdates.push({
-                  frame: msg.frame,
-                  inputs: msg.inputs,
-                })
-                this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
-
-                this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
-                this.serverSimulationDurationAvg = msg.simulationDurationAvg
-                break
-
-              case ServerMessageType.REMOTE_CLIENT_MESSAGE:
-                this.uncommittedMessageHistory.push(msg.message)
-                break
-            }
-          }
-
-          this.waitingForServer =
-            this.serverFrameUpdates.length === 0 &&
-            this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
-          if (this.waitingForServer) {
-            break
-          }
-
-          this.syncServerState(dt, frameEvents)
-          this.framesAheadOfServer.sample(
-            this.simulationFrame - this.committedFrame,
-          )
-
-          systems.playerInput(this, this.simulationFrame)
-
-          const nextFrameEvents: FrameEvent[] = []
-          frameEvents.set(this.simulationFrame, nextFrameEvents)
-          simulate(
-            {
-              simState: this.simState,
-              messages: this.uncommittedMessageHistory.filter(
-                (m) => m.frame === this.simulationFrame,
-              ),
-              frameEvents: nextFrameEvents,
-              terrainLayer: this.terrainLayer,
-              frame: this.simulationFrame,
-              debugDraw: this.debugDraw,
-              phase: SimulationPhase.ClientPrediction,
-            },
-            this.state,
-            dt,
-          )
-
-          this.syncCameraToPlayer(dt)
-          this.updateFrameSideEffects(frameEvents)
-
-          this.simulationFrame++
-        }
-        break
+    this.waitingForServer =
+      this.serverFrameUpdates.length === 0 &&
+      this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
+    if (this.waitingForServer) {
+      return
     }
+
+    this.syncServerState(dt, frameEvents)
+    this.framesAheadOfServer.sample(this.simulationFrame - this.committedFrame)
+
+    systems.playerInput(this, this.simulationFrame)
+
+    const nextFrameEvents: FrameEvent[] = []
+    frameEvents.set(this.simulationFrame, nextFrameEvents)
+    this.simulationStep(
+      {
+        simState: this.simState,
+        messages: this.uncommittedMessageHistory.filter(
+          (m) => m.frame === this.simulationFrame,
+        ),
+        frameEvents: nextFrameEvents,
+        terrainLayer: this.terrainLayer,
+        frame: this.simulationFrame,
+        debugDraw: this.debugDraw,
+        phase: SimulationPhase.ClientPrediction,
+      },
+      dt,
+    )
+
+    this.syncCameraToPlayer(dt)
+    this.updateFrameSideEffects(frameEvents)
+
+    this.simulationFrame++
   }
 
   syncServerState(dt: number, frameEvents: Map<number, FrameEvent[]>): void {
@@ -443,7 +413,7 @@ export class ClientSim {
     for (const update of toProcess) {
       const nextFrameEvents: FrameEvent[] = []
       frameEvents.set(update.frame, nextFrameEvents)
-      simulate(
+      this.simulationStep(
         {
           simState: this.simState,
           messages: update.inputs,
@@ -453,7 +423,6 @@ export class ClientSim {
           debugDraw: this.debugDraw,
           phase: SimulationPhase.ClientAuthoritative,
         },
-        this.state,
         dt,
       )
       this.committedFrame = update.frame
@@ -470,7 +439,7 @@ export class ClientSim {
       const nextFrameEvents: FrameEvent[] = []
       frameEvents.set(f, nextFrameEvents)
 
-      simulate(
+      this.simulationStep(
         {
           simState: this.simState,
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
@@ -480,7 +449,6 @@ export class ClientSim {
           debugDraw: this.debugDraw,
           phase: SimulationPhase.ClientReprediction,
         },
-        this.state,
         dt,
       )
     }

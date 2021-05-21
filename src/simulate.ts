@@ -1,12 +1,13 @@
 import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/DebugDraw'
-import { GameState } from '~/Game'
 import { ClientMessage } from '~/network/ClientMessage'
 import { SimState } from '~/sim/SimState'
 import * as systems from '~/systems'
 import { FrameEvent } from '~/systems/FrameEvent'
 import * as terrain from '~/terrain'
+
+export type SimulationStep = (frameState: FrameState, dt: number) => void
 
 export enum SimulationPhase {
   ServerTick,
@@ -45,9 +46,8 @@ export type FrameState = {
   phase: SimulationPhase
 }
 
-export const simulate = (
+export const simulate: SimulationStep = (
   frameState: FrameState,
-  gameState: GameState,
   dt: number,
 ): void => {
   // Init transforms before any system can modify them.

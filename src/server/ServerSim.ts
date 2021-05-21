@@ -2,13 +2,13 @@ import { vec2 } from 'gl-matrix'
 
 import { TILE_SIZE } from '~/constants'
 import { mockDebugDraw } from '~/DebugDraw'
-import { GameState, gameProgression, initMap } from '~/Game'
+import { gameProgression, initMap } from '~/Game'
 import { Map } from '~/map/interfaces'
 import { IClientConnection } from '~/network/ClientConnection'
 import { ClientMessage } from '~/network/ClientMessage'
 import { ServerMessageType } from '~/network/ServerMessage'
 import { SimState } from '~/sim/SimState'
-import { SimulationPhase, simulate } from '~/simulate'
+import { SimulationPhase, SimulationStep } from '~/simulate'
 import * as terrain from '~/terrain'
 import * as aabb2 from '~/util/aabb2'
 import { RunningAverage } from '~/util/RunningAverage'
@@ -26,11 +26,12 @@ export class ServerSim {
     conn: IClientConnection
   }[]
   playerCount: number
+
+  simulationStep: SimulationStep
   simulationFrame: number
 
   // Common game state
-  state: GameState
-  nextState: GameState | undefined
+  allClientsReady: boolean
   shuttingDown: boolean
 
   currentLevel: number
@@ -42,15 +43,15 @@ export class ServerSim {
   lastUpdateAt: number
   simulationDurations: RunningAverage
 
-  constructor(config: { playerCount: number }) {
+  constructor(config: { playerCount: number; simulationStep: SimulationStep }) {
     this.clientMessagesByFrame = []
     this.simState = new SimState(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
+    this.simulationStep = config.simulationStep
     this.simulationFrame = 0
 
-    this.state = GameState.Connecting
-    this.nextState = undefined
+    this.allClientsReady = false
     this.shuttingDown = false
 
     this.currentLevel = 0
@@ -92,10 +93,6 @@ export class ServerSim {
       conn,
     })
     console.log(`connected player: ${this.clients.length}`)
-  }
-
-  setState(s: GameState): void {
-    this.nextState = s
   }
 
   update(dt: number): void {
@@ -145,102 +142,85 @@ export class ServerSim {
       }
     }
 
-    if (this.nextState !== undefined) {
-      this.state = this.nextState
-      this.nextState = undefined
+    if (!this.allClientsReady) {
+      if (this.clients.length === this.playerCount) {
+        this.allClientsReady = true
 
-      switch (this.state) {
-        case GameState.Running:
-          // Level setup
-          this.map = Map.fromRaw(gameProgression[this.currentLevel])
-          const worldOrigin = vec2.scale(
-            vec2.create(),
-            this.map.origin,
-            TILE_SIZE,
-          )
-          const dimensions = vec2.scale(
-            vec2.create(),
-            this.map.dimensions,
-            TILE_SIZE,
-          )
+        this.map = Map.fromRaw(gameProgression[this.currentLevel])
+        const worldOrigin = vec2.scale(
+          vec2.create(),
+          this.map.origin,
+          TILE_SIZE,
+        )
+        const dimensions = vec2.scale(
+          vec2.create(),
+          this.map.dimensions,
+          TILE_SIZE,
+        )
 
-          this.simState = new SimState([
-            worldOrigin[0],
-            worldOrigin[1],
-            worldOrigin[0] + dimensions[0],
-            worldOrigin[1] + dimensions[1],
-          ])
-          this.terrainLayer = initMap(this.simState, this.map)
+        this.simState = new SimState([
+          worldOrigin[0],
+          worldOrigin[1],
+          worldOrigin[0] + dimensions[0],
+          worldOrigin[1] + dimensions[1],
+        ])
+        this.terrainLayer = initMap(this.simState, this.map)
 
-          this.clients.forEach((client, index) => {
-            client.conn.send({
-              type: ServerMessageType.START_GAME,
-              playerNumber: index + 1,
-            })
+        this.clients.forEach((client, index) => {
+          client.conn.send({
+            type: ServerMessageType.START_GAME,
+            playerNumber: index + 1,
           })
-          break
+        })
+      }
+
+      return
+    }
+
+    // Advance only if all clients have already reached the frame the
+    // server is about to simulate.
+    let doSim = true
+    for (const c of this.clients) {
+      if (c.frame < this.simulationFrame) {
+        doSim = false
+        break
       }
     }
 
-    switch (this.state) {
-      case GameState.Connecting:
-        {
-          if (this.clients.length === this.playerCount) {
-            this.setState(GameState.Running)
-          }
-        }
-        break
-
-      case GameState.Running:
-        {
-          // Advance only if all clients have already reached the frame the
-          // server is about to simulate.
-          let doSim = true
-          for (const c of this.clients) {
-            if (c.frame < this.simulationFrame) {
-              doSim = false
-              break
-            }
-          }
-
-          if (!doSim) {
-            break
-          }
-
-          const start = time.current()
-
-          // Remove this frame's client messages from the history, then process.
-          const frameMessages = this.clientMessagesByFrame.shift() ?? []
-
-          for (const client of this.clients) {
-            client.conn.send({
-              type: ServerMessageType.FRAME_UPDATE,
-              frame: this.simulationFrame,
-              inputs: frameMessages,
-              updateFrameDurationAvg: this.updateFrameDurations.average(),
-              simulationDurationAvg: this.simulationDurations.average(),
-            })
-          }
-
-          simulate(
-            {
-              simState: this.simState,
-              messages: frameMessages,
-              frameEvents: [],
-              terrainLayer: this.terrainLayer,
-              frame: this.simulationFrame,
-              debugDraw: mockDebugDraw,
-              phase: SimulationPhase.ServerTick,
-            },
-            this.state,
-            dt,
-          )
-
-          this.simulationDurations.sample(time.current() - start)
-          this.simulationFrame++
-        }
-        break
+    if (!doSim) {
+      return
     }
+
+    const start = time.current()
+
+    // Remove this frame's client messages from the history, then process.
+    const frameMessages = this.clientMessagesByFrame.shift() ?? []
+
+    for (const client of this.clients) {
+      client.conn.send({
+        type: ServerMessageType.FRAME_UPDATE,
+        frame: this.simulationFrame,
+        inputs: frameMessages,
+        updateFrameDurationAvg: this.updateFrameDurations.average(),
+        simulationDurationAvg: this.simulationDurations.average(),
+      })
+    }
+
+    this.simulationStep(
+      {
+        simState: this.simState,
+        messages: frameMessages,
+        frameEvents: [],
+        terrainLayer: this.terrainLayer,
+        frame: this.simulationFrame,
+        debugDraw: mockDebugDraw,
+        phase: SimulationPhase.ServerTick,
+      },
+      dt,
+    )
+
+    this.simulationDurations.sample(time.current() - start)
+    this.simulationFrame++
 
     // On the server, there is no reason to accumulate prediction state, because
     // the server simulation is authoritative.

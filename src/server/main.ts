@@ -8,6 +8,7 @@ import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
 import { PLAYER_COUNT, SERVER_PORT, SIMULATION_PERIOD_S } from '~/constants'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
+import { simulate } from '~/simulate'
 
 async function buildVersion(): Promise<string> {
   return (await fs.promises.readFile(serverBuildVersionPath)).toString()
@@ -16,6 +17,7 @@ async function buildVersion(): Promise<string> {
 async function main(): Promise<void> {
   let gameSim = new ServerSim({
     playerCount: PLAYER_COUNT,
+    simulationStep: simulate,
   })
 
   setInterval(
@@ -54,6 +56,7 @@ async function main(): Promise<void> {
       gameSim.shutdown()
       gameSim = new ServerSim({
         playerCount: PLAYER_COUNT,
+        simulationStep: simulate,
       })
       return ''
     },

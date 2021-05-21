@@ -11,8 +11,6 @@ import * as terrain from '~/terrain'
 export enum GameState {
   Connecting,
   Running,
-  YouDied,
-  LevelComplete,
 }
 
 export const gameProgression = [
