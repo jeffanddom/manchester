@@ -26,7 +26,8 @@ export const serverBuildVersionPath = path.join(
 )
 
 export const webEntrypoints = [
-  ['client', 'main.ts'],
+  ['apps/game', 'clientMain.ts'],
+  ['apps/editor', 'clientMain.ts'],
   ['tools/particletoy', 'main.ts'],
   ['tools/rendertoy', 'main.ts'],
   ['tools/bench', 'main.tsx'],
@@ -50,9 +51,20 @@ export const webBuildOpts: esbuild.BuildOptions = {
   target: ['chrome88', 'firefox84', 'safari14'],
 }
 
+export const serverEntrypoints = [
+  {
+    entrypointPath: path.join(gameSrcPath, 'apps/game/serverMain.ts'),
+    bundlePath: path.join(serverOutputPath, 'game/serverMain.js'),
+  },
+  {
+    entrypointPath: path.join(gameSrcPath, 'apps/editor/serverMain.ts'),
+    bundlePath: path.join(serverOutputPath, 'editor/serverMain.js'),
+  },
+]
+
 export const serverBuildOpts: esbuild.BuildOptions = {
   bundle: true,
-  entryPoints: [path.join(gameSrcPath, 'server', 'main.ts')],
+  entryPoints: serverEntrypoints.map((entrypoint) => entrypoint.entrypointPath),
   outdir: serverOutputPath,
   platform: 'node',
   sourcemap: true,

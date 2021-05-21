@@ -8,13 +8,6 @@ import { Map } from '~/map/interfaces'
 import { SimState } from '~/sim/SimState'
 import * as terrain from '~/terrain'
 
-export enum GameState {
-  Connecting,
-  Running,
-  YouDied,
-  LevelComplete,
-}
-
 export const gameProgression = [
   CommonAssets.maps.get('bigMap')!,
   CommonAssets.maps.get('quadtreeTest')!,

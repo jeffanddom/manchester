@@ -5,7 +5,8 @@ import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
-import { PLAYER_COUNT, SERVER_PORT, SIMULATION_PERIOD_S } from '~/constants'
+import { MAP_EDITOR_PORT, PLAYER_COUNT, SIMULATION_PERIOD_S } from '~/constants'
+import { simulate } from '~/editor'
 import { ClientConnectionWs } from '~/network/ClientConnection'
 import { ServerSim } from '~/server/ServerSim'
 
@@ -16,6 +17,7 @@ async function buildVersion(): Promise<string> {
 async function main(): Promise<void> {
   let gameSim = new ServerSim({
     playerCount: PLAYER_COUNT,
+    simulationStep: simulate,
   })
 
   setInterval(
@@ -25,7 +27,7 @@ async function main(): Promise<void> {
 
   const wsServer = new WebSocket.Server({ noServer: true })
   const httpServer = new hapi.Server({
-    port: SERVER_PORT,
+    port: MAP_EDITOR_PORT,
   })
 
   await httpServer.register(inert)
@@ -34,7 +36,7 @@ async function main(): Promise<void> {
     method: 'GET',
     path: '/',
     handler: async (req, h) => {
-      return h.redirect('/client')
+      return h.redirect('/apps/editor')
     },
   })
 
@@ -54,6 +56,7 @@ async function main(): Promise<void> {
       gameSim.shutdown()
       gameSim = new ServerSim({
         playerCount: PLAYER_COUNT,
+        simulationStep: simulate,
       })
       return ''
     },
@@ -104,7 +107,9 @@ async function main(): Promise<void> {
   })
 
   const bv = await buildVersion()
-  console.log(`Starting dev server on port ${SERVER_PORT}, build version ${bv}`)
+  console.log(
+    `Starting dev server on port ${MAP_EDITOR_PORT}, build version ${bv}`,
+  )
   await httpServer.start()
 }
 

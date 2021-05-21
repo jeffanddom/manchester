@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { Client } from '~/client/Client'
+import { simulate } from '~/simulate'
 import * as autoReload from '~/web/autoReload'
 
 declare global {
@@ -14,6 +15,7 @@ const client = new Client({
   apiLocation: location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
   pixelRatio: window.devicePixelRatio,
+  simulationStep: simulate,
 })
 
 window.addEventListener('resize', () => {

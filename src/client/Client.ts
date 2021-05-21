@@ -4,13 +4,13 @@ import { ClientRenderManager } from '~/client/ClientRenderManager'
 import { ClientSim } from '~/client/ClientSim'
 import { SIMULATION_PERIOD_S } from '~/constants'
 import { DebugDraw } from '~/DebugDraw'
-import { GameState } from '~/Game'
 import { BrowserKeyboard } from '~/input/BrowserKeyboard'
 import { BrowserMouse } from '~/input/BrowserMouse'
 import { IKeyboard, IMouse } from '~/input/interfaces'
 import { createServerConnectionWs } from '~/network/ServerConnection'
 import { ParticleConfig } from '~/particles/interfaces'
 import { ParticleSystem } from '~/particles/ParticleSystem'
+import { SimulationStep } from '~/simulate'
 import * as emitter from '~/systems/emitter'
 import { Immutable } from '~/types/immutable'
 
@@ -43,6 +43,7 @@ export class Client {
     }
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
+    simulationStep: SimulationStep
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
@@ -101,6 +102,7 @@ export class Client {
       debugDraw: this.debugDraw,
       viewportDimensions: this.viewportDimensions,
       addEmitter: (emitter) => this.particleSystem.addEmitter(emitter),
+      simulationStep: params.simulationStep,
     })
   }
 
@@ -111,7 +113,8 @@ export class Client {
       this.debugDraw.setEnabled(!this.debugDraw.isEnabled())
     }
 
-    if (this.sim.state !== GameState.Connecting) {
+    // TODO: what's wrong with rendering all the time
+    if (this.sim.allClientsReady) {
       this.renderManager.update(
         this.sim.getRenderables(),
         this.sim.camera.getWvTransform(mat4.create()),

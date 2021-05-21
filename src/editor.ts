@@ -53,22 +53,8 @@ export const simulate: SimulationStep = (
   // Init transforms before any system can modify them.
   systems.transformInit(frameState)
 
-  systems.hiding(frameState.simState)
-  systems.builder(frameState, dt)
-  systems.shooter(frameState)
-  systems.turret(frameState, dt)
-  systems.bullet(frameState, dt)
-  systems.explosion(frameState)
-  // systems.pickups(this, this.simState)
-  systems.damager(frameState)
-
   systems.tankMover(frameState, dt)
-  systems.wallCollider(frameState)
   systems.playfieldClamping(frameState)
-
-  systems.damageable(frameState)
-
-  systems.emitter(frameState.simState, dt)
 
   frameState.simState.postFrameUpdate()
 }

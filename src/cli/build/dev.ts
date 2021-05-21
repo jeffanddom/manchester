@@ -11,7 +11,7 @@ import {
   copyWebHtml,
   gameSrcPath,
   serverBuildOpts,
-  serverOutputPath,
+  serverEntrypoints,
   updateWebBuildVersion,
   webBuildOpts,
   webEphemeralPath,
@@ -41,17 +41,18 @@ class DevDaemon {
   private building: boolean
   private buildQueued: boolean
 
-  private server: ChildProcessWithoutNullStreams | undefined
+  private servers: ChildProcessWithoutNullStreams[]
   private incrementalBuilds:
     | {
-        server: esbuild.BuildIncremental
-        web: esbuild.BuildIncremental
-      }
+      server: esbuild.BuildIncremental
+      web: esbuild.BuildIncremental
+    }
     | undefined
 
   constructor() {
     this.building = false
     this.buildQueued = false
+    this.servers = []
   }
 
   public start(): void {
@@ -147,17 +148,21 @@ class DevDaemon {
   }
 
   private restartServer(): void {
-    if (this.server !== undefined) {
-      this.server.kill()
+    for (const server of this.servers) {
+      server.kill()
     }
+    this.servers = []
 
-    this.server = spawn('node', [path.join(serverOutputPath, 'main.js')])
-    this.server.stdout.on('data', (data) =>
-      console.log(trimNewlineSuffix(data).toString()),
-    )
-    this.server.stderr.on('data', (data) =>
-      console.log(trimNewlineSuffix(data).toString()),
-    )
+    for (const entrypoint of serverEntrypoints) {
+      const server = spawn('node', [entrypoint.bundlePath])
+      server.stdout.on('data', (data) =>
+        console.log(trimNewlineSuffix(data).toString()),
+      )
+      server.stderr.on('data', (data) =>
+        console.log(trimNewlineSuffix(data).toString()),
+      )
+      this.servers.push(server)
+    }
   }
 }
 
