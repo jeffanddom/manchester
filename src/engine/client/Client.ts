@@ -27,7 +27,6 @@ export class Client {
   gl: WebGL2RenderingContext
   ctx2d: CanvasRenderingContext2D
 
-  // The following objects should get re-constructed on server restart
   keyboard: IKeyboard
   mouse: IMouse
   debugDraw: DebugDraw
