@@ -1,7 +1,7 @@
 import { quat, vec3 } from 'gl-matrix'
 import React from 'react'
 
-import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/engine/particles/emitters/BasicEmitter'
 
 export function valueToStep(
   value: number,

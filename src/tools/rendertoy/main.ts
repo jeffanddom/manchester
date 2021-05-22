@@ -3,7 +3,6 @@ import { mat4, vec4 } from 'gl-matrix'
 
 import * as models from './models'
 
-import { CAMERA_DEFAULT_FOV } from '~/constants'
 import {
   FragmentShaderError,
   Renderer3d,
@@ -11,9 +10,10 @@ import {
   UnlitObject,
   UnlitObjectType,
   VertexShaderError,
-} from '~/renderer/Renderer3d'
-import { shader as solidShader } from '~/renderer/shaders/solid'
-import { shader as wiresolidShader } from '~/renderer/shaders/wiresolid'
+} from '~/engine/renderer/Renderer3d'
+import { shader as solidShader } from '~/engine/renderer/shaders/solid'
+import { shader as wiresolidShader } from '~/engine/renderer/shaders/wiresolid'
+import { CAMERA_DEFAULT_FOV } from '~/game/constants'
 import { Camera } from '~/tools/rendertoy/Camera'
 import * as time from '~/util/time'
 import * as autoReload from '~/web/autoReload'

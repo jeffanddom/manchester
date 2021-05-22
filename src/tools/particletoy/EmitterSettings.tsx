@@ -7,7 +7,7 @@ import { ScaledRange } from './ScaledRange'
 import { ScaledSlider } from './ScaledSlider'
 import { rightPaneContainerStyle } from './util'
 
-import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/engine/particles/emitters/BasicEmitter'
 import { Foldable } from '~/tools/particletoy/Foldable'
 import { floatRgbToWebcolor, webcolorToFloatRgb } from '~/util/web'
 

@@ -1,7 +1,7 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
-import { CAMERA_MAX_Y_OFFSET, CAMERA_Z_OFFSET } from '~/constants'
-import { MouseButton, mouseButtonsFromBitmask } from '~/input/interfaces'
+import { MouseButton, mouseButtonsFromBitmask } from '~/engine/input/interfaces'
+import { CAMERA_MAX_Y_OFFSET, CAMERA_Z_OFFSET } from '~/game/constants'
 import * as math from '~/util/math'
 
 export class Camera {

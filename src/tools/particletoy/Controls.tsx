@@ -9,7 +9,7 @@ import {
   rightPaneContainerStyle,
 } from './util'
 
-import { BasicEmitterSettings } from '~/particles/emitters/BasicEmitter'
+import { BasicEmitterSettings } from '~/engine/particles/emitters/BasicEmitter'
 import { EmitterSettings } from '~/tools/particletoy/EmitterSettings'
 import { Immutable } from '~/types/immutable'
 import { deepRehydrateFloat32Arrays } from '~/util/convert'

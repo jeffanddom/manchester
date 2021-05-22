@@ -4,9 +4,9 @@ import * as ReactDOM from 'react-dom'
 
 import { loadMap } from './storage'
 
-import { BrowserKeyboard } from '~/input/BrowserKeyboard'
-import { BrowserMouse } from '~/input/BrowserMouse'
-import { Map } from '~/map/interfaces'
+import { BrowserKeyboard } from '~/engine/input/BrowserKeyboard'
+import { BrowserMouse } from '~/engine/input/BrowserMouse'
+import { Map } from '~/engine/map/interfaces'
 import { Controls } from '~/tools/map/Controls'
 import { Editor } from '~/tools/map/Editor'
 import * as time from '~/util/time'

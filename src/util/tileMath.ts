@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { TILE_SIZE } from '~/constants'
+import { TILE_SIZE } from '~/game/constants'
 import { Immutable } from '~/types/immutable'
 import { Aabb2 } from '~/util/aabb2'
 

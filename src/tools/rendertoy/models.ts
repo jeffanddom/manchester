@@ -1,16 +1,16 @@
 import { quat } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
-import { ClientAssets } from '~/assets/ClientAssets'
 import {
   makeCubeModel,
   triModelAddEdgeOn,
   triModelToWiresolidLineModel,
-} from '~/renderer/geometryUtils'
-import * as gltf from '~/renderer/gltf'
-import { MeshPrimitive, ModelNode } from '~/renderer/interfaces'
-import { Renderer3d } from '~/renderer/Renderer3d'
-import { ShaderAttrib } from '~/renderer/shaders/common'
+} from '~/engine/renderer/geometryUtils'
+import * as gltf from '~/engine/renderer/gltf'
+import { MeshPrimitive, ModelNode } from '~/engine/renderer/interfaces'
+import { Renderer3d } from '~/engine/renderer/Renderer3d'
+import { ShaderAttrib } from '~/engine/renderer/shaders/common'
+import { ClientAssets } from '~/game/assets/ClientAssets'
 
 function makeCubeComplex(): ModelNode {
   // positions for front face

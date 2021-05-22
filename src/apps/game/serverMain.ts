@@ -4,15 +4,15 @@ import * as hapi from '@hapi/hapi'
 import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
+import { simulate } from '~/apps/game/simulate'
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
+import { ClientConnectionWs } from '~/engine/network/ClientConnection'
 import {
   GAME_SERVER_PORT,
   PLAYER_COUNT,
   SIMULATION_PERIOD_S,
-} from '~/constants'
-import { ClientConnectionWs } from '~/network/ClientConnection'
-import { ServerSim } from '~/server/ServerSim'
-import { simulate } from '~/simulate'
+} from '~/game/constants'
+import { ServerSim } from '~/game/ServerSim'
 
 async function buildVersion(): Promise<string> {
   return (await fs.promises.readFile(serverBuildVersionPath)).toString()

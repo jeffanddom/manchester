@@ -1,4 +1,4 @@
-import { Map, RawMap } from '~/map/interfaces'
+import { Map, RawMap } from '~/engine/map/interfaces'
 
 const STORAGE_KEY = 'tools/map'
 

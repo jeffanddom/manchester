@@ -1,6 +1,6 @@
 import { quat, vec3, vec4 } from 'gl-matrix'
 
-import { ParticleConfig, ParticleEmitter } from '~/particles/interfaces'
+import { ParticleConfig, ParticleEmitter } from '~/engine/particles/interfaces'
 import { Immutable } from '~/types/immutable'
 import { lerp } from '~/util/math'
 

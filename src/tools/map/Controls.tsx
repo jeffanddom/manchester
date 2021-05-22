@@ -5,9 +5,9 @@ import { ReactElement, useRef, useState } from 'react'
 
 import { reset, saveMap } from './storage'
 
-import * as entities from '~/entities'
-import { Map } from '~/map/interfaces'
-import * as terrain from '~/terrain'
+import { Map } from '~/engine/map/interfaces'
+import * as terrain from '~/engine/terrain'
+import * as entities from '~/game/entities'
 import { BrushMode, Editor } from '~/tools/map/Editor'
 
 export const Controls = ({ editor }: { editor: Editor }): ReactElement => {

@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import { Client } from '~/client/Client'
-import { simulate } from '~/editor'
+import { simulate } from '~/apps/editor/editor'
+import { Client } from '~/engine/client/Client'
 import * as autoReload from '~/web/autoReload'
 
 declare global {

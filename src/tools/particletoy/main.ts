@@ -5,13 +5,17 @@ import ReactDOM from 'react-dom'
 import { Camera } from './Camera'
 import { Controls } from './Controls'
 
-import { CAMERA_DEFAULT_FOV, SIMULATION_PERIOD_S } from '~/constants'
 import {
   BasicEmitter,
   BasicEmitterSettings,
-} from '~/particles/emitters/BasicEmitter'
-import { ParticleSystem } from '~/particles/ParticleSystem'
-import { Renderer3d, UnlitObject, UnlitObjectType } from '~/renderer/Renderer3d'
+} from '~/engine/particles/emitters/BasicEmitter'
+import { ParticleSystem } from '~/engine/particles/ParticleSystem'
+import {
+  Renderer3d,
+  UnlitObject,
+  UnlitObjectType,
+} from '~/engine/renderer/Renderer3d'
+import { CAMERA_DEFAULT_FOV, SIMULATION_PERIOD_S } from '~/game/constants'
 import { Immutable } from '~/types/immutable'
 import { Zero3 } from '~/util/math'
 import * as autoReload from '~/web/autoReload'

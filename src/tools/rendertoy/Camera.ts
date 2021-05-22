@@ -1,6 +1,6 @@
 import { mat4, quat, vec3 } from 'gl-matrix'
 
-import { MouseButton, mouseButtonsFromBitmask } from '~/input/interfaces'
+import { MouseButton, mouseButtonsFromBitmask } from '~/engine/input/interfaces'
 import * as math from '~/util/math'
 
 export class Camera {
