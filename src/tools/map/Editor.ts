@@ -2,7 +2,6 @@ import { EventEmitter } from 'events'
 
 import { mat2d, vec2 } from 'gl-matrix'
 
-import { Camera2d } from '~/camera/Camera2d'
 import { TILE_SIZE } from '~/constants'
 import * as entities from '~/entities'
 import { IKeyboard } from '~/input/interfaces'
@@ -10,6 +9,7 @@ import { IMouse, MouseButton } from '~/input/interfaces'
 import { Map } from '~/map/interfaces'
 import { Primitive2d, Renderer2d } from '~/renderer/Renderer2d'
 import * as terrain from '~/terrain'
+import { Camera2d } from '~/tools/map/Camera2d'
 import * as math from '~/util/math'
 
 const CAMERA_SPEED = 500
