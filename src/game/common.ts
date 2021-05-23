@@ -1,11 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
-import { Map } from '~/engine/map/interfaces'
 import * as terrain from '~/engine/terrain'
 import { CommonAssets } from '~/game/assets/CommonAssets'
 import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
 import { Type } from '~/game/entities/types'
+import { Map } from '~/game/map/interfaces'
 import { GameStateDb } from '~/game/state/GameStateDb'
 
 export const gameProgression = [

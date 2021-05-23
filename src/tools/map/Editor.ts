@@ -4,11 +4,11 @@ import { mat2d, vec2 } from 'gl-matrix'
 
 import { IKeyboard } from '~/engine/input/interfaces'
 import { IMouse, MouseButton } from '~/engine/input/interfaces'
-import { Map } from '~/engine/map/interfaces'
 import { Primitive2d, Renderer2d } from '~/engine/renderer/Renderer2d'
 import * as terrain from '~/engine/terrain'
 import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
+import { Map } from '~/game/map/interfaces'
 import { Camera2d } from '~/tools/map/Camera2d'
 import * as math from '~/util/math'
 

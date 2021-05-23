@@ -6,7 +6,6 @@ import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { IKeyboard, IMouse } from '~/engine/input/interfaces'
-import { Map as GameMap } from '~/engine/map/interfaces'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { IServerConnection } from '~/engine/network/ServerConnection'
 import {
@@ -39,6 +38,7 @@ import {
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/game/constants'
+import { Map as GameMap } from '~/game/map/interfaces'
 import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'

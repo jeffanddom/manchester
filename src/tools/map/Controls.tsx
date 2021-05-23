@@ -5,10 +5,10 @@ import { ReactElement, useRef, useState } from 'react'
 
 import { reset, saveMap } from './storage'
 
-import { Map } from '~/engine/map/interfaces'
 import * as terrain from '~/engine/terrain'
 import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
+import { Map } from '~/game/map/interfaces'
 import { BrushMode, Editor } from '~/tools/map/Editor'
 
 export const Controls = ({ editor }: { editor: Editor }): ReactElement => {

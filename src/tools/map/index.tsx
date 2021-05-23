@@ -6,7 +6,7 @@ import { loadMap } from './storage'
 
 import { BrowserKeyboard } from '~/engine/input/BrowserKeyboard'
 import { BrowserMouse } from '~/engine/input/BrowserMouse'
-import { Map } from '~/engine/map/interfaces'
+import { Map } from '~/game/map/interfaces'
 import { Controls } from '~/tools/map/Controls'
 import { Editor } from '~/tools/map/Editor'
 import * as time from '~/util/time'

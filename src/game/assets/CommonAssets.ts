@@ -1,8 +1,8 @@
 import { emitters } from './emitters'
 import { maps } from './maps'
 
-import { RawMap } from '~/engine/map/interfaces'
 import { BasicEmitterSettings } from '~/engine/particles/emitters/BasicEmitter'
+import { RawMap } from '~/game/map/interfaces'
 import { Immutable } from '~/types/immutable'
 
 export const CommonAssets: {
