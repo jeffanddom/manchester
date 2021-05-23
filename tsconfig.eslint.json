@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "src",
     ".eslintrc.js",
+    "eslintrcWithImportFilter.js",
+    "src",
     "src/engine/.eslintrc.js",
     "src/util/.eslintrc.js",
   ]
