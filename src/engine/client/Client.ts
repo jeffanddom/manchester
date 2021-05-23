@@ -33,7 +33,7 @@ export interface ClientSimBase {
   connectServer(conn: IServerConnection): void
 }
 
-export class ClientGame {
+export class Client {
   apiLocation: {
     host: string
     protocol: string

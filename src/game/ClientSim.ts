@@ -5,7 +5,7 @@ import { SimulationPhase } from '../engine/network/SimulationPhase'
 
 import { simulate } from './simulate'
 
-import { ClientSimBase } from '~/engine/client/ClientGame'
+import { ClientSimBase } from '~/engine/client/Client'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
