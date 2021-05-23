@@ -1,12 +1,6 @@
 import { EntityId } from '~/engine/state/EntityId'
 import { EntityStateContainer } from '~/engine/state/EntityStateContainer'
-import { Aabb2 } from '~/util/aabb2'
 import { SortedSet } from '~/util/SortedSet'
-
-export type QuadtreeEntity = {
-  id: EntityId
-  aabb: Aabb2
-}
 
 export abstract class StateDbBase {
   private nextEntityIdUncommitted: number
