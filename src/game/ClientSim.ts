@@ -39,7 +39,7 @@ import {
   TILE_SIZE,
 } from '~/game/constants'
 import { Map as GameMap } from '~/game/map/interfaces'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'
 import * as emitter from '~/game/systems/emitter'
@@ -56,7 +56,7 @@ import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export class ClientSim {
-  stateDb: GameStateDb
+  stateDb: StateDb
   playerInputState: {
     cursorMode: CursorMode
   }
@@ -102,7 +102,7 @@ export class ClientSim {
     this.modelLoader = config.modelLoader
     this.debugDraw = config.debugDraw
 
-    this.stateDb = new GameStateDb(aabb2.create())
+    this.stateDb = new StateDb(aabb2.create())
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
     this.playerNumber = undefined
@@ -284,7 +284,7 @@ export class ClientSim {
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
     const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
-    this.stateDb = new GameStateDb([
+    this.stateDb = new StateDb([
       worldOrigin[0],
       worldOrigin[1],
       worldOrigin[0] + dimensions[0],

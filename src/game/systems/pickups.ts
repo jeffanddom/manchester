@@ -1,11 +1,11 @@
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 
 export enum PickupType {
   Core = 'Core',
   Wood = 'Wood',
 }
 
-export const update = (_stateDb: GameStateDb): void => {
+export const update = (_stateDb: StateDb): void => {
   // const player = simState.getPlayer()!
   // const playerAabb = player.damageable!.aabb(player.transform!)
   // for (const [id, e] of simState.entities) {

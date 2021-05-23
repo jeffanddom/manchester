@@ -7,7 +7,7 @@ import {
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { EntityId } from '~/engine/state/EntityId'
 import { CommonAssets } from '~/game/assets/CommonAssets'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import { Immutable } from '~/types/immutable'
 import { PlusY3, Zero2 } from '~/util/math'
 
@@ -54,7 +54,7 @@ export function emitterClone(
   }
 }
 
-export function update(stateDb: GameStateDb, dt: number): void {
+export function update(stateDb: StateDb, dt: number): void {
   const toDelete: EntityId[] = []
 
   for (const [entityId, ec] of stateDb.emitters) {
@@ -106,7 +106,7 @@ export function update(stateDb: GameStateDb, dt: number): void {
 }
 
 export const emitParticles: (
-  stateDb: GameStateDb,
+  stateDb: StateDb,
   addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
   // We use an immediately-evaluated function to close over some temporary
@@ -117,7 +117,7 @@ export const emitParticles: (
   const baseOrientation = quat.create()
 
   return (
-    stateDb: GameStateDb,
+    stateDb: StateDb,
     addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void => {
     for (const [entityId, ec] of stateDb.emitters) {

@@ -6,7 +6,7 @@ import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
 import { Type } from '~/game/entities/types'
 import { Map } from '~/game/map/interfaces'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 
 export const gameProgression = [
   CommonAssets.maps.get('bigMap')!,
@@ -14,7 +14,7 @@ export const gameProgression = [
   CommonAssets.maps.get('collisionTest')!,
 ]
 
-export const initMap = (stateDb: GameStateDb, map: Map): terrain.Layer => {
+export const initMap = (stateDb: StateDb, map: Map): terrain.Layer => {
   // Level setup
   const terrainLayer = new terrain.Layer({
     tileOrigin: map.origin,

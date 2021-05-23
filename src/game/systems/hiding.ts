@@ -1,10 +1,10 @@
 import { aabb as hitboxAabb } from '~/game/components/Hitbox'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import * as aabb2 from '~/util/aabb2'
 
 const REQUIRED_OVERLAP = 0.5
 
-export const update = (stateDb: GameStateDb): void => {
+export const update = (stateDb: StateDb): void => {
   for (const id of stateDb.friendlyTeam) {
     const hitbox = stateDb.hitboxes.get(id)!
     const transform = stateDb.transforms.get(id)!

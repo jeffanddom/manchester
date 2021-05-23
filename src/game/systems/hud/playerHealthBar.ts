@@ -1,11 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
 import { Primitive2d, Renderable2d } from '~/engine/renderer/Renderer2d'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (
-  stateDb: GameStateDb,
+  stateDb: StateDb,
   playerNumber: number,
 ): Renderable2d[] => {
   const playerId = stateDb.getPlayerId(playerNumber)

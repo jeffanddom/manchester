@@ -1,4 +1,4 @@
-import { StateDbBase } from '../state/StateDb'
+import { StateDbBase } from '../state/StateDbBase'
 
 import { ClientMessage } from './ClientMessage'
 import { ServerMessage, ServerMessageType } from './ServerMessage'

@@ -10,13 +10,13 @@ import { gameProgression, initMap } from '~/game/common'
 import { TILE_SIZE } from '~/game/constants'
 import { Map } from '~/game/map/interfaces'
 import { simulate } from '~/game/simulate'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import * as aabb2 from '~/util/aabb2'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export class ServerSim {
-  stateDb: GameStateDb
+  stateDb: StateDb
 
   // A buffer of unprocessed client messages received from clients. The messages
   // are grouped by frame, and the groups are indexed by the number of frames
@@ -45,7 +45,7 @@ export class ServerSim {
 
   constructor(config: { playerCount: number }) {
     this.clientMessagesByFrame = []
-    this.stateDb = new GameStateDb(aabb2.create())
+    this.stateDb = new StateDb(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
     this.simulationFrame = 0
@@ -157,7 +157,7 @@ export class ServerSim {
         TILE_SIZE,
       )
 
-      this.stateDb = new GameStateDb([
+      this.stateDb = new StateDb([
         worldOrigin[0],
         worldOrigin[1],
         worldOrigin[0] + dimensions[0],

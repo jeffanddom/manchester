@@ -4,7 +4,7 @@ import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import * as terrain from '~/engine/terrain'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
 
@@ -25,7 +25,7 @@ export function simulationPhaseDebugColor(
 }
 
 export type FrameState = {
-  stateDb: GameStateDb
+  stateDb: StateDb
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer

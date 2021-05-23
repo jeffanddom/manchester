@@ -5,11 +5,11 @@ import { WeaponType } from '../WeaponType'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { mortarInRange } from '~/game/components/Bullet'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 
 export const update = (
   playerNumber: number,
-  stateDb: GameStateDb,
+  stateDb: StateDb,
 ): Renderable[] => {
   const id = stateDb.getPlayerId(playerNumber)
   if (id === undefined) {

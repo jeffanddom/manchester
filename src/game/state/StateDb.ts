@@ -1,9 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import {
-  QuadtreeEntity,
-  StateDbBase as StateDb,
-} from '../../engine/state/StateDb'
+import { QuadtreeEntity, StateDbBase } from '../../engine/state/StateDbBase'
 
 import { ComponentTable } from '~/engine/state/ComponentTable'
 import { EntityId } from '~/engine/state/EntityId'
@@ -39,7 +36,7 @@ import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
 
-export class GameStateDb extends StateDb {
+export class StateDb extends StateDbBase {
   public currentPlayer: number
 
   // components

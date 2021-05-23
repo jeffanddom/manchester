@@ -7,10 +7,10 @@ import {
   Renderable2d,
   TextAlign,
 } from '~/engine/renderer/Renderer2d'
-import { GameStateDb } from '~/game/state/GameStateDb'
+import { StateDb } from '~/game/state/StateDb'
 
 export const update = (
-  stateDb: GameStateDb,
+  stateDb: StateDb,
   playerNumber: number,
 ): Renderable2d[] => {
   const playerId = stateDb.getPlayerId(playerNumber)
