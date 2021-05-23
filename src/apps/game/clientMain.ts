@@ -1,16 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
 import { simulate } from '~/apps/game/simulate'
-import { Client } from '~/engine/client/Client'
+import { ClientGame } from '~/engine/client/ClientGame'
 import * as autoReload from '~/web/autoReload'
 
 declare global {
   interface Window {
-    client: Client
+    game: ClientGame
   }
 }
 
-const client = new Client({
+const game = new ClientGame({
   document,
   apiLocation: location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
@@ -19,19 +19,19 @@ const client = new Client({
 })
 
 window.addEventListener('resize', () => {
-  client.setViewportDimensions(
+  game.setViewportDimensions(
     vec2.fromValues(window.innerWidth, window.innerHeight),
   )
 })
 
 function clientRenderLoop() {
   requestAnimationFrame(clientRenderLoop)
-  client.update()
+  game.update()
 }
 
 clientRenderLoop()
 
-client.connectToServer()
+game.connectToServer()
 
 // Add a debounced hotkey for restarting the server
 let restartHotkeyTimeout: number | undefined = undefined
@@ -57,4 +57,4 @@ document.addEventListener('keyup', (event) => {
 autoReload.poll()
 
 // Development-related globals
-window.client = client
+window.game = game

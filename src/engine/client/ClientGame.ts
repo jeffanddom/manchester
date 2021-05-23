@@ -14,7 +14,7 @@ import { SIMULATION_PERIOD_S } from '~/game/constants'
 import * as emitter from '~/game/systems/emitter'
 import { Immutable } from '~/types/immutable'
 
-export class Client {
+export class ClientGame {
   apiLocation: {
     host: string
     protocol: string
