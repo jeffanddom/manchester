@@ -3,10 +3,10 @@ import { vec2 } from 'gl-matrix'
 import { FrameState } from '~/apps/game/simulate'
 import { Transform } from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
+import { tileBox, tileCoords } from '~/game/util/tileMath'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { Aabb2 } from '~/util/aabb2'
-import { tileBox, tileCoords } from '~/util/tileMath'
 
 enum DirectionCollision {
   North = 'N',

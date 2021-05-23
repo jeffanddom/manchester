@@ -3,6 +3,7 @@
   "include": [
     "src",
     ".eslintrc.js",
-    "src/engine/.eslintrc.js"
+    "src/engine/.eslintrc.js",
+    "src/util/.eslintrc.js",
   ]
 }

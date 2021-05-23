@@ -33,11 +33,11 @@ import {
 } from '~/game/systems/tankMover'
 import { TurretComponent } from '~/game/systems/turret'
 import * as turret from '~/game/systems/turret'
+import { tileBox, tileCoords } from '~/game/util/tileMath'
 import { Aabb2 } from '~/util/aabb2'
 import { Quadtree } from '~/util/quadtree'
 import { minBiasAabbOverlap } from '~/util/quadtree/helpers'
 import { SortedSet } from '~/util/SortedSet'
-import { tileBox, tileCoords } from '~/util/tileMath'
 
 export class GameStateDb extends StateDb {
   public currentPlayer: number

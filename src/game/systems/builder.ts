@@ -10,7 +10,7 @@ import { BUILDER_SPEED } from '~/game/constants'
 // import { makeWall } from '~/entities/wall'
 // import { pathfind } from '~/map/PathFinder'
 // import { PickupType } from '~/systems/pickups'
-import { tileCoords, tileToWorld } from '~/util/tileMath'
+import { tileCoords, tileToWorld } from '~/game/util/tileMath'
 
 // export enum BuilderMode {
 //   HARVEST,
