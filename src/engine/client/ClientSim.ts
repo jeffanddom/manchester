@@ -15,7 +15,7 @@ import {
   BasicEmitter,
   BasicEmitterSettings,
 } from '~/engine/particles/emitters/BasicEmitter'
-import { ParticleEmitter } from '~/engine/particles/interfaces'
+import { ParticleConfig, ParticleEmitter } from '~/engine/particles/interfaces'
 import * as gltf from '~/engine/renderer/gltf'
 import { IModelLoader } from '~/engine/renderer/ModelLoader'
 import {

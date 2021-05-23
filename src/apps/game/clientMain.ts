@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { simulate } from '~/apps/game/simulate'
 import { ClientGame } from '~/engine/client/ClientGame'
+import { SIMULATION_PERIOD_S } from '~/game/constants'
 import * as autoReload from '~/web/autoReload'
 
 declare global {
@@ -15,6 +16,7 @@ const game = new ClientGame({
   apiLocation: location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
   pixelRatio: window.devicePixelRatio,
+  simulationPeriod: SIMULATION_PERIOD_S,
   simulationStep: simulate,
 })
 

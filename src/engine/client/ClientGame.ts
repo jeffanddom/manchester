@@ -10,8 +10,6 @@ import { IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { createServerConnectionWs } from '~/engine/network/ServerConnection'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { ParticleSystem } from '~/engine/particles/ParticleSystem'
-import { SIMULATION_PERIOD_S } from '~/game/constants'
-import * as emitter from '~/game/systems/emitter'
 import { Immutable } from '~/types/immutable'
 
 export class ClientGame {
@@ -21,6 +19,7 @@ export class ClientGame {
   }
   viewportDimensions: vec2
   pixelRatio: number
+  simulationPeriod: number
 
   canvas3d: HTMLCanvasElement
   canvas2d: HTMLCanvasElement
@@ -42,11 +41,13 @@ export class ClientGame {
     }
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
+    simulationPeriod: number
     simulationStep: SimulationStep
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
     this.pixelRatio = params.pixelRatio
+    this.simulationPeriod = params.simulationPeriod
 
     // disable right clicks
     params.document.addEventListener('contextmenu', (e) => e.preventDefault())
@@ -127,7 +128,7 @@ export class ClientGame {
       })
 
       // Simulate particles
-      this.particleSystem.update(SIMULATION_PERIOD_S)
+      this.particleSystem.update(this.simulationPeriod)
       this.particleSystem.render(this.renderManager.renderer3d)
     }
 
