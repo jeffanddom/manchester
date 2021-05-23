@@ -53,3 +53,12 @@ export type FrameEvent =
   | TankShootEvent
   | TankHitEvent
   | TurretShootEvent
+
+export const frameEventToKey = (event: FrameEvent): string | undefined => {
+  switch (event.type) {
+    case FrameEventType.TankShoot:
+      return `${FrameEventType[event.type]}:${event.entityId}`
+    default:
+      return undefined
+  }
+}

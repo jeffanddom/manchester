@@ -1,14 +1,3 @@
-import { FrameEvent, FrameEventType } from '~/game/systems/FrameEvent'
-
-const frameEventToKey = (event: FrameEvent): string | undefined => {
-  switch (event.type) {
-    case FrameEventType.TankShoot:
-      return `${FrameEventType[event.type]}:${event.entityId}`
-    default:
-      return undefined
-  }
-}
-
 export class DedupLog {
   logsByFrame: Map<number, Set<string>>
 
@@ -16,8 +5,7 @@ export class DedupLog {
     this.logsByFrame = new Map()
   }
 
-  add(frameNumber: number, event: FrameEvent): void {
-    const eventKey = frameEventToKey(event)
+  add(frameNumber: number, eventKey: string | undefined): void {
     if (eventKey !== undefined) {
       let frameSet = this.logsByFrame.get(frameNumber)
 
@@ -30,10 +18,8 @@ export class DedupLog {
     }
   }
 
-  contains(frameNumber: number, event: FrameEvent): boolean {
+  contains(frameNumber: number, eventKey: string | undefined): boolean {
     const frameSet = this.logsByFrame.get(frameNumber)
-    const eventKey = frameEventToKey(event)
-
     return (
       frameSet !== undefined && eventKey !== undefined && frameSet.has(eventKey)
     )

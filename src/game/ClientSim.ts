@@ -42,7 +42,11 @@ import {
 import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'
-import { FrameEvent, FrameEventType } from '~/game/systems/FrameEvent'
+import {
+  FrameEvent,
+  FrameEventType,
+  frameEventToKey,
+} from '~/game/systems/FrameEvent'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { discardUntil } from '~/util/array'
@@ -530,11 +534,11 @@ export class ClientSim {
     // Non-simulation effects
     for (const [frameNumber, events] of frameEvents) {
       for (const event of events) {
-        if (this.dedupLog.contains(frameNumber, event)) {
+        if (this.dedupLog.contains(frameNumber, frameEventToKey(event))) {
           continue
         }
 
-        this.dedupLog.add(frameNumber, event)
+        this.dedupLog.add(frameNumber, frameEventToKey(event))
 
         switch (event.type) {
           case FrameEventType.BulletHit:
