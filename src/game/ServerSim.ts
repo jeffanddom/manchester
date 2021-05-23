@@ -6,7 +6,7 @@ import { Map } from '~/engine/map/interfaces'
 import { IClientConnection } from '~/engine/network/ClientConnection'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { ServerMessageType } from '~/engine/network/ServerMessage'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
 import { gameProgression, initMap } from '~/game/common'
 import { TILE_SIZE } from '~/game/constants'
@@ -15,7 +15,7 @@ import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
 export class ServerSim {
-  simState: SimState
+  stateDb: StateDb
 
   // A buffer of unprocessed client messages received from clients. The messages
   // are grouped by frame, and the groups are indexed by the number of frames
@@ -45,7 +45,7 @@ export class ServerSim {
 
   constructor(config: { playerCount: number; simulationStep: SimulationStep }) {
     this.clientMessagesByFrame = []
-    this.simState = new SimState(aabb2.create())
+    this.stateDb = new StateDb(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
     this.simulationStep = config.simulationStep
@@ -158,13 +158,13 @@ export class ServerSim {
           TILE_SIZE,
         )
 
-        this.simState = new SimState([
+        this.stateDb = new StateDb([
           worldOrigin[0],
           worldOrigin[1],
           worldOrigin[0] + dimensions[0],
           worldOrigin[1] + dimensions[1],
         ])
-        this.terrainLayer = initMap(this.simState, this.map)
+        this.terrainLayer = initMap(this.stateDb, this.map)
 
         this.clients.forEach((client, index) => {
           client.conn.send({
@@ -208,7 +208,7 @@ export class ServerSim {
 
     this.simulationStep(
       {
-        simState: this.simState,
+        stateDb: this.stateDb,
         messages: frameMessages,
         frameEvents: [],
         terrainLayer: this.terrainLayer,
@@ -224,6 +224,6 @@ export class ServerSim {
 
     // On the server, there is no reason to accumulate prediction state, because
     // the server simulation is authoritative.
-    this.simState.commitPrediction()
+    this.stateDb.commitPrediction()
   }
 }

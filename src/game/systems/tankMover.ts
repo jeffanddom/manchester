@@ -38,22 +38,22 @@ export function clone(t: TankMoverComponent): TankMoverComponent {
   }
 }
 
-export const update = (simState: FrameState, dt: number): void => {
+export const update = (frameState: FrameState, dt: number): void => {
   const messages = new Map<number, ClientMoveUpdate>()
-  simState.messages.forEach((m) => {
+  frameState.messages.forEach((m) => {
     if (m.move !== undefined) {
       messages.set(m.playerNumber, m.move)
     }
   })
 
-  for (const [id, tankMover] of simState.simState.tankMovers) {
-    const playerNumber = simState.simState.playerNumbers.get(id)!
-    const transform = simState.simState.transforms.get(id)!
+  for (const [id, tankMover] of frameState.stateDb.tankMovers) {
+    const playerNumber = frameState.stateDb.playerNumbers.get(id)!
+    const transform = frameState.stateDb.transforms.get(id)!
     const message = messages.get(playerNumber)
 
     // Apply active dash
     if (tankMover.lastDashFrame !== undefined) {
-      if (simState.frame - tankMover.lastDashFrame < DASH_DURATION) {
+      if (frameState.frame - tankMover.lastDashFrame < DASH_DURATION) {
         const position = radialTranslate2(
           vec2.create(),
           transform.position,
@@ -61,12 +61,12 @@ export const update = (simState: FrameState, dt: number): void => {
           DASH_SPEED * dt,
         )
 
-        simState.simState.transforms.update(id, { position })
+        frameState.stateDb.transforms.update(id, { position })
         continue // TODO: this should not short circuit external velocity
       }
 
-      if (simState.frame - tankMover.lastDashFrame >= DASH_COOLDOWN) {
-        simState.simState.tankMovers.update(id, {
+      if (frameState.frame - tankMover.lastDashFrame >= DASH_COOLDOWN) {
+        frameState.stateDb.tankMovers.update(id, {
           lastDashFrame: undefined,
         })
       }
@@ -78,12 +78,12 @@ export const update = (simState: FrameState, dt: number): void => {
     let orientation = transform.orientation
     if (message !== undefined) {
       if (message.dash && tankMover.lastDashFrame === undefined) {
-        simState.simState.tankMovers.update(id, {
-          lastDashFrame: simState.frame,
+        frameState.stateDb.tankMovers.update(id, {
+          lastDashFrame: frameState.frame,
           dashDirection: message.direction,
         })
         orientation = message.direction
-        simState.simState.transforms.update(id, { orientation })
+        frameState.stateDb.transforms.update(id, { orientation })
       } else {
         orientation = rotateUntil({
           from: transform.orientation,
@@ -98,7 +98,7 @@ export const update = (simState: FrameState, dt: number): void => {
     const externalVelocity = vec2.clone(tankMover.externalVelocity)
 
     // apply sources of external velocity
-    for (const event of simState.frameEvents) {
+    for (const event of frameState.frameEvents) {
       if (!('entityId' in event) || event.entityId !== id) {
         continue
       }
@@ -168,7 +168,7 @@ export const update = (simState: FrameState, dt: number): void => {
       }
     }
 
-    simState.simState.tankMovers.update(id, { externalVelocity })
-    simState.simState.transforms.update(id, { position, orientation })
+    frameState.stateDb.tankMovers.update(id, { externalVelocity })
+    frameState.stateDb.transforms.update(id, { position, orientation })
   }
 }

@@ -40,7 +40,7 @@ type QuadtreeEntity = {
   aabb: Aabb2
 }
 
-export class SimState {
+export class StateDb {
   public currentPlayer: number
   private nextEntityIdUncommitted: number
   private nextEntityIdCommitted: number

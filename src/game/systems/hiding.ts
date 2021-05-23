@@ -1,20 +1,20 @@
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import { aabb as hitboxAabb } from '~/game/components/Hitbox'
 import * as aabb2 from '~/util/aabb2'
 
 const REQUIRED_OVERLAP = 0.5
 
-export const update = (simState: SimState): void => {
-  for (const id of simState.friendlyTeam) {
-    const hitbox = simState.hitboxes.get(id)!
-    const transform = simState.transforms.get(id)!
+export const update = (stateDb: StateDb): void => {
+  for (const id of stateDb.friendlyTeam) {
+    const hitbox = stateDb.hitboxes.get(id)!
+    const transform = stateDb.transforms.get(id)!
     const obscurableAabb = hitboxAabb(hitbox, transform.position)
-    const obscuringAabbs = simState
+    const obscuringAabbs = stateDb
       .queryByWorldPos(obscurableAabb)
-      .filter((oid) => simState.obscurings.has(oid))
+      .filter((oid) => stateDb.obscurings.has(oid))
       .map((oid) => {
-        const obscuringHitbox = simState.hitboxes.get(oid)!
-        const obscuringTransform = simState.transforms.get(oid)!
+        const obscuringHitbox = stateDb.hitboxes.get(oid)!
+        const obscuringTransform = stateDb.transforms.get(oid)!
         return hitboxAabb(obscuringHitbox, obscuringTransform.position)
       })
     const checkArea = hitbox.dimensions[0] * hitbox.dimensions[1]
@@ -30,11 +30,11 @@ export const update = (simState: SimState): void => {
       }
     }
 
-    if (currentlyObscured !== simState.obscureds.has(id)) {
+    if (currentlyObscured !== stateDb.obscureds.has(id)) {
       if (currentlyObscured) {
-        simState.obscureds.add(id)
+        stateDb.obscureds.add(id)
       } else {
-        simState.obscureds.delete(id)
+        stateDb.obscureds.delete(id)
       }
     }
   }

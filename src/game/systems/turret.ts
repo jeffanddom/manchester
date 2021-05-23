@@ -36,11 +36,11 @@ export function clone(t: TurretComponent): TurretComponent {
 }
 
 export const update = (frameState: FrameState, dt: number): void => {
-  const { simState } = frameState
+  const { stateDb } = frameState
 
   const turretIds = new SortedSet<EntityId>()
-  for (const id of simState.friendlyTeam) {
-    const position = simState.transforms.get(id)!.position
+  for (const id of stateDb.friendlyTeam) {
+    const position = stateDb.transforms.get(id)!.position
     const searchSpace: Aabb2 = [
       position[0] - RANGE,
       position[1] - RANGE,
@@ -48,17 +48,17 @@ export const update = (frameState: FrameState, dt: number): void => {
       position[1] + RANGE,
     ]
 
-    for (const turretId of simState.queryByWorldPos(searchSpace)) {
-      if (simState.turrets.has(turretId)) {
+    for (const turretId of stateDb.queryByWorldPos(searchSpace)) {
+      if (stateDb.turrets.has(turretId)) {
         turretIds.add(turretId)
       }
     }
   }
 
   for (const id of turretIds) {
-    const turret = simState.turrets.get(id)!
-    const transform = simState.transforms.get(id)!
-    const team = simState.teams.get(id)!
+    const turret = stateDb.turrets.get(id)!
+    const transform = stateDb.transforms.get(id)!
+    const team = stateDb.teams.get(id)!
 
     // I. Find a target
 
@@ -70,16 +70,16 @@ export const update = (frameState: FrameState, dt: number): void => {
       transform.position[1] + RANGE,
     ]
 
-    for (const targetId of simState.queryByWorldPos(searchSpace)) {
+    for (const targetId of stateDb.queryByWorldPos(searchSpace)) {
       if (
         targetId === id ||
-        !simState.targetables.has(targetId) ||
-        simState.obscureds.has(targetId)
+        !stateDb.targetables.has(targetId) ||
+        stateDb.obscureds.has(targetId)
       ) {
         continue
       }
 
-      const targetTransform = simState.transforms.get(targetId)!
+      const targetTransform = stateDb.transforms.get(targetId)!
       if (
         vec2.squaredDistance(targetTransform.position, transform.position) >
         RANGE_SQUARED
@@ -100,7 +100,7 @@ export const update = (frameState: FrameState, dt: number): void => {
     )
 
     const target = shootables.find((candidate, n) => {
-      const candidateTeam = simState.teams.get(candidate.id)
+      const candidateTeam = stateDb.teams.get(candidate.id)
       if (candidateTeam === Team.Neutral || candidateTeam === team) {
         return false
       }
@@ -111,8 +111,8 @@ export const update = (frameState: FrameState, dt: number): void => {
       ]
 
       for (let i = 0; i < n; i++) {
-        const closerDamageable = simState.damageables.get(shootables[i].id)!
-        const closerTransform = simState.transforms.get(shootables[i].id)!
+        const closerDamageable = stateDb.damageables.get(shootables[i].id)!
+        const closerTransform = stateDb.transforms.get(shootables[i].id)!
 
         if (
           segmentToAabb(
@@ -139,11 +139,11 @@ export const update = (frameState: FrameState, dt: number): void => {
       amount: TURRET_ROT_SPEED * dt,
     })
 
-    frameState.simState.turrets.update(id, {
+    frameState.stateDb.turrets.update(id, {
       orientation: newOrientation,
     })
 
-    frameState.simState.entityModels.update(id, {
+    frameState.stateDb.entityModels.update(id, {
       modifiers: {
         'turret.cannon_root:post': mat4.fromRotation(
           mat4.create(),
@@ -159,13 +159,13 @@ export const update = (frameState: FrameState, dt: number): void => {
     // III. Shoot at target
 
     if (turret.cooldownTtl > 0) {
-      frameState.simState.turrets.update(id, {
+      frameState.stateDb.turrets.update(id, {
         cooldownTtl: turret.cooldownTtl - dt,
       })
       continue
     }
 
-    frameState.simState.turrets.update(id, { cooldownTtl: COOLDOWN_PERIOD })
+    frameState.stateDb.turrets.update(id, { cooldownTtl: COOLDOWN_PERIOD })
 
     const bulletPos = radialTranslate2(
       vec2.create(),
@@ -174,7 +174,7 @@ export const update = (frameState: FrameState, dt: number): void => {
       TILE_SIZE * 0.25,
     )
 
-    simState.register(
+    stateDb.register(
       makeBullet({
         orientation: newOrientation,
         owner: id,

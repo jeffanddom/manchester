@@ -1,19 +1,19 @@
 import { vec2 } from 'gl-matrix'
 
 import { Primitive2d, Renderable2d } from '~/engine/renderer/Renderer2d'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (
-  simState: SimState,
+  stateDb: StateDb,
   playerNumber: number,
 ): Renderable2d[] => {
-  const playerId = simState.getPlayerId(playerNumber)
+  const playerId = stateDb.getPlayerId(playerNumber)
   if (playerId === undefined) {
     return []
   }
 
-  const damageable = simState.damageables.get(playerId)!
+  const damageable = stateDb.damageables.get(playerId)!
   const maxFill = 100
   const fill = lerp(
     0,

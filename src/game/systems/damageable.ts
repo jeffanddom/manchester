@@ -5,20 +5,20 @@ import { FrameEventType } from './FrameEvent'
 import { FrameState } from '~/apps/game/simulate'
 import { PickupConstructors } from '~/game/entities/pickups'
 
-export const update = (simState: FrameState): void => {
-  for (const [id, damageable] of simState.simState.damageables) {
-    const transform = simState.simState.transforms.get(id)!
+export const update = (frameState: FrameState): void => {
+  for (const [id, damageable] of frameState.stateDb.damageables) {
+    const transform = frameState.stateDb.transforms.get(id)!
 
     if (damageable.health <= 0) {
-      const dropType = simState.simState.dropTypes.get(id)
+      const dropType = frameState.stateDb.dropTypes.get(id)
       if (dropType !== undefined) {
         const core = PickupConstructors[dropType]()
         core.transform!.position = vec2.clone(transform.position)
-        simState.simState.register(core)
+        frameState.stateDb.register(core)
       }
-      simState.simState.markForDeletion(id)
+      frameState.stateDb.markForDeletion(id)
 
-      simState.frameEvents.push({
+      frameState.frameEvents.push({
         type: FrameEventType.EntityDestroyed,
         position: vec2.clone(transform.position),
       })

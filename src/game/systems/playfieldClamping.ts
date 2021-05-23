@@ -2,13 +2,13 @@ import { vec2 } from 'gl-matrix'
 
 import { FrameState } from '~/apps/game/simulate'
 
-export const update = (simState: FrameState): void => {
-  for (const id of simState.simState.playfieldClamped) {
-    const position = vec2.clone(simState.simState.transforms.get(id)!.position)
+export const update = (frameState: FrameState): void => {
+  for (const id of frameState.stateDb.playfieldClamped) {
+    const position = vec2.clone(frameState.stateDb.transforms.get(id)!.position)
 
-    vec2.max(position, position, simState.terrainLayer.minWorldPos())
-    vec2.min(position, position, simState.terrainLayer.maxWorldPos())
+    vec2.max(position, position, frameState.terrainLayer.minWorldPos())
+    vec2.min(position, position, frameState.terrainLayer.maxWorldPos())
 
-    simState.simState.transforms.update(id, { position })
+    frameState.stateDb.transforms.update(id, { position })
   }
 }

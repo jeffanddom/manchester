@@ -51,13 +51,13 @@ const tilePos = vec2.create()
 const destTilePos = vec2.create()
 const nextTilePos = vec2.create()
 
-export const update = (simState: FrameState, dt: number): void => {
-  for (const [id, builder] of simState.simState.builders) {
-    const pos = simState.simState.transforms.get(id)!.position
+export const update = (frameState: FrameState, dt: number): void => {
+  for (const [id, builder] of frameState.stateDb.builders) {
+    const pos = frameState.stateDb.transforms.get(id)!.position
     tileCoords(tilePos, pos)
     tileCoords(destTilePos, builder.target)
 
-    const path = simState.simState.pathfinder.getPath(
+    const path = frameState.stateDb.pathfinder.getPath(
       tilePos[0],
       tilePos[1],
       destTilePos[0],
@@ -81,7 +81,7 @@ export const update = (simState: FrameState, dt: number): void => {
       vec2.scale(move, move, dt * BUILDER_SPEED)
       vec2.add(move, pos, move)
 
-      simState.simState.transforms.update(id, {
+      frameState.stateDb.transforms.update(id, {
         position: move,
       })
     } else {

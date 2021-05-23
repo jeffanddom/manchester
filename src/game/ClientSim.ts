@@ -26,7 +26,7 @@ import {
   TextAlign,
 } from '~/engine/renderer/Renderer2d'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
 import { ClientAssets } from '~/game/assets/ClientAssets'
 import { CommonAssets } from '~/game/assets/CommonAssets'
@@ -57,7 +57,7 @@ interface ServerFrameUpdate {
 
 export class ClientSim {
   simulationStep: SimulationStep
-  simState: SimState
+  stateDb: StateDb
   uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
@@ -113,7 +113,7 @@ export class ClientSim {
     this.debugDraw = config.debugDraw
 
     this.simulationStep = config.simulationStep
-    this.simState = new SimState(aabb2.create())
+    this.stateDb = new StateDb(aabb2.create())
     this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
@@ -167,15 +167,15 @@ export class ClientSim {
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
     const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
-    this.simState = new SimState([
+    this.stateDb = new StateDb([
       worldOrigin[0],
       worldOrigin[1],
       worldOrigin[0] + dimensions[0],
       worldOrigin[1] + dimensions[1],
     ])
-    this.simState.currentPlayer = this.playerNumber!
+    this.stateDb.currentPlayer = this.playerNumber!
 
-    this.terrainLayer = initMap(this.simState, this.map)
+    this.terrainLayer = initMap(this.stateDb, this.map)
     this.modelLoader.loadModel('terrain', this.terrainLayer.getModel())
 
     for (const m of [
@@ -217,12 +217,12 @@ export class ClientSim {
       return // TODO: should be an error
     }
 
-    const playerId = this.simState.getPlayerId(this.playerNumber)
+    const playerId = this.stateDb.getPlayerId(this.playerNumber)
     if (playerId === undefined) {
       return
     }
 
-    const transform = this.simState.transforms.get(playerId)
+    const transform = this.stateDb.transforms.get(playerId)
     if (transform === undefined) {
       return
     }
@@ -372,7 +372,7 @@ export class ClientSim {
     frameEvents.set(this.simulationFrame, nextFrameEvents)
     this.simulationStep(
       {
-        simState: this.simState,
+        stateDb: this.stateDb,
         messages: this.uncommittedMessageHistory.filter(
           (m) => m.frame === this.simulationFrame,
         ),
@@ -415,14 +415,14 @@ export class ClientSim {
       return
     }
 
-    this.simState.undoPrediction()
+    this.stateDb.undoPrediction()
 
     for (const update of toProcess) {
       const nextFrameEvents: FrameEvent[] = []
       frameEvents.set(update.frame, nextFrameEvents)
       this.simulationStep(
         {
-          simState: this.simState,
+          stateDb: this.stateDb,
           messages: update.inputs,
           frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
@@ -435,7 +435,7 @@ export class ClientSim {
       this.committedFrame = update.frame
     }
 
-    this.simState.commitPrediction()
+    this.stateDb.commitPrediction()
 
     this.uncommittedMessageHistory = this.uncommittedMessageHistory.filter(
       (m) => m.frame > this.committedFrame,
@@ -448,7 +448,7 @@ export class ClientSim {
 
       this.simulationStep(
         {
-          simState: this.simState,
+          stateDb: this.stateDb,
           messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
           frameEvents: nextFrameEvents,
           terrainLayer: this.terrainLayer,
@@ -473,9 +473,9 @@ export class ClientSim {
 
     const tempQuat = quat.create()
 
-    for (const [entityId, entityModel] of this.simState.entityModels) {
-      const transform = this.simState.transforms.get(entityId)!
-      const transform3 = this.simState.transform3s.get(entityId)
+    for (const [entityId, entityModel] of this.stateDb.entityModels) {
+      const transform = this.stateDb.transforms.get(entityId)!
+      const transform3 = this.stateDb.transform3s.get(entityId)
 
       const m2w = mat4.create()
       if (transform3 !== undefined) {
@@ -504,7 +504,7 @@ export class ClientSim {
     }
 
     if (this.playerNumber !== undefined) {
-      res.push(...systems.crosshair(this.playerNumber, this.simState))
+      res.push(...systems.crosshair(this.playerNumber, this.stateDb))
     }
 
     return res
@@ -512,8 +512,8 @@ export class ClientSim {
 
   getRenderables2d(): Renderable2d[] {
     return [
-      ...systems.playerHealthBar(this.simState, this.playerNumber!),
-      ...systems.weaponDisplay(this.simState, this.playerNumber!),
+      ...systems.playerHealthBar(this.stateDb, this.playerNumber!),
+      ...systems.weaponDisplay(this.stateDb, this.playerNumber!),
     ]
   }
 

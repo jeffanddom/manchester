@@ -53,27 +53,27 @@ export function clone(s: ShooterComponent): ShooterComponent {
   }
 }
 
-export const update = (simState: FrameState): void => {
-  simState.messages.forEach((message) => {
-    const id = simState.simState.getPlayerId(message.playerNumber)!
-    const shooter = simState.simState.shooters.get(id)!
+export const update = (frameState: FrameState): void => {
+  frameState.messages.forEach((message) => {
+    const id = frameState.stateDb.getPlayerId(message.playerNumber)!
+    const shooter = frameState.stateDb.shooters.get(id)!
 
     if (message.changeWeapon) {
       let nextType = shooter.weaponType + 1
       if (nextType >= WEAPON_TYPE_LENGTH) {
         nextType = 0 as WeaponType
       }
-      simState.simState.shooters.update(id, { weaponType: nextType })
+      frameState.stateDb.shooters.update(id, { weaponType: nextType })
     }
     if (message.attack === undefined) {
       return
     }
 
-    const transform = simState.simState.transforms.get(id)!
+    const transform = frameState.stateDb.transforms.get(id)!
     const newAngle = getAngle(transform.position, message.attack.targetPos)
 
-    const entityModel = simState.simState.entityModels.get(id)!
-    simState.simState.entityModels.update(id, {
+    const entityModel = frameState.stateDb.entityModels.get(id)!
+    frameState.stateDb.entityModels.update(id, {
       modifiers: {
         ...entityModel.modifiers,
         'shiba.head:post': mat4.fromRotation(
@@ -103,7 +103,7 @@ export const update = (simState: FrameState): void => {
 
     if (!fireTriggered || coolingDown) {
       if (!glMatrix.equals(newAngle, shooter.orientation)) {
-        simState.simState.shooters.update(id, {
+        frameState.stateDb.shooters.update(id, {
           input: { ...shooter.input, target: message.attack.targetPos },
           orientation: newAngle,
         })
@@ -123,7 +123,7 @@ export const update = (simState: FrameState): void => {
         source: bulletPos,
         destination: message.attack.targetPos,
       })
-      simState.simState.register(newBuilder)
+      frameState.stateDb.register(newBuilder)
       return
     }
 
@@ -152,25 +152,25 @@ export const update = (simState: FrameState): void => {
 
     // Shoot the bullet if creation was successful
     if (newBullet.bullet !== undefined) {
-      simState.simState.shooters.update(id, {
+      frameState.stateDb.shooters.update(id, {
         input: { ...shooter.input, target: message.attack.targetPos },
         lastFiredFrame: message.frame,
         orientation: newAngle,
       })
 
-      simState.frameEvents.push({
+      frameState.frameEvents.push({
         type: FrameEventType.TankShoot,
         entityId: id,
         orientation: shooter.orientation,
         bulletType: shooter.weaponType,
       })
 
-      simState.simState.emitters.set(
+      frameState.stateDb.emitters.set(
         id,
         emitter.make('tankShot', vec2.fromValues(0, 0), 0),
       )
 
-      simState.simState.register(newBullet)
+      frameState.stateDb.register(newBullet)
     }
   })
 }

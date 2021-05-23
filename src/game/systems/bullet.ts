@@ -23,11 +23,11 @@ const speed: Record<BulletType, number> = {
   [WeaponType.Mortar]: 0,
 }
 
-export const update = (simState: FrameState, dt: number): void => {
-  for (const [id, bullet] of simState.simState.bullets) {
+export const update = (frameState: FrameState, dt: number): void => {
+  for (const [id, bullet] of frameState.stateDb.bullets) {
     const nextLifetime = bullet.lifetime + dt
 
-    const transform = simState.simState.transforms.get(id)!
+    const transform = frameState.stateDb.transforms.get(id)!
     let newPos
     switch (bullet.type) {
       case WeaponType.Standard:
@@ -46,7 +46,7 @@ export const update = (simState: FrameState, dt: number): void => {
           const currentSpeed = bullet.currentSpeed ?? speed[bullet.type]
 
           if (bullet.lifetime < 0.5 && 0.5 <= nextLifetime) {
-            simState.simState.emitters.set(
+            frameState.stateDb.emitters.set(
               id,
               emitter.make('rocketExhaust', vec2.fromValues(0, -0.25), Math.PI),
             )
@@ -59,7 +59,7 @@ export const update = (simState: FrameState, dt: number): void => {
             transform.orientation,
             currentSpeed * dt + 0.5 * acceleration * dt * dt,
           )
-          simState.simState.bullets.update(id, {
+          frameState.stateDb.bullets.update(id, {
             currentSpeed: currentSpeed + acceleration * dt,
           })
         }
@@ -70,13 +70,13 @@ export const update = (simState: FrameState, dt: number): void => {
           const disp = vec3.scale(vec3.create(), bullet.vel!, dt)
           disp[1] += 0.5 * MORTAR_GRAVITY * dt * dt
 
-          const transform3 = simState.simState.transform3s.get(id)!
+          const transform3 = frameState.stateDb.transform3s.get(id)!
           const newPos3 = vec3.clone(transform3.position)
           vec3.add(newPos3, newPos3, disp)
 
           if (newPos3[1] <= MORTAR_FIRING_HEIGHT) {
-            simState.simState.markForDeletion(id)
-            simState.simState.register(makeExplosion(transform.position))
+            frameState.stateDb.markForDeletion(id)
+            frameState.stateDb.register(makeExplosion(transform.position))
             return
           }
 
@@ -92,14 +92,14 @@ export const update = (simState: FrameState, dt: number): void => {
           const yangle = Math.atan2(-bullet.vel![0], -bullet.vel![2])
           const yrot = quat.setAxisAngle(quat.create(), PlusY3, yangle)
 
-          simState.simState.transform3s.update(id, {
+          frameState.stateDb.transform3s.update(id, {
             position: newPos3,
             orientation: quat.multiply(quat.create(), yrot, xrot),
           })
 
           const newVel = vec3.clone(bullet.vel!)
           newVel[1] += MORTAR_GRAVITY * dt
-          simState.simState.bullets.update(id, { vel: newVel })
+          frameState.stateDb.bullets.update(id, { vel: newVel })
 
           // Use some fake 2d value
           newPos = vec2.fromValues(newPos3[0], newPos3[2])
@@ -107,12 +107,12 @@ export const update = (simState: FrameState, dt: number): void => {
         break
     }
 
-    simState.simState.transforms.update(id, { position: newPos })
-    simState.simState.bullets.update(id, { lifetime: nextLifetime })
+    frameState.stateDb.transforms.update(id, { position: newPos })
+    frameState.stateDb.bullets.update(id, { lifetime: nextLifetime })
 
     if (bullet.type !== WeaponType.Mortar) {
       if (vec2.distance(newPos, bullet.origin) >= range[bullet.type]) {
-        simState.simState.markForDeletion(id)
+        frameState.stateDb.markForDeletion(id)
         return
       }
     }

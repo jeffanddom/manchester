@@ -2,7 +2,7 @@ import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
@@ -33,7 +33,7 @@ export function simulationPhaseDebugColor(
 }
 
 export type FrameState = {
-  simState: SimState
+  stateDb: StateDb
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer
@@ -56,5 +56,5 @@ export const simulate: SimulationStep = (
   systems.tankMover(frameState, dt)
   systems.playfieldClamping(frameState)
 
-  frameState.simState.postFrameUpdate()
+  frameState.stateDb.postFrameUpdate()
 }

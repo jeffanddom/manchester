@@ -135,12 +135,12 @@ export function clone(d: Immutable<Damager>): Damager {
   }
 }
 
-export const update = (simState: FrameState): void => {
-  simState.debugDraw.draw3d(() => {
+export const update = (frameState: FrameState): void => {
+  frameState.debugDraw.draw3d(() => {
     const objects: DebugDrawObject[] = []
 
-    for (const [entityId, d] of simState.simState.damageables) {
-      const xform = simState.simState.transforms.get(entityId)!
+    for (const [entityId, d] of frameState.stateDb.damageables) {
+      const xform = frameState.stateDb.transforms.get(entityId)!
       const [center, size] = aabb2.centerSize(damageableAabb(d, xform))
       objects.push({
         object: {
@@ -152,7 +152,7 @@ export const update = (simState: FrameState): void => {
             vec3.fromValues(center[0], 0.05, center[1]),
             vec3.fromValues(size[0], 1, size[1]),
           ),
-          color: simulationPhaseDebugColor(vec4.create(), simState.phase),
+          color: simulationPhaseDebugColor(vec4.create(), frameState.phase),
         },
       })
     }
@@ -160,10 +160,10 @@ export const update = (simState: FrameState): void => {
     return objects
   })
 
-  for (const [id, damager] of simState.simState.damagers) {
-    const transform = simState.simState.transforms.get(id)!
+  for (const [id, damager] of frameState.stateDb.damagers) {
+    const transform = frameState.stateDb.transforms.get(id)!
 
-    const candidateIds = simState.simState.queryByWorldPos(
+    const candidateIds = frameState.stateDb.queryByWorldPos(
       damageAreaAabb(transform, damager.area),
     )
 
@@ -177,12 +177,12 @@ export const update = (simState: FrameState): void => {
         continue
       }
 
-      const damageable = simState.simState.damageables.get(candidateId)
+      const damageable = frameState.stateDb.damageables.get(candidateId)
       if (damageable === undefined) {
         continue
       }
 
-      const targetTransform = simState.simState.transforms.get(candidateId)!
+      const targetTransform = frameState.stateDb.transforms.get(candidateId)!
       if (
         damageAreaAabbOverlap(
           transform,
@@ -202,31 +202,31 @@ export const update = (simState: FrameState): void => {
       // For now, the only behavior for damagers is "bullet" style: apply
       // damage to the damageable, and then remove self from simulation.
 
-      const damageable = simState.simState.damageables.get(targetId)!
-      simState.simState.damageables.update(targetId, {
+      const damageable = frameState.stateDb.damageables.get(targetId)!
+      frameState.stateDb.damageables.update(targetId, {
         health: damageable.health - damager.damageValue,
       })
 
-      simState.simState.markForDeletion(id)
+      frameState.stateDb.markForDeletion(id)
 
       // Knockback
-      simState.frameEvents.push({
+      frameState.frameEvents.push({
         type: FrameEventType.TankHit,
         entityId: targetId,
         hitAngle: transform.orientation,
       })
 
-      simState.frameEvents.push({
+      frameState.frameEvents.push({
         type: FrameEventType.BulletHit,
         position: vec2.clone(transform.position),
       })
 
       // Debug draw hits
-      simState.debugDraw.draw3d(() => {
-        if (simState.phase !== SimulationPhase.ClientAuthoritative) {
+      frameState.debugDraw.draw3d(() => {
+        if (frameState.phase !== SimulationPhase.ClientAuthoritative) {
           return []
         }
-        const damageableTransform = simState.simState.transforms.get(targetId)!
+        const damageableTransform = frameState.stateDb.transforms.get(targetId)!
         const [center, size] = aabb2.centerSize(
           damageableAabb(damageable, damageableTransform),
         )

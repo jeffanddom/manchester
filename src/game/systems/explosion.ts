@@ -32,12 +32,12 @@ export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
   return e
 }
 
-export function update(simState: FrameState): void {
-  for (const id of simState.simState.explosions) {
-    simState.frameEvents.push({
+export function update(stateDb: FrameState): void {
+  for (const id of stateDb.stateDb.explosions) {
+    stateDb.frameEvents.push({
       type: FrameEventType.MortarExplosion,
-      position: vec2.clone(simState.simState.transforms.get(id)!.position),
+      position: vec2.clone(stateDb.stateDb.transforms.get(id)!.position),
     })
-    simState.simState.markForDeletion(id)
+    stateDb.stateDb.markForDeletion(id)
   }
 }

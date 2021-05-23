@@ -15,9 +15,9 @@ enum DirectionCollision {
   West = 'W',
 }
 
-export const update = (simState: FrameState): void => {
-  for (const [id] of simState.simState.playerNumbers) {
-    const transform = simState.simState.transforms.get(id)!
+export const update = (frameState: FrameState): void => {
+  for (const [id] of frameState.stateDb.playerNumbers) {
+    const transform = frameState.stateDb.transforms.get(id)!
     const position = transform.position
     const checkAabb: Aabb2 = [
       position[0] - TILE_SIZE,
@@ -25,7 +25,7 @@ export const update = (simState: FrameState): void => {
       position[0] + TILE_SIZE,
       position[1] + TILE_SIZE,
     ]
-    const queried = simState.simState.queryByWorldPos(checkAabb)
+    const queried = frameState.stateDb.queryByWorldPos(checkAabb)
     const playerBox = tileBox(position)
     const previousPlayerBox = tileBox(transform.previousPosition)
 
@@ -37,11 +37,11 @@ export const update = (simState: FrameState): void => {
 
     for (const index in queried) {
       const queriedId = queried[index]
-      if (!simState.simState.walls.has(queriedId)) {
+      if (!frameState.stateDb.walls.has(queriedId)) {
         continue
       }
 
-      const otherTransform = simState.simState.transforms.get(queriedId)!
+      const otherTransform = frameState.stateDb.transforms.get(queriedId)!
       const wallBox = tileBox(otherTransform.position)
 
       if (aabb2.overlap(playerBox, wallBox)) {
@@ -146,22 +146,22 @@ export const update = (simState: FrameState): void => {
         const offset = TILE_SIZE / 2 + 1 / 1000
         switch (direction) {
           case DirectionCollision.North:
-            simState.simState.transforms.update(id, {
+            frameState.stateDb.transforms.update(id, {
               position: vec2.fromValues(transform.position[0], value - offset),
             })
             break
           case DirectionCollision.South:
-            simState.simState.transforms.update(id, {
+            frameState.stateDb.transforms.update(id, {
               position: vec2.fromValues(transform.position[0], value + offset),
             })
             break
           case DirectionCollision.East:
-            simState.simState.transforms.update(id, {
+            frameState.stateDb.transforms.update(id, {
               position: vec2.fromValues(value + offset, transform.position[1]),
             })
             break
           case DirectionCollision.West:
-            simState.simState.transforms.update(id, {
+            frameState.stateDb.transforms.update(id, {
               position: vec2.fromValues(value - offset, transform.position[1]),
             })
             break

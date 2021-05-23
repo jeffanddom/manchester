@@ -1,11 +1,11 @@
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 
 export enum PickupType {
   Core = 'Core',
   Wood = 'Wood',
 }
 
-export const update = (_simState: SimState): void => {
+export const update = (_stateDb: StateDb): void => {
   // const player = simState.getPlayer()!
   // const playerAabb = player.damageable!.aabb(player.transform!)
   // for (const [id, e] of simState.entities) {

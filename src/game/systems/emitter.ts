@@ -6,7 +6,7 @@ import {
 } from '~/engine/particles/emitters/BasicEmitter'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { EntityId } from '~/engine/sim/EntityId'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import { CommonAssets } from '~/game/assets/CommonAssets'
 import { Immutable } from '~/types/immutable'
 import { PlusY3, Zero2 } from '~/util/math'
@@ -54,10 +54,10 @@ export function emitterClone(
   }
 }
 
-export function update(simState: SimState, dt: number): void {
+export function update(stateDb: StateDb, dt: number): void {
   const toDelete: EntityId[] = []
 
-  for (const [entityId, ec] of simState.emitters) {
+  for (const [entityId, ec] of stateDb.emitters) {
     const elapsed = ec.elapsed + dt
     const leftoverParticles: number[] = []
     const particlesToRender: number[] = []
@@ -91,7 +91,7 @@ export function update(simState: SimState, dt: number): void {
       continue
     }
 
-    simState.emitters.update(entityId, {
+    stateDb.emitters.update(entityId, {
       elapsed,
       leftoverParticles,
       particlesToRender,
@@ -101,12 +101,12 @@ export function update(simState: SimState, dt: number): void {
   // Note: this is one place where we remove a component before the entire
   // entity is removed.
   for (const entityId of toDelete) {
-    simState.emitters.delete(entityId)
+    stateDb.emitters.delete(entityId)
   }
 }
 
 export const emitParticles: (
-  simState: SimState,
+  stateDb: StateDb,
   addParticle: (config: Immutable<ParticleConfig>) => void,
 ) => void = (() => {
   // We use an immediately-evaluated function to close over some temporary
@@ -117,12 +117,12 @@ export const emitParticles: (
   const baseOrientation = quat.create()
 
   return (
-    simState: SimState,
+    stateDb: StateDb,
     addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void => {
-    for (const [entityId, ec] of simState.emitters) {
-      const transform = simState.transforms.get(entityId)!
-      const shooter = simState.shooters.get(entityId)
+    for (const [entityId, ec] of stateDb.emitters) {
+      const transform = stateDb.transforms.get(entityId)!
+      const shooter = stateDb.shooters.get(entityId)
 
       let orientation2: number = transform.orientation + ec.rotOffset
       let yOffset = 0.5

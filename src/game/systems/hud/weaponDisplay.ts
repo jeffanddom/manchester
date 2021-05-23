@@ -7,18 +7,18 @@ import {
   Renderable2d,
   TextAlign,
 } from '~/engine/renderer/Renderer2d'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 
 export const update = (
-  simState: SimState,
+  stateDb: StateDb,
   playerNumber: number,
 ): Renderable2d[] => {
-  const playerId = simState.getPlayerId(playerNumber)
+  const playerId = stateDb.getPlayerId(playerNumber)
   if (playerId === undefined) {
     return []
   }
 
-  const shooter = simState.shooters.get(playerId)!
+  const shooter = stateDb.shooters.get(playerId)!
   shooter.weaponType
 
   return [

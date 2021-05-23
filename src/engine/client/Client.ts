@@ -123,7 +123,7 @@ export class Client {
 
       // Collect new particles from emitter components
       emitter.emitParticles(
-        this.sim.simState,
+        this.sim.stateDb,
         (config: Immutable<ParticleConfig>) => {
           this.particleSystem.add(config)
         },

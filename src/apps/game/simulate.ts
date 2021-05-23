@@ -2,7 +2,7 @@ import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
@@ -33,7 +33,7 @@ export function simulationPhaseDebugColor(
 }
 
 export type FrameState = {
-  simState: SimState
+  stateDb: StateDb
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer
@@ -53,13 +53,12 @@ export const simulate: SimulationStep = (
   // Init transforms before any system can modify them.
   systems.transformInit(frameState)
 
-  systems.hiding(frameState.simState)
+  systems.hiding(frameState.stateDb)
   systems.builder(frameState, dt)
   systems.shooter(frameState)
   systems.turret(frameState, dt)
   systems.bullet(frameState, dt)
   systems.explosion(frameState)
-  // systems.pickups(this, this.simState)
   systems.damager(frameState)
 
   systems.tankMover(frameState, dt)
@@ -68,7 +67,7 @@ export const simulate: SimulationStep = (
 
   systems.damageable(frameState)
 
-  systems.emitter(frameState.simState, dt)
+  systems.emitter(frameState.stateDb, dt)
 
-  frameState.simState.postFrameUpdate()
+  frameState.stateDb.postFrameUpdate()
 }

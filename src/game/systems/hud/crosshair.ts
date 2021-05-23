@@ -4,19 +4,19 @@ import { WeaponType } from '../WeaponType'
 
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { SimState } from '~/engine/sim/SimState'
+import { StateDb } from '~/engine/sim/StateDb'
 import { mortarInRange } from '~/game/components/Bullet'
 
 export const update = (
   playerNumber: number,
-  simState: SimState,
+  stateDb: StateDb,
 ): Renderable[] => {
-  const id = simState.getPlayerId(playerNumber)
+  const id = stateDb.getPlayerId(playerNumber)
   if (id === undefined) {
     throw `Player ${playerNumber} has no entity ID`
   }
 
-  const shooter = simState.shooters.get(id)
+  const shooter = stateDb.shooters.get(id)
   if (shooter === undefined) {
     return []
   }
@@ -29,7 +29,7 @@ export const update = (
   const renderables: Renderable[] = []
 
   if (shooter.weaponType === WeaponType.Mortar) {
-    const transform = simState.transforms.get(id)!
+    const transform = stateDb.transforms.get(id)!
 
     if (
       mortarInRange({
