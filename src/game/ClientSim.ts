@@ -334,7 +334,10 @@ export class ClientSim {
           this.startPlay()
         }
       }
-      return
+
+      if (!this.allClientsReady) {
+        return
+      }
     }
 
     // push frame updates from server into list

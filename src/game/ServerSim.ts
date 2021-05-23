@@ -144,38 +144,34 @@ export class ServerSim {
     }
 
     if (!this.allClientsReady) {
-      if (this.clients.length === this.playerCount) {
-        this.allClientsReady = true
-
-        this.map = Map.fromRaw(gameProgression[this.currentLevel])
-        const worldOrigin = vec2.scale(
-          vec2.create(),
-          this.map.origin,
-          TILE_SIZE,
-        )
-        const dimensions = vec2.scale(
-          vec2.create(),
-          this.map.dimensions,
-          TILE_SIZE,
-        )
-
-        this.stateDb = new GameStateDb([
-          worldOrigin[0],
-          worldOrigin[1],
-          worldOrigin[0] + dimensions[0],
-          worldOrigin[1] + dimensions[1],
-        ])
-        this.terrainLayer = initMap(this.stateDb, this.map)
-
-        this.clients.forEach((client, index) => {
-          client.conn.send({
-            type: ServerMessageType.START_GAME,
-            playerNumber: index + 1,
-          })
-        })
+      if (this.clients.length !== this.playerCount) {
+        return
       }
 
-      return
+      this.allClientsReady = true
+
+      this.map = Map.fromRaw(gameProgression[this.currentLevel])
+      const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
+      const dimensions = vec2.scale(
+        vec2.create(),
+        this.map.dimensions,
+        TILE_SIZE,
+      )
+
+      this.stateDb = new GameStateDb([
+        worldOrigin[0],
+        worldOrigin[1],
+        worldOrigin[0] + dimensions[0],
+        worldOrigin[1] + dimensions[1],
+      ])
+      this.terrainLayer = initMap(this.stateDb, this.map)
+
+      this.clients.forEach((client, index) => {
+        client.conn.send({
+          type: ServerMessageType.START_GAME,
+          playerNumber: index + 1,
+        })
+      })
     }
 
     // Advance only if all clients have already reached the frame the
