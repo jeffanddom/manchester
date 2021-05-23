@@ -1,7 +1,6 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 import { SimulationPhase, SimulationStep } from '~/apps/game/simulate'
-import { CameraController } from '~/engine/client/CameraController'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
@@ -47,6 +46,7 @@ import {
   FrameEventType,
   frameEventToKey,
 } from '~/game/systems/FrameEvent'
+import { CameraController } from '~/game/util/CameraController'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 import { discardUntil } from '~/util/array'
