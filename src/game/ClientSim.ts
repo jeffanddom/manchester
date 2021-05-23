@@ -5,6 +5,7 @@ import { SimulationPhase } from '../engine/network/SimulationPhase'
 
 import { simulate } from './simulate'
 
+import { ClientSimBase } from '~/engine/client/ClientGame'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
@@ -55,7 +56,7 @@ import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class ClientSim {
+export class ClientSim implements ClientSimBase {
   stateDb: StateDb
   playerInputState: {
     cursorMode: CursorMode
@@ -140,15 +141,11 @@ export class ClientSim {
     })
   }
 
-  shutdown(): void {
-    this.serverConnection?.close()
-  }
-
-  setViewportDimensions(d: vec2): void {
+  public setViewportDimensions(d: vec2): void {
     this.camera.setViewportDimensions(d)
   }
 
-  connectServer(conn: IServerConnection): void {
+  public connectServer(conn: IServerConnection): void {
     this.serverConnection = conn
   }
 
@@ -193,7 +190,7 @@ export class ClientSim {
     this.camera.setTarget(targetPos)
   }
 
-  update(): void {
+  public update(): void {
     const start = time.current()
     this.updateFrameDurations.sample(start - this.lastUpdateAt)
     this.lastUpdateAt = start
@@ -352,7 +349,15 @@ export class ClientSim {
     return frameEvents
   }
 
-  getRenderables(): Renderable[] {
+  public getWvTransform(out: mat4): mat4 {
+    return this.camera.getWvTransform(out)
+  }
+
+  public getFov(): number {
+    return this.camera.getFov()
+  }
+
+  public getRenderables(): Renderable[] {
     const res: Renderable[] = [
       {
         type: RenderableType.VColor,
@@ -401,20 +406,20 @@ export class ClientSim {
     return res
   }
 
-  getRenderables2d(): Renderable2d[] {
+  public getRenderables2d(): Renderable2d[] {
     return [
       ...systems.playerHealthBar(this.stateDb, this.playerNumber!),
       ...systems.weaponDisplay(this.stateDb, this.playerNumber!),
     ]
   }
 
-  emitParticles(
+  public emitParticles(
     addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void {
     emitter.emitParticles(this.stateDb, addParticle)
   }
 
-  sendClientMessage(m: ClientMessage): void {
+  public sendClientMessage(m: ClientMessage): void {
     this.simulator.addClientMessage(m)
     this.serverConnection!.send(m)
   }

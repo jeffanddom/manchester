@@ -1,15 +1,37 @@
 import { mat4, vec2 } from 'gl-matrix'
 
-import { ClientRenderManager } from '~/engine/client/ClientRenderManager'
-import { DebugDraw } from '~/engine/DebugDraw'
+import {
+  ClientRenderManager,
+  Renderable,
+} from '~/engine/client/ClientRenderManager'
+import { DebugDraw, IDebugDrawWriter } from '~/engine/DebugDraw'
 import { BrowserKeyboard } from '~/engine/input/BrowserKeyboard'
 import { BrowserMouse } from '~/engine/input/BrowserMouse'
 import { IKeyboard, IMouse } from '~/engine/input/interfaces'
-import { createServerConnectionWs } from '~/engine/network/ServerConnection'
-import { ParticleConfig } from '~/engine/particles/interfaces'
+import {
+  IServerConnection,
+  createServerConnectionWs,
+} from '~/engine/network/ServerConnection'
+import { ParticleConfig, ParticleEmitter } from '~/engine/particles/interfaces'
 import { ParticleSystem } from '~/engine/particles/ParticleSystem'
-import { ClientSim } from '~/game/ClientSim'
+import { IModelLoader } from '~/engine/renderer/ModelLoader'
+import { Renderable2d } from '~/engine/renderer/Renderer2d'
 import { Immutable } from '~/types/immutable'
+
+export interface ClientSimBase {
+  update(): void
+
+  getAllClientsReady(): boolean
+
+  getWvTransform(out: mat4): mat4
+  getFov(): number
+  getRenderables(): Renderable[]
+  getRenderables2d(): Renderable2d[]
+  emitParticles(addParticle: (config: Immutable<ParticleConfig>) => void): void
+
+  setViewportDimensions(d: vec2): void
+  connectServer(conn: IServerConnection): void
+}
 
 export class ClientGame {
   apiLocation: {
@@ -29,7 +51,7 @@ export class ClientGame {
   mouse: IMouse
   debugDraw: DebugDraw
   renderManager: ClientRenderManager
-  sim: ClientSim
+  sim: ClientSimBase
   particleSystem: ParticleSystem
 
   constructor(params: {
@@ -41,6 +63,14 @@ export class ClientGame {
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
     simulationPeriod: number
+    getClientSim: (config: {
+      keyboard: IKeyboard
+      mouse: IMouse
+      modelLoader: IModelLoader
+      debugDraw: IDebugDrawWriter
+      viewportDimensions: Immutable<vec2>
+      addEmitter: (emitter: ParticleEmitter) => void
+    }) => ClientSimBase
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
@@ -93,7 +123,7 @@ export class ClientGame {
 
     this.particleSystem.initRender(this.renderManager.renderer3d)
 
-    this.sim = new ClientSim({
+    this.sim = params.getClientSim({
       keyboard: this.keyboard,
       mouse: this.mouse,
       modelLoader: this.renderManager.getModelLoader(),
@@ -114,8 +144,8 @@ export class ClientGame {
     if (this.sim.getAllClientsReady()) {
       this.renderManager.update(
         this.sim.getRenderables(),
-        this.sim.camera.getWvTransform(mat4.create()),
-        this.sim.camera.getFov(),
+        this.sim.getWvTransform(mat4.create()),
+        this.sim.getFov(),
         this.sim.getRenderables2d(),
       )
 
