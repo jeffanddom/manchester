@@ -60,6 +60,7 @@ export class ServerSim {
     this.terrainLayer = new terrain.Layer({
       tileOrigin: vec2.create(),
       tileDimensions: vec2.create(),
+      tileSize: TILE_SIZE,
       terrain: this.map.terrain,
     })
 

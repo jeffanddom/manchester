@@ -3,11 +3,11 @@ import { vec2 } from 'gl-matrix'
 import { MeshPrimitive, ModelNode } from '~/engine/renderer/interfaces'
 import { ShaderAttrib } from '~/engine/renderer/shaders/common'
 import { Type } from '~/engine/terrain/Type'
-import { TILE_SIZE } from '~/game/constants'
 
 export class Layer {
   private tileOrigin: vec2
   private tileDimensions: vec2
+  private tileSize: number
   private terrain: (Type | null)[]
 
   private positions: Float32Array
@@ -18,14 +18,17 @@ export class Layer {
   public constructor({
     tileOrigin: origin,
     tileDimensions: dimensions,
+    tileSize,
     terrain: tiles,
   }: {
     tileOrigin: vec2 // tile units
     tileDimensions: vec2 // tile units
+    tileSize: number, // worldspace units
     terrain: (Type | null)[]
   }) {
     this.tileOrigin = origin
     this.tileDimensions = dimensions
+    this.tileSize = tileSize
     this.terrain = tiles
     this.positions = new Float32Array(this.terrain.length * 4 * 3)
     this.colors = new Float32Array(this.terrain.length * 4 * 4)
@@ -38,9 +41,9 @@ export class Layer {
       const pos = this.t2w([x, y])
 
       const nw = [pos[0], 0, pos[1]]
-      const ne = [pos[0] + TILE_SIZE, 0, pos[1]]
-      const sw = [pos[0], 0, pos[1] + TILE_SIZE]
-      const se = [pos[0] + TILE_SIZE, 0, pos[1] + TILE_SIZE]
+      const ne = [pos[0] + this.tileSize, 0, pos[1]]
+      const sw = [pos[0], 0, pos[1] + this.tileSize]
+      const se = [pos[0] + this.tileSize, 0, pos[1] + this.tileSize]
 
       this.positions.set([...nw, ...ne, ...sw, ...se], i * 4 * 3)
 
@@ -72,13 +75,13 @@ export class Layer {
 
   private t2w(tilepos: vec2): vec2 {
     return vec2.fromValues(
-      (tilepos[0] + this.tileOrigin[0]) * TILE_SIZE,
-      (tilepos[1] + this.tileOrigin[1]) * TILE_SIZE,
+      (tilepos[0] + this.tileOrigin[0]) * this.tileSize,
+      (tilepos[1] + this.tileOrigin[1]) * this.tileSize,
     )
   }
 
   public minWorldPos(): vec2 {
-    return vec2.scale(vec2.create(), this.tileOrigin, TILE_SIZE)
+    return vec2.scale(vec2.create(), this.tileOrigin, this.tileSize)
   }
 
   public maxWorldPos(): vec2 {
@@ -86,7 +89,7 @@ export class Layer {
   }
 
   public dimensions(): vec2 {
-    return vec2.scale(vec2.create(), this.tileDimensions, TILE_SIZE)
+    return vec2.scale(vec2.create(), this.tileDimensions, this.tileSize)
   }
 
   public getModel(): ModelNode {

@@ -19,6 +19,7 @@ export const initMap = (stateDb: GameStateDb, map: Map): terrain.Layer => {
   const terrainLayer = new terrain.Layer({
     tileOrigin: map.origin,
     tileDimensions: map.dimensions,
+    tileSize: TILE_SIZE,
     terrain: map.terrain,
   })
 

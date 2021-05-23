@@ -7,6 +7,7 @@ import { reset, saveMap } from './storage'
 
 import { Map } from '~/engine/map/interfaces'
 import * as terrain from '~/engine/terrain'
+import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
 import { BrushMode, Editor } from '~/tools/map/Editor'
 
@@ -135,6 +136,7 @@ export const Controls = ({ editor }: { editor: Editor }): ReactElement => {
     editor.terrain = new terrain.Layer({
       tileOrigin: blank.origin,
       tileDimensions: blank.dimensions,
+      tileSize: TILE_SIZE,
       terrain: blank.terrain,
     })
   }

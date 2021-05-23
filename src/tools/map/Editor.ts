@@ -81,6 +81,7 @@ export class Editor {
     this.terrain = new terrain.Layer({
       tileOrigin: this.map.origin,
       tileDimensions: this.map.dimensions,
+      tileSize: TILE_SIZE,
       terrain: this.map.terrain,
     })
 
