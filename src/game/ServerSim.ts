@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { mockDebugDraw } from '~/engine/DebugDraw'
 import { IClientConnection } from '~/engine/network/ClientConnection'
 import { ClientMessage } from '~/engine/network/ClientMessage'
-import { ServerMessageType } from '~/engine/network/ServerMessage'
+import { ServerSimulator } from '~/engine/network/ServerSimulator'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import * as terrain from '~/engine/terrain'
 import { gameProgression, initMap } from '~/game/common'
@@ -12,49 +12,38 @@ import { Map } from '~/game/map/interfaces'
 import { simulate } from '~/game/simulate'
 import { StateDb } from '~/game/state/StateDb'
 import * as aabb2 from '~/util/aabb2'
-import { RunningAverage } from '~/util/RunningAverage'
-import * as time from '~/util/time'
 
 export class ServerSim {
-  stateDb: StateDb
+  private stateDb: StateDb
 
-  // A buffer of unprocessed client messages received from clients. The messages
-  // are grouped by frame, and the groups are indexed by the number of frames
-  // ahead of the server's current frame.
-  clientMessagesByFrame: ClientMessage[][]
-  clients: {
+  private clients: {
     frame: number
     conn: IClientConnection
   }[]
-  playerCount: number
+  private playerCount: number
 
-  simulationFrame: number
+  private simulator: ServerSimulator
 
-  // Common game state
-  allClientsReady: boolean
-  shuttingDown: boolean
+  private shuttingDown: boolean
 
-  currentLevel: number
+  private currentLevel: number
+  private map: Map
+  private terrainLayer: terrain.Layer
 
-  map: Map
-  terrainLayer: terrain.Layer
-
-  updateFrameDurations: RunningAverage
-  lastUpdateAt: number
-  simulationDurations: RunningAverage
-
-  constructor(config: { playerCount: number }) {
-    this.clientMessagesByFrame = []
+  public constructor(config: { playerCount: number }) {
     this.stateDb = new StateDb(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
-    this.simulationFrame = 0
+    this.simulator = new ServerSimulator({
+      playerCount: config.playerCount,
+      onAllClientsReady: () => this.onAllClientsReady(),
+      simulate: (dt, frame, messages, phase) =>
+        this.simulate(dt, frame, messages, phase),
+    })
 
-    this.allClientsReady = false
     this.shuttingDown = false
 
     this.currentLevel = 0
-
     this.map = Map.empty()
     this.terrainLayer = new terrain.Layer({
       tileOrigin: vec2.create(),
@@ -62,13 +51,9 @@ export class ServerSim {
       tileSize: TILE_SIZE,
       terrain: this.map.terrain,
     })
-
-    this.updateFrameDurations = new RunningAverage(3 * 60)
-    this.lastUpdateAt = time.current()
-    this.simulationDurations = new RunningAverage(3 * 60)
   }
 
-  shutdown(): void {
+  public shutdown(): void {
     this.shuttingDown = true
 
     // Terminate all client connections
@@ -77,7 +62,7 @@ export class ServerSim {
     }
   }
 
-  connectClient(conn: IClientConnection): void {
+  public connectClient(conn: IClientConnection): void {
     if (this.shuttingDown) {
       conn.close()
       return
@@ -95,131 +80,46 @@ export class ServerSim {
     console.log(`connected player: ${this.clients.length}`)
   }
 
-  update(dt: number): void {
+  public update(dt: number): void {
     if (this.shuttingDown) {
       return
     }
 
-    const now = time.current()
-    this.updateFrameDurations.sample(now - this.lastUpdateAt)
-    this.lastUpdateAt = now
+    this.simulator.update(dt, this.clients, this.stateDb)
+  }
 
-    // process incoming client messages
-    for (const client of this.clients) {
-      for (const msg of client.conn.consume()) {
-        if (msg.frame > client.frame) {
-          client.frame = msg.frame
-        }
+  private onAllClientsReady(): void {
+    this.map = Map.fromRaw(gameProgression[this.currentLevel])
+    const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
+    const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
-        // Discard the message if it is no longer possible to simulate; i.e.,
-        // the frame it describes has already been simulated.
-        if (msg.frame < this.simulationFrame) {
-          continue
-        }
+    this.stateDb = new StateDb([
+      worldOrigin[0],
+      worldOrigin[1],
+      worldOrigin[0] + dimensions[0],
+      worldOrigin[1] + dimensions[1],
+    ])
 
-        // index is an offset from this.simulationFrame
-        const index = msg.frame - this.simulationFrame
+    this.terrainLayer = initMap(this.stateDb, this.map)
+  }
 
-        // Ensure there is a container the message's frame
-        for (let i = this.clientMessagesByFrame.length; i <= index; i++) {
-          this.clientMessagesByFrame.push([])
-        }
-
-        // Store message grouped by frame, but don't worry about FRAME_END
-        // messages.
-        this.clientMessagesByFrame[index].push(msg)
-
-        for (const receiver of this.clients) {
-          if (client === receiver) {
-            continue
-          }
-
-          client.conn.send({
-            type: ServerMessageType.REMOTE_CLIENT_MESSAGE,
-            message: msg,
-          })
-        }
-      }
-    }
-
-    if (!this.allClientsReady) {
-      if (this.clients.length !== this.playerCount) {
-        return
-      }
-
-      this.allClientsReady = true
-
-      this.map = Map.fromRaw(gameProgression[this.currentLevel])
-      const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
-      const dimensions = vec2.scale(
-        vec2.create(),
-        this.map.dimensions,
-        TILE_SIZE,
-      )
-
-      this.stateDb = new StateDb([
-        worldOrigin[0],
-        worldOrigin[1],
-        worldOrigin[0] + dimensions[0],
-        worldOrigin[1] + dimensions[1],
-      ])
-      this.terrainLayer = initMap(this.stateDb, this.map)
-
-      this.clients.forEach((client, index) => {
-        client.conn.send({
-          type: ServerMessageType.START_GAME,
-          playerNumber: index + 1,
-        })
-      })
-    }
-
-    // Advance only if all clients have already reached the frame the
-    // server is about to simulate.
-    let doSim = true
-    for (const c of this.clients) {
-      if (c.frame < this.simulationFrame) {
-        doSim = false
-        break
-      }
-    }
-
-    if (!doSim) {
-      return
-    }
-
-    const start = time.current()
-
-    // Remove this frame's client messages from the history, then process.
-    const frameMessages = this.clientMessagesByFrame.shift() ?? []
-
-    for (const client of this.clients) {
-      client.conn.send({
-        type: ServerMessageType.FRAME_UPDATE,
-        frame: this.simulationFrame,
-        inputs: frameMessages,
-        updateFrameDurationAvg: this.updateFrameDurations.average(),
-        simulationDurationAvg: this.simulationDurations.average(),
-      })
-    }
-
+  private simulate(
+    dt: number,
+    frame: number,
+    messages: ClientMessage[],
+    phase: SimulationPhase,
+  ): void {
     simulate(
       {
         stateDb: this.stateDb,
-        messages: frameMessages,
+        messages: messages,
         frameEvents: [],
         terrainLayer: this.terrainLayer,
-        frame: this.simulationFrame,
+        frame: frame,
         debugDraw: mockDebugDraw,
-        phase: SimulationPhase.ServerTick,
+        phase,
       },
       dt,
     )
-
-    this.simulationDurations.sample(time.current() - start)
-    this.simulationFrame++
-
-    // On the server, there is no reason to accumulate prediction state, because
-    // the server simulation is authoritative.
-    this.stateDb.commitPrediction()
   }
 }
