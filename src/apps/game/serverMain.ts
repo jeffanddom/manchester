@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     method: 'GET',
     path: '/',
     handler: async (req, h) => {
-      return h.redirect('/client')
+      return h.redirect('/apps/game')
     },
   })
 
