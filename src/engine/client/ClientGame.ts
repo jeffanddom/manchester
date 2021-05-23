@@ -2,6 +2,7 @@ import { mat4, vec2 } from 'gl-matrix'
 
 import { SimulationStep } from '~/apps/game/simulate'
 import { ClientRenderManager } from '~/engine/client/ClientRenderManager'
+import { ClientSim } from '~/engine/client/ClientSim'
 import { DebugDraw } from '~/engine/DebugDraw'
 import { BrowserKeyboard } from '~/engine/input/BrowserKeyboard'
 import { BrowserMouse } from '~/engine/input/BrowserMouse'
@@ -9,7 +10,6 @@ import { IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { createServerConnectionWs } from '~/engine/network/ServerConnection'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { ParticleSystem } from '~/engine/particles/ParticleSystem'
-import { ClientSim } from '~/game/ClientSim'
 import { SIMULATION_PERIOD_S } from '~/game/constants'
 import * as emitter from '~/game/systems/emitter'
 import { Immutable } from '~/types/immutable'
@@ -122,12 +122,9 @@ export class ClientGame {
       )
 
       // Collect new particles from emitter components
-      emitter.emitParticles(
-        this.sim.stateDb,
-        (config: Immutable<ParticleConfig>) => {
-          this.particleSystem.add(config)
-        },
-      )
+      this.sim.emitParticles((config: Immutable<ParticleConfig>) => {
+        this.particleSystem.add(config)
+      })
 
       // Simulate particles
       this.particleSystem.update(SIMULATION_PERIOD_S)

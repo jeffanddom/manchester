@@ -3,6 +3,7 @@ import { mat4 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
+import { ClientSim } from '~/engine/client/ClientSim'
 import { DirectionMove, IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { MouseButton } from '~/engine/input/interfaces'
 import {
@@ -11,7 +12,6 @@ import {
 } from '~/engine/network/ClientMessage'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { Camera3d } from '~/game/camera/Camera3d'
-import { ClientSim } from '~/game/ClientSim'
 import { CLIENT_INPUT_DELAY } from '~/game/constants'
 
 export const keyMap = {

@@ -41,6 +41,7 @@ import { Map as GameMap } from '~/game/map/interfaces'
 import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'
+import * as emitter from '~/game/systems/emitter'
 import {
   FrameEvent,
   FrameEventType,
@@ -523,6 +524,12 @@ export class ClientSim {
       ...systems.playerHealthBar(this.stateDb, this.playerNumber!),
       ...systems.weaponDisplay(this.stateDb, this.playerNumber!),
     ]
+  }
+
+  emitParticles(
+    addParticle: (config: Immutable<ParticleConfig>) => void,
+  ): void {
+    emitter.emitParticles(this.stateDb, addParticle)
   }
 
   sendClientMessage(m: ClientMessage): void {
