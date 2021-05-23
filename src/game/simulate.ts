@@ -2,19 +2,11 @@ import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
+import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import * as terrain from '~/engine/terrain'
 import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
-
-export type SimulationStep = (frameState: FrameState, dt: number) => void
-
-export enum SimulationPhase {
-  ServerTick,
-  ClientPrediction,
-  ClientAuthoritative,
-  ClientReprediction,
-}
 
 export function simulationPhaseDebugColor(
   out: vec4,
@@ -46,10 +38,7 @@ export type FrameState = {
   phase: SimulationPhase
 }
 
-export const simulate: SimulationStep = (
-  frameState: FrameState,
-  dt: number,
-): void => {
+export function simulate(frameState: FrameState, dt: number): void {
   // Init transforms before any system can modify them.
   systems.transformInit(frameState)
 

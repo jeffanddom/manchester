@@ -3,17 +3,14 @@ import { vec2 } from 'gl-matrix'
 
 import { FrameEventType } from './FrameEvent'
 
-import {
-  FrameState,
-  SimulationPhase,
-  simulationPhaseDebugColor,
-} from '~/apps/game/simulate'
 import { DebugDrawObject } from '~/engine/DebugDraw'
+import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { EntityId } from '~/engine/state/EntityId'
 import { aabb as damageableAabb } from '~/game/components/Damageable'
 import * as hitbox from '~/game/components/Hitbox'
 import { Transform } from '~/game/components/Transform'
+import { FrameState, simulationPhaseDebugColor } from '~/game/simulate'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 

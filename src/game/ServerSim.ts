@@ -1,14 +1,15 @@
 import { vec2 } from 'gl-matrix'
 
-import { SimulationPhase, SimulationStep } from '~/apps/game/simulate'
 import { mockDebugDraw } from '~/engine/DebugDraw'
 import { IClientConnection } from '~/engine/network/ClientConnection'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { ServerMessageType } from '~/engine/network/ServerMessage'
+import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import * as terrain from '~/engine/terrain'
 import { gameProgression, initMap } from '~/game/common'
 import { TILE_SIZE } from '~/game/constants'
 import { Map } from '~/game/map/interfaces'
+import { simulate } from '~/game/simulate'
 import { GameStateDb } from '~/game/state/GameStateDb'
 import * as aabb2 from '~/util/aabb2'
 import { RunningAverage } from '~/util/RunningAverage'
@@ -27,7 +28,6 @@ export class ServerSim {
   }[]
   playerCount: number
 
-  simulationStep: SimulationStep
   simulationFrame: number
 
   // Common game state
@@ -43,12 +43,11 @@ export class ServerSim {
   lastUpdateAt: number
   simulationDurations: RunningAverage
 
-  constructor(config: { playerCount: number; simulationStep: SimulationStep }) {
+  constructor(config: { playerCount: number }) {
     this.clientMessagesByFrame = []
     this.stateDb = new GameStateDb(aabb2.create())
     this.clients = []
     this.playerCount = config.playerCount
-    this.simulationStep = config.simulationStep
     this.simulationFrame = 0
 
     this.allClientsReady = false
@@ -203,7 +202,7 @@ export class ServerSim {
       })
     }
 
-    this.simulationStep(
+    simulate(
       {
         stateDb: this.stateDb,
         messages: frameMessages,

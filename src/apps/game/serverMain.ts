@@ -4,7 +4,6 @@ import * as hapi from '@hapi/hapi'
 import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
-import { simulate } from '~/apps/game/simulate'
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
 import { ClientConnectionWs } from '~/engine/network/ClientConnection'
 import {
@@ -19,10 +18,7 @@ async function buildVersion(): Promise<string> {
 }
 
 async function main(): Promise<void> {
-  let gameSim = new ServerSim({
-    playerCount: PLAYER_COUNT,
-    simulationStep: simulate,
-  })
+  let gameSim = new ServerSim({ playerCount: PLAYER_COUNT })
 
   setInterval(
     () => gameSim.update(SIMULATION_PERIOD_S),
@@ -58,10 +54,7 @@ async function main(): Promise<void> {
     handler: () => {
       console.log('restarting game server')
       gameSim.shutdown()
-      gameSim = new ServerSim({
-        playerCount: PLAYER_COUNT,
-        simulationStep: simulate,
-      })
+      gameSim = new ServerSim({ playerCount: PLAYER_COUNT })
       return ''
     },
   })

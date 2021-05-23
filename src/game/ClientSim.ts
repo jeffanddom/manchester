@@ -1,16 +1,17 @@
 import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
-import { SimulationPhase, SimulationStep } from '~/apps/game/simulate'
+import { ClientSimulator } from '../engine/network/ClientSimulator'
+import { SimulationPhase } from '../engine/network/SimulationPhase'
+
+import { simulate } from './simulate'
+
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { IServerConnection } from '~/engine/network/ServerConnection'
-import {
-  ServerMessage,
-  ServerMessageType,
-} from '~/engine/network/ServerMessage'
+import { ServerMessage } from '~/engine/network/ServerMessage'
 import {
   BasicEmitter,
   BasicEmitterSettings,
@@ -50,30 +51,18 @@ import {
 import { CameraController } from '~/game/util/CameraController'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
-import { discardUntil } from '~/util/array'
 import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-interface ServerFrameUpdate {
-  frame: number
-  inputs: ClientMessage[]
-}
-
 export class ClientSim {
-  simulationStep: SimulationStep
   stateDb: GameStateDb
-  uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
   }
   serverConnection: IServerConnection | undefined
   playerNumber: number | undefined
-  serverFrameUpdates: ServerFrameUpdate[]
-  committedFrame: number
-  simulationFrame: number
-  waitingForServer: boolean
-  allClientsReady: boolean
+  simulator: ClientSimulator<FrameEvent>
 
   camera: Camera3d
   zoomLevel: number
@@ -82,12 +71,9 @@ export class ClientSim {
 
   lastUpdateAt: number
   lastTickAt: number
-  serverUpdateFrameDurationAvg: number
-  serverSimulationDurationAvg: number
 
   tickDurations: RunningAverage
   updateFrameDurations: RunningAverage
-  framesAheadOfServer: RunningAverage
 
   keyboard: IKeyboard
   mouse: IMouse
@@ -110,24 +96,22 @@ export class ClientSim {
     debugDraw: IDebugDrawWriter
     viewportDimensions: Immutable<vec2>
     addEmitter: (emitter: ParticleEmitter) => void
-    simulationStep: SimulationStep
   }) {
     this.keyboard = config.keyboard
     this.mouse = config.mouse
     this.modelLoader = config.modelLoader
     this.debugDraw = config.debugDraw
 
-    this.simulationStep = config.simulationStep
     this.stateDb = new GameStateDb(aabb2.create())
-    this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
     this.playerNumber = undefined
-    this.serverFrameUpdates = []
-    this.committedFrame = -1
-    this.simulationFrame = 0
-    this.waitingForServer = false
-    this.allClientsReady = false
+    this.simulator = new ClientSimulator({
+      maxPredictedFrames: MAX_PREDICTED_FRAMES,
+      onAllClientsReady: (playerNumber) => this.onAllClientsReady(playerNumber),
+      simulate: (dt, frame, messages, phase) =>
+        this.simulate(dt, frame, messages, phase),
+    })
 
     this.camera = new Camera3d({
       viewportDimensions: config.viewportDimensions,
@@ -138,12 +122,9 @@ export class ClientSim {
 
     this.lastUpdateAt = time.current()
     this.lastTickAt = time.current()
-    this.serverUpdateFrameDurationAvg = NaN
-    this.serverSimulationDurationAvg = NaN
 
     this.tickDurations = new RunningAverage(3 * 60)
     this.updateFrameDurations = new RunningAverage(3 * 60)
-    this.framesAheadOfServer = new RunningAverage(3 * 60)
     this.dedupLog = new DedupLog()
     this.addEmitter = config.addEmitter
 
@@ -167,7 +148,137 @@ export class ClientSim {
     this.camera.setViewportDimensions(d)
   }
 
-  startPlay(): void {
+  connectServer(conn: IServerConnection): void {
+    this.serverConnection = conn
+  }
+
+  public getAllClientsReady(): boolean {
+    return this.simulator.getAllClientsReady()
+  }
+
+  private getPlayerPos(out: vec3): void {
+    if (this.playerNumber === undefined) {
+      return // TODO: should be an error
+    }
+
+    const playerId = this.stateDb.getPlayerId(this.playerNumber)
+    if (playerId === undefined) {
+      return
+    }
+
+    const transform = this.stateDb.transforms.get(playerId)
+    if (transform === undefined) {
+      return
+    }
+
+    out[0] = transform.position[0]
+    out[1] = 0
+    out[2] = transform.position[1]
+  }
+
+  private syncCameraToPlayer(dt: number): void {
+    const playerPos = vec3.create()
+    this.getPlayerPos(playerPos)
+
+    this.cameraController.setTarget(playerPos)
+    this.cameraController.update(dt)
+
+    const targetPos = vec3.create()
+    this.cameraController.getPos(targetPos)
+
+    // Position the 3D camera at a fixed offset from the player, and
+    // point the camera directly at the player.
+    const offset = vec3.fromValues(0, this.zoomLevel, CAMERA_Z_OFFSET)
+    this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
+    this.camera.setTarget(targetPos)
+  }
+
+  update(): void {
+    const start = time.current()
+    this.updateFrameDurations.sample(start - this.lastUpdateAt)
+    this.lastUpdateAt = start
+
+    let serverMessages: ServerMessage[] = []
+    if (this.serverConnection !== undefined) {
+      serverMessages = this.serverConnection.consume()
+    }
+
+    const eventsByFrame = this.simulator.tick({
+      dt: SIMULATION_PERIOD_S,
+      stateDb: this.stateDb,
+      serverMessages,
+    })
+
+    this.syncCameraToPlayer(SIMULATION_PERIOD_S)
+    this.updateFrameSideEffects(eventsByFrame)
+
+    this.tickDurations.sample(time.current() - start)
+
+    this.debugDraw.draw3d(() => [
+      {
+        object: {
+          type: UnlitObjectType.Model,
+          modelName: 'linegrid',
+          model2World: mat4.create(),
+          color: vec4.fromValues(1, 1, 0, 0.3),
+        },
+      },
+    ])
+
+    this.zoomLevel += this.mouse.getScroll() * 0.025
+    this.zoomLevel = math.clamp(
+      this.zoomLevel,
+      CAMERA_MIN_Y_OFFSET,
+      CAMERA_MAX_Y_OFFSET,
+    )
+
+    this.debugDraw.draw2d(() => {
+      const simulatorInfo = this.simulator.getDiagnostics()
+
+      const text = [
+        `Player ${this.playerNumber}`,
+        // `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
+        // `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
+        `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
+        `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
+        `FAOS: ${simulatorInfo.framesAheadOfServer.toFixed(2)}`,
+        `Server sim ms: ${(
+          simulatorInfo.serverSimulationDurationAvg * 1000
+        ).toFixed(2)}`,
+        `Server update FPS: ${(
+          1 / simulatorInfo.serverUpdateFrameDurationAvg
+        ).toFixed(2)}`,
+        this.simulator.getWaitingForServer() ? 'WAITING FOR SERVER' : undefined,
+      ]
+
+      const x = this.camera.getViewportDimensions()[0] - 10
+      let y = 10
+      const res: Renderable2d[] = []
+      for (const t of text) {
+        if (t === undefined) {
+          continue
+        }
+
+        res.push({
+          primitive: Primitive2d.TEXT,
+          text: t,
+          pos: vec2.fromValues(x, y),
+          hAlign: TextAlign.Max,
+          vAlign: TextAlign.Center,
+          font: '16px monospace',
+          style: 'cyan',
+        })
+
+        y += 20
+      }
+
+      return res
+    })
+  }
+
+  private onAllClientsReady(playerNumber: number): void {
+    this.playerNumber = playerNumber
+
     // Level setup
     this.map = GameMap.fromRaw(gameProgression[this.currentLevel])
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
@@ -214,260 +325,31 @@ export class ClientSim {
     })
   }
 
-  connectServer(conn: IServerConnection): void {
-    this.serverConnection = conn
-  }
-
-  private getPlayerPos(out: vec3): void {
-    if (this.playerNumber === undefined) {
-      return // TODO: should be an error
+  private simulate(
+    dt: number,
+    frame: number,
+    messages: ClientMessage[],
+    phase: SimulationPhase,
+  ): FrameEvent[] {
+    if (phase === SimulationPhase.ClientPrediction) {
+      systems.playerInput(this, frame)
     }
 
-    const playerId = this.stateDb.getPlayerId(this.playerNumber)
-    if (playerId === undefined) {
-      return
-    }
-
-    const transform = this.stateDb.transforms.get(playerId)
-    if (transform === undefined) {
-      return
-    }
-
-    out[0] = transform.position[0]
-    out[1] = 0
-    out[2] = transform.position[1]
-  }
-
-  private syncCameraToPlayer(dt: number): void {
-    const playerPos = vec3.create()
-    this.getPlayerPos(playerPos)
-
-    this.cameraController.setTarget(playerPos)
-    this.cameraController.update(dt)
-
-    const targetPos = vec3.create()
-    this.cameraController.getPos(targetPos)
-
-    // Position the 3D camera at a fixed offset from the player, and
-    // point the camera directly at the player.
-    const offset = vec3.fromValues(0, this.zoomLevel, CAMERA_Z_OFFSET)
-    this.camera.setPos(vec3.add(vec3.create(), targetPos, offset))
-    this.camera.setTarget(targetPos)
-  }
-
-  update(): void {
-    const start = time.current()
-    this.updateFrameDurations.sample(start - this.lastUpdateAt)
-    this.lastUpdateAt = start
-
-    this.tick(SIMULATION_PERIOD_S)
-    this.tickDurations.sample(time.current() - start)
-
-    this.debugDraw.draw3d(() => [
-      {
-        object: {
-          type: UnlitObjectType.Model,
-          modelName: 'linegrid',
-          model2World: mat4.create(),
-          color: vec4.fromValues(1, 1, 0, 0.3),
-        },
-      },
-    ])
-
-    this.zoomLevel += this.mouse.getScroll() * 0.025
-    this.zoomLevel = math.clamp(
-      this.zoomLevel,
-      CAMERA_MIN_Y_OFFSET,
-      CAMERA_MAX_Y_OFFSET,
-    )
-
-    this.debugDraw.draw2d(() => {
-      const text = [
-        `Player ${this.playerNumber}`,
-        // `Render ms: ${(this.renderDurations.average() * 1000).toFixed(2)}`,
-        // `Render FPS: ${(1 / this.renderFrameDurations.average()).toFixed(2)}`,
-        `Tick ms: ${(this.tickDurations.average() * 1000).toFixed(2)}`,
-        `Update FPS: ${(1 / this.updateFrameDurations.average()).toFixed(2)}`,
-        `FAOS: ${this.framesAheadOfServer.average().toFixed(2)}`,
-        `Server sim ms: ${(this.serverSimulationDurationAvg * 1000).toFixed(
-          2,
-        )}`,
-        `Server update FPS: ${(1 / this.serverUpdateFrameDurationAvg).toFixed(
-          2,
-        )}`,
-        this.waitingForServer ? 'WAITING FOR SERVER' : undefined,
-      ]
-
-      const x = this.camera.getViewportDimensions()[0] - 10
-      let y = 10
-      const res: Renderable2d[] = []
-      for (const t of text) {
-        if (t === undefined) {
-          continue
-        }
-
-        res.push({
-          primitive: Primitive2d.TEXT,
-          text: t,
-          pos: vec2.fromValues(x, y),
-          hAlign: TextAlign.Max,
-          vAlign: TextAlign.Center,
-          font: '16px monospace',
-          style: 'cyan',
-        })
-
-        y += 20
-      }
-
-      return res
-    })
-  }
-
-  tick(dt: number): void {
-    const frameEvents: Map<number, FrameEvent[]> = new Map()
-    let serverMessages: ServerMessage[] = []
-    if (this.serverConnection !== undefined) {
-      serverMessages = this.serverConnection.consume()
-    }
-
-    if (!this.allClientsReady) {
-      for (const msg of serverMessages) {
-        if (msg.type === ServerMessageType.START_GAME) {
-          this.playerNumber = msg.playerNumber
-          this.allClientsReady = true
-
-          this.startPlay()
-        }
-      }
-
-      if (!this.allClientsReady) {
-        return
-      }
-    }
-
-    // push frame updates from server into list
-    for (const msg of serverMessages) {
-      switch (msg.type) {
-        case ServerMessageType.FRAME_UPDATE:
-          this.serverFrameUpdates.push({
-            frame: msg.frame,
-            inputs: msg.inputs,
-          })
-          this.serverFrameUpdates.sort((a, b) => a.frame - b.frame)
-
-          this.serverUpdateFrameDurationAvg = msg.updateFrameDurationAvg
-          this.serverSimulationDurationAvg = msg.simulationDurationAvg
-          break
-
-        case ServerMessageType.REMOTE_CLIENT_MESSAGE:
-          this.uncommittedMessageHistory.push(msg.message)
-          break
-      }
-    }
-
-    this.waitingForServer =
-      this.serverFrameUpdates.length === 0 &&
-      this.simulationFrame - this.committedFrame >= MAX_PREDICTED_FRAMES
-    if (this.waitingForServer) {
-      return
-    }
-
-    this.syncServerState(dt, frameEvents)
-    this.framesAheadOfServer.sample(this.simulationFrame - this.committedFrame)
-
-    systems.playerInput(this, this.simulationFrame)
-
-    const nextFrameEvents: FrameEvent[] = []
-    frameEvents.set(this.simulationFrame, nextFrameEvents)
-    this.simulationStep(
+    const frameEvents: FrameEvent[] = []
+    simulate(
       {
         stateDb: this.stateDb,
-        messages: this.uncommittedMessageHistory.filter(
-          (m) => m.frame === this.simulationFrame,
-        ),
-        frameEvents: nextFrameEvents,
+        messages,
+        frameEvents,
         terrainLayer: this.terrainLayer,
-        frame: this.simulationFrame,
+        frame,
         debugDraw: this.debugDraw,
-        phase: SimulationPhase.ClientPrediction,
+        phase,
       },
       dt,
     )
 
-    this.syncCameraToPlayer(dt)
-    this.updateFrameSideEffects(frameEvents)
-
-    this.simulationFrame++
-  }
-
-  syncServerState(dt: number, frameEvents: Map<number, FrameEvent[]>): void {
-    this.serverFrameUpdates = discardUntil(
-      this.serverFrameUpdates,
-      (u) => u.frame > this.committedFrame,
-    )
-
-    // Process all contiguous server frames prior to the current simulation
-    // frame
-    let splitAt = 0
-    while (splitAt < this.serverFrameUpdates.length) {
-      if (this.serverFrameUpdates[splitAt].frame >= this.simulationFrame) {
-        break
-      }
-      splitAt++
-    }
-
-    const toProcess = this.serverFrameUpdates.slice(0, splitAt)
-    this.serverFrameUpdates = this.serverFrameUpdates.slice(splitAt)
-
-    // Early-out if there are no server updates we can process right now.
-    if (toProcess.length === 0) {
-      return
-    }
-
-    this.stateDb.undoPrediction()
-
-    for (const update of toProcess) {
-      const nextFrameEvents: FrameEvent[] = []
-      frameEvents.set(update.frame, nextFrameEvents)
-      this.simulationStep(
-        {
-          stateDb: this.stateDb,
-          messages: update.inputs,
-          frameEvents: nextFrameEvents,
-          terrainLayer: this.terrainLayer,
-          frame: update.frame,
-          debugDraw: this.debugDraw,
-          phase: SimulationPhase.ClientAuthoritative,
-        },
-        dt,
-      )
-      this.committedFrame = update.frame
-    }
-
-    this.stateDb.commitPrediction()
-
-    this.uncommittedMessageHistory = this.uncommittedMessageHistory.filter(
-      (m) => m.frame > this.committedFrame,
-    )
-
-    // Repredict already-simulated frames
-    for (let f = this.committedFrame + 1; f < this.simulationFrame; f++) {
-      const nextFrameEvents: FrameEvent[] = []
-      frameEvents.set(f, nextFrameEvents)
-
-      this.simulationStep(
-        {
-          stateDb: this.stateDb,
-          messages: this.uncommittedMessageHistory.filter((m) => m.frame === f),
-          frameEvents: nextFrameEvents,
-          terrainLayer: this.terrainLayer,
-          frame: f,
-          debugDraw: this.debugDraw,
-          phase: SimulationPhase.ClientReprediction,
-        },
-        dt,
-      )
-    }
+    return frameEvents
   }
 
   getRenderables(): Renderable[] {
@@ -533,7 +415,7 @@ export class ClientSim {
   }
 
   sendClientMessage(m: ClientMessage): void {
-    this.uncommittedMessageHistory.push(m)
+    this.simulator.addClientMessage(m)
     this.serverConnection!.send(m)
   }
 

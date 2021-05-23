@@ -1,12 +1,12 @@
 import { quat, vec2, vec3 } from 'gl-matrix'
 
-import { FrameState } from '~/apps/game/simulate'
 import { BulletType } from '~/game/components/Bullet'
 import {
   MORTAR_FIRING_HEIGHT,
   MORTAR_GRAVITY,
   TILE_SIZE,
 } from '~/game/constants'
+import { FrameState } from '~/game/simulate'
 import * as emitter from '~/game/systems/emitter'
 import { makeExplosion } from '~/game/systems/explosion'
 import { WeaponType } from '~/game/systems/WeaponType'

@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
-import { FrameState } from '~/apps/game/simulate'
 import { BUILDER_SPEED } from '~/game/constants'
+import { FrameState } from '~/game/simulate'
 // import { Team } from '~/components/team'
 // import { TILE_SIZE } from '~/constants'
 // import { make } from '~/entities/builder'

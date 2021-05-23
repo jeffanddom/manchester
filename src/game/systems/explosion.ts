@@ -3,8 +3,8 @@ import { vec2 } from 'gl-matrix'
 import { DamageAreaType } from './damager'
 import { FrameEventType } from './FrameEvent'
 
-import { FrameState } from '~/apps/game/simulate'
 import * as transform from '~/game/components/Transform'
+import { FrameState } from '~/game/simulate'
 import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { Immutable } from '~/types/immutable'
 

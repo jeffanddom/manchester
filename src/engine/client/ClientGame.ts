@@ -1,8 +1,6 @@
 import { mat4, vec2 } from 'gl-matrix'
 
-import { SimulationStep } from '~/apps/game/simulate'
 import { ClientRenderManager } from '~/engine/client/ClientRenderManager'
-import { ClientSim } from '~/engine/client/ClientSim'
 import { DebugDraw } from '~/engine/DebugDraw'
 import { BrowserKeyboard } from '~/engine/input/BrowserKeyboard'
 import { BrowserMouse } from '~/engine/input/BrowserMouse'
@@ -10,6 +8,7 @@ import { IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { createServerConnectionWs } from '~/engine/network/ServerConnection'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { ParticleSystem } from '~/engine/particles/ParticleSystem'
+import { ClientSim } from '~/game/ClientSim'
 import { Immutable } from '~/types/immutable'
 
 export class ClientGame {
@@ -42,7 +41,6 @@ export class ClientGame {
     viewportDimensions: Immutable<vec2>
     pixelRatio: number
     simulationPeriod: number
-    simulationStep: SimulationStep
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
@@ -102,7 +100,6 @@ export class ClientGame {
       debugDraw: this.debugDraw,
       viewportDimensions: this.viewportDimensions,
       addEmitter: (emitter) => this.particleSystem.addEmitter(emitter),
-      simulationStep: params.simulationStep,
     })
   }
 
@@ -114,7 +111,7 @@ export class ClientGame {
     }
 
     // TODO: what's wrong with rendering all the time
-    if (this.sim.allClientsReady) {
+    if (this.sim.getAllClientsReady()) {
       this.renderManager.update(
         this.sim.getRenderables(),
         this.sim.camera.getWvTransform(mat4.create()),

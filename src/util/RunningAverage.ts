@@ -1,7 +1,7 @@
 export class RunningAverage {
-  samples: Array<number>
-  maxSamples: number
-  avg: number
+  private samples: Array<number>
+  private maxSamples: number
+  private avg: number
 
   constructor(maxSamples: number) {
     this.samples = []

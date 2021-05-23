@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { FrameState } from '~/apps/game/simulate'
+import { FrameState } from '~/game/simulate'
 
 export const update = (frameState: FrameState): void => {
   for (const id of frameState.stateDb.playfieldClamped) {

@@ -1,6 +1,5 @@
 import { vec2 } from 'gl-matrix'
 
-import { FrameState } from '~/apps/game/simulate'
 import { DirectionMove } from '~/engine/input/interfaces'
 import { ClientMoveUpdate } from '~/engine/network/ClientMessage'
 import {
@@ -13,6 +12,7 @@ import {
   TANK_ROT_SPEED,
   TANK_SPEED,
 } from '~/game/constants'
+import { FrameState } from '~/game/simulate'
 import { FrameEventType } from '~/game/systems/FrameEvent'
 import { WeaponType } from '~/game/systems/WeaponType'
 import { North2, Zero2, radialTranslate2, rotateUntil } from '~/util/math'

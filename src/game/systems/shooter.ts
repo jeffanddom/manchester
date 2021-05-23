@@ -1,11 +1,11 @@
 import { mat4 } from 'gl-matrix'
 import { glMatrix, vec2 } from 'gl-matrix'
 
-import { FrameState } from '~/apps/game/simulate'
 import { BulletConfig } from '~/game/components/Bullet'
 import { TILE_SIZE } from '~/game/constants'
 import { makeBuilder } from '~/game/entities/builder'
 import { makeBullet } from '~/game/entities/bullet'
+import { FrameState } from '~/game/simulate'
 import * as emitter from '~/game/systems/emitter'
 import { FrameEventType } from '~/game/systems/FrameEvent'
 import { WEAPON_TYPE_LENGTH, WeaponType } from '~/game/systems/WeaponType'
