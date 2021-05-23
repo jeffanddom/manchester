@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "include": [
     "src",
-    ".eslintrc.js"
+    ".eslintrc.js",
+    "src/engine/.eslintrc.js"
   ]
 }
