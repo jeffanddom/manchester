@@ -7,7 +7,7 @@ import { FrameState } from '~/apps/game/simulate'
 import {
   EntityComponents,
   makeDefaultEntity,
-} from '~/engine/sim/EntityComponents'
+} from '~/engine/state/EntityComponents'
 import * as transform from '~/game/components/Transform'
 import { Immutable } from '~/types/immutable'
 

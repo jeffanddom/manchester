@@ -1,4 +1,4 @@
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 
 export enum PickupType {
   Core = 'Core',

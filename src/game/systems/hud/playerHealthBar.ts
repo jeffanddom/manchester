@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { Primitive2d, Renderable2d } from '~/engine/renderer/Renderer2d'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 import { inverseLerp, lerp } from '~/util/math'
 
 export const update = (

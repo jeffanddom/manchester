@@ -1,5 +1,5 @@
-import { EntityId } from '~/engine/sim/EntityId'
-import { EntityStateContainer } from '~/engine/sim/EntityStateContainer'
+import { EntityId } from '~/engine/state/EntityId'
+import { EntityStateContainer } from '~/engine/state/EntityStateContainer'
 import { Aabb2 } from '~/util/aabb2'
 import { SortedSet } from '~/util/SortedSet'
 

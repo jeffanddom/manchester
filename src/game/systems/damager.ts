@@ -10,7 +10,7 @@ import {
 } from '~/apps/game/simulate'
 import { DebugDrawObject } from '~/engine/DebugDraw'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { EntityId } from '~/engine/sim/EntityId'
+import { EntityId } from '~/engine/state/EntityId'
 import { aabb as damageableAabb } from '~/game/components/Damageable'
 import * as hitbox from '~/game/components/Hitbox'
 import { Transform } from '~/game/components/Transform'

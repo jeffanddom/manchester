@@ -1,4 +1,4 @@
-import { EntityComponents } from '~/engine/sim/EntityComponents'
+import { EntityComponents } from '~/engine/state/EntityComponents'
 import { makeCorePickup } from '~/game/entities/pickups/core'
 import { makePlayer } from '~/game/entities/player'
 import { makeTree } from '~/game/entities/tree'

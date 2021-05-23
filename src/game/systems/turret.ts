@@ -4,7 +4,7 @@ import { vec2 } from 'gl-matrix'
 import { WeaponType } from './WeaponType'
 
 import { FrameState } from '~/apps/game/simulate'
-import { EntityId } from '~/engine/sim/EntityId'
+import { EntityId } from '~/engine/state/EntityId'
 import * as damageable from '~/game/components/Damageable'
 import { Team } from '~/game/components/team'
 import { Transform } from '~/game/components/Transform'

@@ -5,9 +5,9 @@ import {
   emit,
 } from '~/engine/particles/emitters/BasicEmitter'
 import { ParticleConfig } from '~/engine/particles/interfaces'
-import { EntityId } from '~/engine/sim/EntityId'
+import { EntityId } from '~/engine/state/EntityId'
 import { CommonAssets } from '~/game/assets/CommonAssets'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 import { Immutable } from '~/types/immutable'
 import { PlusY3, Zero2 } from '~/util/math'
 

@@ -1,5 +1,5 @@
 import { aabb as hitboxAabb } from '~/game/components/Hitbox'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 import * as aabb2 from '~/util/aabb2'
 
 const REQUIRED_OVERLAP = 0.5

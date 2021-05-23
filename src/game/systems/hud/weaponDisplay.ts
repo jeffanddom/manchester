@@ -7,7 +7,7 @@ import {
   Renderable2d,
   TextAlign,
 } from '~/engine/renderer/Renderer2d'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 
 export const update = (
   stateDb: GameStateDb,

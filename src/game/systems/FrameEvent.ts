@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import { EntityId } from '~/engine/sim/EntityId'
+import { EntityId } from '~/engine/state/EntityId'
 import { BulletType } from '~/game/components/Bullet'
 
 export enum FrameEventType {

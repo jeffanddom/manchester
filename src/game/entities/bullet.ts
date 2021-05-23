@@ -3,8 +3,8 @@ import { vec2, vec4 } from 'gl-matrix'
 import {
   EntityComponents,
   makeDefaultEntity,
-} from '~/engine/sim/EntityComponents'
-import { EntityId } from '~/engine/sim/EntityId'
+} from '~/engine/state/EntityComponents'
+import { EntityId } from '~/engine/state/EntityId'
 import * as bullet from '~/game/components/Bullet'
 import { BulletType } from '~/game/components/Bullet'
 import * as transform from '~/game/components/Transform'

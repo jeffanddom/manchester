@@ -3,7 +3,7 @@ import { vec2, vec4 } from 'gl-matrix'
 import {
   EntityComponents,
   makeDefaultEntity,
-} from '~/engine/sim/EntityComponents'
+} from '~/engine/state/EntityComponents'
 import * as damageable from '~/game/components/Damageable'
 import { Team } from '~/game/components/team'
 import * as transform from '~/game/components/Transform'

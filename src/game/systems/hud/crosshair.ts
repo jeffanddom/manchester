@@ -5,7 +5,7 @@ import { WeaponType } from '../WeaponType'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { mortarInRange } from '~/game/components/Bullet'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 
 export const update = (
   playerNumber: number,

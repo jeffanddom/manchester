@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import {
   EntityComponents,
   makeDefaultEntity,
-} from '~/engine/sim/EntityComponents'
+} from '~/engine/state/EntityComponents'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
 import { PickupType } from '~/game/systems/pickups'

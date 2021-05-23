@@ -1,12 +1,14 @@
 import { vec2 } from 'gl-matrix'
 
-import { QuadtreeEntity, StateDbBase as StateDb } from '../engine/sim/StateDb'
+import {
+  QuadtreeEntity,
+  StateDbBase as StateDb,
+} from '../../engine/state/StateDb'
 
-import { ComponentTable } from '~/engine/sim/ComponentTable'
-import { EntityComponents } from '~/engine/sim/EntityComponents'
-import { EntityId } from '~/engine/sim/EntityId'
-import { EntitySet } from '~/engine/sim/EntitySet'
-import { Pathfinder } from '~/engine/sim/indexes/Pathfinder'
+import { ComponentTable } from '~/engine/state/ComponentTable'
+import { EntityComponents } from '~/engine/state/EntityComponents'
+import { EntityId } from '~/engine/state/EntityId'
+import { EntitySet } from '~/engine/state/EntitySet'
 import * as bullet from '~/game/components/Bullet'
 import { Bullet } from '~/game/components/Bullet'
 import * as damageable from '~/game/components/Damageable'
@@ -19,6 +21,7 @@ import { Transform } from '~/game/components/Transform'
 import * as transform3 from '~/game/components/Transform3'
 import { Transform3 } from '~/game/components/Transform3'
 import { Type } from '~/game/entities/types'
+import { Pathfinder } from '~/game/state/indexes/Pathfinder'
 import * as builder from '~/game/systems/builder'
 import * as attack from '~/game/systems/damager'
 import { EmitterComponent, emitterClone } from '~/game/systems/emitter'

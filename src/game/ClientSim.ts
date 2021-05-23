@@ -39,7 +39,7 @@ import {
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/game/constants'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'
 import { FrameEvent, FrameEventType } from '~/game/systems/FrameEvent'

@@ -6,7 +6,7 @@ import { CommonAssets } from '~/game/assets/CommonAssets'
 import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
 import { Type } from '~/game/entities/types'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 
 export const gameProgression = [
   CommonAssets.maps.get('bigMap')!,

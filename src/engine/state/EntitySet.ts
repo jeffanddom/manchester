@@ -1,5 +1,5 @@
-import { EntityId } from '~/engine/sim/EntityId'
-import { EntityStateContainer } from '~/engine/sim/EntityStateContainer'
+import { EntityId } from '~/engine/state/EntityId'
+import { EntityStateContainer } from '~/engine/state/EntityStateContainer'
 import { SortedSet } from '~/util/SortedSet'
 
 export class EntitySet implements EntityStateContainer {

@@ -1,5 +1,5 @@
-import { ComponentTable } from '~/engine/sim/ComponentTable'
-import { EntityId } from '~/engine/sim/EntityId'
+import { ComponentTable } from '~/engine/state/ComponentTable'
+import { EntityId } from '~/engine/state/EntityId'
 
 type TestEntry = {
   value: number

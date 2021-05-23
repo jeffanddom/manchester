@@ -3,7 +3,7 @@ import { vec4 } from 'gl-matrix'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import * as terrain from '~/engine/terrain'
-import { GameStateDb } from '~/game/GameStateDb'
+import { GameStateDb } from '~/game/state/GameStateDb'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
 
