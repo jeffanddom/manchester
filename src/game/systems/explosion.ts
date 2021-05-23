@@ -38,6 +38,6 @@ export function update(stateDb: FrameState): void {
       type: FrameEventType.MortarExplosion,
       position: vec2.clone(stateDb.stateDb.transforms.get(id)!.position),
     })
-    stateDb.stateDb.markForDeletion(id)
+    stateDb.stateDb.markEntityForDeletion(id)
   }
 }

@@ -75,8 +75,8 @@ export const update = (frameState: FrameState, dt: number): void => {
           vec3.add(newPos3, newPos3, disp)
 
           if (newPos3[1] <= MORTAR_FIRING_HEIGHT) {
-            frameState.stateDb.markForDeletion(id)
-            frameState.stateDb.register(makeExplosion(transform.position))
+            frameState.stateDb.markEntityForDeletion(id)
+            frameState.stateDb.registerEntity(makeExplosion(transform.position))
             return
           }
 
@@ -112,7 +112,7 @@ export const update = (frameState: FrameState, dt: number): void => {
 
     if (bullet.type !== WeaponType.Mortar) {
       if (vec2.distance(newPos, bullet.origin) >= range[bullet.type]) {
-        frameState.stateDb.markForDeletion(id)
+        frameState.stateDb.markEntityForDeletion(id)
         return
       }
     }

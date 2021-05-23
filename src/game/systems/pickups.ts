@@ -1,11 +1,11 @@
-import { StateDb } from '~/engine/sim/StateDb'
+import { GameStateDb } from '~/game/GameStateDb'
 
 export enum PickupType {
   Core = 'Core',
   Wood = 'Wood',
 }
 
-export const update = (_stateDb: StateDb): void => {
+export const update = (_stateDb: GameStateDb): void => {
   // const player = simState.getPlayer()!
   // const playerAabb = player.damageable!.aabb(player.transform!)
   // for (const [id, e] of simState.entities) {
@@ -15,7 +15,7 @@ export const update = (_stateDb: StateDb): void => {
   //   const aabb = e.hitbox!.aabb(e.transform!.position)
   //   if (aabbOverlap(playerAabb, aabb)) {
   //     player.inventory!.push(e.pickupType)
-  //     simState.markForDeletion(e.id)
+  //     simState.markEntityForDeletion(e.id)
   //   }
   // }
 }

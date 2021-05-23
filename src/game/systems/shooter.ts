@@ -123,7 +123,7 @@ export const update = (frameState: FrameState): void => {
         source: bulletPos,
         destination: message.attack.targetPos,
       })
-      frameState.stateDb.register(newBuilder)
+      frameState.stateDb.registerEntity(newBuilder)
       return
     }
 
@@ -170,7 +170,7 @@ export const update = (frameState: FrameState): void => {
         emitter.make('tankShot', vec2.fromValues(0, 0), 0),
       )
 
-      frameState.stateDb.register(newBullet)
+      frameState.stateDb.registerEntity(newBullet)
     }
   })
 }

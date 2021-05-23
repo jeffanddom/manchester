@@ -2,8 +2,8 @@ import { vec4 } from 'gl-matrix'
 
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
-import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
+import { GameStateDb } from '~/game/GameStateDb'
 import * as systems from '~/game/systems'
 import { FrameEvent } from '~/game/systems/FrameEvent'
 
@@ -33,7 +33,7 @@ export function simulationPhaseDebugColor(
 }
 
 export type FrameState = {
-  stateDb: StateDb
+  stateDb: GameStateDb
   messages: ClientMessage[]
   frameEvents: FrameEvent[]
   terrainLayer: terrain.Layer

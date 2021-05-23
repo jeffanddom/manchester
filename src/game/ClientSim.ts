@@ -26,7 +26,6 @@ import {
   TextAlign,
 } from '~/engine/renderer/Renderer2d'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { StateDb } from '~/engine/sim/StateDb'
 import * as terrain from '~/engine/terrain'
 import { ClientAssets } from '~/game/assets/ClientAssets'
 import { CommonAssets } from '~/game/assets/CommonAssets'
@@ -40,6 +39,7 @@ import {
   SIMULATION_PERIOD_S,
   TILE_SIZE,
 } from '~/game/constants'
+import { GameStateDb } from '~/game/GameStateDb'
 import * as systems from '~/game/systems'
 import { CursorMode } from '~/game/systems/client/playerInput'
 import { FrameEvent, FrameEventType } from '~/game/systems/FrameEvent'
@@ -57,7 +57,7 @@ interface ServerFrameUpdate {
 
 export class ClientSim {
   simulationStep: SimulationStep
-  stateDb: StateDb
+  stateDb: GameStateDb
   uncommittedMessageHistory: ClientMessage[]
   playerInputState: {
     cursorMode: CursorMode
@@ -113,7 +113,7 @@ export class ClientSim {
     this.debugDraw = config.debugDraw
 
     this.simulationStep = config.simulationStep
-    this.stateDb = new StateDb(aabb2.create())
+    this.stateDb = new GameStateDb(aabb2.create())
     this.uncommittedMessageHistory = []
     this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
@@ -167,7 +167,7 @@ export class ClientSim {
     const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
     const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
 
-    this.stateDb = new StateDb([
+    this.stateDb = new GameStateDb([
       worldOrigin[0],
       worldOrigin[1],
       worldOrigin[0] + dimensions[0],

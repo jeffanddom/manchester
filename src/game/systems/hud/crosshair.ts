@@ -4,12 +4,12 @@ import { WeaponType } from '../WeaponType'
 
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { StateDb } from '~/engine/sim/StateDb'
 import { mortarInRange } from '~/game/components/Bullet'
+import { GameStateDb } from '~/game/GameStateDb'
 
 export const update = (
   playerNumber: number,
-  stateDb: StateDb,
+  stateDb: GameStateDb,
 ): Renderable[] => {
   const id = stateDb.getPlayerId(playerNumber)
   if (id === undefined) {

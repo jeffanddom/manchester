@@ -207,7 +207,7 @@ export const update = (frameState: FrameState): void => {
         health: damageable.health - damager.damageValue,
       })
 
-      frameState.stateDb.markForDeletion(id)
+      frameState.stateDb.markEntityForDeletion(id)
 
       // Knockback
       frameState.frameEvents.push({

@@ -14,9 +14,9 @@ export const update = (frameState: FrameState): void => {
       if (dropType !== undefined) {
         const core = PickupConstructors[dropType]()
         core.transform!.position = vec2.clone(transform.position)
-        frameState.stateDb.register(core)
+        frameState.stateDb.registerEntity(core)
       }
-      frameState.stateDb.markForDeletion(id)
+      frameState.stateDb.markEntityForDeletion(id)
 
       frameState.frameEvents.push({
         type: FrameEventType.EntityDestroyed,

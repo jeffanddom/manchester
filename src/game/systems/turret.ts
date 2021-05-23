@@ -174,7 +174,7 @@ export const update = (frameState: FrameState, dt: number): void => {
       TILE_SIZE * 0.25,
     )
 
-    stateDb.register(
+    stateDb.registerEntity(
       makeBullet({
         orientation: newOrientation,
         owner: id,
