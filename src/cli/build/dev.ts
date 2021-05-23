@@ -8,13 +8,13 @@ import * as esbuild from 'esbuild'
 import * as time from '../../util/time'
 
 import {
+  autoReloadEphemeralPath,
   copyWebHtml,
   gameSrcPath,
   serverBuildOpts,
   serverEntrypoints,
   updateWebBuildVersion,
   webBuildOpts,
-  webEphemeralPath,
   writeServerBuildVersion,
 } from './common'
 
@@ -44,9 +44,9 @@ class DevDaemon {
   private servers: ChildProcessWithoutNullStreams[]
   private incrementalBuilds:
     | {
-      server: esbuild.BuildIncremental
-      web: esbuild.BuildIncremental
-    }
+        server: esbuild.BuildIncremental
+        web: esbuild.BuildIncremental
+      }
     | undefined
 
   constructor() {
@@ -61,7 +61,7 @@ class DevDaemon {
     chokidar
       .watch(gameSrcPath, { ignoreInitial: true, persistent: true })
       .on('all', (_event, filename) => {
-        if (filename.startsWith(webEphemeralPath)) {
+        if (filename.startsWith(autoReloadEphemeralPath)) {
           return
         }
 

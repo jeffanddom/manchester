@@ -10,14 +10,14 @@
     "typecheck": "tsc -p . --noEmit",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "test": "jest",
-    "clean": "rm -rf out src/web/ephemeral"
+    "clean": "rm -rf out src/web/autoReload/ephemeral"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeffanddom/manchester.git"
   },
   "browser": {
-    "perf_hooks": "./src/browserShims/perf_hooks.ts"
+    "perf_hooks": "./src/web/browserShims/perf_hooks.ts"
   },
   "dependencies": {
     "@hapi/hapi": "^20.0.3",

@@ -3,7 +3,7 @@
 //
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { buildVersion } from '~/web/ephemeral/buildVersion'
+import { buildVersion } from '~/web/autoReload/ephemeral/buildVersion'
 
 export function poll(period: number = 3 * 1000): void {
   console.log(`starting reload poll, build version is ${buildVersion}`)

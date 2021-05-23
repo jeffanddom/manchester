@@ -19,7 +19,12 @@ export const gameSrcPath = path.join(projectRootPath, 'src')
 export const buildOutputPath = path.join(projectRootPath, 'out')
 export const webOutputPath = path.join(buildOutputPath, 'web')
 export const serverOutputPath = path.join(buildOutputPath, 'server')
-export const webEphemeralPath = path.join(gameSrcPath, 'web', 'ephemeral')
+export const autoReloadEphemeralPath = path.join(
+  gameSrcPath,
+  'web',
+  'autoReload',
+  'ephemeral',
+)
 export const serverBuildVersionPath = path.join(
   serverOutputPath,
   'buildVersion',
@@ -74,9 +79,9 @@ export const serverBuildOpts: esbuild.BuildOptions = {
 export async function updateWebBuildVersion(
   buildVersion: string,
 ): Promise<void> {
-  await fs.promises.mkdir(webEphemeralPath, { recursive: true })
+  await fs.promises.mkdir(autoReloadEphemeralPath, { recursive: true })
   await fs.promises.writeFile(
-    path.join(webEphemeralPath, 'buildVersion.ts'),
+    path.join(autoReloadEphemeralPath, 'buildVersion.ts'),
     `export const buildVersion = '${buildVersion}'`,
   )
 }
