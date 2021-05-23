@@ -4,14 +4,11 @@ import { DamageAreaType } from './damager'
 import { FrameEventType } from './FrameEvent'
 
 import { FrameState } from '~/apps/game/simulate'
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as transform from '~/game/components/Transform'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { Immutable } from '~/types/immutable'
 
-export const makeExplosion = (pos: Immutable<vec2>): EntityComponents => {
+export const makeExplosion = (pos: Immutable<vec2>): EntityConfig => {
   const e = makeDefaultEntity()
 
   e.explosion = true

@@ -1,15 +1,12 @@
 import { vec2, vec4 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import { EntityId } from '~/engine/state/EntityId'
 import * as bullet from '~/game/components/Bullet'
 import { BulletType } from '~/game/components/Bullet'
 import * as transform from '~/game/components/Transform'
 import * as transform3 from '~/game/components/Transform3'
 import { MORTAR_FIRING_HEIGHT } from '~/game/constants'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { DamageAreaType } from '~/game/systems/damager'
 import { WeaponType } from '~/game/systems/WeaponType'
 
@@ -33,7 +30,7 @@ export const makeBullet = ({
   orientation: number
   owner: EntityId
   config: bullet.BulletConfig
-}): EntityComponents => {
+}): EntityConfig => {
   const e = makeDefaultEntity()
 
   e.moveable = true

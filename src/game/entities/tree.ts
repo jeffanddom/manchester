@@ -1,18 +1,15 @@
 import { vec2, vec4 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as damageable from '~/game/components/Damageable'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
 import { Type } from '~/game/entities/types'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { PickupType } from '~/game/systems/pickups'
 
 const TREE_HEALTH = 0.1
 
-export const makeTree = (): EntityComponents => {
+export const makeTree = (): EntityConfig => {
   const e = makeDefaultEntity()
   e.type = Type.TREE
 

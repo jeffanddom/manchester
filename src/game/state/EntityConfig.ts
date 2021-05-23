@@ -14,7 +14,7 @@ import { ShooterComponent } from '~/game/systems/shooter'
 import { TankMoverComponent } from '~/game/systems/tankMover'
 import { TurretComponent } from '~/game/systems/turret'
 
-export interface EntityComponents {
+export interface EntityConfig {
   bullet?: Bullet
   damageable?: Damageable
   damager?: Damager
@@ -46,6 +46,6 @@ export interface EntityComponents {
   pickupType?: PickupType
 }
 
-export const makeDefaultEntity = (): EntityComponents => {
+export const makeDefaultEntity = (): EntityConfig => {
   return { team: Team.Neutral }
 }

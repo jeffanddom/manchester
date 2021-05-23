@@ -1,14 +1,11 @@
 import { vec2 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { PickupType } from '~/game/systems/pickups'
 
-export const makeWoodPickup = (): EntityComponents => {
+export const makeWoodPickup = (): EntityConfig => {
   const e = makeDefaultEntity()
   e.transform = transform.make()
   e.pickupType = PickupType.Wood

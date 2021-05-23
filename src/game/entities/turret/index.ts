@@ -1,19 +1,16 @@
 import { vec4 } from 'gl-matrix'
 import { vec2 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as damageable from '~/game/components/Damageable'
 import { Team } from '~/game/components/team'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
 import { Type } from '~/game/entities/types'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { PickupType } from '~/game/systems/pickups'
 import * as turret from '~/game/systems/turret'
 
-export const makeTurret = (): EntityComponents => {
+export const makeTurret = (): EntityConfig => {
   const e = makeDefaultEntity()
   e.type = Type.TURRET
 

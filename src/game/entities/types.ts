@@ -1,9 +1,9 @@
-import { EntityComponents } from '~/engine/state/EntityComponents'
 import { makeCorePickup } from '~/game/entities/pickups/core'
 import { makePlayer } from '~/game/entities/player'
 import { makeTree } from '~/game/entities/tree'
 import { makeTurret } from '~/game/entities/turret'
 import { makeWall } from '~/game/entities/wall'
+import { EntityConfig } from '~/game/state/EntityConfig'
 
 export enum Type {
   PLAYER = 'PLAYER',
@@ -31,7 +31,7 @@ export const typeDefinitions = {
   },
 }
 
-export const make = (t: Type): EntityComponents => {
+export const make = (t: Type): EntityConfig => {
   for (const k in typeDefinitions) {
     if (k !== t) {
       continue

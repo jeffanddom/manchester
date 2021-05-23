@@ -1,18 +1,15 @@
 import { vec2, vec4 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as damageable from '~/game/components/Damageable'
 import { Team } from '~/game/components/team'
 import * as transform from '~/game/components/Transform'
 import { PLAYER_HEALTH, TILE_SIZE } from '~/game/constants'
 import { Type } from '~/game/entities/types'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import * as shooter from '~/game/systems/shooter'
 import * as tankMover from '~/game/systems/tankMover'
 
-export const makePlayer = (): EntityComponents => {
+export const makePlayer = (): EntityConfig => {
   const e = makeDefaultEntity()
 
   e.type = Type.PLAYER

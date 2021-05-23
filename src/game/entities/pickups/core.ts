@@ -1,15 +1,12 @@
 import { vec2, vec4 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
 import { Type } from '~/game/entities/types'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 import { PickupType } from '~/game/systems/pickups'
 
-export const makeCorePickup = (): EntityComponents => {
+export const makeCorePickup = (): EntityConfig => {
   const e = makeDefaultEntity()
   e.type = Type.CORE
 

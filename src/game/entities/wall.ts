@@ -1,17 +1,14 @@
 import { vec2, vec4 } from 'gl-matrix'
 
-import {
-  EntityComponents,
-  makeDefaultEntity,
-} from '~/engine/state/EntityComponents'
 import * as damageable from '~/game/components/Damageable'
 import * as transform from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
 import { Type } from '~/game/entities/types'
+import { EntityConfig, makeDefaultEntity } from '~/game/state/EntityConfig'
 
 const WALL_HEALTH = 4.0
 
-export const makeWall = (): EntityComponents => {
+export const makeWall = (): EntityConfig => {
   const e = makeDefaultEntity()
   e.type = Type.WALL
 

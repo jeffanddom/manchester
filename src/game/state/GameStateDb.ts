@@ -6,7 +6,6 @@ import {
 } from '../../engine/state/StateDb'
 
 import { ComponentTable } from '~/engine/state/ComponentTable'
-import { EntityComponents } from '~/engine/state/EntityComponents'
 import { EntityId } from '~/engine/state/EntityId'
 import { EntitySet } from '~/engine/state/EntitySet'
 import * as bullet from '~/game/components/Bullet'
@@ -21,6 +20,7 @@ import { Transform } from '~/game/components/Transform'
 import * as transform3 from '~/game/components/Transform3'
 import { Transform3 } from '~/game/components/Transform3'
 import { Type } from '~/game/entities/types'
+import { EntityConfig } from '~/game/state/EntityConfig'
 import { Pathfinder } from '~/game/state/indexes/Pathfinder'
 import * as builder from '~/game/systems/builder'
 import * as attack from '~/game/systems/damager'
@@ -176,7 +176,7 @@ export class GameStateDb extends StateDb {
     return Array.from(results).sort()
   }
 
-  protected addEntityToContainers(id: EntityId, e: EntityComponents): void {
+  protected addEntityToContainers(id: EntityId, e: EntityConfig): void {
     if (e.builder !== undefined) {
       this.builders.set(id, e.builder)
     }
