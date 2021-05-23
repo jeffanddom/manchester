@@ -22,12 +22,12 @@
       "type": "chrome",
       "request": "launch",
       "name": "Debug game client",
-      "url": "http://localhost:3000/client",
+      "url": "http://localhost:3000/apps/game",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
       "runtimeArgs": ["--js-flags=--expose-gc"],
       "sourceMapPathOverrides": {
-        "../../*": "${webRoot}/*"
+        "../../../*": "${webRoot}/*"
       }
     },
     {
