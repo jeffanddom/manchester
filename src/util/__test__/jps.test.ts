@@ -1,6 +1,17 @@
-import { getNeighbors } from '../jps'
+import { getNeighbors, jps } from '../jps'
 
 describe('jps', () => {
+  describe('full search', () => {
+    it.only('finds a path', () => {
+      const grid = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+      const path = jps(0, 0, 2, 2, grid, 3)
+      expect(path).toEqual([])
+    })
+  })
+
+  // describe('findJump', () => { })
+
   describe('getNeighbors', () => {
     it('no forced neighbors', () => {
       // prettier-ignore

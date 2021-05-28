@@ -1,56 +1,151 @@
-// export function jps(
-//   sx: number,
-//   sy: number,
-//   dx: number,
-//   dy: number,
-//   grid: Uint8Array,
-//   w: number,
-// ): number[] {}
-//
-//
-/*
-while openList has stuff:
-  current = openList.getHighestPri()
-  for -1..1 as stepX:
-    for -1..1 as stepY:
-      next if stepX is 0 and stepY is 0
-      foreach findJump(current.x, current.y, stepX, stepY, grid, w) as jumpPoint:
-        openList.push(jumpPoint)
+import { PriorityQueue } from '~/util/PriorityQueue'
 
-findJump(
-  x: number,
-  y: number,
+const stepRange: [-1, 0, 1] = [-1, 0, 1]
+const NEIGHBOR_ARRAY_SPLIT = 5
+
+type JumpPoint = {
+  x: number
+  y: number
+  dirX: -1 | 0 | 1
+  dirY: -1 | 0 | 1
+  distance: number
+  previous?: string
+}
+
+function jumpPointId(point: JumpPoint): string {
+  return `${point.x},${point.y}`
+}
+
+export function jps(
+  sx: number,
+  sy: number,
+  dx: number,
+  dy: number,
+  grid: Uint8Array,
+  w: number,
+): number[] {
+  const jumpPoints = new Map<string, JumpPoint>()
+  const openList = new PriorityQueue<JumpPoint>(
+    (a, b) => a.distance - b.distance,
+  )
+
+  for (const stepX of stepRange) {
+    for (const stepY of stepRange) {
+      if (stepX === 0 && stepY === 0) {
+        continue
+      }
+      openList.push({
+        x: sx,
+        y: sy,
+        dirX: stepX,
+        dirY: stepY,
+        distance: 0,
+      })
+    }
+  }
+
+  while (openList.length() > 0) {
+    const current = openList.pop()
+    if (current === undefined) {
+      return []
+    }
+
+    const checkSet = getNeighbors(
+      current.x,
+      current.y,
+      current.dirX,
+      current.dirY,
+      grid,
+      w,
+    )
+
+    for (let i = 0; i < checkSet.length / NEIGHBOR_ARRAY_SPLIT; i++) {
+      const jumpPoint = findJump(current, stepX, stepY, dx, dy, grid, w)
+      if (jumpPoint !== null) {
+        const distance = Math.sqrt(
+          Math.pow(jumpPoint.x - sx, 2) + Math.pow(jumpPoint.y - sy, 2),
+        )
+        jumpPoint.distance = distance
+        jumpPoint.previous = jumpPointId(current)
+
+        openList.push(jumpPoint)
+        jumpPoints.set(jumpPointId(jumpPoint), jumpPoint)
+      }
+    }
+  }
+
+  console.log(jumpPoints)
+  return []
+}
+
+export function findJump(
+  point: JumpPoint,
   stepX: -1 | 0 | 1,
   stepY: -1 | 0 | 1,
+  dx: number,
+  dy: number,
   grid: Uint8Array,
-  w: number
-):
-  nextNode = x,y + stepX,stepY
+  w: number,
+): JumpPoint | null {
+  const nextX = point.x + stepX
+  const nextY = point.y + stepY
 
-  if (nextNode is wall or out of bounds)
+  if (
+    grid[nextX + nextY * w] === 1 || // Wall - return nothin'
+    nextX < 0 || // Outside the grid
+    w <= nextX ||
+    nextY < 0 ||
+    w <= nextY
+  ) {
     return null
+  }
 
-  if (nextNode is goal)
-    return nextNode
+  const nextPoint = {
+    x: nextX,
+    y: nextY,
+    dirX: stepX,
+    dirY: stepY,
+    distance: -1,
+  }
 
-  if hasForcedNeighbors(getNeighbors(nextNode, stepX, stepY, grid, w)):
-    return nextNode    
-  
-  if diagonal:
-    a = findJump(nextNode.x, nextNode.y, 0, stepY, grid, w) if the thing is not null
-    b = findJump(nextNode.x, nextNode.y, stepX, 0, grid, w) if the thing is not null
-    if a && b
-      return [a, b]
-    else if a
-      return [a]
-    else if b
-      return [b]
+  // Goal! Return the node
+  if (nextX === dx && nextY === dy) {
+    return nextPoint
+  }
 
-  return findJump(nextNode.x, nextNode.y, stepX, stepY, grid, w)
-*/
+  // Node is a jump point, return the jump point
+  const neighbors = getNeighbors(nextX, nextY, stepX, stepY, grid, w)
+  if (hasForcedNeighbors(neighbors)) {
+    return nextPoint
+  }
+
+  // Check diagonals
+  if (stepX !== 0 && stepY !== 0) {
+    const diagonal1 = findJump(nextPoint, stepX, 0, dx, dy, grid, w)
+    if (diagonal1 !== null) {
+      return diagonal1
+    }
+    const diagonal2 = findJump(nextPoint, 0, stepY, dx, dy, grid, w)
+    if (diagonal2 !== null) {
+      return diagonal2
+    }
+  }
+
+  return findJump(nextPoint, stepX, stepY, dx, dy, grid, w)
+}
+
+function hasForcedNeighbors(neighborList: number[]): boolean {
+  for (let i = 0; i < neighborList.length / NEIGHBOR_ARRAY_SPLIT; i++) {
+    if (neighborList[i + 4] === 1) {
+      return true
+    }
+  }
+
+  return false
+}
 
 /**
- * Returns a flattened array of (x, y, forced) tuples. `forced` is 1 if the
+ * Returns a flattened array of (x, y, dirX, dirY, forced) tuples. `forced` is 1 if the
  * neighbor is a forced neighbor.
  */
 export function getNeighbors(
