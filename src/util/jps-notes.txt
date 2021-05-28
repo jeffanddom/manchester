@@ -1,0 +1,5 @@
+JPS notes:
+
+- recursion is finding wrong jump points
+  - doesn't feel like i'm searching vertical / horizontal correctly....
+- each diagonal jump must check all v / h nodes first and hit obstacle(or goal) UNLESS a forced neighbor is revealed

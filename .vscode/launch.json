@@ -11,11 +11,24 @@
       "url": "http://ec2-54-183-154-244.us-west-1.compute.amazonaws.com:3000/apps/editor",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
-      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "runtimeArgs": [
+        "--js-flags=--expose-gc"
+      ],
       "sourceMapPathOverrides": {
         "../../../*": "${webRoot}/*"
       }
-    },    
+    },
+    {
+      "name": "Run current Jest test",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "${fileBasenameNoExtension}"
+      ],
+      "console": "integratedTerminal",
+      "port": 9229
+    },
     {
       "name": "Debug current Jest test",
       "type": "node",
@@ -37,7 +50,9 @@
       "url": "http://localhost:3000/apps/game",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
-      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "runtimeArgs": [
+        "--js-flags=--expose-gc"
+      ],
       "sourceMapPathOverrides": {
         "../../../*": "${webRoot}/*"
       }
@@ -49,7 +64,9 @@
       "url": "http://localhost:3001/apps/editor",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
-      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "runtimeArgs": [
+        "--js-flags=--expose-gc"
+      ],
       "sourceMapPathOverrides": {
         "../../../*": "${webRoot}/*"
       }
@@ -61,7 +78,9 @@
       "url": "http://localhost:3000/tools/rendertoy",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
-      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "runtimeArgs": [
+        "--js-flags=--expose-gc"
+      ],
       "sourceMapPathOverrides": {
         "../../../*": "${webRoot}/*"
       }
@@ -73,7 +92,9 @@
       "url": "http://localhost:3000/tools/particletoy",
       "webRoot": "${workspaceFolder}/src",
       "breakOnLoad": true,
-      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "runtimeArgs": [
+        "--js-flags=--expose-gc"
+      ],
       "sourceMapPathOverrides": {
         "../../../*": "${webRoot}/*"
       }
