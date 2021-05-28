@@ -4,7 +4,9 @@
     ".eslintrc.js",
     "eslintrcWithImportFilter.js",
     "src",
+    "src/editor/.eslintrc.js",
     "src/engine/.eslintrc.js",
+    "src/game/.eslintrc.js",
     "src/util/.eslintrc.js",
   ]
 }

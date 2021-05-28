@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { Transform } from '~/game/components/Transform'
 import { TILE_SIZE } from '~/game/constants'
-import { FrameState } from '~/game/simulate'
+import { FrameState } from '~/game/updateSystems'
 import { tileBox, tileCoords } from '~/game/util/tileMath'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'

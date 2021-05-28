@@ -33,6 +33,18 @@
     {
       "type": "chrome",
       "request": "launch",
+      "name": "Debug editor client",
+      "url": "http://localhost:3001/apps/editor",
+      "webRoot": "${workspaceFolder}/src",
+      "breakOnLoad": true,
+      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "sourceMapPathOverrides": {
+        "../../../*": "${webRoot}/*"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
       "name": "Debug tools/rendertoy",
       "url": "http://localhost:3000/tools/rendertoy",
       "webRoot": "${workspaceFolder}/src",

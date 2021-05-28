@@ -11,7 +11,7 @@ import {
 } from '~/engine/network/ClientMessage'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { Camera3d } from '~/game/camera/Camera3d'
-import { ClientSim } from '~/game/ClientSim'
+import { ClientGame } from '~/game/ClientGame'
 import { CLIENT_INPUT_DELAY } from '~/game/constants'
 
 export const keyMap = {
@@ -27,15 +27,7 @@ export const keyMap = {
   dash: 'Space',
 }
 
-export enum CursorMode {
-  NONE,
-  MOVE_BUILDER,
-  HARVEST,
-  BUILD_TURRET,
-  BUILD_WALL,
-}
-
-export const update = (client: ClientSim, frame: number): void => {
+export const update = (client: ClientGame, frame: number): void => {
   if (client.playerNumber === undefined) {
     return
   }

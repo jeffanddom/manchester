@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { Client } from '~/engine/client/Client'
-import { ClientSim } from '~/game/ClientSim'
+import { ClientGame } from '~/game/ClientGame'
 import { SIMULATION_PERIOD_S } from '~/game/constants'
 import * as autoReload from '~/web/autoReload'
 
@@ -17,7 +17,7 @@ const client = new Client({
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),
   pixelRatio: window.devicePixelRatio,
   simulationPeriod: SIMULATION_PERIOD_S,
-  getClientSim: (config) => new ClientSim(config),
+  getClientSim: (config) => new ClientGame(config),
 })
 
 window.addEventListener('resize', () => {

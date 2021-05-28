@@ -5,10 +5,10 @@ import { BulletConfig } from '~/game/components/Bullet'
 import { TILE_SIZE } from '~/game/constants'
 import { makeBuilder } from '~/game/entities/builder'
 import { makeBullet } from '~/game/entities/bullet'
-import { FrameState } from '~/game/simulate'
 import * as emitter from '~/game/systems/emitter'
 import { FrameEventType } from '~/game/systems/FrameEvent'
 import { WEAPON_TYPE_LENGTH, WeaponType } from '~/game/systems/WeaponType'
+import { FrameState } from '~/game/updateSystems'
 import { PlusY3, getAngle, radialTranslate2 } from '~/util/math'
 
 const firingInformation: Record<

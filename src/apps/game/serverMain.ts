@@ -11,14 +11,14 @@ import {
   PLAYER_COUNT,
   SIMULATION_PERIOD_S,
 } from '~/game/constants'
-import { ServerSim } from '~/game/ServerSim'
+import { ServerGame } from '~/game/ServerGame'
 
 async function buildVersion(): Promise<string> {
   return (await fs.promises.readFile(serverBuildVersionPath)).toString()
 }
 
 async function main(): Promise<void> {
-  let gameSim = new ServerSim({ playerCount: PLAYER_COUNT })
+  let gameSim = new ServerGame({ playerCount: PLAYER_COUNT })
 
   setInterval(
     () => gameSim.update(SIMULATION_PERIOD_S),
@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     handler: () => {
       console.log('restarting game server')
       gameSim.shutdown()
-      gameSim = new ServerSim({ playerCount: PLAYER_COUNT })
+      gameSim = new ServerGame({ playerCount: PLAYER_COUNT })
       return ''
     },
   })

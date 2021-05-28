@@ -2,7 +2,7 @@ import { EntityId } from '~/engine/state/EntityId'
 import { EntityStateContainer } from '~/engine/state/EntityStateContainer'
 import { SortedSet } from '~/util/SortedSet'
 
-export abstract class StateDbBase {
+export abstract class StateDbBase<TEntityConfig> {
   private nextEntityIdUncommitted: number
   private nextEntityIdCommitted: number
   private toDelete: SortedSet<EntityId>
@@ -19,7 +19,7 @@ export abstract class StateDbBase {
     this.allContainers = []
   }
 
-  public registerEntity<T>(entityConfig: T): number {
+  public registerEntity(entityConfig: TEntityConfig): number {
     const id = this.nextEntityIdUncommitted as EntityId
     this.nextEntityIdUncommitted++
     this.predictedRegistrations.add(id)
@@ -88,9 +88,9 @@ export abstract class StateDbBase {
     this.allContainers.push(...containers)
   }
 
-  protected abstract addEntityToContainers<T>(
+  protected abstract addEntityToContainers(
     id: EntityId,
-    entityConfig: T,
+    entityConfig: TEntityConfig,
   ): void
   protected abstract indexEntity(id: EntityId): void
   protected abstract unindexEntity(id: EntityId): void

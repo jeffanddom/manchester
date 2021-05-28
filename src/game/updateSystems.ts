@@ -38,7 +38,7 @@ export type FrameState = {
   phase: SimulationPhase
 }
 
-export function simulate(frameState: FrameState, dt: number): void {
+export function updateSystems(frameState: FrameState, dt: number): void {
   // Init transforms before any system can modify them.
   systems.transformInit(frameState)
 

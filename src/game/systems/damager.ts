@@ -10,7 +10,7 @@ import { EntityId } from '~/engine/state/EntityId'
 import { aabb as damageableAabb } from '~/game/components/Damageable'
 import * as hitbox from '~/game/components/Hitbox'
 import { Transform } from '~/game/components/Transform'
-import { FrameState, simulationPhaseDebugColor } from '~/game/simulate'
+import { FrameState, simulationPhaseDebugColor } from '~/game/updateSystems'
 import { Immutable } from '~/types/immutable'
 import * as aabb2 from '~/util/aabb2'
 

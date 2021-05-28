@@ -18,7 +18,7 @@ import { IModelLoader } from '~/engine/renderer/ModelLoader'
 import { Renderable2d } from '~/engine/renderer/Renderer2d'
 import { Immutable } from '~/types/immutable'
 
-export interface ClientSimBase {
+export interface ClientGameBase {
   update(): void
 
   getAllClientsReady(): boolean
@@ -51,7 +51,7 @@ export class Client {
   mouse: IMouse
   debugDraw: DebugDraw
   renderManager: ClientRenderManager
-  sim: ClientSimBase
+  game: ClientGameBase
   particleSystem: ParticleSystem
 
   constructor(params: {
@@ -70,7 +70,7 @@ export class Client {
       debugDraw: IDebugDrawWriter
       viewportDimensions: Immutable<vec2>
       addEmitter: (emitter: ParticleEmitter) => void
-    }) => ClientSimBase
+    }) => ClientGameBase
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
@@ -123,7 +123,7 @@ export class Client {
 
     this.particleSystem.initRender(this.renderManager.renderer3d)
 
-    this.sim = params.getClientSim({
+    this.game = params.getClientSim({
       keyboard: this.keyboard,
       mouse: this.mouse,
       modelLoader: this.renderManager.getModelLoader(),
@@ -134,23 +134,23 @@ export class Client {
   }
 
   update(): void {
-    this.sim.update()
+    this.game.update()
 
     if (this.keyboard.upKeys.has('Backquote')) {
       this.debugDraw.setEnabled(!this.debugDraw.isEnabled())
     }
 
     // TODO: what's wrong with rendering all the time
-    if (this.sim.getAllClientsReady()) {
+    if (this.game.getAllClientsReady()) {
       this.renderManager.update(
-        this.sim.getRenderables(),
-        this.sim.getWvTransform(mat4.create()),
-        this.sim.getFov(),
-        this.sim.getRenderables2d(),
+        this.game.getRenderables(),
+        this.game.getWvTransform(mat4.create()),
+        this.game.getFov(),
+        this.game.getRenderables2d(),
       )
 
       // Collect new particles from emitter components
-      this.sim.emitParticles((config: Immutable<ParticleConfig>) => {
+      this.game.emitParticles((config: Immutable<ParticleConfig>) => {
         this.particleSystem.add(config)
       })
 
@@ -172,7 +172,7 @@ export class Client {
     this.canvas2d.width = this.viewportDimensions[0]
     this.canvas2d.height = this.viewportDimensions[1]
 
-    this.sim.setViewportDimensions(this.viewportDimensions)
+    this.game.setViewportDimensions(this.viewportDimensions)
     this.renderManager.syncViewportDimensions()
   }
 
@@ -180,6 +180,6 @@ export class Client {
     const schema = this.apiLocation.protocol === 'https:' ? 'wss' : 'ws'
     return createServerConnectionWs(
       `${schema}://${this.apiLocation.host}/api/connect`,
-    ).then((conn) => this.sim.connectServer(conn))
+    ).then((conn) => this.game.connectServer(conn))
   }
 }

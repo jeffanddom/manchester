@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { FrameEventType } from './FrameEvent'
 
 import { PickupConstructors } from '~/game/entities/pickups'
-import { FrameState } from '~/game/simulate'
+import { FrameState } from '~/game/updateSystems'
 
 export const update = (frameState: FrameState): void => {
   for (const [id, damageable] of frameState.stateDb.damageables) {

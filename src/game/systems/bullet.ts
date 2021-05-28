@@ -6,10 +6,10 @@ import {
   MORTAR_GRAVITY,
   TILE_SIZE,
 } from '~/game/constants'
-import { FrameState } from '~/game/simulate'
 import * as emitter from '~/game/systems/emitter'
 import { makeExplosion } from '~/game/systems/explosion'
 import { WeaponType } from '~/game/systems/WeaponType'
+import { FrameState } from '~/game/updateSystems'
 import { PlusX3, PlusY3, radialTranslate2 } from '~/util/math'
 
 const range: Record<BulletType, number> = {

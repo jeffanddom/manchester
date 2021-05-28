@@ -3,9 +3,9 @@ import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 import { ClientSimulator } from '../engine/network/ClientSimulator'
 import { SimulationPhase } from '../engine/network/SimulationPhase'
 
-import { simulate } from './simulate'
+import { updateSystems } from './updateSystems'
 
-import { ClientSimBase } from '~/engine/client/Client'
+import { ClientGameBase } from '~/engine/client/Client'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
@@ -42,7 +42,6 @@ import {
 import { Map as GameMap } from '~/game/map/interfaces'
 import { StateDb } from '~/game/state/StateDb'
 import * as systems from '~/game/systems'
-import { CursorMode } from '~/game/systems/client/playerInput'
 import * as emitter from '~/game/systems/emitter'
 import {
   FrameEvent,
@@ -56,11 +55,9 @@ import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class ClientSim implements ClientSimBase {
+export class ClientGame implements ClientGameBase {
   stateDb: StateDb
-  playerInputState: {
-    cursorMode: CursorMode
-  }
+
   serverConnection: IServerConnection | undefined
   playerNumber: number | undefined
   simulator: ClientSimulator<FrameEvent>
@@ -104,9 +101,9 @@ export class ClientSim implements ClientSimBase {
     this.debugDraw = config.debugDraw
 
     this.stateDb = new StateDb(aabb2.create())
-    this.playerInputState = { cursorMode: CursorMode.NONE }
     this.serverConnection = undefined
     this.playerNumber = undefined
+
     this.simulator = new ClientSimulator({
       maxPredictedFrames: MAX_PREDICTED_FRAMES,
       onAllClientsReady: (playerNumber) => this.onAllClientsReady(playerNumber),
@@ -151,6 +148,11 @@ export class ClientSim implements ClientSimBase {
 
   public getAllClientsReady(): boolean {
     return this.simulator.getAllClientsReady()
+  }
+
+  public sendClientMessage(m: ClientMessage): void {
+    this.simulator.addClientMessage(m)
+    this.serverConnection!.send(m)
   }
 
   private getPlayerPos(out: vec3): void {
@@ -333,7 +335,7 @@ export class ClientSim implements ClientSimBase {
     }
 
     const frameEvents: FrameEvent[] = []
-    simulate(
+    updateSystems(
       {
         stateDb: this.stateDb,
         messages,
@@ -417,11 +419,6 @@ export class ClientSim implements ClientSimBase {
     addParticle: (config: Immutable<ParticleConfig>) => void,
   ): void {
     emitter.emitParticles(this.stateDb, addParticle)
-  }
-
-  public sendClientMessage(m: ClientMessage): void {
-    this.simulator.addClientMessage(m)
-    this.serverConnection!.send(m)
   }
 
   private updateFrameSideEffects(frameEvents: Map<number, FrameEvent[]>): void {

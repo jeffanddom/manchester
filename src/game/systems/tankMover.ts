@@ -12,9 +12,9 @@ import {
   TANK_ROT_SPEED,
   TANK_SPEED,
 } from '~/game/constants'
-import { FrameState } from '~/game/simulate'
 import { FrameEventType } from '~/game/systems/FrameEvent'
 import { WeaponType } from '~/game/systems/WeaponType'
+import { FrameState } from '~/game/updateSystems'
 import { North2, Zero2, radialTranslate2, rotateUntil } from '~/util/math'
 
 export type TankMoverComponent = {

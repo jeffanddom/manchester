@@ -1,19 +1,12 @@
-import { vec2 } from 'gl-matrix'
-
+import { StateDb } from '~/editor/state/StateDb'
+import { initSystems, updateSystems } from '~/editor/updateSystems'
 import { mockDebugDraw } from '~/engine/DebugDraw'
 import { IClientConnection } from '~/engine/network/ClientConnection'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { ServerSimulator } from '~/engine/network/ServerSimulator'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
-import * as terrain from '~/engine/terrain'
-import { gameProgression, initMap } from '~/game/common'
-import { TILE_SIZE } from '~/game/constants'
-import { Map } from '~/game/map/interfaces'
-import { simulate } from '~/game/simulate'
-import { StateDb } from '~/game/state/StateDb'
-import * as aabb2 from '~/util/aabb2'
 
-export class ServerSim {
+export class ServerEditor {
   private stateDb: StateDb
 
   private clients: {
@@ -26,12 +19,8 @@ export class ServerSim {
 
   private shuttingDown: boolean
 
-  private currentLevel: number
-  private map: Map
-  private terrainLayer: terrain.Layer
-
   public constructor(config: { playerCount: number }) {
-    this.stateDb = new StateDb(aabb2.create())
+    this.stateDb = new StateDb()
     this.clients = []
     this.playerCount = config.playerCount
     this.simulator = new ServerSimulator({
@@ -42,15 +31,6 @@ export class ServerSim {
     })
 
     this.shuttingDown = false
-
-    this.currentLevel = 0
-    this.map = Map.empty()
-    this.terrainLayer = new terrain.Layer({
-      tileOrigin: vec2.create(),
-      tileDimensions: vec2.create(),
-      tileSize: TILE_SIZE,
-      terrain: this.map.terrain,
-    })
   }
 
   public shutdown(): void {
@@ -89,18 +69,7 @@ export class ServerSim {
   }
 
   private onAllClientsReady(): void {
-    this.map = Map.fromRaw(gameProgression[this.currentLevel])
-    const worldOrigin = vec2.scale(vec2.create(), this.map.origin, TILE_SIZE)
-    const dimensions = vec2.scale(vec2.create(), this.map.dimensions, TILE_SIZE)
-
-    this.stateDb = new StateDb([
-      worldOrigin[0],
-      worldOrigin[1],
-      worldOrigin[0] + dimensions[0],
-      worldOrigin[1] + dimensions[1],
-    ])
-
-    this.terrainLayer = initMap(this.stateDb, this.map)
+    initSystems(this.stateDb)
   }
 
   private simulate(
@@ -109,12 +78,10 @@ export class ServerSim {
     messages: ClientMessage[],
     phase: SimulationPhase,
   ): void {
-    simulate(
+    updateSystems(
       {
         stateDb: this.stateDb,
         messages: messages,
-        frameEvents: [],
-        terrainLayer: this.terrainLayer,
         frame: frame,
         debugDraw: mockDebugDraw,
         phase,

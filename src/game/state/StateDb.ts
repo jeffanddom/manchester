@@ -41,7 +41,7 @@ type QuadtreeEntity = {
   aabb: Aabb2
 }
 
-export class StateDb extends StateDbBase {
+export class StateDb extends StateDbBase<EntityConfig> {
   public currentPlayer: number
 
   // components
@@ -274,8 +274,6 @@ export class StateDb extends StateDbBase {
     if (e.wall ?? false) {
       this.walls.add(id)
     }
-
-    this.indexEntity(id)
   }
 
   // FIXME: indexing only occurs on registers, not updates.
