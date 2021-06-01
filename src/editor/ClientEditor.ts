@@ -1,10 +1,11 @@
+import { vec3 } from 'gl-matrix'
 import { mat4, vec2 } from 'gl-matrix'
 
-import {
-  MAX_PREDICTED_FRAMES,
-  SIMULATION_PERIOD_S,
-  TILE_SIZE,
-} from '~/common/settings'
+import { tileTypeColor } from './components/tileComponent'
+import { handleInput } from './handleInput'
+
+import { Camera3d } from '~/common/Camera3d'
+import { MAX_PREDICTED_FRAMES, SIMULATION_PERIOD_S } from '~/common/settings'
 import { StateDb } from '~/editor/state/StateDb'
 import { initSystems, updateSystems } from '~/editor/updateSystems'
 import { ClientGameBase } from '~/engine/client/Client'
@@ -20,11 +21,9 @@ import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { IModelLoader } from '~/engine/renderer/ModelLoader'
 import { Renderable2d } from '~/engine/renderer/Renderer2d'
-import * as terrain from '~/engine/terrain'
-import { CommonAssets } from '~/game/assets/CommonAssets'
-import { Map as GameMap } from '~/game/map/interfaces'
+import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import { Immutable } from '~/types/immutable'
-import * as math from '~/util/math'
+import { Zero3 } from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
@@ -41,6 +40,7 @@ export class ClientEditor implements ClientGameBase {
   tickDurations: RunningAverage
   updateFrameDurations: RunningAverage
 
+  camera: Camera3d
   keyboard: IKeyboard
   mouse: IMouse
   modelLoader: IModelLoader
@@ -55,6 +55,12 @@ export class ClientEditor implements ClientGameBase {
     debugDraw: IDebugDrawWriter
     viewportDimensions: Immutable<vec2>
   }) {
+    this.camera = new Camera3d({
+      viewportDimensions: config.viewportDimensions,
+    })
+    this.camera.setPos(vec3.fromValues(0, 12, 3))
+    this.camera.setTarget(Zero3)
+
     this.keyboard = config.keyboard
     this.mouse = config.mouse
     this.modelLoader = config.modelLoader
@@ -79,8 +85,8 @@ export class ClientEditor implements ClientGameBase {
     this.dedupLog = new DedupLog()
   }
 
-  public setViewportDimensions(_d: vec2): void {
-    // this.camera.setViewportDimensions(d)
+  public setViewportDimensions(d: vec2): void {
+    this.camera.setViewportDimensions(d)
   }
 
   public connectServer(conn: IServerConnection): void {
@@ -117,16 +123,6 @@ export class ClientEditor implements ClientGameBase {
     this.playerNumber = playerNumber
 
     this.stateDb = new StateDb()
-
-    const map = GameMap.fromRaw(CommonAssets.maps.get('bigMap')!)
-    const terrainLayer = new terrain.Layer({
-      tileOrigin: map.origin,
-      tileDimensions: map.dimensions,
-      tileSize: TILE_SIZE,
-      terrain: map.terrain,
-    })
-    this.modelLoader.loadModel('terrain', terrainLayer.getModel())
-
     initSystems(this.stateDb)
     // this.stateDb.currentPlayer = this.playerNumber!
   }
@@ -138,7 +134,7 @@ export class ClientEditor implements ClientGameBase {
     phase: SimulationPhase,
   ): void[] {
     if (phase === SimulationPhase.ClientPrediction) {
-      // systems.playerInput(this, frame)
+      handleInput(this, frame, dt)
     }
 
     updateSystems(
@@ -156,25 +152,35 @@ export class ClientEditor implements ClientGameBase {
   }
 
   public getWvTransform(out: mat4): mat4 {
-    mat4.targetTo(out, [0, 12, 3], math.Zero3, math.PlusY3)
-    mat4.invert(out, out)
-    return out
+    return this.camera.getWvTransform(out)
   }
 
   public getFov(): number {
-    // return this.camera.getFov()
-    return (90 * Math.PI) / 180
+    return this.camera.getFov()
   }
 
   public getRenderables(): Renderable[] {
-    const res: Renderable[] = [
-      {
-        type: RenderableType.VColor,
-        modelName: 'terrain',
-        modelModifiers: {},
-        model2World: mat4.create(),
-      },
-    ]
+    const res: Renderable[] = []
+    const pos3 = vec3.create()
+
+    for (const [id, model] of this.stateDb.models) {
+      const p = this.stateDb.gridPos.get(id)!
+      pos3[0] = p.x + 0.5
+      pos3[1] = 0
+      pos3[2] = p.y + 0.5
+
+      const tile = this.stateDb.tiles.get(id)!
+
+      res.push({
+        type: RenderableType.Unlit,
+        object: {
+          type: UnlitObjectType.Model,
+          modelName: model,
+          model2World: mat4.fromTranslation(mat4.create(), pos3),
+          color: tileTypeColor.get(tile.type)!,
+        },
+      })
+    }
 
     return res
   }

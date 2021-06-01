@@ -10,7 +10,7 @@ import wallGltf from './wall.gltf'
 
 import * as gltf from '~/engine/renderer/gltf'
 
-export const models: Map<string, gltf.Document> = new Map(
+export const gltfs: Map<string, gltf.Document> = new Map(
   Object.entries({
     bullet: bulletGltf as gltf.Document,
     core: coreGltf as gltf.Document,

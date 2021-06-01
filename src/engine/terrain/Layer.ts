@@ -23,7 +23,7 @@ export class Layer {
   }: {
     tileOrigin: vec2 // tile units
     tileDimensions: vec2 // tile units
-    tileSize: number, // worldspace units
+    tileSize: number // worldspace units
     terrain: (Type | null)[]
   }) {
     this.tileOrigin = origin

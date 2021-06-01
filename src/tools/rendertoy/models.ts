@@ -1,6 +1,7 @@
 import { quat } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
+import { ClientAssets } from '~/common/assets/ClientAssets'
 import {
   makeCubeModel,
   triModelAddEdgeOn,
@@ -10,7 +11,6 @@ import * as gltf from '~/engine/renderer/gltf'
 import { MeshPrimitive, ModelNode } from '~/engine/renderer/interfaces'
 import { Renderer3d } from '~/engine/renderer/Renderer3d'
 import { ShaderAttrib } from '~/engine/renderer/shaders/common'
-import { ClientAssets } from '~/game/assets/ClientAssets'
 
 function makeCubeComplex(): ModelNode {
   // positions for front face
@@ -99,15 +99,15 @@ function makeCubeComplex(): ModelNode {
 }
 
 export function load(renderer: Renderer3d): void {
-  const tank = gltf.getModels(ClientAssets.models.get('tank')!)[0]
+  const tank = gltf.getModels(ClientAssets.gltfs.get('tank')!)[0]
   renderer.loadModel('tank', triModelAddEdgeOn(tank))
   renderer.loadModel('tank-line', triModelToWiresolidLineModel(tank))
 
-  const shiba = gltf.getModels(ClientAssets.models.get('shiba')!)[0]
+  const shiba = gltf.getModels(ClientAssets.gltfs.get('shiba')!)[0]
   renderer.loadModel('shiba', triModelAddEdgeOn(shiba))
   renderer.loadModel('shiba-line', triModelToWiresolidLineModel(shiba))
 
-  const turret = gltf.getModels(ClientAssets.models.get('turret')!)[0]
+  const turret = gltf.getModels(ClientAssets.gltfs.get('turret')!)[0]
   renderer.loadModel('turret', triModelAddEdgeOn(turret))
   renderer.loadModel('turret-line', triModelToWiresolidLineModel(turret))
 

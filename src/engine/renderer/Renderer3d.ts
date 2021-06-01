@@ -5,6 +5,7 @@ import {
   makeLineCubeModel,
   makeLineGridModel,
   makeLineTileModel,
+  makeTileModel,
 } from './geometryUtils'
 import {
   RenderMesh,
@@ -54,14 +55,14 @@ export enum UnlitObjectType {
 interface UnlitLines {
   type: UnlitObjectType.Lines
   positions: Float32Array
-  color: vec4
+  color: Immutable<vec4>
 }
 
 interface UnlitModel {
   type: UnlitObjectType.Model
   modelName: string
-  model2World: mat4
-  color: vec4
+  model2World: Immutable<mat4>
+  color: Immutable<vec4>
   modelModifiers?: ModelModifiers
 }
 
@@ -121,6 +122,7 @@ export class Renderer3d implements IModelLoader {
     this.loadModel('linecube', makeLineCubeModel())
     this.loadModel('linetile', makeLineTileModel())
     this.loadModel('linegrid', makeLineGridModel())
+    this.loadModel('tile', makeTileModel())
 
     this.particleMeshes = new Map()
 
@@ -552,7 +554,7 @@ export class Renderer3d implements IModelLoader {
         case UnlitObjectType.Lines:
           this.gl.uniform4fv(
             this.currentShader!.uniforms.get(ShaderUniform.Color)!,
-            obj.color,
+            obj.color as Float32Array,
           )
           this.drawLines(obj.positions)
           break

@@ -1,4 +1,5 @@
-import { EntityConfig } from '~/editor/state/EntityConfig'
+import { TileType } from './components/tileComponent'
+
 import { StateDb } from '~/editor/state/StateDb'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { ClientMessage } from '~/engine/network/ClientMessage'
@@ -17,15 +18,25 @@ export type FrameState = {
 }
 
 export function initSystems(stateDb: StateDb): void {
-  const newMap: EntityConfig = {
-    map: {
-      width: 32,
-      height: 32,
-      tiles: new Uint8Array(32 * 32),
-    },
-  }
+  // prettier-ignore
+  const tempMap: TileType[] = [
+    TileType.Grass, TileType.Water, TileType.Water, TileType.Water,
+    TileType.Grass, TileType.Road, TileType.Road, TileType.Road,
+    TileType.Grass, TileType.Road, TileType.Mountain, TileType.Mountain,
+    TileType.Grass, TileType.Road, TileType.Mountain, TileType.Mountain,
+  ]
+  const w = 4
+  const h = 4
 
-  stateDb.registerEntity(newMap)
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      stateDb.registerEntity({
+        model: 'tile',
+        gridPos: { x, y },
+        tile: { type: tempMap[y * w + x] },
+      })
+    }
+  }
 }
 
 export function updateSystems(_frameState: FrameState, _dt: number): void {

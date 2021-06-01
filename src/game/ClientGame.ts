@@ -5,6 +5,9 @@ import { SimulationPhase } from '../engine/network/SimulationPhase'
 
 import { updateSystems } from './updateSystems'
 
+import { ClientAssets } from '~/common/assets/ClientAssets'
+import { CommonAssets } from '~/common/assets/CommonAssets'
+import { Camera3d } from '~/common/Camera3d'
 import { ClientGameBase } from '~/engine/client/Client'
 import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
@@ -27,9 +30,6 @@ import {
 } from '~/engine/renderer/Renderer2d'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
 import * as terrain from '~/engine/terrain'
-import { ClientAssets } from '~/game/assets/ClientAssets'
-import { CommonAssets } from '~/game/assets/CommonAssets'
-import { Camera3d } from '~/game/camera/Camera3d'
 import { gameProgression, initMap } from '~/game/common'
 import {
   CAMERA_MAX_Y_OFFSET,
@@ -304,7 +304,7 @@ export class ClientGame implements ClientGameBase {
       'turret',
       'wall',
     ]) {
-      const gltfDoc = ClientAssets.models.get(m)
+      const gltfDoc = ClientAssets.gltfs.get(m)
       if (gltfDoc === undefined) {
         throw `model not found: ${m}`
       }

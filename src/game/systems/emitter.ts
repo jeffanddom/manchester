@@ -1,12 +1,12 @@
 import { quat, vec2, vec3 } from 'gl-matrix'
 
+import { CommonAssets } from '~/common/assets/CommonAssets'
 import {
   BasicEmitterSettings,
   emit,
 } from '~/engine/particles/emitters/BasicEmitter'
 import { ParticleConfig } from '~/engine/particles/interfaces'
 import { EntityId } from '~/engine/state/EntityId'
-import { CommonAssets } from '~/game/assets/CommonAssets'
 import { StateDb } from '~/game/state/StateDb'
 import { Immutable } from '~/types/immutable'
 import { PlusY3, Zero2 } from '~/util/math'

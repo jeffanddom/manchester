@@ -21,6 +21,10 @@ export class Camera3d {
     return this.pos
   }
 
+  getTarget(out: vec3): vec3 {
+    return vec3.copy(out, this.target)
+  }
+
   getWvTransform(out: mat4): mat4 {
     const res = mat4.invert(out, this.targetTo(out))
     if (res === null) {

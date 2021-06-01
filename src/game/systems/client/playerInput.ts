@@ -3,6 +3,7 @@ import { mat4 } from 'gl-matrix'
 import { vec4 } from 'gl-matrix'
 import { vec3 } from 'gl-matrix'
 
+import { Camera3d } from '~/common/Camera3d'
 import { DirectionMove, IKeyboard, IMouse } from '~/engine/input/interfaces'
 import { MouseButton } from '~/engine/input/interfaces'
 import {
@@ -10,7 +11,6 @@ import {
   ClientMoveUpdate,
 } from '~/engine/network/ClientMessage'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
-import { Camera3d } from '~/game/camera/Camera3d'
 import { ClientGame } from '~/game/ClientGame'
 import { CLIENT_INPUT_DELAY } from '~/game/constants'
 

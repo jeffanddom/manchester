@@ -247,6 +247,43 @@ export function makeLineGridModel(): ModelNode {
   }
 }
 
+export function makeTileModel(): ModelNode {
+  // prettier-ignore
+  const positions = new Float32Array([
+    -0.5, 0, -0.5, // nw
+    0.5, 0, 0.5, // se
+    0.5, 0, -0.5, // ne
+    -0.5, 0, 0.5, // sw
+  ])
+
+  // prettier-ignore
+  const indices = new Uint16Array([
+    0, 1, 2,
+    0, 3, 1,
+  ])
+
+  const attribBuffers = new Map()
+  attribBuffers.set(ShaderAttrib.Position, {
+    bufferData: positions,
+    componentsPerAttrib: 3,
+  })
+
+  return {
+    name: 'root',
+    meshes: [
+      {
+        primitive: MeshPrimitive.Triangles,
+        attribBuffers,
+        indices: {
+          bufferData: indices,
+          componentsPerAttrib: 1,
+        },
+      },
+    ],
+    children: [],
+  }
+}
+
 /**
  * Generate a new triangle-based ModelNode in which all meshes are augmented
  * with the edgeOn attribute. The attribute is a vec3. With the frag shader, at

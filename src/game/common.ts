@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
+import { CommonAssets } from '~/common/assets/CommonAssets'
 import * as terrain from '~/engine/terrain'
-import { CommonAssets } from '~/game/assets/CommonAssets'
 import { TILE_SIZE } from '~/game/constants'
 import * as entities from '~/game/entities'
 import { Type } from '~/game/entities/types'
