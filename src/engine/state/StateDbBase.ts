@@ -2,7 +2,12 @@ import { EntityId } from '~/engine/state/EntityId'
 import { EntityStateContainer } from '~/engine/state/EntityStateContainer'
 import { SortedSet } from '~/util/SortedSet'
 
-export abstract class StateDbBase<TEntityConfig> {
+export interface RollbackableDb {
+  commitPrediction(): void
+  undoPrediction(): void
+}
+
+export abstract class StateDbBase<TEntityConfig> implements RollbackableDb {
   private nextEntityIdUncommitted: number
   private nextEntityIdCommitted: number
   private toDelete: SortedSet<EntityId>

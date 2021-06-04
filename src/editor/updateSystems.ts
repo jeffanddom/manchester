@@ -1,8 +1,9 @@
 import { TileType } from './components/tileComponent'
 
+import { ClientMessage } from '~/editor/messages'
 import { StateDb } from '~/editor/state/StateDb'
+import { updateCursorSystem } from '~/editor/systems/cursor'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
-import { ClientMessage } from '~/engine/network/ClientMessage'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
 
 export type FrameState = {
@@ -39,6 +40,6 @@ export function initSystems(stateDb: StateDb): void {
   }
 }
 
-export function updateSystems(_frameState: FrameState, _dt: number): void {
-  return
+export function updateSystems(frameState: FrameState, _dt: number): void {
+  updateCursorSystem(frameState)
 }

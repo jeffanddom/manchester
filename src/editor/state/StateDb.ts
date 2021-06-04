@@ -11,13 +11,17 @@ export interface EntityConfig {
   model?: string
   gridPos?: GridPos
   tile?: TileComponent
+  cursor?: number
 }
 
 export class StateDb extends StateDbBase<EntityConfig> {
+  public currentPlayer?: number
+
   // components
   public models: ComponentTable<string>
   public gridPos: ComponentTable<GridPos>
   public tiles: ComponentTable<TileComponent>
+  public cursors: ComponentTable<number>
 
   public constructor() {
     super()
@@ -25,6 +29,7 @@ export class StateDb extends StateDbBase<EntityConfig> {
     this.models = new ComponentTable((c) => c)
     this.gridPos = new ComponentTable(cloneGridPos)
     this.tiles = new ComponentTable(cloneTileComponent)
+    this.cursors = new ComponentTable((c) => c)
   }
 
   protected addEntityToContainers(id: EntityId, e: EntityConfig): void {
@@ -38,6 +43,10 @@ export class StateDb extends StateDbBase<EntityConfig> {
 
     if (e.tile !== undefined) {
       this.tiles.set(id, e.tile)
+    }
+
+    if (e.cursor !== undefined) {
+      this.cursors.set(id, e.cursor)
     }
   }
 

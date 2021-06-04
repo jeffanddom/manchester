@@ -1,6 +1,5 @@
-import { StateDbBase } from '../state/StateDbBase'
+import { RollbackableDb } from '../state/StateDbBase'
 
-import { ClientMessage } from './ClientMessage'
 import { ServerMessage, ServerMessageType } from './ServerMessage'
 import { SimulationPhase } from './SimulationPhase'
 
@@ -9,7 +8,12 @@ import { RunningAverage } from '~/util/RunningAverage'
 
 interface ServerFrameUpdate {
   frame: number
-  inputs: ClientMessage[]
+  inputs: BaseClientMessage[]
+}
+
+type BaseClientMessage = {
+  frame: number
+  playerNumber: number
 }
 
 export class ClientSimulator<TFrameEvent> {
@@ -18,11 +22,11 @@ export class ClientSimulator<TFrameEvent> {
   private simulate: (
     dt: number,
     frame: number,
-    messages: ClientMessage[],
+    messages: BaseClientMessage[],
     phase: SimulationPhase,
   ) => TFrameEvent[]
 
-  private uncommittedMessageHistory: ClientMessage[]
+  private uncommittedMessageHistory: BaseClientMessage[]
   private serverFrameUpdates: ServerFrameUpdate[]
 
   private simulationFrame: number
@@ -41,7 +45,7 @@ export class ClientSimulator<TFrameEvent> {
     simulate: (
       dt: number,
       frame: number,
-      messages: ClientMessage[],
+      messages: BaseClientMessage[],
       phase: SimulationPhase,
     ) => TFrameEvent[]
   }) {
@@ -63,14 +67,14 @@ export class ClientSimulator<TFrameEvent> {
     this.framesAheadOfServer = new RunningAverage(3 * 60)
   }
 
-  public addClientMessage(message: ClientMessage): void {
+  public addClientMessage(message: BaseClientMessage): void {
     this.uncommittedMessageHistory.push(message)
   }
 
   public tick(params: {
     dt: number
-    stateDb: StateDbBase
-    serverMessages: ServerMessage[]
+    stateDb: RollbackableDb
+    serverMessages: ServerMessage<BaseClientMessage>[]
   }): Map<number, TFrameEvent[]> {
     const eventsByFrame = new Map()
 
@@ -164,7 +168,7 @@ export class ClientSimulator<TFrameEvent> {
 
   private syncServerState(
     dt: number,
-    stateDb: StateDbBase,
+    stateDb: RollbackableDb,
     eventsByFrame: Map<number, TFrameEvent[]>,
   ): void {
     // Collect all server frames that precede the next frame we need to predict.

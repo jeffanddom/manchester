@@ -1,5 +1,3 @@
-import { ClientMessage } from './ClientMessage'
-
 export enum ServerMessageType {
   START_GAME,
   FRAME_UPDATE,
@@ -13,20 +11,20 @@ export type ServerStartGameMessage = {
   playerNumber: number
 }
 
-export type ServerFrameUpdateMessage = {
+export type ServerFrameUpdateMessage<TClientMessage> = {
   type: ServerMessageType.FRAME_UPDATE
   frame: number
-  inputs: ClientMessage[]
+  inputs: TClientMessage[]
   updateFrameDurationAvg: number
   simulationDurationAvg: number
 }
 
-export type RemoteClientMessage = {
+export type RemoteClientMessage<TClientMessage> = {
   type: ServerMessageType.REMOTE_CLIENT_MESSAGE
-  message: ClientMessage
+  message: TClientMessage
 }
 
-export type ServerMessage =
+export type ServerMessage<TClientMessage> =
   | ServerStartGameMessage
-  | ServerFrameUpdateMessage
-  | RemoteClientMessage
+  | ServerFrameUpdateMessage<TClientMessage>
+  | RemoteClientMessage<TClientMessage>

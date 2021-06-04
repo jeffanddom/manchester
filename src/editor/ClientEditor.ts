@@ -6,6 +6,7 @@ import { handleInput } from './handleInput'
 
 import { Camera3d } from '~/common/Camera3d'
 import { MAX_PREDICTED_FRAMES, SIMULATION_PERIOD_S } from '~/common/settings'
+import { ClientMessage } from '~/editor/messages'
 import { StateDb } from '~/editor/state/StateDb'
 import { initSystems, updateSystems } from '~/editor/updateSystems'
 import { ClientGameBase } from '~/engine/client/Client'
@@ -13,7 +14,6 @@ import { Renderable, RenderableType } from '~/engine/client/ClientRenderManager'
 import { DedupLog } from '~/engine/client/DedupLog'
 import { IDebugDrawWriter } from '~/engine/DebugDraw'
 import { IKeyboard, IMouse } from '~/engine/input/interfaces'
-import { ClientMessage } from '~/engine/network/ClientMessage'
 import { ClientSimulator } from '~/engine/network/ClientSimulator'
 import { IServerConnection } from '~/engine/network/ServerConnection'
 import { ServerMessage } from '~/engine/network/ServerMessage'
@@ -30,7 +30,7 @@ import * as time from '~/util/time'
 export class ClientEditor implements ClientGameBase {
   stateDb: StateDb
 
-  serverConnection: IServerConnection | undefined
+  serverConnection: IServerConnection<ClientMessage> | undefined
   playerNumber: number | undefined
   simulator: ClientSimulator<void>
 
@@ -89,7 +89,7 @@ export class ClientEditor implements ClientGameBase {
     this.camera.setViewportDimensions(d)
   }
 
-  public connectServer(conn: IServerConnection): void {
+  public connectServer(conn: IServerConnection<ClientMessage>): void {
     this.serverConnection = conn
   }
 
@@ -107,7 +107,7 @@ export class ClientEditor implements ClientGameBase {
     this.updateFrameDurations.sample(start - this.lastUpdateAt)
     this.lastUpdateAt = start
 
-    let serverMessages: ServerMessage[] = []
+    let serverMessages: ServerMessage<ClientMessage>[] = []
     if (this.serverConnection !== undefined) {
       serverMessages = this.serverConnection.consume()
     }
@@ -124,7 +124,13 @@ export class ClientEditor implements ClientGameBase {
 
     this.stateDb = new StateDb()
     initSystems(this.stateDb)
-    // this.stateDb.currentPlayer = this.playerNumber!
+    this.stateDb.currentPlayer = this.playerNumber!
+
+    this.stateDb.registerEntity({
+      gridPos: { x: 0, y: 0 },
+      model: 'linetile',
+      cursor: this.playerNumber,
+    })
   }
 
   private simulate(
@@ -169,17 +175,31 @@ export class ClientEditor implements ClientGameBase {
       pos3[1] = 0
       pos3[2] = p.y + 0.5
 
-      const tile = this.stateDb.tiles.get(id)!
+      const tile = this.stateDb.tiles.get(id)
 
-      res.push({
-        type: RenderableType.Unlit,
-        object: {
-          type: UnlitObjectType.Model,
-          modelName: model,
-          model2World: mat4.fromTranslation(mat4.create(), pos3),
-          color: tileTypeColor.get(tile.type)!,
-        },
-      })
+      if (tile !== undefined) {
+        res.push({
+          type: RenderableType.Unlit,
+          object: {
+            type: UnlitObjectType.Model,
+            modelName: model,
+            model2World: mat4.fromTranslation(mat4.create(), pos3),
+            color: tileTypeColor.get(tile.type)!,
+          },
+        })
+      }
+
+      if (this.stateDb.cursors.get(id) !== undefined) {
+        res.push({
+          type: RenderableType.Unlit,
+          object: {
+            type: UnlitObjectType.Model,
+            modelName: 'linetile',
+            model2World: mat4.fromTranslation(mat4.create(), pos3),
+            color: [1, 0, 1, 1],
+          },
+        })
+      }
     }
 
     return res
