@@ -1,17 +1,19 @@
 import { vec2 } from 'gl-matrix'
 
 import { Client } from '~/engine/client/Client'
+import { ClientMessage } from '~/engine/network/ClientMessage'
+import { BaseClientMessage } from '~/engine/network/ClientSimulator'
 import { ClientGame } from '~/game/ClientGame'
 import { SIMULATION_PERIOD_S } from '~/game/constants'
 import * as autoReload from '~/web/autoReload'
 
 declare global {
   interface Window {
-    client: Client
+    client: Client<BaseClientMessage>
   }
 }
 
-const client = new Client({
+const client = new Client<ClientMessage>({
   document,
   apiLocation: location,
   viewportDimensions: vec2.fromValues(window.innerWidth, window.innerHeight),

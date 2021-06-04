@@ -18,7 +18,7 @@ import { IModelLoader } from '~/engine/renderer/ModelLoader'
 import { Renderable2d } from '~/engine/renderer/Renderer2d'
 import { Immutable } from '~/types/immutable'
 
-export interface ClientGameBase {
+export interface ClientGameBase<TClientMessage> {
   update(): void
 
   getAllClientsReady(): boolean
@@ -30,10 +30,10 @@ export interface ClientGameBase {
   emitParticles(addParticle: (config: Immutable<ParticleConfig>) => void): void
 
   setViewportDimensions(d: vec2): void
-  connectServer(conn: IServerConnection): void
+  connectServer(conn: IServerConnection<TClientMessage>): void
 }
 
-export class Client {
+export class Client<TClientMessage> {
   apiLocation: {
     host: string
     protocol: string
@@ -51,7 +51,7 @@ export class Client {
   mouse: IMouse
   debugDraw: DebugDraw
   renderManager: ClientRenderManager
-  game: ClientGameBase
+  game: ClientGameBase<TClientMessage>
   particleSystem: ParticleSystem
 
   constructor(params: {
@@ -70,7 +70,7 @@ export class Client {
       debugDraw: IDebugDrawWriter
       viewportDimensions: Immutable<vec2>
       addEmitter: (emitter: ParticleEmitter) => void
-    }) => ClientGameBase
+    }) => ClientGameBase<TClientMessage>
   }) {
     this.apiLocation = params.apiLocation
     this.viewportDimensions = vec2.clone(params.viewportDimensions)
@@ -178,7 +178,7 @@ export class Client {
 
   connectToServer(): Promise<void> {
     const schema = this.apiLocation.protocol === 'https:' ? 'wss' : 'ws'
-    return createServerConnectionWs(
+    return createServerConnectionWs<TClientMessage>(
       `${schema}://${this.apiLocation.host}/api/connect`,
     ).then((conn) => this.game.connectServer(conn))
   }

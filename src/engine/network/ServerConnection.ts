@@ -39,9 +39,9 @@ export class ServerConnectionWs<TClientMessage>
   }
 }
 
-export function createServerConnectionWs(
+export function createServerConnectionWs<TClientMessage>(
   url: string,
-): Promise<IServerConnection> {
+): Promise<IServerConnection<TClientMessage>> {
   const socket = new WebSocket(url)
   return new Promise((resolve) => {
     socket.addEventListener('open', () => {

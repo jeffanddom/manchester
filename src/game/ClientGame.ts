@@ -55,10 +55,10 @@ import * as math from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class ClientGame implements ClientGameBase {
+export class ClientGame implements ClientGameBase<ClientMessage> {
   stateDb: StateDb
 
-  serverConnection: IServerConnection | undefined
+  serverConnection: IServerConnection<ClientMessage> | undefined
   playerNumber: number | undefined
   simulator: ClientSimulator<FrameEvent>
 
@@ -142,7 +142,7 @@ export class ClientGame implements ClientGameBase {
     this.camera.setViewportDimensions(d)
   }
 
-  public connectServer(conn: IServerConnection): void {
+  public connectServer(conn: IServerConnection<ClientMessage>): void {
     this.serverConnection = conn
   }
 
@@ -197,7 +197,7 @@ export class ClientGame implements ClientGameBase {
     this.updateFrameDurations.sample(start - this.lastUpdateAt)
     this.lastUpdateAt = start
 
-    let serverMessages: ServerMessage[] = []
+    let serverMessages: ServerMessage<ClientMessage>[] = []
     if (this.serverConnection !== undefined) {
       serverMessages = this.serverConnection.consume()
     }

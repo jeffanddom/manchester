@@ -58,7 +58,7 @@ export const update = (frameState: FrameState): void => {
     const id = frameState.stateDb.getPlayerId(message.playerNumber)!
     const shooter = frameState.stateDb.shooters.get(id)!
 
-    if (message.changeWeapon) {
+    if (message.changeWeapon === true) {
       let nextType = shooter.weaponType + 1
       if (nextType >= WEAPON_TYPE_LENGTH) {
         nextType = 0 as WeaponType

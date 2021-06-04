@@ -2,7 +2,7 @@ import { IClientConnection } from '~/engine/network/ClientConnection'
 import { ClientMessage } from '~/engine/network/ClientMessage'
 import { ServerMessageType } from '~/engine/network/ServerMessage'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
-import { StateDbBase } from '~/engine/state/StateDbBase'
+import { RollbackableDb } from '~/engine/state/StateDbBase'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
@@ -56,7 +56,7 @@ export class ServerSimulator {
       frame: number
       conn: IClientConnection
     }[],
-    stateDb: StateDbBase,
+    stateDb: RollbackableDb,
   ): void {
     const now = time.current()
     this.updateFrameDurations.sample(now - this.lastUpdateAt)

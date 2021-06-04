@@ -11,7 +11,7 @@ interface ServerFrameUpdate {
   inputs: BaseClientMessage[]
 }
 
-type BaseClientMessage = {
+export type BaseClientMessage = {
   frame: number
   playerNumber: number
 }

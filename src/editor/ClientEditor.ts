@@ -27,7 +27,7 @@ import { Zero3 } from '~/util/math'
 import { RunningAverage } from '~/util/RunningAverage'
 import * as time from '~/util/time'
 
-export class ClientEditor implements ClientGameBase {
+export class ClientEditor implements ClientGameBase<ClientMessage> {
   stateDb: StateDb
 
   serverConnection: IServerConnection<ClientMessage> | undefined

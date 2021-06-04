@@ -7,7 +7,7 @@ import { ServerMessage } from '~/engine/network/ServerMessage'
  * Models a connection to a client.
  */
 export interface IClientConnection {
-  send(msg: ServerMessage): void
+  send(msg: ServerMessage<ClientMessage>): void
   consume(): ClientMessage[]
   close(): void
 }
@@ -27,7 +27,7 @@ export class ClientConnectionWs implements IClientConnection {
     })
   }
 
-  send(msg: ServerMessage): void {
+  send(msg: ServerMessage<ClientMessage>): void {
     this.socket.send(JSON.stringify(msg))
   }
 

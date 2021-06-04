@@ -3,11 +3,12 @@ import { vec2 } from 'gl-matrix'
 import { SIMULATION_PERIOD_S } from '~/common/settings'
 import { ClientEditor } from '~/editor/ClientEditor'
 import { Client } from '~/engine/client/Client'
+import { BaseClientMessage } from '~/engine/network/ClientSimulator'
 import * as autoReload from '~/web/autoReload'
 
 declare global {
   interface Window {
-    client: Client
+    client: Client<BaseClientMessage>
   }
 }
 
