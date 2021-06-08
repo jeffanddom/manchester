@@ -1,9 +1,17 @@
 import { vec3 } from 'gl-matrix'
 import { mat4, vec2 } from 'gl-matrix'
+import { vec4 } from 'gl-matrix'
 
-import { tileTypeColor } from './components/tileComponent'
+import {
+  TileType,
+  entityTypeModel,
+  tileTypeColor,
+} from './components/tileComponent'
 import { handleInput } from './handleInput'
+import { PLAYER_COUNT } from './settings'
+import { LocalState } from './state/LocalState'
 
+import { ClientAssets } from '~/common/assets/ClientAssets'
 import { Camera3d } from '~/common/Camera3d'
 import { MAX_PREDICTED_FRAMES, SIMULATION_PERIOD_S } from '~/common/settings'
 import { ClientMessage } from '~/editor/messages'
@@ -19,6 +27,7 @@ import { IServerConnection } from '~/engine/network/ServerConnection'
 import { ServerMessage } from '~/engine/network/ServerMessage'
 import { SimulationPhase } from '~/engine/network/SimulationPhase'
 import { ParticleConfig } from '~/engine/particles/interfaces'
+import * as gltf from '~/engine/renderer/gltf'
 import { IModelLoader } from '~/engine/renderer/ModelLoader'
 import { Renderable2d } from '~/engine/renderer/Renderer2d'
 import { UnlitObjectType } from '~/engine/renderer/Renderer3d'
@@ -29,6 +38,7 @@ import * as time from '~/util/time'
 
 export class ClientEditor implements ClientGameBase<ClientMessage> {
   stateDb: StateDb
+  localState: LocalState
 
   serverConnection: IServerConnection<ClientMessage> | undefined
   playerNumber: number | undefined
@@ -67,6 +77,8 @@ export class ClientEditor implements ClientGameBase<ClientMessage> {
     this.debugDraw = config.debugDraw
 
     this.stateDb = new StateDb()
+    this.localState = { selectedTileType: TileType.Grass }
+
     this.serverConnection = undefined
     this.playerNumber = undefined
 
@@ -126,11 +138,32 @@ export class ClientEditor implements ClientGameBase<ClientMessage> {
     initSystems(this.stateDb)
     this.stateDb.currentPlayer = this.playerNumber!
 
-    this.stateDb.registerEntity({
-      gridPos: { x: 0, y: 0 },
-      model: 'linetile',
-      cursor: this.playerNumber,
-    })
+    for (let i = 0; i < PLAYER_COUNT; i++) {
+      this.stateDb.registerEntity({
+        gridPos: { x: 0, y: 0 },
+        model: 'linetile',
+        cursor: i + 1,
+      })
+    }
+
+    this.stateDb.commitPrediction()
+
+    for (const m of [
+      'bullet',
+      'core',
+      'mortar',
+      'shiba',
+      'tank',
+      'tree',
+      'turret',
+      'wall',
+    ]) {
+      const gltfDoc = ClientAssets.gltfs.get(m)
+      if (gltfDoc === undefined) {
+        throw `model not found: ${m}`
+      }
+      gltf.loadAllModels(this.modelLoader, gltfDoc)
+    }
   }
 
   private simulate(
@@ -146,6 +179,7 @@ export class ClientEditor implements ClientGameBase<ClientMessage> {
     updateSystems(
       {
         stateDb: this.stateDb,
+        localState: this.localState,
         messages,
         frame,
         debugDraw: this.debugDraw,
@@ -187,18 +221,48 @@ export class ClientEditor implements ClientGameBase<ClientMessage> {
             color: tileTypeColor.get(tile.type)!,
           },
         })
+
+        if (tile.entity !== undefined) {
+          res.push({
+            type: RenderableType.UniformColor,
+            modelName: entityTypeModel.get(tile.entity)!,
+            model2World: mat4.fromTranslation(mat4.create(), pos3),
+            modelModifiers: {},
+            color: [0, 1, 1, 1],
+          })
+        }
       }
 
       if (this.stateDb.cursors.get(id) !== undefined) {
-        res.push({
-          type: RenderableType.Unlit,
-          object: {
-            type: UnlitObjectType.Model,
-            modelName: 'linetile',
-            model2World: mat4.fromTranslation(mat4.create(), pos3),
-            color: [1, 0, 1, 1],
+        const tileColor = vec4.clone(
+          tileTypeColor.get(this.localState.selectedTileType)!,
+        )
+        tileColor[3] = 0.75
+
+        res.push(
+          {
+            type: RenderableType.Unlit,
+            object: {
+              type: UnlitObjectType.Model,
+              modelName: 'tile',
+              model2World: mat4.fromTranslation(mat4.create(), [
+                pos3[0],
+                0.5,
+                pos3[2],
+              ]),
+              color: tileColor,
+            },
           },
-        })
+          {
+            type: RenderableType.Unlit,
+            object: {
+              type: UnlitObjectType.Model,
+              modelName: 'linetile',
+              model2World: mat4.fromTranslation(mat4.create(), pos3),
+              color: [1, 0, 1, 1],
+            },
+          },
+        )
       }
     }
 

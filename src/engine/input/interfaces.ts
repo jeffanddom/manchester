@@ -21,9 +21,9 @@ export interface IKeyboard {
 }
 
 export enum MouseButton {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2,
+  Left = 0,
+  Middle = 1,
+  Right = 2,
 }
 
 /**
@@ -33,15 +33,15 @@ export function mouseButtonsFromBitmask(buttons: number): Set<MouseButton> {
   const res = new Set<MouseButton>()
 
   if ((buttons & 1) !== 0) {
-    res.add(MouseButton.LEFT)
+    res.add(MouseButton.Left)
   }
 
   if ((buttons & 2) !== 0) {
-    res.add(MouseButton.RIGHT)
+    res.add(MouseButton.Right)
   }
 
   if ((buttons & 4) !== 0) {
-    res.add(MouseButton.MIDDLE)
+    res.add(MouseButton.Middle)
   }
 
   return res

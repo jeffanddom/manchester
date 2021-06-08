@@ -1,3 +1,5 @@
+import { TileType } from './components/tileComponent'
+
 import { StateDb } from '~/editor/state/StateDb'
 import { initSystems, updateSystems } from '~/editor/updateSystems'
 import { mockDebugDraw } from '~/engine/DebugDraw'
@@ -81,6 +83,7 @@ export class ServerEditor {
     updateSystems(
       {
         stateDb: this.stateDb,
+        localState: { selectedTileType: TileType.Grass }, // TODO: this doesn't matter to the server
         messages: messages,
         frame: frame,
         debugDraw: mockDebugDraw,

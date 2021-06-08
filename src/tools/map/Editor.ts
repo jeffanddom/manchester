@@ -198,7 +198,7 @@ export class Editor {
 
     if (
       this.keyboard.heldkeys.has(keyMap.paint) ||
-      this.mouse.isHeld(MouseButton.LEFT)
+      this.mouse.isHeld(MouseButton.Left)
     ) {
       if (this.cursorTilePos !== undefined) {
         const n = this.t2a(this.cursorTilePos)

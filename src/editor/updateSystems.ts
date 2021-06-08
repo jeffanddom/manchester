@@ -1,4 +1,6 @@
-import { TileType } from './components/tileComponent'
+import { EntityType, TileType } from './components/tileComponent'
+import { LocalState } from './state/LocalState'
+import { updateTileEditSystem } from './systems/tileEdit'
 
 import { ClientMessage } from '~/editor/messages'
 import { StateDb } from '~/editor/state/StateDb'
@@ -8,6 +10,7 @@ import { SimulationPhase } from '~/engine/network/SimulationPhase'
 
 export type FrameState = {
   stateDb: StateDb
+  localState: LocalState
   messages: ClientMessage[]
   frame: number
   debugDraw: IDebugDrawWriter
@@ -34,12 +37,15 @@ export function initSystems(stateDb: StateDb): void {
       stateDb.registerEntity({
         model: 'tile',
         gridPos: { x, y },
-        tile: { type: tempMap[y * w + x] },
+        tile: { type: tempMap[y * w + x], entity: EntityType.Tank },
       })
     }
   }
+
+  stateDb.commitPrediction()
 }
 
 export function updateSystems(frameState: FrameState, _dt: number): void {
   updateCursorSystem(frameState)
+  updateTileEditSystem(frameState)
 }

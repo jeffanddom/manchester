@@ -1,10 +1,19 @@
+import { TileType } from './components/tileComponent'
+
 export type CursorUpdate = {
   x: number
   y: number
 }
 
+export type TileUpdate = {
+  x: number
+  y: number
+  type: TileType
+}
+
 export interface ClientMessage {
   frame: number
   playerNumber: number
-  cursor?: CursorUpdate
+  cursorUpdate?: CursorUpdate
+  tileUpdate?: TileUpdate
 }

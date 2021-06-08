@@ -23,6 +23,9 @@ export class StateDb extends StateDbBase<EntityConfig> {
   public tiles: ComponentTable<TileComponent>
   public cursors: ComponentTable<number>
 
+  // indexes
+  private tileIds: (EntityId | undefined)[]
+
   public constructor() {
     super()
 
@@ -30,6 +33,12 @@ export class StateDb extends StateDbBase<EntityConfig> {
     this.gridPos = new ComponentTable(cloneGridPos)
     this.tiles = new ComponentTable(cloneTileComponent)
     this.cursors = new ComponentTable((c) => c)
+
+    this.tileIds = new Array(64 * 64)
+  }
+
+  public getTileByGridPos(x: number, y: number): EntityId | undefined {
+    return this.tileIds[y * 64 + x]
   }
 
   protected addEntityToContainers(id: EntityId, e: EntityConfig): void {
@@ -50,12 +59,18 @@ export class StateDb extends StateDbBase<EntityConfig> {
     }
   }
 
-  protected indexEntity(_id: EntityId): void {
-    //
+  protected indexEntity(id: EntityId): void {
+    if (this.tiles.has(id)) {
+      const gridPos = this.gridPos.get(id)!
+      this.tileIds[gridPos.y * 64 + gridPos.x] = id
+    }
   }
 
-  protected unindexEntity(_id: EntityId): void {
-    //
+  protected unindexEntity(id: EntityId): void {
+    if (this.tiles.has(id)) {
+      const gridPos = this.gridPos.get(id)!
+      this.tileIds[gridPos.y * 64 + gridPos.x] = undefined
+    }
   }
 
   protected indexesFrameUpdate(): void {

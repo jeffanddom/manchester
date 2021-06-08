@@ -34,7 +34,7 @@ export class Camera {
     canvas.addEventListener('mousemove', (event) => {
       const buttons = mouseButtonsFromBitmask(event.buttons)
 
-      if (buttons.has(MouseButton.LEFT)) {
+      if (buttons.has(MouseButton.Left)) {
         const scale = 0.005
         this.spherePos[2] = math.normalizeAngle(
           this.spherePos[2] + event.movementX * -scale,
@@ -49,7 +49,7 @@ export class Camera {
         )
       }
 
-      if (buttons.has(MouseButton.RIGHT)) {
+      if (buttons.has(MouseButton.Right)) {
         const scale = 0.0025
         this.viewOffset[0] += -event.movementX * scale
         this.viewOffset[1] += event.movementY * scale

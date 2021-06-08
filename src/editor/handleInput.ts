@@ -3,8 +3,13 @@ import { vec3 } from 'gl-matrix'
 import { Camera3d } from '~/common/Camera3d'
 import { CLIENT_INPUT_DELAY } from '~/common/settings'
 import { ClientEditor } from '~/editor/ClientEditor'
-import { CursorUpdate } from '~/editor/messages'
-import { DirectionMove, IKeyboard, IMouse } from '~/engine/input/interfaces'
+import { TileTypeCount } from '~/editor/components/tileComponent'
+import { CursorUpdate, TileUpdate } from '~/editor/messages'
+import {
+  DirectionMove,
+  IKeyboard,
+  MouseButton,
+} from '~/engine/input/interfaces'
 import { Zero3 } from '~/util/math'
 
 export const keyMap = {
@@ -21,12 +26,13 @@ export const handleInput = (
   dt: number,
 ): void => {
   handleMoveInput(editor.keyboard, editor.camera, dt)
-  const cursorUpdate = handleMouseInput(editor.mouse, editor.camera)
+  const mouseUpdates = handleMouseInput(editor)
 
   editor.sendClientMessage({
     frame: frame + CLIENT_INPUT_DELAY,
     playerNumber: editor.playerNumber!,
-    cursor: cursorUpdate,
+    cursorUpdate: mouseUpdates.cursorUpdate,
+    tileUpdate: mouseUpdates.tileUpdate,
   })
 }
 
@@ -82,24 +88,52 @@ const handleMoveInput = (
 }
 
 const handleMouseInput = (
-  mouse: IMouse,
-  camera: Camera3d,
-): CursorUpdate | undefined => {
-  const mousePos = mouse.getPos()
+  editor: ClientEditor,
+): {
+  cursorUpdate?: CursorUpdate
+  tileUpdate?: TileUpdate
+} => {
+  const mousePos = editor.mouse.getPos()
   if (mousePos === undefined) {
-    return undefined
+    return {}
   }
 
   // Get mouse position on display plane, in worldspace coordinates
-  const mouseWorldPos = camera.screenToWorld(vec3.create(), mousePos)
+  const mouseWorldPos = editor.camera.screenToWorld(vec3.create(), mousePos)
 
   // Get camera ray in world space
-  const cameraWorldPos = camera.getPos()
+  const cameraWorldPos = editor.camera.getPos()
   const [dx, dy, dz] = vec3.sub(vec3.create(), mouseWorldPos, cameraWorldPos)
 
   // Extrapolate ray to the xz-plane
-  return {
+  const worldPos = {
     x: cameraWorldPos[0] - (cameraWorldPos[1] * dx) / dy,
     y: cameraWorldPos[2] - (cameraWorldPos[1] * dz) / dy,
+  }
+
+  // Handle clicks
+  let tileUpdate: TileUpdate | undefined
+  if (
+    editor.mouse.isHeld(MouseButton.Left) &&
+    0 <= worldPos.x &&
+    worldPos.x < 64 &&
+    0 <= worldPos.y &&
+    worldPos.y < 64
+  ) {
+    tileUpdate = {
+      x: Math.floor(worldPos.x),
+      y: Math.floor(worldPos.y),
+      type: editor.localState.selectedTileType,
+    }
+  }
+
+  if (editor.mouse.isDown(MouseButton.Right)) {
+    editor.localState.selectedTileType =
+      (editor.localState.selectedTileType + 1) % TileTypeCount
+  }
+
+  return {
+    cursorUpdate: worldPos,
+    tileUpdate,
   }
 }

@@ -5,12 +5,9 @@ import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
+import { GAME_SERVER_PORT } from '~/common/settings'
 import { ClientConnectionWs } from '~/engine/network/ClientConnection'
-import {
-  GAME_SERVER_PORT,
-  PLAYER_COUNT,
-  SIMULATION_PERIOD_S,
-} from '~/game/constants'
+import { PLAYER_COUNT, SIMULATION_PERIOD_S } from '~/game/constants'
 import { ServerGame } from '~/game/ServerGame'
 
 async function buildVersion(): Promise<string> {

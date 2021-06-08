@@ -5,9 +5,9 @@ import inert from '@hapi/inert'
 import * as WebSocket from 'ws'
 
 import { serverBuildVersionPath, webOutputPath } from '~/cli/build/common'
-import { SIMULATION_PERIOD_S } from '~/common/settings'
+import { MAP_EDITOR_PORT, SIMULATION_PERIOD_S } from '~/common/settings'
 import { ServerEditor } from '~/editor/ServerEditor'
-import { PLAYER_COUNT, PORT } from '~/editor/settings'
+import { PLAYER_COUNT } from '~/editor/settings'
 import { ClientConnectionWs } from '~/engine/network/ClientConnection'
 
 async function buildVersion(): Promise<string> {
@@ -24,7 +24,7 @@ async function main(): Promise<void> {
 
   const wsServer = new WebSocket.Server({ noServer: true })
   const httpServer = new hapi.Server({
-    port: PORT,
+    port: MAP_EDITOR_PORT,
   })
 
   await httpServer.register(inert)
@@ -101,7 +101,9 @@ async function main(): Promise<void> {
   })
 
   const bv = await buildVersion()
-  console.log(`Starting dev server on port ${PORT}, build version ${bv}`)
+  console.log(
+    `Starting dev server on port ${MAP_EDITOR_PORT}, build version ${bv}`,
+  )
   await httpServer.start()
 }
 

@@ -5,6 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug online",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://ec2-54-183-154-244.us-west-1.compute.amazonaws.com:3000/apps/editor",
+      "webRoot": "${workspaceFolder}/src",
+      "breakOnLoad": true,
+      "runtimeArgs": ["--js-flags=--expose-gc"],
+      "sourceMapPathOverrides": {
+        "../../../*": "${webRoot}/*"
+      }
+    },    
+    {
       "name": "Debug current Jest test",
       "type": "node",
       "request": "launch",
