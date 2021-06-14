@@ -1,21 +1,31 @@
 import { PriorityQueue } from '~/util/PriorityQueue'
 
-type SearchPoint = {
+type SearchPoint = PointWithDir & {
+  previous: string | undefined
+  sortDistance: number // includes A* heuristic
+  pathLength: number // sum of pathLengths of ancestor points
+}
+
+type PointWithDir = {
   x: number
   y: number
   dirX: number
   dirY: number
-  forcedNeighbor?: boolean
-  previous?: string
-  distance?: number
 }
 
-function pointId(point: SearchPoint): string {
-  return `${point.x},${point.y}`
+function pointId(point: PointWithDir): string {
+  return `${point.x},${point.y},${point.dirX},${point.dirY}`
 }
 
-function chebyshev(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2))
+function euclideanDistance(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number {
+  const a = x1 - x2
+  const b = y1 - y2
+  return Math.sqrt(a * a + b * b)
 }
 
 function inBounds(x: number, y: number, grid: Uint8Array, w: number): boolean {
@@ -50,31 +60,33 @@ export function jps(
   dy: number,
   grid: Uint8Array,
   w: number,
-): number[] {
+): number[] | undefined {
   const pathNodes = new Map<string, SearchPoint>()
   const openList = new PriorityQueue<SearchPoint>(
-    (a, b) => a.distance! - b.distance!,
+    (a, b) => a.sortDistance! - b.sortDistance!,
   )
 
   // Initial setup
-  const start = {
+  const start: SearchPoint = {
     x: sx,
     y: sy,
     dirX: 0,
     dirY: 0,
-    distance: chebyshev(sx, sy, dx, dy),
+    sortDistance: 0 + euclideanDistance(sx, sy, dx, dy),
+    pathLength: 0,
+    previous: undefined,
   }
   pathNodes.set(pointId(start), start)
   openList.push(start)
 
+  let destSearchPoint: SearchPoint | undefined
+
   // Search from open nodes
   while (openList.length() > 0) {
-    const current = openList.pop()
-    if (current === undefined) {
-      return []
-    }
+    const current = openList.pop()!
 
     if (current.x === dx && current.y === dy) {
+      destSearchPoint = current
       break
     }
 
@@ -84,14 +96,18 @@ export function jps(
         : getNeighbors(current, grid, w)
 
     for (const point of checkSet) {
-      const jumpPoint = findJump(point, point.dirX, point.dirY, dx, dy, grid, w)
-      if (jumpPoint !== null) {
-        const distance = chebyshev(jumpPoint.x, jumpPoint.y, dx, dy)
-
+      const jumpPoint = findJump(point, dx, dy, grid, w)
+      if (jumpPoint !== undefined) {
+        const pathLength =
+          current.pathLength +
+          euclideanDistance(current.x, current.y, jumpPoint.x, jumpPoint.y)
+        const sortDistance =
+          pathLength + euclideanDistance(jumpPoint.x, jumpPoint.y, dx, dy)
         const toAdd: SearchPoint = {
           ...jumpPoint,
-          distance: distance,
           previous: pointId(current),
+          pathLength,
+          sortDistance,
         }
 
         openList.push(toAdd)
@@ -100,8 +116,12 @@ export function jps(
     }
   }
 
+  if (destSearchPoint === undefined) {
+    return undefined
+  }
+
   const path = []
-  let nextNode = pathNodes.get(`${dx},${dy}`)
+  let nextNode: SearchPoint | undefined = destSearchPoint
   while (nextNode !== undefined) {
     path.unshift(nextNode.x, nextNode.y)
     nextNode = pathNodes.get(nextNode.previous!)
@@ -111,53 +131,136 @@ export function jps(
 }
 
 export function findJump(
-  point: SearchPoint,
-  stepX: number,
-  stepY: number,
+  point: PointWithDir,
   dx: number,
   dy: number,
   grid: Uint8Array,
   w: number,
-): SearchPoint | null {
+): PointWithDir | undefined {
   // Goal! Return the node
   if (point.x === dx && point.y === dy) {
     return point
   }
 
   // Node is a jump point, return the jump point
-  const neighbors = getNeighbors(point, grid, w)
-  if (neighbors.find((p) => p.forcedNeighbor) !== undefined) {
+  if (hasForcedNeighbors(point, grid, w)) {
     return point
   }
 
-  const nextX = point.x + stepX
-  const nextY = point.y + stepY
+  if (point.dirX !== 0 && point.dirY !== 0) {
+    // go horizontal
+    if (
+      validPoint(point.x + point.dirX, point.y, grid, w) &&
+      findJump(
+        { ...point, x: point.x + point.dirX, dirY: 0 },
+        dx,
+        dy,
+        grid,
+        w,
+      ) !== undefined
+    ) {
+      return point
+    }
+
+    // go vertical
+    if (
+      validPoint(point.x, point.y + point.dirY, grid, w) &&
+      findJump(
+        { ...point, y: point.y + point.dirY, dirX: 0 },
+        dx,
+        dy,
+        grid,
+        w,
+      ) !== undefined
+    ) {
+      return point
+    }
+  }
+
+  const nextX = point.x + point.dirX
+  const nextY = point.y + point.dirY
 
   if (!validPoint(nextX, nextY, grid, w)) {
-    return null
+    return undefined
   }
 
   const nextPoint = {
+    ...point,
     x: nextX,
     y: nextY,
-    dirX: stepX,
-    dirY: stepY,
-    distance: chebyshev(nextX, nextY, dx, dy),
   }
 
   // Check diagonals
-  if (stepX !== 0 && stepY !== 0) {
-    const diagonal1 = findJump(nextPoint, stepX, 0, dx, dy, grid, w)
-    if (diagonal1 !== null) {
-      return diagonal1
+
+  return findJump(nextPoint, dx, dy, grid, w)
+}
+
+export function hasForcedNeighbors(
+  point: PointWithDir,
+  grid: Uint8Array,
+  w: number,
+): boolean {
+  const { x, y, dirX, dirY } = point
+
+  // Diagonal motion
+  if (point.dirX !== 0 && point.dirY !== 0) {
+    if (
+      validWall(x - dirX, y, grid, w) &&
+      validPoint(x - dirX, y + dirY, grid, w)
+    ) {
+      return true
     }
-    const diagonal2 = findJump(nextPoint, 0, stepY, dx, dy, grid, w)
-    if (diagonal2 !== null) {
-      return diagonal2
+
+    if (
+      validWall(x, y - dirY, grid, w) &&
+      validPoint(x + dirX, y - dirY, grid, w)
+    ) {
+      return true
+    }
+
+    return false
+  }
+
+  // Horizontal motion
+  if (dirY === 0) {
+    // horizontal
+    const p1 = (y + 1) * w + x
+    if (grid[p1] === 1) {
+      const n = (y + 1) * w + (x + dirX)
+      if (grid[n] === 0) {
+        return true
+      }
+    }
+
+    const p2 = (y - 1) * w + x
+    if (grid[p2] === 1) {
+      const n = (y - 1) * w + (x + dirX)
+      if (grid[n] === 0) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  // Vertical motion
+  const p1 = y * w + (x + 1)
+  if (grid[p1] === 1) {
+    const n = (y + dirY) * w + (x + 1)
+    if (grid[n] === 0) {
+      return true
     }
   }
 
-  return findJump(nextPoint, stepX, stepY, dx, dy, grid, w)
+  const p2 = y * w + (x - 1)
+  if (grid[p2] === 1) {
+    const n = (y + dirY) * w + (x - 1)
+    if (grid[n] === 0) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -165,10 +268,10 @@ export function findJump(
  * neighbor is a forced neighbor.
  */
 export function getNeighbors(
-  point: SearchPoint,
+  point: PointWithDir,
   grid: Uint8Array,
   w: number,
-): SearchPoint[] {
+): PointWithDir[] {
   return point.dirX !== 0 && point.dirY !== 0
     ? getNeighborsDiagonal(point, grid, w)
     : getNeighborsCardinal(point, grid, w)
@@ -176,11 +279,11 @@ export function getNeighbors(
 
 const potentialSteps = [-1, 0, 1]
 function getImmediateNeighbors(
-  point: SearchPoint,
+  point: PointWithDir,
   grid: Uint8Array,
   w: number,
 ) {
-  const res: SearchPoint[] = []
+  const res: PointWithDir[] = []
 
   for (const stepX of potentialSteps) {
     for (const stepY of potentialSteps) {
@@ -207,12 +310,12 @@ function getImmediateNeighbors(
 }
 
 function getNeighborsDiagonal(
-  point: SearchPoint,
+  point: PointWithDir,
   grid: Uint8Array,
   w: number,
-): SearchPoint[] {
+): PointWithDir[] {
   const { x, y, dirX, dirY } = point
-  const res: SearchPoint[] = []
+  const res: PointWithDir[] = []
 
   // Check unforced neighbors
 
@@ -252,7 +355,6 @@ function getNeighborsDiagonal(
         y: y + dirY,
         dirX: -dirX,
         dirY: dirY,
-        forcedNeighbor: true,
       })
     }
   }
@@ -264,7 +366,6 @@ function getNeighborsDiagonal(
         y: y - dirY,
         dirX: dirX,
         dirY: -dirY,
-        forcedNeighbor: true,
       })
     }
   }
@@ -273,12 +374,12 @@ function getNeighborsDiagonal(
 }
 
 function getNeighborsCardinal(
-  point: SearchPoint,
+  point: PointWithDir,
   grid: Uint8Array,
   w: number,
-): SearchPoint[] {
+): PointWithDir[] {
   const { x, y, dirX, dirY } = point
-  const res: SearchPoint[] = []
+  const res: PointWithDir[] = []
 
   // Check unforced neighbors
   const p = (y + dirY) * w + (x + dirX)
@@ -303,7 +404,6 @@ function getNeighborsCardinal(
           y: y + 1,
           dirX: dirX,
           dirY: 1,
-          forcedNeighbor: true,
         })
       }
     }
@@ -317,7 +417,6 @@ function getNeighborsCardinal(
           y: y - 1,
           dirX: dirX,
           dirY: -1,
-          forcedNeighbor: true,
         })
       }
     }
@@ -332,7 +431,6 @@ function getNeighborsCardinal(
           y: y + dirY,
           dirX: 1,
           dirY: dirY,
-          forcedNeighbor: true,
         })
       }
     }
@@ -346,7 +444,6 @@ function getNeighborsCardinal(
           y: y + dirY,
           dirX: -1,
           dirY: dirY,
-          forcedNeighbor: true,
         })
       }
     }

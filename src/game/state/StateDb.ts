@@ -312,6 +312,6 @@ export class StateDb extends StateDbBase<EntityConfig> {
   }
 
   protected indexesFrameUpdate(): void {
-    this.pathfinder.frameUpdate()
+    // do nothing
   }
 }

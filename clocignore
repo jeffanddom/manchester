@@ -1,0 +1,16 @@
+node_modules
+node_modules/
+node_modules/*
+node_modules/**
+./node_modules
+./node_modules/
+./node_modules/*
+./node_modules/**
+out
+out/
+out/*
+out/**
+./out
+./out/
+./out/*
+./out/**
